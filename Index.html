@@ -9704,6 +9704,47 @@
             return [shuffled[0], shuffled[1]];
         }
 
+        // ===== PLAYER SESSION (Privy login) =====
+        let playerSession = null; // { playerId, wallet, name, avatar }
+
+        function loadPlayerSession() {
+            const params = new URLSearchParams(window.location.search);
+            const playerId = params.get('playerId');
+            if (playerId) {
+                playerSession = {
+                    playerId: playerId,
+                    wallet:   params.get('wallet')  || '',
+                    name:     params.get('name')    || 'Fighter',
+                    avatar:   params.get('avatar')  || '',
+                };
+                localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
+                window.history.replaceState({}, '', window.location.pathname);
+            } else {
+                try {
+                    const saved = localStorage.getItem('fightchub_session');
+                    if (saved) playerSession = JSON.parse(saved);
+                } catch(e) {}
+            }
+            if (playerSession) updatePlayerSessionUI();
+        }
+
+        function updatePlayerSessionUI() {
+            if (!playerSession) return;
+            const nameEl   = document.getElementById('session-player-name');
+            const avatarEl = document.getElementById('session-player-avatar');
+            if (nameEl)   nameEl.textContent = playerSession.name;
+            if (avatarEl && playerSession.avatar) {
+                avatarEl.src = playerSession.avatar;
+                avatarEl.style.display = '';
+            }
+        }
+
+        function logoutPlayerSession() {
+            playerSession = null;
+            localStorage.removeItem('fightchub_session');
+            window.location.href = 'https://fight-chub-backend.vercel.app/';
+        }
+
         function loadCharacters() {
             try {
                 const saved = localStorage.getItem('fightchub_characters');
@@ -9955,7 +9996,8 @@
             saveCharacters();
         }
 
-        // Load characters on page load
+        // Load player session (Privy) + characters on page load
+        loadPlayerSession();
         loadCharacters();
         loadPendingLevelUps();
 
