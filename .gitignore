@@ -1,0 +1,14 @@
+# Repos separados
+contracts/
+backend/
+
+# Notas privadas
+NOTAS_DESARROLLO.txt
+
+# Scripts internos
+*.ps1
+*.bat
+
+# OS
+.DS_Store
+Thumbs.db
