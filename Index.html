@@ -9803,8 +9803,8 @@
         }
 
         // Sync a character's state to the backend (fire-and-forget)
-        const BACKEND_URL  = ''; // e.g. 'https://api.fightchub.com' — fill after deploy
-        const SYNC_SECRET  = ''; // must match SYNC_SECRET in backend .env
+        const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
+        const SYNC_SECRET  = 'fc_sync_lol'; // ← pega aquí el valor de SYNC_SECRET que pusiste en Vercel
 
         function syncCharacterToBackend(character) {
             if (!BACKEND_URL || !SYNC_SECRET) return;
