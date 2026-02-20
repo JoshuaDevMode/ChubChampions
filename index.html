@@ -8324,10 +8324,10 @@
         const FRAG_ICON_HTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         const VICTORY_CHEST_TIERS = [
             { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 1,  fragments: 0, xpMult: 0,    prob: 0.60, singleReward: true },
-            { id: 'silver',     name: 'PLATA',       img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 2,  fragments: 1, xpMult: 0,    prob: 0.26, singleReward: true },
-            { id: 'gold',       name: 'ORO',         img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 4,  fragments: 1, xpMult: 1.25, prob: 0.10, singleReward: true },
-            { id: 'epic',       name: 'ÉPICO',       img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 8,  fragments: 2, xpMult: 1.5,  prob: 0.03 },
-            { id: 'legendary',  name: 'LEGENDARIO',  img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [15, 25], fragments: 4, xpMult: 0, prob: 0.01 }
+            { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 2,  fragments: 1, xpMult: 0,    prob: 0.26, singleReward: true },
+            { id: 'gold',       name: 'GOLD',        img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 4,  fragments: 1, xpMult: 1.25, prob: 0.10, singleReward: true },
+            { id: 'epic',       name: 'EPIC',        img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 8,  fragments: 2, xpMult: 1.5,  prob: 0.03 },
+            { id: 'legendary',  name: 'LEGENDARY',   img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [15, 25], fragments: 4, xpMult: 0, prob: 0.01 }
         ];
         const XP_BOOST_DURATION = 5;
 
@@ -9060,33 +9060,27 @@
         async function claimDailyReward(dayNum) {
             const reward = DAILY_REWARDS.find(r => r.day === dayNum);
             if (!reward) return;
-            const currentDay = getDailyClaimDayNumber();
-            if (dayNum !== currentDay || dailyClaimData.claimedDays.includes(dayNum)) return;
 
-            // Set startDate on first claim
-            if (!dailyClaimData.startDate) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                dailyClaimData.startDate = today.getTime();
+            const result = await claimDailyOnServer(dayNum);
+            if (!result || !result.ok) {
+                showDailyClaimToast(result?.error || 'Claim failed. Please try again.');
+                return;
             }
 
-            dailyClaimData.claimedDays.push(dayNum);
-
+            // globalTokens, globalFragments, and dailyClaimData already updated by claimDailyOnServer
             let toastText = 'Day ' + dayNum + ': ';
 
-            switch (reward.type) {
+            switch (result.rewardType) {
                 case 'tokens':
-                    globalTokens += reward.amount;
                     toastText += '+' + reward.amount + ' 🪙';
                     break;
                 case 'fragments':
-                    globalFragments += reward.amount;
                     toastText += '+' + reward.amount + ' ' + FRAG_ICON_HTML;
                     break;
                 case 'xpboost':
-                    if (pendingXpBoosts.length < 3) {
-                        pendingXpBoosts.push({ mult: reward.mult, battles: reward.battles });
-                        toastText += '⚡ x' + reward.mult + ' XP Boost!';
+                    if (result.xpBoost && pendingXpBoosts.length < 3) {
+                        pendingXpBoosts.push({ mult: result.xpBoost.mult, battles: result.xpBoost.battles });
+                        toastText += '⚡ x' + result.xpBoost.mult + ' XP Boost!';
                     } else {
                         toastText += '⚡ Boost slots full!';
                     }
@@ -9101,11 +9095,9 @@
                     showDailyClaimToast(toastText);
                     // Close daily overlay before opening chest
                     document.getElementById('daily-claim-overlay').classList.remove('active');
-                    await openInstantChest(reward.tier);
+                    await openInstantChest(reward.tier, result.chestReward);
                     return;
                 case 'combo':
-                    globalTokens += reward.tokens;
-                    globalFragments += reward.fragments;
                     toastText += '+' + reward.tokens + ' 🪙 +' + reward.fragments + ' ' + FRAG_ICON_HTML;
                     break;
             }
@@ -9118,7 +9110,7 @@
             showDailyClaimToast(toastText);
         }
 
-        async function openInstantChest(tierId) {
+        async function openInstantChest(tierId, serverReward = null) {
             const tier = getChestTierById(tierId);
 
             const overlay = document.getElementById('victory-chest-overlay');
@@ -9146,6 +9138,30 @@
             // Give rewards
             let rewardLines = [];
             const character = getSelectedCharacter();
+
+            // If server already computed and applied economy rewards, just render them
+            if (serverReward) {
+                if (serverReward.tokens > 0)    rewardLines.push('+' + serverReward.tokens    + ' 🪙');
+                if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
+                if (serverReward.xpBoost && pendingXpBoosts.length < 3) {
+                    pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
+                    rewardLines.push('⚡ x' + serverReward.xpBoost.mult + ' XP BOOST earned!');
+                }
+                if (serverReward.consumable && character) {
+                    character.consumables.push(serverReward.consumable);
+                    const cons = CONSUMABLES[serverReward.consumable];
+                    if (cons) rewardLines.push(cons.icon + ' ' + cons.name);
+                    saveCharacters();
+                }
+                rewardIcon.innerHTML = '<img src="' + tier.img + '" style="width:120px;height:120px;object-fit:contain;">';
+                rewardIcon.style.animation = 'rewardAppear 0.5s ease-out forwards';
+                rewardText.style.color = tier.color;
+                rewardText.textContent = tier.name + ' CHEST';
+                rewardName.innerHTML = rewardLines.map(r => '<div class="reward-line">' + r + '</div>').join('');
+                saveProgression();
+                updateCurrencyUI();
+                return;
+            }
 
             if (tier.singleReward) {
                 // Bronze, Silver, Gold: only ONE reward (weights per tier)
@@ -9673,7 +9689,7 @@
 
         function getCharacterMaxHp(character) {
             const base = character.maxHp || BASE_HP;
-            // Defensa: Pie Dura - bonus max HP from skill
+            // Guardian: Iron Hide - bonus max HP from skill
             const ironHideBonus = getSkillValue(character, 'guardian', 0);
             if (ironHideBonus > 0) return Math.round(base * (1 + ironHideBonus));
             return base;
@@ -9782,9 +9798,16 @@
                 if (Array.isArray(data.pendingChests) && data.pendingChests.length > 0) {
                     pendingVictoryChests = data.pendingChests;
                 }
+                // Restore authoritative daily claim state
+                if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
+                    dailyClaimData.startDate   = data.dailyClaimStart;
+                    dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
+                }
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
+                renderDailyClaimGrid();
+                updateDailyClaimIndicator();
                 console.log('[state] synced from server: tokens=' + data.tokens + ' frags=' + data.fragments);
             } catch (e) {
                 console.warn('[state] sync failed:', e);
@@ -9919,7 +9942,7 @@
 
         // Sync a character's state to the backend (fire-and-forget)
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
-        const SYNC_SECRET  = 'fc_sync_lol'; // ← pega aquí el valor de SYNC_SECRET que pusiste en Vercel
+        const SYNC_SECRET  = 'fc_sync_lol'; // ← paste your SYNC_SECRET from Vercel env vars here
 
         function syncPlayerToBackend() {
             if (!BACKEND_URL || !SYNC_SECRET || !playerSession) return;
@@ -9930,12 +9953,8 @@
                     'x-sync-secret': SYNC_SECRET,
                 },
                 body: JSON.stringify({
-                    playerId:             playerSession.playerId,
-                    tokens:               globalTokens,
-                    fragments:            globalFragments,
-                    fragmentChestsOpened: globalFragmentChestsOpened,
-                    unlockedWeapons:      globalUnlockedWeapons,
-                    winStreak:            winStreak,
+                    playerId:        playerSession.playerId,
+                    unlockedWeapons: globalUnlockedWeapons,
                 }),
             }).catch(e => console.warn('[sync] player sync error:', e));
         }
@@ -10003,6 +10022,36 @@
             }
         }
 
+        async function claimDailyOnServer(dayNum) {
+            if (!playerSession) return { ok: false, error: 'Not logged in' };
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/economy/daily-claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({
+                        playerId:     playerSession.playerId,
+                        dayNum,
+                        xpBoostCount: pendingXpBoosts.length,
+                    }),
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    globalTokens    = data.newTokens;
+                    globalFragments = data.newFragments;
+                    // Sync authoritative daily claim state from server
+                    if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
+                        dailyClaimData.startDate   = data.dailyClaimStart;
+                        dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
+                    }
+                    updateCurrencyUI();
+                }
+                return data;
+            } catch (e) {
+                console.warn('[daily-claim] network error:', e);
+                return { ok: false, error: 'Network error' };
+            }
+        }
+
         // ===== SERVER BATTLE INTEGRATION =====
         // When the player is logged in (playerSession set), the battle runs on
         // the server and the result is replayed visually.  Falls back to the
@@ -10050,10 +10099,11 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        playerId: playerSession.playerId,
+                        playerId:    playerSession.playerId,
+                        characterId: character.id,
                         seed,
-                        player:   playerData,
-                        cpu:      cpuData,
+                        player:      playerData,
+                        cpu:         cpuData,
                     }),
                 });
 
@@ -14301,7 +14351,7 @@
             await startServerBattle(character);
         }
 
-        function aonShowFinalResults() {
+        async function aonShowFinalResults() {
             // AoN tournament ended properly - clear forfeit flag
             localStorage.removeItem('fightchub_battle_active');
             stopBattleHeartbeat();
@@ -14316,9 +14366,14 @@
 
             let lastAonExp = 0;
 
-            // Grant winnings if player won
+            // Grant winnings if player won (server-authoritative)
             if (playerWon) {
-                globalTokens += Math.floor(winnings);
+                const winResult = await spendOnServer('aon_win', {});
+                if (winResult.ok) {
+                    globalTokens = winResult.newTokens;
+                } else {
+                    console.warn('[aon] win claim failed:', winResult.error);
+                }
                 saveProgression();
                 updateCurrencyUI();
             }
