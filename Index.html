@@ -5051,6 +5051,62 @@
             align-items: center;
         }
 
+        /* Session widget (top-right of currency bar) */
+        .session-widget {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 14px;
+            padding-left: 14px;
+            border-left: 1px solid rgba(255,255,255,0.12);
+            flex-shrink: 0;
+        }
+        .session-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid #7c3aed;
+            object-fit: cover;
+            display: none;
+        }
+        .session-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5em;
+            color: #a78bfa;
+            white-space: nowrap;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .session-logout-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.38em;
+            color: #f87171;
+            background: none;
+            border: 1px solid #f87171;
+            border-radius: 4px;
+            padding: 4px 7px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .session-logout-btn:hover { background: rgba(248,113,113,0.15); }
+        .session-login-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.42em;
+            color: #fff;
+            background: linear-gradient(to bottom, #7c3aed, #5b21b6);
+            border: 2px solid #a78bfa;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-block;
+            transition: filter 0.15s;
+        }
+        .session-login-btn:hover { filter: brightness(1.25); }
+
         .currency-item {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.65em;
@@ -6795,6 +6851,13 @@
                 <span class="currency-item" id="currency-tokens">🪙 0</span>
                 <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> 0 / 10</span>
                 <span class="currency-item xp-boost-indicator" id="xp-boost-indicator" style="display:none;">⚡ x1.0 (0)</span>
+            </div>
+            <!-- Player session widget -->
+            <div class="session-widget" id="session-widget">
+                <img class="session-avatar" id="session-player-avatar" src="" alt="avatar">
+                <span class="session-name" id="session-player-name"></span>
+                <button class="session-logout-btn" id="session-logout-btn" style="display:none;" onclick="logoutPlayerSession()">LOGOUT</button>
+                <a class="session-login-btn" id="session-login-btn" href="https://fight-chub-backend.vercel.app/">🎮 LOGIN</a>
             </div>
         </div>
 
@@ -9725,17 +9788,28 @@
                     if (saved) playerSession = JSON.parse(saved);
                 } catch(e) {}
             }
-            if (playerSession) updatePlayerSessionUI();
+            updatePlayerSessionUI();
         }
 
         function updatePlayerSessionUI() {
-            if (!playerSession) return;
-            const nameEl   = document.getElementById('session-player-name');
-            const avatarEl = document.getElementById('session-player-avatar');
-            if (nameEl)   nameEl.textContent = playerSession.name;
-            if (avatarEl && playerSession.avatar) {
-                avatarEl.src = playerSession.avatar;
-                avatarEl.style.display = '';
+            const nameEl    = document.getElementById('session-player-name');
+            const avatarEl  = document.getElementById('session-player-avatar');
+            const logoutBtn = document.getElementById('session-logout-btn');
+            const loginBtn  = document.getElementById('session-login-btn');
+
+            if (playerSession) {
+                if (nameEl)    nameEl.textContent = playerSession.name;
+                if (avatarEl && playerSession.avatar) {
+                    avatarEl.src = playerSession.avatar;
+                    avatarEl.style.display = '';
+                }
+                if (logoutBtn) logoutBtn.style.display = '';
+                if (loginBtn)  loginBtn.style.display  = 'none';
+            } else {
+                if (nameEl)    nameEl.textContent = '';
+                if (avatarEl)  avatarEl.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (loginBtn)  loginBtn.style.display  = '';
             }
         }
 
