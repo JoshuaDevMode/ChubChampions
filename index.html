@@ -1440,6 +1440,12 @@
             background: url('Assets/UI/lobby-bg-sprite.png') 0 0 no-repeat;
             background-size: 400% 300%;
             z-index: 0;
+            transform-origin: center center;
+            transition: transform 0.5s ease;
+        }
+
+        .main-menu.inventory-mode .lobby-bg {
+            transform: scale(1.15) translateX(55px);
         }
 
         /* Nebula layer */
@@ -15667,6 +15673,20 @@
             const character = getSelectedCharacter();
 
             grid.innerHTML = '';
+
+            // If character has no weapon slots yet, show a locked placeholder instead
+            if (!character || getMaxEquippedWeapons(character.level) === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'inventory-weapon-card locked';
+                placeholder.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 24px; opacity: 0.7;';
+                placeholder.innerHTML = `
+                    <div class="inventory-weapon-icon">🔒</div>
+                    <div class="inventory-weapon-name" style="font-size:0.9em;">Weapons unlock at Level 5</div>
+                `;
+                grid.appendChild(placeholder);
+                populateConsumableInventory();
+                return;
+            }
 
             // Show unlocked weapons (base + unlocked)
             Object.keys(WEAPONS).forEach(weaponKey => {
