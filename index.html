@@ -9999,6 +9999,9 @@
         // the server and the result is replayed visually.  Falls back to the
         // local engine if the API is unreachable.
 
+        // Rewards returned by the last server battle (chest tier, streak tokens)
+        let lastBattleRewards = null;
+
         async function startServerBattle(character) {
             const seed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
 
@@ -10066,6 +10069,7 @@
                     return;
                 }
 
+                lastBattleRewards = result.rewards || null;
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
 
             } catch (err) {
@@ -13496,30 +13500,23 @@
                 }
             }
 
-            // Victory chest reward (independent of EXP daily limit, own limit of 8/day)
-            if (winner === 'player') {
-                const today = new Date().toDateString();
-                if (dailyChestDate !== today) {
-                    dailyChestDate = today;
-                    dailyChestsEarned = 0;
+            // Victory chest + win streak — server is the authority
+            if (lastBattleRewards) {
+                // Chest
+                if (lastBattleRewards.chestTier && pendingVictoryChests.length < 4) {
+                    pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, unlockStart: null, unlockDuration: null });
                 }
-                if (pendingVictoryChests.length < 4 && dailyChestsEarned < DAILY_CHEST_LIMIT) {
-                    dailyChestsEarned++;
-                    const chestTierRoll = rollChestTier();
-                    pendingVictoryChests.push({ tier: chestTierRoll.id, unlockStart: null, unlockDuration: null });
-                    saveProgression();
+                // Win streak token bonus
+                winStreak = lastBattleRewards.newWinStreak;
+                if (lastBattleRewards.tokensEarned > 0) {
+                    globalTokens += lastBattleRewards.tokensEarned;
+                    showNotice('🔥 ' + winStreak + ' WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙 bonus!');
                 }
-            }
-
-            // Win streak tracking (draws don't break streak)
-            if (winner === 'player') {
-                winStreak++;
-                if (winStreak > 0 && winStreak % 5 === 0) {
-                    globalTokens += 5;
-                    showNotice('🔥 ' + winStreak + ' WIN STREAK! +5 🪙 bonus!');
-                }
-            } else if (winner === 'cpu') {
-                winStreak = 0;
+                lastBattleRewards = null;
+            } else {
+                // Fallback (shouldn't happen with server battles)
+                if (winner === 'player') winStreak++;
+                else if (winner === 'cpu') winStreak = 0;
             }
             saveProgression();
 
