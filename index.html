@@ -8454,6 +8454,7 @@
             } catch (e) {
                 console.error('Error saving progression:', e);
             }
+            syncPlayerToBackend();
         }
 
         function getWeaponsForTier(tier) {
@@ -9933,6 +9934,25 @@
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
         const SYNC_SECRET  = 'fc_sync_lol'; // ← pega aquí el valor de SYNC_SECRET que pusiste en Vercel
 
+        function syncPlayerToBackend() {
+            if (!BACKEND_URL || !SYNC_SECRET || !playerSession) return;
+            fetch(BACKEND_URL + '/api/player/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-sync-secret': SYNC_SECRET,
+                },
+                body: JSON.stringify({
+                    playerId:             playerSession.playerId,
+                    tokens:               globalTokens,
+                    fragments:            globalFragments,
+                    fragmentChestsOpened: globalFragmentChestsOpened,
+                    unlockedWeapons:      globalUnlockedWeapons,
+                    winStreak:            winStreak,
+                }),
+            }).catch(e => console.warn('[sync] player sync error:', e));
+        }
+
         function syncCharacterToBackend(character) {
             if (!BACKEND_URL || !SYNC_SECRET) return;
             fetch(BACKEND_URL + '/api/character/sync', {
@@ -9966,6 +9986,7 @@
                         durability: character.weaponDurability || {},
                         unlocked:   globalUnlockedWeapons      || [],
                     },
+                    consumables: character.consumables || [],
                 }),
             }).then(r => {
                 if (r.ok) console.log('[sync] character synced ok:', character.name);
