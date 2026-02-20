@@ -9957,6 +9957,10 @@
                         legs: character.appearance?.legs  ?? null,
                         feet: character.appearance?.feet  ?? null,
                     },
+                    weapons: {
+                        equipped:   character.equippedWeapons  || [],
+                        durability: character.weaponDurability || {},
+                    },
                 }),
             }).then(r => {
                 if (r.ok) console.log('[sync] character synced ok:', character.name);
@@ -16777,6 +16781,7 @@
 
             character.equippedWeapons.push(weaponId);
             saveCharacters();
+            syncCharacterToBackend(character);
             updateMenuEquipmentPanel();
             updateInvEquipmentSlots();
             if (document.getElementById('inventory-panel').classList.contains('active')) {
@@ -16790,6 +16795,7 @@
 
             character.equippedWeapons = character.equippedWeapons.filter(id => id !== weaponId);
             saveCharacters();
+            syncCharacterToBackend(character);
             updateMenuEquipmentPanel();
             updateInvEquipmentSlots();
             if (document.getElementById('inventory-panel').classList.contains('active')) {
