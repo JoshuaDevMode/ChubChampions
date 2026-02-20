@@ -9410,6 +9410,10 @@
             saveProgression();
             updateCurrencyUI();
             populateInventoryPanel();
+            if (isNewWeapon) {
+                const _sc = getSelectedCharacter();
+                if (_sc) syncCharacterToBackend(_sc);
+            }
         }
 
         // Victory chest overlay close
@@ -9960,6 +9964,7 @@
                     weapons: {
                         equipped:   character.equippedWeapons  || [],
                         durability: character.weaponDurability || {},
+                        unlocked:   globalUnlockedWeapons      || [],
                     },
                 }),
             }).then(r => {
