@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-    <title>Fighting Game</title>
+    <title>FightChub</title>
+    <link rel="icon" type="image/png" href="Assets/UI/Chests/Golden.png">
     <style>
         * {
             margin: 0;
@@ -8162,6 +8163,7 @@
             character.skills[key] = (character.skills[key] || 0) + 1;
             character.skillPoints = (character.skillPoints || 0) - cost;
             saveCharacters();
+            syncCharacterToBackend(character);
             return true;
         }
 
