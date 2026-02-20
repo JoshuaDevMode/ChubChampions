@@ -9816,7 +9816,7 @@
         function logoutPlayerSession() {
             playerSession = null;
             localStorage.removeItem('fightchub_session');
-            window.location.href = 'https://fight-chub-backend.vercel.app/';
+            updatePlayerSessionUI();
         }
 
         function loadCharacters() {
