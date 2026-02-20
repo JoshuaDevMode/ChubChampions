@@ -8741,13 +8741,15 @@
                 openVictoryChest(slotIndex);
             }, { once: true });
 
-            yesBtn.addEventListener('click', function() {
+            yesBtn.addEventListener('click', async function() {
                 chest.unlockStart = Date.now();
                 chest.unlockDuration = duration;
                 saveProgression();
                 startChestTimerIfNeeded();
                 updateVictoryChestSlots();
                 chestConfirmCleanup();
+                // Persist unlock start server-side
+                spendOnServer('start_chest_unlock', { chestIndex: slotIndex }).catch(() => {});
             }, { once: true });
 
             noBtn.addEventListener('click', function() {
@@ -8846,93 +8848,50 @@
             chestIcon.style.display = 'none';
             rewardReveal.style.display = 'flex';
 
-            // Give rewards based on tier
+            // ── Server computes and validates rewards ──────────────────────────
             let rewardLines = [];
             const character = getSelectedCharacter();
 
-            if (tier.singleReward) {
-                // Bronze, Silver, Gold: only ONE reward (weights per tier)
-                const SINGLE_REWARD_WEIGHTS = {
-                    bronze:  { tokens: 70, fragments: 0,  xpBoost: 0,  consumable: 30 },
-                    silver:  { tokens: 50, fragments: 25, xpBoost: 0,  consumable: 25 },
-                    gold:    { tokens: 50, fragments: 25, xpBoost: 22, consumable: 16 }
-                };
-                const weights = SINGLE_REWARD_WEIGHTS[tierId];
-                let pool = [];
-                if (weights.tokens > 0) pool.push({ type: 'tokens', weight: weights.tokens });
-                if (weights.fragments > 0 && tier.fragments > 0) pool.push({ type: 'fragments', weight: weights.fragments });
-                if (weights.xpBoost > 0 && tier.xpMult > 0 && pendingXpBoosts.length < 3) pool.push({ type: 'xpBoost', weight: weights.xpBoost });
-                const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                if (weights.consumable > 0 && dropTable && character) pool.push({ type: 'consumable', weight: weights.consumable });
-
-                const totalWeight = pool.reduce((s, p) => s + p.weight, 0);
-                let roll = Math.random() * totalWeight;
-                let picked = pool[0];
-                for (const p of pool) {
-                    roll -= p.weight;
-                    if (roll <= 0) { picked = p; break; }
-                }
-
-                if (picked.type === 'tokens') {
-                    const tokenAmount = Array.isArray(tier.tokens) ? Math.floor(Math.random() * (tier.tokens[1] - tier.tokens[0] + 1)) + tier.tokens[0] : tier.tokens;
-                    globalTokens += tokenAmount;
-                    rewardLines.push('+' + tokenAmount + ' 🪙');
-                } else if (picked.type === 'fragments') {
-                    globalFragments += tier.fragments;
-                    rewardLines.push('+' + tier.fragments + ' ' + FRAG_ICON_HTML);
-                } else if (picked.type === 'xpBoost') {
-                    pendingXpBoosts.push({ mult: tier.xpMult, battles: XP_BOOST_DURATION });
-                    rewardLines.push('⚡ x' + tier.xpMult + ' XP BOOST earned!');
-                } else if (picked.type === 'consumable') {
-                    const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                    const cPool = dropTable.pool;
-                    const cId = cPool[Math.floor(Math.random() * cPool.length)];
-                    character.consumables.push(cId);
-                    const cons = CONSUMABLES[cId];
-                    rewardLines.push(cons.icon + ' ' + cons.name);
-                    saveCharacters();
-                }
-            } else {
-                // Epic, Legendary: multiple rewards
-                const tokenAmount = Array.isArray(tier.tokens) ? Math.floor(Math.random() * (tier.tokens[1] - tier.tokens[0] + 1)) + tier.tokens[0] : tier.tokens;
-                globalTokens += tokenAmount;
-                globalFragments += tier.fragments;
-                rewardLines.push('+' + tokenAmount + ' 🪙');
-                if (tier.fragments > 0) rewardLines.push('+' + tier.fragments + ' ' + FRAG_ICON_HTML);
-
-                // XP Boost: legendary gets 50/50 between 1.5x and 2.5x, epic uses its fixed xpMult
-                if (pendingXpBoosts.length < 3) {
-                    if (tierId === 'legendary') {
-                        const boostMult = Math.random() < 0.5 ? 1.5 : 2.5;
-                        pendingXpBoosts.push({ mult: boostMult, battles: XP_BOOST_DURATION });
-                        rewardLines.push('⚡ x' + boostMult + ' XP BOOST earned!');
-                    } else if (tier.xpMult > 0) {
-                        pendingXpBoosts.push({ mult: tier.xpMult, battles: XP_BOOST_DURATION });
-                        rewardLines.push('⚡ x' + tier.xpMult + ' XP BOOST earned!');
-                    }
-                }
-
-                // Roll consumable drops
-                const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                if (dropTable && character) {
-                    let droppedConsumables = [];
-                    if (dropTable.guaranteed) {
-                        droppedConsumables.push(dropTable.guaranteed);
-                    }
-                    if (Math.random() < dropTable.chance) {
-                        const pool = dropTable.pool.filter(c => c !== dropTable.guaranteed);
-                        if (pool.length > 0) {
-                            droppedConsumables.push(pool[Math.floor(Math.random() * pool.length)]);
-                        }
-                    }
-                    droppedConsumables.forEach(cId => {
-                        character.consumables.push(cId);
-                        const cons = CONSUMABLES[cId];
-                        rewardLines.push(cons.icon + ' ' + cons.name);
+            const serverReward = await (async () => {
+                if (!playerSession) return null;
+                try {
+                    const r = await fetch(BACKEND_URL + '/api/economy/open-chest', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                        body: JSON.stringify({
+                            playerId:     playerSession.playerId,
+                            chestIndex:   slotIndex,
+                            xpBoostCount: pendingXpBoosts.length,
+                        }),
                     });
-                    if (droppedConsumables.length > 0) saveCharacters();
-                }
+                    return r.ok ? await r.json() : null;
+                } catch { return null; }
+            })();
+
+            if (!serverReward || !serverReward.ok) {
+                showNotice('Could not open chest. Please try again.');
+                return;
             }
+
+            // Apply server-authoritative balances
+            globalTokens   = serverReward.newTokenBalance;
+            globalFragments = serverReward.newFragBalance;
+
+            // Build reward lines from server response
+            if (serverReward.tokens > 0)    rewardLines.push('+' + serverReward.tokens + ' 🪙');
+            if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
+            if (serverReward.xpBoost) {
+                pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
+                rewardLines.push('⚡ x' + serverReward.xpBoost.mult + ' XP BOOST earned!');
+            }
+            if (serverReward.consumable && character) {
+                character.consumables.push(serverReward.consumable);
+                const cons = CONSUMABLES[serverReward.consumable];
+                if (cons) rewardLines.push(cons.icon + ' ' + cons.name);
+                saveCharacters();
+                syncCharacterToBackend(character);
+            }
+            if (rewardLines.length === 0) rewardLines.push('Better luck next time!');
 
             rewardIcon.innerHTML = '<img src="' + tier.img + '" style="width:120px;height:120px;object-fit:contain;">';
             rewardIcon.style.animation = 'rewardAppear 0.5s ease-out forwards';
@@ -8940,7 +8899,7 @@
             rewardText.textContent = tier.name + ' CHEST';
             rewardName.innerHTML = rewardLines.map(r => '<div class="reward-line">' + r + '</div>').join('');
 
-            // Remove this chest from the array
+            // Remove chest locally (server already removed it)
             pendingVictoryChests.splice(slotIndex, 1);
             saveProgression();
             updateCurrencyUI();
@@ -9801,6 +9760,35 @@
                 } catch(e) {}
             }
             updatePlayerSessionUI();
+            if (playerSession) syncStateFromServer();
+        }
+
+        // Fetch authoritative economy state from server and override local values
+        async function syncStateFromServer() {
+            if (!playerSession) return;
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/player/state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ playerId: playerSession.playerId }),
+                });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                globalTokens               = data.tokens;
+                globalFragments            = data.fragments;
+                globalFragmentChestsOpened = data.fragmentChestsOpened;
+                globalCharactersCreated    = data.charactersCreated;
+                winStreak                  = data.winStreak;
+                if (Array.isArray(data.pendingChests) && data.pendingChests.length > 0) {
+                    pendingVictoryChests = data.pendingChests;
+                }
+                saveProgression();
+                updateCurrencyUI();
+                updateVictoryChestSlots();
+                console.log('[state] synced from server: tokens=' + data.tokens + ' frags=' + data.fragments);
+            } catch (e) {
+                console.warn('[state] sync failed:', e);
+            }
         }
 
         function updatePlayerSessionUI() {
