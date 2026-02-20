@@ -10077,17 +10077,17 @@
                     }
 
                     case 'fury_update': {
+                        if (!event.changed) break; // only handle activation / deactivation
                         const ff = event.fighter;
-                        game[ff].fury    = event.meter;
-                        game[ff].maxFury = 10;
-                        if (event.changed && event.active) {
+                        if (event.active) {
+                            game[ff].fury    = game[ff].maxFury;
+                            game[ff].maxFury = 10;
                             activateFury(ff);
-                            // Cancel the real-time drain — replay is event-driven
+                            // Cancel only the drain timers — orb contact damage keeps running
                             const fstate = game[ff];
-                            if (fstate.furyInterval)  { clearInterval(fstate.furyInterval);  fstate.furyInterval  = null; }
-                            if (fstate.furyTimeout)   { clearTimeout(fstate.furyTimeout);    fstate.furyTimeout   = null; }
-                            if (fstate.furyOrbDamageInterval) { clearInterval(fstate.furyOrbDamageInterval); fstate.furyOrbDamageInterval = null; }
-                        } else if (event.changed && !event.active) {
+                            if (fstate.furyInterval) { clearInterval(fstate.furyInterval); fstate.furyInterval = null; }
+                            if (fstate.furyTimeout)  { clearTimeout(fstate.furyTimeout);   fstate.furyTimeout  = null; }
+                        } else {
                             deactivateFury(ff);
                         }
                         updateFuryBar(ff);
@@ -10206,6 +10206,11 @@
 
             // Apply result
             if (defense === 'none' || (defense === 'dodge' && damage > 0)) {
+                // Hit landed — fill fury meter visually (server drives activation via fury_update)
+                if (!game[attacker].furyActive) {
+                    game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 1.5);
+                    updateFuryBar(attacker);
+                }
                 // Hit landed (or long-reach weapon through dodge)
                 fighterBody.classList.add('taking-damage');
                 game.player.health = event.playerHp;
