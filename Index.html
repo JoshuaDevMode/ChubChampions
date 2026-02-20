@@ -9952,6 +9952,262 @@
             }).catch(e => console.warn('[sync] Failed to sync character:', e));
         }
 
+        // ===== SERVER BATTLE INTEGRATION =====
+        // When the player is logged in (playerSession set), the battle runs on
+        // the server and the result is replayed visually.  Falls back to the
+        // local engine if the API is unreachable.
+
+        async function startServerBattle(character) {
+            const seed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
+
+            const playerData = {
+                id:      0,
+                name:    character.name,
+                level:   character.level || 1,
+                stats: {
+                    attack:   character.stats.attack   || 35,
+                    strength: character.stats.strength || 35,
+                    agility:  character.stats.agility  || 35,
+                    defense:  character.stats.defense  || 35,
+                },
+                maxHp:               getCharacterMaxHp(character),
+                skills:              character.skills             || {},
+                equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
+            };
+
+            const cpuData = {
+                id:      0,
+                name:    currentCpuName || 'CPU',
+                level:   currentCpuStats.level || 1,
+                stats: {
+                    attack:   currentCpuStats.attack   || 35,
+                    strength: currentCpuStats.strength || 35,
+                    agility:  currentCpuStats.agility  || 35,
+                    defense:  currentCpuStats.defense  || 35,
+                },
+                maxHp:               currentCpuStats.hp || 1000,
+                skills:              {},
+                equippedConsumables: [],
+            };
+
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/battle/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        seed,
+                        player:   playerData,
+                        cpu:      cpuData,
+                    }),
+                });
+
+                if (!resp.ok) {
+                    console.warn('[server battle] API returned', resp.status, '– falling back to local engine');
+                    setTimeout(() => executeTurn(), 300);
+                    return;
+                }
+
+                const result = await resp.json();
+                if (!result.events || !result.winner) {
+                    console.warn('[server battle] Unexpected response – falling back to local engine');
+                    setTimeout(() => executeTurn(), 300);
+                    return;
+                }
+
+                await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+
+            } catch (err) {
+                console.warn('[server battle] Network error – falling back to local engine:', err);
+                setTimeout(() => executeTurn(), 300);
+            }
+        }
+
+        // Replays a server-computed event log with the existing animation system.
+        async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
+            for (const event of events) {
+                if (game.gameOver) break;
+
+                switch (event.type) {
+                    case 'log':
+                        log(event.message, event.cssClass);
+                        await sleep(40);
+                        break;
+
+                    case 'skill_effect': {
+                        game.player.health = event.playerHp;
+                        game.cpu.health    = event.cpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        const isHeal = event.value > 0;
+                        if (isHeal) {
+                            showHealText(event.fighter, event.value);
+                        } else if (event.value < 0) {
+                            showDamage(event.fighter, Math.abs(event.value), false);
+                        }
+                        await sleep(180);
+                        break;
+                    }
+
+                    case 'consumable': {
+                        game.player.health = event.playerHp;
+                        game.cpu.health    = event.cpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        if (event.healAmount > 0) showHealText(event.fighter, event.healAmount);
+                        await sleep(280);
+                        break;
+                    }
+
+                    case 'weapon_equip':
+                        if (weaponState[event.fighter]) {
+                            weaponState[event.fighter].equippedWeapon = event.weaponId;
+                            weaponState[event.fighter].turnsRemaining = event.turns;
+                            updateWeaponDisplay(event.fighter);
+                        }
+                        await sleep(80);
+                        break;
+
+                    case 'weapon_throw': {
+                        game.player.health = event.playerHp;
+                        game.cpu.health    = event.cpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        const throwTarget = event.fighter === 'player' ? 'cpu' : 'player';
+                        if (event.damage > 0) showDamage(throwTarget, event.damage, false);
+                        await sleep(220);
+                        break;
+                    }
+
+                    case 'combo':
+                        showComboText();
+                        await sleep(100);
+                        break;
+
+                    case 'attack':
+                        await animateServerAttack(event);
+                        break;
+
+                    case 'game_over': {
+                        game.player.health = finalPlayerHp;
+                        game.cpu.health    = finalCpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        game.inProgress = false;
+                        game.gameOver   = true;
+                        const loser = event.winner === 'player' ? 'cpu' : 'player';
+                        showGameOver(event.winner, loser);
+                        return;
+                    }
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Animates a single attack event from the server log.
+        async function animateServerAttack(event) {
+            const { attacker, defender, attackType, defense, damage, isCrit, hasFury } = event;
+
+            const attackerEl  = game[attacker].element;
+            const defenderEl  = game[defender].element;
+
+            stopIdleBlink(attackerEl);
+            stopIdleBlink(defenderEl);
+            attackerEl.classList.add('dashing');
+            attackerEl.style.zIndex = '20';
+            defenderEl.style.zIndex = '10';
+            animateRun(attackerEl, false);
+
+            // Advance toward opponent
+            if (attacker === 'player') attackerEl.style.left  = '69%';
+            else                       attackerEl.style.right = '69%';
+            await sleep(300);
+            stopRunAnimation(attackerEl);
+            playFootstep();
+
+            // Defense visuals
+            const defImg      = defenderEl.querySelector('img');
+            const fighterBody = defenderEl.querySelector('.fighter-body');
+
+            if (defense === 'dodge') {
+                if (defImg && defImg._dodgeFrames && defImg._dodgeFrames.length > 0) {
+                    defImg._preDefenseSrc = defImg.src;
+                    defImg.src = defImg._dodgeFrames[0];
+                }
+                fighterBody.classList.add('dodging');
+                await sleep(150);
+            } else if (defense === 'block') {
+                if (defImg && defImg._blockFrames && defImg._blockFrames.length > 0) {
+                    defImg._preDefenseSrc = defImg.src;
+                    const blockFrames = defImg._blockFrames;
+                    let fi = 0;
+                    if (defImg._blockAnim) clearInterval(defImg._blockAnim);
+                    defImg._blockAnim = setInterval(() => {
+                        if (fi < blockFrames.length) { defImg.src = blockFrames[fi++]; }
+                        else { clearInterval(defImg._blockAnim); defImg._blockAnim = null; }
+                    }, 50);
+                }
+                fighterBody.classList.add('blocking');
+                await sleep(100);
+            }
+
+            // Attack animation
+            const isWeaponAnim = !!WEAPONS[attackType];
+            const animType     = isWeaponAnim ? 'punch' : attackType;
+            animateAttack(attackerEl, animType, 500, isWeaponAnim ? attackType : undefined);
+            await sleep(300);
+
+            // Apply result
+            if (defense === 'none' || (defense === 'dodge' && damage > 0)) {
+                // Hit landed (or long-reach weapon through dodge)
+                fighterBody.classList.add('taking-damage');
+                game.player.health = event.playerHp;
+                game.cpu.health    = event.cpuHp;
+                updateHealth(defender);
+                showDamage(defender, damage, isCrit);
+                showHitEffect(defender, animType);
+                showBloodEffect(defender, isCrit);
+                if (hasFury) showFurySparks(defender, attacker);
+                playHitSound(animType, isCrit);
+                stats[attacker].hits        = (stats[attacker].hits        || 0) + 1;
+                stats[attacker].totalDamage = (stats[attacker].totalDamage || 0) + damage;
+                if (isCrit) stats[attacker].criticals = (stats[attacker].criticals || 0) + 1;
+                await sleep(300);
+                fighterBody.classList.remove('taking-damage');
+            } else if (defense === 'dodge') {
+                stats[defender].dodges = (stats[defender].dodges || 0) + 1;
+                await sleep(200);
+                fighterBody.classList.remove('dodging');
+                if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
+            } else if (defense === 'block') {
+                stats[defender].blocks = (stats[defender].blocks || 0) + 1;
+                if (damage > 0) {
+                    game.player.health = event.playerHp;
+                    game.cpu.health    = event.cpuHp;
+                    updateHealth(defender);
+                    showDamage(defender, damage, false);
+                }
+                await sleep(200);
+                fighterBody.classList.remove('blocking');
+                if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
+            }
+
+            // Return to starting position
+            animateRun(attackerEl, true);
+            if (attacker === 'player') attackerEl.style.left  = '8%';
+            else                       attackerEl.style.right = '8%';
+            await sleep(350);
+            stopRunAnimation(attackerEl);
+            attackerEl.classList.remove('dashing');
+            attackerEl.style.zIndex = '';
+            defenderEl.style.zIndex = '';
+            startIdleBlink(defenderEl);
+            startIdleBlink(attackerEl);
+            await sleep(500);
+        }
+
         // ===== WEAPON DURABILITY HELPERS =====
         function getWeaponDurability(character, weaponId) {
             if (!character || !character.weaponDurability) return 100;
@@ -11408,7 +11664,11 @@
             initWeaponInventory();
             log('The fight has begun!');
             startMatchTimer();
-            setTimeout(() => executeTurn(), 300);
+            if (playerSession) {
+                await startServerBattle(character);
+            } else {
+                setTimeout(() => executeTurn(), 300);
+            }
         }
 
         function initWeaponInventory() {
