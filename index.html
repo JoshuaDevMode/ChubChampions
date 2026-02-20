@@ -9949,7 +9949,9 @@
                         feet: character.appearance?.feet  ?? null,
                     },
                 }),
-            }).catch(e => console.warn('[sync] Failed to sync character:', e));
+            }).then(r => {
+                if (!r.ok) r.json().then(b => console.warn('[sync] character sync failed:', r.status, b)).catch(() => {});
+            }).catch(e => console.warn('[sync] character sync error:', e));
         }
 
         // ===== SERVER BATTLE INTEGRATION =====
@@ -9973,6 +9975,7 @@
                 maxHp:               getCharacterMaxHp(character),
                 skills:              character.skills             || {},
                 equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
+                equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
             };
 
             const cpuData = {
@@ -11260,6 +11263,7 @@
             characters.push(tempNewCharacter);
             selectedCharacterId = tempNewCharacter.id;
             saveCharacters();
+            syncCharacterToBackend(tempNewCharacter);
 
             closeCharacterCreation();
             tempNewCharacter = null;
