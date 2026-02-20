@@ -9941,8 +9941,9 @@
                         str: character.stats.strength,
                         agi: character.stats.agility,
                         def: character.stats.defense,
-                        hp:  character.stats.hp,
+                        hp:  getCharacterMaxHp(character),
                     },
+                    skills:    character.skills    || {},
                     equipment: {
                         body: character.appearance?.body  ?? null,
                         legs: character.appearance?.legs  ?? null,
@@ -10083,10 +10084,8 @@
                             game[ff].fury    = game[ff].maxFury;
                             game[ff].maxFury = 10;
                             activateFury(ff);
-                            // Cancel only the drain timers — orb contact damage keeps running
-                            const fstate = game[ff];
-                            if (fstate.furyInterval) { clearInterval(fstate.furyInterval); fstate.furyInterval = null; }
-                            if (fstate.furyTimeout)  { clearTimeout(fstate.furyTimeout);   fstate.furyTimeout  = null; }
+                            // Keep drain timers running — bar should visually drain over 7s
+                            // deactivateFury() from server event will clean up if it arrives first
                         } else {
                             deactivateFury(ff);
                         }
@@ -10233,6 +10232,15 @@
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
+                // Block fills fury for both fighters
+                if (!game[attacker].furyActive) {
+                    game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 0.75);
+                    updateFuryBar(attacker);
+                }
+                if (!game[defender].furyActive) {
+                    game[defender].fury = Math.min(game[defender].maxFury, (game[defender].fury || 0) + 1.0);
+                    updateFuryBar(defender);
+                }
                 if (damage > 0) {
                     game.player.health = event.playerHp;
                     game.cpu.health    = event.cpuHp;
