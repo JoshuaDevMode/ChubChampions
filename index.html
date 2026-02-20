@@ -10040,7 +10040,8 @@
 
         // Replays a server-computed event log with the existing animation system.
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
-            for (const event of events) {
+            for (let _ei = 0; _ei < events.length; _ei++) {
+                const event = events[_ei];
                 if (game.gameOver) break;
 
                 switch (event.type) {
@@ -10099,9 +10100,14 @@
                         await sleep(100);
                         break;
 
-                    case 'attack':
-                        await animateServerAttack(event);
+                    case 'attack': {
+                        const _nextEv = events[_ei + 1];
+                        const _prevEv = events[_ei - 1];
+                        const _isComboFirst  = _nextEv && _nextEv.type === 'combo';
+                        const _isComboFollow = _prevEv && _prevEv.type === 'combo';
+                        await animateServerAttack(event, _isComboFirst, _isComboFollow);
                         break;
+                    }
 
                     case 'game_over': {
                         game.player.health = finalPlayerHp;
@@ -10122,11 +10128,16 @@
         }
 
         // Animates a single attack event from the server log.
-        async function animateServerAttack(event) {
+        // isComboFirst: this hit is followed by a combo event (return to midpoint)
+        // isComboFollow: this hit comes right after a combo event (start from midpoint)
+        async function animateServerAttack(event, isComboFirst, isComboFollow) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury } = event;
 
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
+
+            // Midpoint position: ~44% from the attacker's side
+            const midPos = '44%';
 
             stopIdleBlink(attackerEl);
             stopIdleBlink(defenderEl);
@@ -10135,10 +10146,10 @@
             defenderEl.style.zIndex = '10';
             animateRun(attackerEl, false);
 
-            // Advance toward opponent
+            // Advance toward opponent (combo follow-up is faster, already near mid)
             if (attacker === 'player') attackerEl.style.left  = '69%';
             else                       attackerEl.style.right = '69%';
-            await sleep(300);
+            await sleep(isComboFollow ? 180 : 300);
             stopRunAnimation(attackerEl);
             playFootstep();
 
@@ -10209,11 +10220,17 @@
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             }
 
-            // Return to starting position
+            // Return: combo first hit goes to midpoint, all others go to start
             animateRun(attackerEl, true);
-            if (attacker === 'player') attackerEl.style.left  = '8%';
-            else                       attackerEl.style.right = '8%';
-            await sleep(350);
+            if (isComboFirst) {
+                if (attacker === 'player') attackerEl.style.left  = midPos;
+                else                       attackerEl.style.right = midPos;
+                await sleep(200);
+            } else {
+                if (attacker === 'player') attackerEl.style.left  = '8%';
+                else                       attackerEl.style.right = '8%';
+                await sleep(350);
+            }
             stopRunAnimation(attackerEl);
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
