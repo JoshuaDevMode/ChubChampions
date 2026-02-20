@@ -9950,7 +9950,8 @@
                     },
                 }),
             }).then(r => {
-                if (!r.ok) r.json().then(b => console.warn('[sync] character sync failed:', r.status, b)).catch(() => {});
+                if (r.ok) console.log('[sync] character synced ok:', character.name);
+                else r.json().then(b => console.warn('[sync] character sync failed:', r.status, JSON.stringify(b))).catch(() => console.warn('[sync] character sync failed:', r.status));
             }).catch(e => console.warn('[sync] character sync error:', e));
         }
 
@@ -10072,6 +10073,24 @@
                         updateHealth('cpu');
                         if (event.healAmount > 0) showHealText(event.fighter, event.healAmount);
                         await sleep(280);
+                        break;
+                    }
+
+                    case 'fury_update': {
+                        const ff = event.fighter;
+                        game[ff].fury    = event.meter;
+                        game[ff].maxFury = 10;
+                        if (event.changed && event.active) {
+                            activateFury(ff);
+                            // Cancel the real-time drain — replay is event-driven
+                            const fstate = game[ff];
+                            if (fstate.furyInterval)  { clearInterval(fstate.furyInterval);  fstate.furyInterval  = null; }
+                            if (fstate.furyTimeout)   { clearTimeout(fstate.furyTimeout);    fstate.furyTimeout   = null; }
+                            if (fstate.furyOrbDamageInterval) { clearInterval(fstate.furyOrbDamageInterval); fstate.furyOrbDamageInterval = null; }
+                        } else if (event.changed && !event.active) {
+                            deactivateFury(ff);
+                        }
+                        updateFuryBar(ff);
                         break;
                     }
 
