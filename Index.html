@@ -10003,23 +10003,35 @@
                 });
 
                 if (!resp.ok) {
-                    console.warn('[server battle] API returned', resp.status, '– falling back to local engine');
-                    setTimeout(() => executeTurn(), 300);
+                    console.error('[server battle] API returned', resp.status);
+                    stopMatchTimer();
+                    game.inProgress = false;
+                    game.gameOver = true;
+                    showNotice('Could not connect to the server. Please check your connection and try again.');
+                    setTimeout(() => goToLobby(), 2000);
                     return;
                 }
 
                 const result = await resp.json();
                 if (!result.events || !result.winner) {
-                    console.warn('[server battle] Unexpected response – falling back to local engine');
-                    setTimeout(() => executeTurn(), 300);
+                    console.error('[server battle] Unexpected response format');
+                    stopMatchTimer();
+                    game.inProgress = false;
+                    game.gameOver = true;
+                    showNotice('Server error. Please try again.');
+                    setTimeout(() => goToLobby(), 2000);
                     return;
                 }
 
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
 
             } catch (err) {
-                console.warn('[server battle] Network error – falling back to local engine:', err);
-                setTimeout(() => executeTurn(), 300);
+                console.error('[server battle] Network error:', err);
+                stopMatchTimer();
+                game.inProgress = false;
+                game.gameOver = true;
+                showNotice('Connection lost. Please check your internet and try again.');
+                setTimeout(() => goToLobby(), 2000);
             }
         }
 
@@ -10817,19 +10829,12 @@
                     return;
                 }
 
-                // Start heartbeat for this tab
-                startBattleHeartbeat();
-
-                // Timer already adjusted by simulateOfflineTurns
-                const adjustedTimer = Math.max(0, Math.round(saved.matchTimerRemaining));
-                if (adjustedTimer <= 0) {
-                    startMatchTimer(1);
-                    log('Battle resumed! Timer expired while away.');
-                } else {
-                    startMatchTimer(adjustedTimer);
-                    log('Battle resumed!');
-                }
-                setTimeout(() => executeTurn(), 300);
+                // Server battles complete in a single request — no mid-battle
+                // state to resume. Clear the snapshot and send the player to lobby.
+                localStorage.removeItem('fightchub_battle_active');
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('lobby-wrapper').style.display = '';
+                showNotice('Battle session expired. Start a new fight!');
             } catch (e) {
                 console.error('Error resuming battle:', e);
                 applyForfeitPenalty(saved);
@@ -11664,11 +11669,18 @@
             initWeaponInventory();
             log('The fight has begun!');
             startMatchTimer();
-            if (playerSession) {
-                await startServerBattle(character);
-            } else {
-                setTimeout(() => executeTurn(), 300);
+            if (!playerSession) {
+                // Online-only: require login before battling
+                stopMatchTimer();
+                stopBattleHeartbeat();
+                localStorage.removeItem('fightchub_battle_active');
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('lobby-wrapper').style.display = '';
+                showNotice('You need to login to play. Click LOGIN at the top of the screen.');
+                return;
             }
+
+            await startServerBattle(character);
         }
 
         function initWeaponInventory() {
@@ -14275,7 +14287,7 @@
 
             log('The fight has begun!');
             startMatchTimer();
-            setTimeout(() => executeTurn(), 300);
+            await startServerBattle(getSelectedCharacter());
         }
 
         // ==================== ALL OR NOTHING FUNCTIONS ====================
@@ -14459,7 +14471,7 @@
             initWeaponInventory();
             log(`ALL OR NOTHING - Round ${aonCurrentRound} of ${aonFormat}!`, 'log-critical');
             startMatchTimer();
-            setTimeout(() => executeTurn(), 300);
+            await startServerBattle(character);
         }
 
         async function aonStartNextRound() {
@@ -14523,7 +14535,7 @@
             initWeaponInventory();
             log(`ALL OR NOTHING - Round ${aonCurrentRound} of ${aonFormat}!`, 'log-critical');
             startMatchTimer();
-            setTimeout(() => executeTurn(), 300);
+            await startServerBattle(character);
         }
 
         function aonShowRoundOverlay(roundWinner, callback) {
@@ -14714,7 +14726,7 @@
             initWeaponInventory();
             log(`ALL OR NOTHING - Round ${aonCurrentRound} REPLAY!`, 'log-critical');
             startMatchTimer();
-            setTimeout(() => executeTurn(), 300);
+            await startServerBattle(character);
         }
 
         function aonShowFinalResults() {
