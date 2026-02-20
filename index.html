@@ -15697,8 +15697,15 @@
             const grid = document.getElementById('inventory-consumables-grid');
             if (!equippedContainer || !grid) return;
 
+            // No character selected yet
+            if (!character) {
+                equippedContainer.innerHTML = '';
+                grid.innerHTML = '';
+                return;
+            }
+
             // Check level requirement
-            const consumablesLocked = character && character.level < CONSUMABLE_MIN_LEVEL;
+            const consumablesLocked = character.level < CONSUMABLE_MIN_LEVEL;
             if (consumablesLocked) {
                 equippedContainer.innerHTML = '';
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-family:\'Press Start 2P\',monospace;font-size:0.5em;padding:20px;">🔒 Consumables unlock at<br>Level ' + CONSUMABLE_MIN_LEVEL + '</div>';
