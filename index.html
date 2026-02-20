@@ -8729,14 +8729,13 @@
             tokenBtn.disabled = globalTokens < tokenCost;
             tokenBtn.style.display = '';
 
-            tokenBtn.addEventListener('click', function() {
-                if (globalTokens < tokenCost) return;
-                globalTokens -= tokenCost;
+            tokenBtn.addEventListener('click', async function() {
+                const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier });
+                if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
                 // Mark as ready instantly
                 chest.unlockStart = Date.now() - CHEST_UNLOCK_TIMES[chest.tier] - 1000;
                 chest.unlockDuration = CHEST_UNLOCK_TIMES[chest.tier];
                 saveProgression();
-                updateCurrencyUI();
                 updateVictoryChestSlots();
                 chestConfirmCleanup();
                 openVictoryChest(slotIndex);
@@ -8803,12 +8802,11 @@
                 tokenBtn.disabled = globalTokens < tokenCost;
                 tokenBtn.style.display = '';
 
-                tokenBtn.addEventListener('click', function() {
-                    if (globalTokens < tokenCost) return;
-                    globalTokens -= tokenCost;
+                tokenBtn.addEventListener('click', async function() {
+                    const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier });
+                    if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
                     chest.unlockStart = Date.now() - chest.unlockDuration - 1000;
                     saveProgression();
-                    updateCurrencyUI();
                     updateVictoryChestSlots();
                     chestConfirmCleanup();
                     openVictoryChest(slotIndex);
@@ -9349,7 +9347,8 @@
             const cost = getFragmentChestCost();
             if (globalFragments < cost) return;
 
-            globalFragments -= cost;
+            const result = await spendOnServer('fragment_chest');
+            if (!result.ok) { showNotice(result.error || 'Not enough fragments!'); return; }
             globalFragmentChestsOpened++;
 
             // Find a weapon from WEAPON_TIERS that isn't unlocked
@@ -9994,6 +9993,28 @@
             }).catch(e => console.warn('[sync] character sync error:', e));
         }
 
+        // Deduct tokens/fragments on the server, returns { ok, newTokens, newFragments, error? }
+        async function spendOnServer(action, payload = {}) {
+            if (!playerSession) return { ok: false, error: 'Not logged in' };
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/economy/spend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ playerId: playerSession.playerId, action, ...payload }),
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    globalTokens   = data.newTokens;
+                    globalFragments = data.newFragments;
+                    updateCurrencyUI();
+                }
+                return data;
+            } catch (e) {
+                console.warn('[spend] network error:', e);
+                return { ok: false, error: 'Network error' };
+            }
+        }
+
         // ===== SERVER BATTLE INTEGRATION =====
         // When the player is logged in (playerSession set), the battle runs on
         // the server and the result is replayed visually.  Falls back to the
@@ -10344,23 +10365,16 @@
             return { fragments: 4, tokens: 40 };
         }
 
-        function repairWeapon(weaponId, paymentType) {
+        async function repairWeapon(weaponId, paymentType) {
             const character = getSelectedCharacter();
             if (!character) return false;
             const durability = getWeaponDurability(character, weaponId);
             if (durability >= 100) return false;
-            const cost = getRepairCost(durability);
-            if (paymentType === 'fragments') {
-                if (globalFragments < cost.fragments) return false;
-                globalFragments -= cost.fragments;
-            } else {
-                if (globalTokens < cost.tokens) return false;
-                globalTokens -= cost.tokens;
-            }
+            const result = await spendOnServer('repair_weapon', { durability, currency: paymentType });
+            if (!result.ok) { showNotice(result.error || 'Not enough resources!'); return false; }
             setWeaponDurability(character, weaponId, 100);
             saveCharacters();
             saveProgression();
-            updateCurrencyUI();
             return true;
         }
 
@@ -11305,10 +11319,11 @@
             }, { once: true });
         }
 
-        function executeReroll(rerollCost) {
-            globalTokens -= rerollCost;
+        async function executeReroll(rerollCost) {
+            const idx = Math.min(rerollsUsed, 2);
+            const result = await spendOnServer('reroll', { rerollIndex: idx, isFirstCharacter: characters.length === 0 });
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             saveProgression();
-            updateCurrencyUI();
             // 4 stats: ATK + STR + AGI + DEF = STAT_TOTAL (150), each 20-50
             const newStats = generateBalancedStats();
             tempNewCharacter.stats.attack = newStats.attack;
@@ -11334,19 +11349,13 @@
             rerollBtn.textContent = rerollsLeft > 0 ? '🎲 REROLL 🪙' + nextCost + ' (' + rerollsLeft + ')' : '🎲 NO REROLLS';
         }
 
-        function confirmCharacterCreation() {
+        async function confirmCharacterCreation() {
             if (!tempNewCharacter) return;
 
-            // Charge tokens and increment counter on confirm (not on open)
-            const creationCost = globalCharactersCreated === 0 ? 0 : Math.floor(60 * Math.pow(1.1, globalCharactersCreated));
-            if (creationCost > 0 && globalTokens < creationCost) {
-                showNotice('Not enough tokens! You need 🪙 ' + creationCost + ' but only have 🪙 ' + globalTokens);
-                return;
-            }
-            globalTokens -= creationCost;
+            const result = await spendOnServer('create_character');
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             globalCharactersCreated++;
             saveProgression();
-            updateCurrencyUI();
 
             const name = sanitizeName(document.getElementById('character-name-input').value) || 'Fighter';
             tempNewCharacter.name = name;
@@ -13922,14 +13931,14 @@
             }
         }
 
-        function aonStartMatchmaking() {
+        async function aonStartMatchmaking() {
             if (globalTokens < aonEntryFee) {
                 showNotice('Not enough tokens! You need 🪙 ' + aonEntryFee + ' but only have 🪙 ' + globalTokens);
                 return;
             }
-            globalTokens -= aonEntryFee;
+            const result = await spendOnServer('aon_entry', { fee: aonEntryFee });
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             saveProgression();
-            updateCurrencyUI();
 
             aonClosePanel();
             aonRoundsToWin = Math.ceil(aonFormat / 2);
@@ -15620,58 +15629,42 @@
             return Math.max(0, SHOP_DAILY_LIMIT - shopDailyPurchases);
         }
 
-        function buyConsumable(id) {
+        async function buyConsumable(id) {
             const character = getSelectedCharacter();
-            if (!character) {
-                showNotice('Select a character first!');
-                return;
-            }
-            if (getShopPurchasesRemaining() <= 0) {
-                showNotice('Daily purchase limit reached! (3/3)');
-                return;
-            }
-            if (getItemCooldownRemaining(id) > 0) {
-                showNotice('This item is on cooldown!');
-                return;
-            }
-            const price = CONSUMABLE_SHOP_PRICES[id];
-            if (globalTokens < price) {
-                showNotice('Not enough tokens!');
-                return;
-            }
+            if (!character) { showNotice('Select a character first!'); return; }
+            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily purchase limit reached! (3/3)'); return; }
+            if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
+            if (globalTokens < CONSUMABLE_SHOP_PRICES[id]) { showNotice('Not enough tokens!'); return; }
+
+            const result = await spendOnServer('buy_consumable', { itemId: id });
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
+
             const cons = CONSUMABLES[id];
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) {
-                shopPurchaseDate = today;
-                shopDailyPurchases = 0;
-            }
+            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            globalTokens -= price;
             shopItemCooldowns[id] = Date.now();
             character.consumables.push(id);
             saveCharacters();
             saveProgression();
-            updateCurrencyUI();
             renderShop();
             showNotice('Bought ' + cons.icon + ' ' + cons.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
         }
 
-        function buyFragment() {
+        async function buyFragment() {
             const today = new Date().toDateString();
             if (shopFragmentDate === today && shopFragmentBoughtToday) {
                 showNotice('Fragment already purchased today! (1/day)');
                 return;
             }
-            if (globalTokens < FRAGMENT_SHOP_PRICE) {
-                showNotice('Not enough tokens!');
-                return;
-            }
-            globalTokens -= FRAGMENT_SHOP_PRICE;
-            globalFragments++;
+            if (globalTokens < FRAGMENT_SHOP_PRICE) { showNotice('Not enough tokens!'); return; }
+
+            const result = await spendOnServer('buy_fragment');
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
+
             shopFragmentDate = today;
             shopFragmentBoughtToday = true;
             saveProgression();
-            updateCurrencyUI();
             renderShop();
             showNotice('+1 ' + FRAG_ICON_HTML + ' Fragment purchased!');
         }
