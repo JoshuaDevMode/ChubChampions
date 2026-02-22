@@ -3873,13 +3873,75 @@
             margin-top: 2px;
         }
 
-        /* ── Skill Map — Mu Online Style ─────────────────────────────────────── */
+        /* ── Skill Map — Split Layout ─────────────────────────────────────────── */
         .skills-branch-tabs { display: none; }
 
+        /* Split: left=map, right=detail */
+        .skills-split {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .skills-map-col {
+            flex: 0 0 195px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .skills-map-col::-webkit-scrollbar { width: 3px; }
+        .skills-map-col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        .skills-detail-col {
+            flex: 1;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 14px 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Placeholder */
+        .sdp-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            opacity: 0.3;
+        }
+        .sdp-icon { font-size: 28px; }
+        .sdp-text { font-size: 9px; color: #fff; letter-spacing: 0.08em; }
+
+        /* Detail panel content */
+        .snd-branch   { font-size: 8px; letter-spacing: 0.1em; margin-bottom: 4px; opacity: 0.7; }
+        .snd-name     { font-size: 15px; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
+        .snd-dots     { display: flex; gap: 4px; margin-bottom: 10px; }
+        .snd-dot      { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; }
+        .snd-dot.filled { border-color: transparent; }
+        .snd-desc     { font-size: 10px; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 12px; border-left: 2px solid var(--bc); padding-left: 8px; }
+        .snd-val-box  { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 10px; margin-bottom: 12px; }
+        .snd-val-row  { font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .snd-val-cur  { color: rgba(255,255,255,0.5); }
+        .snd-val-next { color: var(--bc); font-weight: 700; font-size: 12px; }
+        .snd-val-max  { color: #ffd700; font-weight: 700; }
+        .snd-lock     { font-size: 9px; color: rgba(255,80,80,0.9); margin-bottom: 8px; padding: 5px 8px; background: rgba(255,0,0,0.08); border-radius: 4px; }
+        .snd-conflict { font-size: 9px; color: rgba(255,150,40,0.9); margin-bottom: 8px; padding: 5px 8px; background: rgba(255,120,0,0.08); border-radius: 4px; }
+        .snd-footer   { margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; }
+        .snd-cost     { font-size: 10px; color: rgba(255,255,255,0.45); }
+        .snd-upgrade-btn { background: var(--bc); color: #000; border: none; border-radius: 5px; padding: 7px 14px; font-size: 10px; font-weight: 800; cursor: pointer; letter-spacing: .05em; font-family: inherit; transition: opacity 0.15s; }
+        .snd-upgrade-btn:hover:not(:disabled) { opacity: 0.85; }
+        .snd-upgrade-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); cursor: not-allowed; }
+        .snd-maxed    { text-align: center; padding: 10px; color: #ffd700; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+
+        /* Map layout */
         .skill-map-wrap {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             width: 100%;
         }
         .skill-map-row {
@@ -3887,131 +3949,95 @@
             align-items: flex-start;
             width: 100%;
         }
-        .skill-map-spacer { width: 8px; flex-shrink: 0; }
+        .skill-map-free-row {
+            display: flex;
+            justify-content: center;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 2px;
+        }
         .skill-map-champ-row {
             display: flex;
             justify-content: center;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255,215,0,0.15);
-            margin-top: 4px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,215,0,0.12);
+            margin-top: 2px;
         }
 
         .skill-branch-cluster {
             flex: 1;
-            background: rgba(0,0,0,0.35);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px;
-            padding: 8px 6px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 7px;
+            padding: 7px 5px 6px;
             min-width: 0;
-            transition: border-color 0.2s;
+            cursor: pointer;
+            transition: border-color 0.18s;
         }
-        .skill-branch-cluster:hover { border-color: var(--bc, rgba(255,255,255,0.2)); }
-        .skill-branch-cluster.cluster-locked { opacity: 0.45; }
-        .skill-branch-cluster.champ-cluster { width: 55%; max-width: 260px; flex: none; }
+        .skill-branch-cluster:hover    { border-color: var(--bc); }
+        .skill-branch-cluster.selected { border-color: var(--bc); box-shadow: 0 0 8px var(--bc); }
+        .skill-branch-cluster.cluster-locked { opacity: 0.38; }
+        .skill-branch-cluster.champ-cluster  { width: 70%; flex: none; }
+        .skill-branch-cluster.free-cluster   { width: 55%; flex: none; }
 
         .branch-cluster-hdr {
-            font-size: 8px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            letter-spacing: 0.07em;
             text-align: center;
             margin-bottom: 7px;
             padding-bottom: 5px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        .branch-mini-tree {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .mini-tree-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .mini-node-gap { flex: 1; }
+        .branch-mini-tree   { display: flex; flex-direction: column; align-items: center; }
+        .mini-tree-row      { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .mini-node-gap      { flex: 1; }
 
         .mini-node {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(15,15,22,0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.12s, box-shadow 0.12s;
+            transition: transform 0.1s, box-shadow 0.1s;
             flex-shrink: 0;
             user-select: none;
         }
-        .mini-node:hover { transform: scale(1.18); box-shadow: 0 0 8px var(--bc); z-index: 10; }
-        .mini-node.mn-empty  { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.18); }
-        .mini-node.mn-active { background: rgba(255,255,255,0.07); border-color: var(--bc); color: var(--bc); }
-        .mini-node.mn-maxed  { background: var(--bc); border-color: var(--bc); color: #000; font-size: 11px; }
-        .mini-node.mn-locked { background: rgba(120,0,0,0.15); border-color: rgba(180,0,0,0.2); color: rgba(200,50,50,0.4); cursor: not-allowed; }
-        .mini-node.mn-locked:hover { transform: none; box-shadow: none; }
+        .mini-node:hover               { transform: scale(1.22); box-shadow: 0 0 7px var(--bc); z-index: 5; }
+        .mini-node.mn-selected         { transform: scale(1.22); box-shadow: 0 0 10px var(--bc); z-index: 5; border-width: 2px; }
+        .mini-node.mn-empty            { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.2); }
+        .mini-node.mn-active           { border-color: var(--bc); color: var(--bc); background: rgba(15,15,22,0.95); }
+        .mini-node.mn-maxed            { background: var(--bc); border-color: var(--bc); color: #000; font-size: 10px; }
+        .mini-node.mn-locked           { border-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.08); cursor: not-allowed; }
+        .mini-node.mn-locked:hover     { transform: none; box-shadow: none; }
 
-        .mini-fork-wrap {
-            display: flex;
-            width: 52px;
-            height: 9px;
-            margin: 1px 0;
-        }
-        .mini-fork-l { flex:1; border-right:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); border-radius:0 0 4px 0; }
-        .mini-fork-r { flex:1; border-left:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); border-radius:0 0 0 4px; }
+        .mini-fork-wrap { display: flex; width: 44px; height: 8px; margin: 1px 0; }
+        .mini-fork-l { flex:1; border-right:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); border-radius:0 0 3px 0; }
+        .mini-fork-r { flex:1; border-left:1px solid rgba(255,255,255,0.12); border-bottom:1px solid rgba(255,255,255,0.12); border-radius:0 0 0 3px; }
 
-        .mini-conn-row { display:flex; gap:6px; height:7px; width:100%; }
-        .mini-conn-l   { width:28px; border-left:1px solid rgba(255,255,255,0.10); flex-shrink:0; }
-        .mini-conn-r   { width:28px; border-right:1px solid rgba(255,255,255,0.10); flex-shrink:0; }
+        .mini-conn-row { display:flex; gap:5px; height:6px; width:100%; }
+        .mini-conn-l   { width:24px; border-left:1px solid rgba(255,255,255,0.12); flex-shrink:0; }
+        .mini-conn-r   { width:24px; border-right:1px solid rgba(255,255,255,0.12); flex-shrink:0; }
         .mini-conn-gap { flex:1; }
 
         /* Conflict strip */
         .skill-conflict-strip {
-            width: 36px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding-top: 28px;
-            gap: 3px;
+            width: 26px; flex-shrink: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding-top: 24px; gap: 3px;
         }
-        .conflict-line { width:1px; height:22px; background:rgba(255,255,255,0.07); transition:background 0.3s; }
-        .conflict-line.ca { background: rgba(220,50,50,0.5); }
-        .conflict-icon { font-size:13px; color:rgba(255,255,255,0.18); transition:all 0.3s; line-height:1; }
-        .conflict-icon.ca { color:rgba(255,70,70,0.8); text-shadow:0 0 8px rgba(255,0,0,0.5); }
-
-        /* Node popup */
-        .skill-node-popup {
-            position: fixed;
-            background: #0f0f1e;
-            border: 1px solid rgba(255,255,255,0.12);
-            border-top: 2px solid var(--bc, #888);
-            border-radius: 8px;
-            padding: 11px 13px;
-            width: 215px;
-            z-index: 9999;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.92);
-            animation: snpIn 0.12s ease;
-        }
-        @keyframes snpIn { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
-        .snp-name  { font-size:12px; font-weight:700; margin-bottom:1px; }
-        .snp-meta  { font-size:9px; color:rgba(255,255,255,0.38); margin-bottom:6px; }
-        .snp-rank-row { font-size:10px; margin-bottom:4px; }
-        .snp-dots  { display:flex; gap:3px; margin-bottom:7px; }
-        .snp-dot   { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.12); display:inline-block; }
-        .snp-dot.filled { border-color:transparent; }
-        .snp-desc  { font-size:10px; color:rgba(255,255,255,0.58); line-height:1.4; margin-bottom:6px; }
-        .snp-val   { font-size:11px; color:rgba(255,255,255,0.82); margin-bottom:5px; }
-        .snp-lock  { font-size:9px; color:rgba(255,70,70,0.85); margin-bottom:4px; }
-        .snp-conflict-note { font-size:9px; color:rgba(255,150,40,0.85); margin-bottom:4px; }
-        .snp-footer { display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.07); padding-top:7px; margin-top:3px; }
-        .snp-cost  { font-size:9px; color:rgba(255,255,255,0.45); }
-        .snp-upgrade-btn { background:var(--bc); color:#000; border:none; border-radius:4px; padding:4px 9px; font-size:9px; font-weight:800; cursor:pointer; letter-spacing:.05em; font-family:inherit; }
-        .snp-upgrade-btn:disabled { background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.3); cursor:not-allowed; }
+        .conflict-line { width:2px; height:16px; background:rgba(255,255,255,0.1); border-radius:1px; transition:background 0.3s; }
+        .conflict-line.ca { background: rgba(220,50,50,0.7); }
+        .conflict-icon { font-size:11px; color:rgba(255,255,255,0.2); transition:all 0.3s; line-height:1; }
+        .conflict-icon.ca { color:rgba(255,80,80,0.95); text-shadow:0 0 8px rgba(255,0,0,0.6); }
 
         .inventory-container {
             display: flex;
@@ -7272,7 +7298,15 @@
                 <span class="skills-close" id="skills-close">&times;</span>
             </div>
             <div class="skills-branch-tabs" id="skills-branch-tabs"></div>
-            <div class="skills-branch-content" id="skills-branch-content"></div>
+            <div class="skills-split">
+                <div class="skills-map-col" id="skills-branch-content"></div>
+                <div class="skills-detail-col" id="skills-node-detail">
+                    <div class="sdp-placeholder">
+                        <div class="sdp-icon">⚡</div>
+                        <div class="sdp-text">Select a skill node</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -16508,19 +16542,19 @@
                 row.appendChild(buildConflictStrip(character, leftBranch, rightBranch));
                 if (rightBranch) row.appendChild(buildBranchCluster(character, rightBranch));
 
-                // Alchemy on the right of the last pair row
-                if (idx === 2) {
-                    const alchemy = SKILL_TREE.find(b => b.id === 'alchemy');
-                    if (alchemy) {
-                        const sp = document.createElement('div');
-                        sp.className = 'skill-map-spacer';
-                        row.appendChild(sp);
-                        row.appendChild(buildBranchCluster(character, alchemy));
-                    }
-                }
-
-                map.appendChild(row);
+                    map.appendChild(row);
             });
+
+            // Alchemy — free branch, own row
+            const alchemy = SKILL_TREE.find(b => b.id === 'alchemy');
+            if (alchemy) {
+                const alRow = document.createElement('div');
+                alRow.className = 'skill-map-free-row';
+                const alCl = buildBranchCluster(character, alchemy);
+                alCl.classList.add('free-cluster');
+                alRow.appendChild(alCl);
+                map.appendChild(alRow);
+            }
 
             // Champion at the bottom center
             const champ = SKILL_TREE.find(b => b.id === 'champion');
@@ -16612,7 +16646,10 @@
             if (!forceLocked) {
                 dot.addEventListener('click', e => {
                     e.stopPropagation();
-                    showNodePopup(character, branch, node, dot);
+                    // Clear previous selection
+                    document.querySelectorAll('.mini-node.mn-selected').forEach(el => el.classList.remove('mn-selected'));
+                    dot.classList.add('mn-selected');
+                    showNodeDetail(character, branch, node);
                 });
             }
             return dot;
@@ -16637,17 +16674,17 @@
             return strip;
         }
 
-        let _skillPopup = null;
+        function showNodeDetail(character, branch, node) {
+            const detailEl = document.getElementById('skills-node-detail');
+            if (!detailEl) return;
 
-        function showNodePopup(character, branch, node, anchor) {
-            hideNodePopup();
-            const rank      = getSkillRank(character, branch.id, node.id);
-            const maxRank   = 10;
-            const isMaxed   = rank >= maxRank;
+            const rank       = getSkillRank(character, branch.id, node.id);
+            const maxRank    = 10;
+            const isMaxed    = rank >= maxRank;
             const lockReason = getNodeLockReason(character, branch.id, node.id);
-            const isLocked  = !!lockReason && lockReason !== 'MAX';
-            const canUp     = canUpgradeSkill(character, branch.id, node.id);
-            const cost      = isMaxed ? null : SKILL_RANK_COSTS[rank + 1];
+            const isLocked   = !!lockReason && lockReason !== 'MAX';
+            const canUp      = canUpgradeSkill(character, branch.id, node.id);
+            const cost       = isMaxed ? null : SKILL_RANK_COSTS[rank + 1];
 
             const fmtV = v => {
                 if (v == null) return '?';
@@ -16657,11 +16694,6 @@
             };
             const curVal  = node.values[rank];
             const nextVal = rank < maxRank ? node.values[rank + 1] : null;
-            const valStr  = isMaxed
-                ? `<span style="color:#ffd700">${fmtV(curVal)} ${node.unit||''} (MAX)</span>`
-                : rank === 0
-                    ? `Next: <b>${fmtV(nextVal)} ${node.unit||''}</b>`
-                    : `${fmtV(curVal)} → <b>${fmtV(nextVal)} ${node.unit||''}</b>`;
 
             const conflictNames = (node.conflicts || []).map(c => {
                 const cb = SKILL_TREE.find(b => b.id === c.branchId);
@@ -16669,48 +16701,55 @@
                 return cn ? cn.name : c.nodeId;
             });
 
+            detailEl.innerHTML = '';
+            detailEl.style.setProperty('--bc', branch.color);
+
             const dotsHtml = Array.from({length: 10}, (_, i) =>
-                `<span class="snp-dot${i < rank ? ' filled' : ''}" style="${i < rank ? 'background:' + branch.color : ''}"></span>`
+                `<span class="snd-dot${i < rank ? ' filled' : ''}" style="${i < rank ? 'background:' + branch.color : ''}"></span>`
             ).join('');
 
-            const popup = document.createElement('div');
-            popup.className = 'skill-node-popup';
-            popup.style.setProperty('--bc', branch.color);
-            popup.innerHTML = `
-                <div class="snp-name" style="color:${branch.color}">${node.name}</div>
-                <div class="snp-meta">${branch.name} · Tier ${node.tier}${node.path ? ' · ' + node.path : ''}</div>
-                <div class="snp-rank-row">Rank: <b>${isMaxed ? 'MAX' : rank + '/10'}</b></div>
-                <div class="snp-dots">${dotsHtml}</div>
-                <div class="snp-desc">${node.desc}</div>
-                <div class="snp-val">${valStr}</div>
-                ${isLocked ? `<div class="snp-lock">🔒 ${lockReason}</div>` : ''}
-                ${conflictNames.length ? `<div class="snp-conflict-note">⚔ Conflicts with: ${conflictNames.join(', ')}</div>` : ''}
-                ${!isMaxed && !isLocked ? `<div class="snp-footer"><span class="snp-cost">${cost} pt${cost !== 1 ? 's' : ''}</span><button class="snp-upgrade-btn"${canUp ? '' : ' disabled'} data-bid="${branch.id}" data-nid="${node.id}">+ UPGRADE</button></div>` : ''}
+            let html = `
+                <div class="snd-branch" style="color:${branch.color}">${branch.name.toUpperCase()} · TIER ${node.tier}</div>
+                <div class="snd-name" style="color:${branch.color}">${node.name}</div>
+                <div class="snd-dots">${dotsHtml}</div>
+                <div class="snd-desc">${node.desc}</div>
+                <div class="snd-val-box">
+                    <div class="snd-val-row">
+                        <span class="snd-val-cur">Current</span>
+                        <span style="color:rgba(255,255,255,0.8); font-weight:700">${rank === 0 ? '—' : fmtV(curVal) + ' ' + (node.unit||'')}</span>
+                    </div>
+                    ${!isMaxed ? `<div class="snd-val-row" style="margin-top:4px">
+                        <span class="snd-val-cur">Next rank</span>
+                        <span class="snd-val-next">${fmtV(nextVal)} ${node.unit||''}</span>
+                    </div>` : `<div class="snd-val-row" style="margin-top:4px"><span class="snd-val-cur">Value</span><span class="snd-val-max">★ ${fmtV(curVal)} ${node.unit||''} MAX</span></div>`}
+                </div>
+                ${isLocked ? `<div class="snd-lock">🔒 ${lockReason}</div>` : ''}
+                ${conflictNames.length ? `<div class="snd-conflict">⚔ Conflicts with: ${conflictNames.join(', ')}</div>` : ''}
             `;
-            document.body.appendChild(popup);
-            _skillPopup = popup;
 
-            const rect = anchor.getBoundingClientRect();
-            let left = rect.right + 8, top = rect.top;
-            if (left + 225 > window.innerWidth)  left = rect.left - 223;
-            if (top  + 280 > window.innerHeight) top  = window.innerHeight - 285;
-            popup.style.left = Math.max(4, left) + 'px';
-            popup.style.top  = Math.max(4, top)  + 'px';
+            if (isMaxed) {
+                html += `<div class="snd-maxed">★ MAXED OUT ★</div>`;
+            } else if (!isLocked) {
+                html += `
+                    <div class="snd-footer">
+                        <span class="snd-cost">${cost} pt${cost !== 1 ? 's' : ''}</span>
+                        <button class="snd-upgrade-btn"${canUp ? '' : ' disabled'}>+ UPGRADE</button>
+                    </div>
+                `;
+            }
 
-            const btn = popup.querySelector('.snp-upgrade-btn');
+            detailEl.innerHTML = html;
+            detailEl.style.setProperty('--bc', branch.color);
+
+            const btn = detailEl.querySelector('.snd-upgrade-btn');
             if (btn) {
                 btn.addEventListener('click', () => {
                     if (upgradeSkill(character, branch.id, node.id)) {
-                        hideNodePopup();
                         renderSkillTree(character);
+                        showNodeDetail(character, branch, node);
                     }
                 });
             }
-            setTimeout(() => document.addEventListener('click', hideNodePopup, {once: true}), 10);
-        }
-
-        function hideNodePopup() {
-            if (_skillPopup) { _skillPopup.remove(); _skillPopup = null; }
         }
 
         // ── Visual skill tree: 4-tier tree with path splits ────────────────────────
@@ -16921,7 +16960,6 @@
         });
 
         document.getElementById('skills-close').addEventListener('click', () => {
-            hideNodePopup();
             document.getElementById('skills-panel').classList.remove('active');
         });
 
