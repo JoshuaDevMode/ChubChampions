@@ -1475,12 +1475,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             position: relative;
             z-index: 1;
             align-self: center;
             justify-self: center;
             transition: transform 0.5s ease;
+            padding-top: 60px;
             padding-bottom: 40px;
         }
 
@@ -1673,10 +1674,10 @@
         /* Stats Panel — compact single-row */
         .menu-stats-panel {
             background: none;
-            border: 25px solid transparent;
+            border: 16px solid transparent;
             border-image-source: url('Assets/UI/iron-frame.png');
             border-image-slice: 15% fill;
-            border-image-width: 25px;
+            border-image-width: 16px;
             border-image-repeat: stretch;
             border-radius: 0;
             padding: 4px 14px;
