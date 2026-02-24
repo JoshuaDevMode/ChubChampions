@@ -1662,7 +1662,7 @@
             font-family: 'Press Start 2P', monospace;
             font-size: 1.3em;
             color: #fff;
-            text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255,255,255,0.3);
+            text-shadow: 3px 3px 0 #000, 0 0 22px rgba(255,255,255,0.45), 0 0 50px rgba(78,205,196,0.18);
             letter-spacing: 4px;
             margin-bottom: 10px;
             text-align: center;
@@ -1687,40 +1687,65 @@
 
         .menu-character-level {
             font-family: 'Press Start 2P', monospace;
-            font-size: 0.6em;
-            color: #aaa;
+            font-size: 0.62em;
+            color: #999;
             text-shadow: 1px 1px 0 #000;
             margin-top: 8px;
             margin-bottom: 4px;
             text-align: center;
+            letter-spacing: 1px;
         }
 
         .menu-character-stats {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 5px;
             font-size: 0.7em;
         }
 
         .menu-character-stat {
             display: flex;
-            flex-direction: row;
-            align-items: baseline;
-            gap: 4px;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 2px solid rgba(255,255,255,0.14);
+            border-radius: 6px;
+            padding: 5px 7px;
+            min-width: 42px;
         }
 
         .menu-character-stat-label {
-            color: #888;
+            color: #999;
             text-shadow: 1px 1px 0 #000;
-            font-size: 0.8em;
+            font-size: 0.7em;
+            letter-spacing: 1px;
         }
 
         .menu-character-stat-value {
             font-family: 'Press Start 2P', monospace;
-            color: #FFF8DC;
+            color: #fff;
             font-size: 1em;
             text-shadow: 1px 1px 0 #000;
         }
+
+        /* Stat-specific accent colors (HP, ATK, STR, AGI, DEF) */
+        .menu-character-stat:nth-child(1) { border-bottom-color: #22c55e; }
+        .menu-character-stat:nth-child(1) .menu-character-stat-label { color: #4ade80; }
+        .menu-character-stat:nth-child(1) .menu-character-stat-value { color: #4ade80; text-shadow: 0 0 8px rgba(74,222,128,0.5), 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(2) { border-bottom-color: #ef4444; }
+        .menu-character-stat:nth-child(2) .menu-character-stat-label { color: #f87171; }
+        .menu-character-stat:nth-child(2) .menu-character-stat-value { color: #f87171; text-shadow: 0 0 8px rgba(248,113,113,0.5), 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(3) { border-bottom-color: #f97316; }
+        .menu-character-stat:nth-child(3) .menu-character-stat-label { color: #fb923c; }
+        .menu-character-stat:nth-child(3) .menu-character-stat-value { color: #fb923c; text-shadow: 0 0 8px rgba(251,146,60,0.5), 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(4) { border-bottom-color: #06b6d4; }
+        .menu-character-stat:nth-child(4) .menu-character-stat-label { color: #22d3ee; }
+        .menu-character-stat:nth-child(4) .menu-character-stat-value { color: #22d3ee; text-shadow: 0 0 8px rgba(34,211,238,0.5), 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(5) { border-bottom-color: #3b82f6; }
+        .menu-character-stat:nth-child(5) .menu-character-stat-label { color: #60a5fa; }
+        .menu-character-stat:nth-child(5) .menu-character-stat-value { color: #60a5fa; text-shadow: 0 0 8px rgba(96,165,250,0.5), 1px 1px 0 #000; }
 
         .menu-character-winrate {
             font-family: 'Press Start 2P', monospace;
@@ -1752,11 +1777,11 @@
 
         .menu-char-exp-track {
             flex: 1;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
             border-radius: 5px;
-            height: 12px;
+            height: 14px;
             overflow: hidden;
-            border: 2px solid #3D2314;
+            border: 2px solid #4a2a14;
         }
 
         .menu-character-exp-bar {
@@ -2867,7 +2892,9 @@
         .aon-panel {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.92);
+            background:
+                radial-gradient(ellipse 65% 55% at 50% 50%, rgba(90,0,0,0.28) 0%, transparent 70%),
+                rgba(0,0,0,0.93);
             display: none;
             align-items: center;
             justify-content: center;
@@ -2894,37 +2921,49 @@
             font-weight: bold;
             color: #ef4444;
             text-align: center;
-            text-shadow: 0 0 20px rgba(239,68,68,0.5), 2px 2px 0 #000;
+            text-shadow:
+                0 0 10px rgba(239,68,68,0.95),
+                0 0 35px rgba(239,68,68,0.55),
+                0 0 70px rgba(180,0,0,0.3),
+                2px 2px 0 #000;
             margin-bottom: 6px;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
+            animation: aonTitleGlow 2.5s ease-in-out infinite;
+        }
+        @keyframes aonTitleGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(239,68,68,0.95), 0 0 35px rgba(239,68,68,0.55), 0 0 70px rgba(180,0,0,0.3), 2px 2px 0 #000; }
+            50%       { text-shadow: 0 0 18px rgba(239,68,68,1),    0 0 55px rgba(239,68,68,0.75), 0 0 100px rgba(200,0,0,0.5), 2px 2px 0 #000; }
         }
 
         .aon-subtitle {
             text-align: center;
-            color: #aaa;
-            font-size: 0.85em;
+            color: #776655;
+            font-size: 0.75em;
             margin-bottom: 20px;
+            letter-spacing: 2px;
         }
 
         .aon-close {
             position: absolute;
             top: 12px; right: 18px;
             font-size: 1.8em;
-            color: #888;
+            color: #554433;
             cursor: pointer;
             transition: color 0.2s;
             line-height: 1;
         }
-        .aon-close:hover { color: #fff; }
+        .aon-close:hover { color: #f87171; }
 
         .aon-section-label {
-            color: #ef4444;
-            font-size: 0.85em;
+            color: #b03030;
+            font-size: 0.72em;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-            margin-top: 16px;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            margin-top: 18px;
+            border-left: 3px solid #ef4444;
+            padding-left: 8px;
         }
 
         /* Fee Buttons */
@@ -2936,28 +2975,33 @@
         }
 
         .aon-fee-btn {
-            background: linear-gradient(to bottom, #333, #222);
-            border: 2px solid #555;
+            background: linear-gradient(160deg, #1c0e00 0%, #100800 100%);
+            border: 1px solid #3a2008;
+            border-bottom: 3px solid #0e0600;
             border-radius: 8px;
-            color: #ccc;
+            color: #a06830;
             font-size: 1em;
             font-weight: bold;
-            padding: 12px 4px;
+            padding: 13px 4px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.18s;
             text-align: center;
             font-family: inherit;
+            text-shadow: 0 1px 0 #000;
         }
         .aon-fee-btn:hover {
-            border-color: #ef4444;
-            color: #fff;
-            background: linear-gradient(to bottom, #442222, #331111);
+            border-color: #b03020;
+            border-bottom-color: #6a1808;
+            color: #ffcc88;
+            background: linear-gradient(160deg, #3a1808 0%, #200c04 100%);
         }
         .aon-fee-btn.selected {
             border-color: #ef4444;
-            background: linear-gradient(to bottom, #7f1d1d, #991b1b);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(239,68,68,0.4);
+            border-bottom-color: #7f1d1d;
+            background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
+            color: #ffddcc;
+            box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,120,100,0.12);
+            text-shadow: 0 0 10px rgba(255,140,100,0.5), 0 1px 0 #000;
         }
 
         .aon-custom-row {
@@ -2967,34 +3011,37 @@
             margin-bottom: 8px;
         }
         .aon-custom-btn {
-            background: linear-gradient(to bottom, #333, #222);
-            border: 2px solid #555;
+            background: linear-gradient(160deg, #1c0e00 0%, #100800 100%);
+            border: 1px solid #3a2008;
+            border-bottom: 3px solid #0e0600;
             border-radius: 8px;
-            color: #ccc;
+            color: #a06830;
             font-size: 0.9em;
             font-weight: bold;
             padding: 10px 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.18s;
             font-family: inherit;
             white-space: nowrap;
         }
         .aon-custom-btn:hover {
-            border-color: #ef4444;
-            color: #fff;
+            border-color: #b03020;
+            color: #ffcc88;
+            background: linear-gradient(160deg, #3a1808 0%, #200c04 100%);
         }
         .aon-custom-btn.selected {
             border-color: #ef4444;
-            background: linear-gradient(to bottom, #7f1d1d, #991b1b);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(239,68,68,0.4);
+            border-bottom-color: #7f1d1d;
+            background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
+            color: #ffddcc;
+            box-shadow: 0 0 18px rgba(239,68,68,0.4);
         }
         .aon-custom-input {
             flex: 1;
-            background: #111;
-            border: 2px solid #555;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #3a2008;
             border-radius: 8px;
-            color: #fff;
+            color: #ffcc88;
             font-size: 1em;
             font-weight: bold;
             padding: 10px 12px;
@@ -3004,9 +3051,10 @@
         }
         .aon-custom-input:focus {
             border-color: #ef4444;
+            box-shadow: 0 0 8px rgba(239,68,68,0.2);
         }
         .aon-custom-input::placeholder {
-            color: #666;
+            color: #554433;
         }
 
         /* Format Buttons */
@@ -3018,53 +3066,68 @@
         }
 
         .aon-format-btn {
-            background: linear-gradient(to bottom, #333, #222);
-            border: 2px solid #555;
+            background: linear-gradient(160deg, #1a1008 0%, #0e0a04 100%);
+            border: 1px solid #3a2a10;
+            border-bottom: 3px solid #0a0804;
             border-radius: 8px;
-            color: #ccc;
+            color: #886644;
             font-size: 0.95em;
             font-weight: bold;
-            padding: 12px;
+            padding: 13px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.18s;
             font-family: inherit;
+            text-shadow: 0 1px 0 #000;
         }
         .aon-format-btn:hover {
-            border-color: #ef4444;
-            color: #fff;
+            border-color: #b03020;
+            border-bottom-color: #6a1808;
+            color: #ffcc88;
+            background: linear-gradient(160deg, #32180a 0%, #1c0e04 100%);
         }
         .aon-format-btn.selected {
             border-color: #ef4444;
-            background: linear-gradient(to bottom, #7f1d1d, #991b1b);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(239,68,68,0.4);
+            border-bottom-color: #7f1d1d;
+            background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
+            color: #ffddcc;
+            box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,120,100,0.12);
+            text-shadow: 0 0 10px rgba(255,140,100,0.5), 0 1px 0 #000;
         }
 
         /* Summary */
         .aon-summary {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid #444;
-            border-radius: 10px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2e1e08;
+            border-top: 1px solid #4a2e0a;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            box-shadow: inset 0 1px 0 rgba(255,150,50,0.04);
         }
         .aon-summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            color: #bbb;
-            font-size: 0.9em;
+            align-items: center;
+            padding: 5px 0;
+            color: #6a5030;
+            font-size: 0.85em;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
+        .aon-summary-row:last-child { border-bottom: none; }
         .aon-summary-row .aon-val {
             font-weight: bold;
-            color: #fff;
+            color: #998866;
+        }
+        .aon-summary-row.aon-winnings {
+            padding: 8px 0;
         }
         .aon-summary-row.aon-winnings .aon-val {
-            color: #22c55e;
-            font-size: 1.1em;
+            color: #4ade80;
+            font-size: 1.2em;
+            text-shadow: 0 0 12px rgba(74,222,128,0.5);
         }
         .aon-summary-row.aon-fee-row .aon-val {
-            color: #ef4444;
+            color: #f87171;
         }
 
         /* Create Room Button */
@@ -3075,29 +3138,32 @@
             font-weight: bold;
             font-family: inherit;
             color: #fff;
-            background: linear-gradient(to bottom, #dc2626, #991b1b);
+            background: linear-gradient(160deg, #c91f1f 0%, #8b0000 100%);
             border: none;
-            border-radius: 10px;
+            border-top: 1px solid rgba(255,100,100,0.18);
+            border-radius: 8px;
             cursor: pointer;
-            letter-spacing: 2px;
-            text-shadow: 1px 1px 0 #000;
-            box-shadow: 0 4px 0 #7f1d1d, 0 8px 20px rgba(0,0,0,0.4);
+            letter-spacing: 3px;
+            text-shadow: 0 0 14px rgba(255,120,120,0.45), 1px 1px 0 #000;
+            box-shadow: 0 5px 0 #6b0000, 0 8px 28px rgba(140,0,0,0.4);
             transition: all 0.15s;
         }
         .aon-create-btn:hover {
-            background: linear-gradient(to bottom, #ef4444, #b91c1c);
+            background: linear-gradient(160deg, #ef4444 0%, #b91c1c 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 0 #7f1d1d, 0 12px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 7px 0 #6b0000, 0 14px 36px rgba(180,0,0,0.55);
         }
         .aon-create-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #7f1d1d, 0 3px 8px rgba(0,0,0,0.5);
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #6b0000, 0 2px 8px rgba(0,0,0,0.5);
         }
         .aon-create-btn:disabled {
-            background: #444;
-            box-shadow: 0 4px 0 #333;
+            background: linear-gradient(160deg, #242424 0%, #161616 100%);
+            box-shadow: 0 4px 0 #0e0e0e;
             cursor: not-allowed;
-            color: #888;
+            color: #555;
+            text-shadow: none;
+            border-top-color: transparent;
         }
 
         /* Matchmaking Overlay */
@@ -5303,10 +5369,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 20px;
-            background: linear-gradient(to bottom, rgba(20,20,20,0.97), rgba(10,10,10,0.97));
-            border-bottom: 2px solid #6b4f12;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+            padding: 7px 20px;
+            background: linear-gradient(to bottom, rgba(18,14,8,0.99), rgba(8,6,3,0.99));
+            border-bottom: 2px solid #7a5514;
+            box-shadow: 0 3px 18px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,180,50,0.06);
             z-index: 50;
             box-sizing: border-box;
         }
@@ -5423,11 +5489,15 @@
             font-family: 'Press Start 2P', monospace;
             font-size: 0.65em;
             color: #ffd700;
-            text-shadow: 1px 1px 0 #000;
+            text-shadow: 1px 1px 0 #000, 0 0 8px rgba(255,215,0,0.25);
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
+            background: rgba(255,180,0,0.07);
+            border: 1px solid rgba(255,180,0,0.18);
+            border-radius: 5px;
+            padding: 3px 9px;
         }
 
         /* Forge + Daily Reward group (left column) */
@@ -5593,23 +5663,26 @@
 
         /* Victory Chest Container */
         .victory-chest-container {
-            background: rgba(0,0,0,0.6);
-            border: 2px solid #b8860b;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid #5a3d0a;
+            border-top: 1px solid #8a6318;
             border-radius: 8px;
             padding: 10px 14px;
             pointer-events: auto;
             z-index: 5;
             width: 100%;
             box-sizing: border-box;
+            box-shadow: 0 0 14px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,180,0,0.05);
         }
 
         .victory-chest-label {
             font-family: 'Press Start 2P', monospace;
-            font-size: 0.6em;
-            color: #ffd700;
+            font-size: 0.58em;
+            color: #c8960a;
             text-shadow: 1px 1px 0 #000;
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
         }
 
         /* Victory Chest Slots in Lobby */
@@ -5930,8 +6003,9 @@
         }
         .daily-claim-lobby-btn {
             position: relative;
-            background: rgba(0,0,0,0.6);
-            border: 2px solid #b8860b;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid #5a3d0a;
+            border-top: 1px solid #7a5514;
             border-radius: 8px;
             padding: 8px 14px;
             z-index: 10;
@@ -5939,24 +6013,28 @@
             text-align: center;
             font-family: 'Press Start 2P', monospace;
             font-size: 0.5em;
-            color: #ffd700;
+            color: #c8960a;
             text-shadow: 1px 1px 0 #000;
             transition: all 0.2s;
             width: 100%;
             box-sizing: border-box;
+            letter-spacing: 1px;
         }
         .daily-claim-lobby-btn:hover {
-            background: rgba(30,30,10,0.8);
-            border-color: #ffd700;
-            transform: scale(1.03);
+            background: rgba(30,20,5,0.75);
+            border-color: #c9920e;
+            border-top-color: #ffd700;
+            color: #ffd700;
+            transform: scale(1.02);
         }
         .daily-claim-lobby-btn.has-reward {
             animation: dailyBtnPulse 1.5s ease-in-out infinite;
-            border-color: #ffd700;
+            border-color: #b8860b;
+            color: #ffd700;
         }
         @keyframes dailyBtnPulse {
-            0%, 100% { box-shadow: 0 0 4px rgba(255,215,0,0.3); border-color: #b8860b; }
-            50% { box-shadow: 0 0 14px rgba(255,215,0,0.7); border-color: #ffd700; }
+            0%, 100% { box-shadow: 0 0 4px rgba(255,215,0,0.2); border-top-color: #7a5514; }
+            50% { box-shadow: 0 0 16px rgba(255,215,0,0.6); border-top-color: #ffd700; }
         }
         .daily-claim-toast {
             position: absolute;
@@ -7144,6 +7222,10 @@
         .combat-dur-fill.dur-red { background: #ef4444; }
 
     </style>
+    <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
+    <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -8542,17 +8624,26 @@
             return (character.skillPoints || 0) >= cost;
         }
 
-        function upgradeSkill(character, branchId, nodeId) {
+        async function upgradeSkill(character, branchId, nodeId) {
             if (!canUpgradeSkill(character, branchId, nodeId)) return false;
-            const rank = getSkillRank(character, branchId, nodeId);
-            const cost = SKILL_RANK_COSTS[rank + 1];
-            const key = branchId + '_' + nodeId;
-            if (!character.skills) character.skills = {};
-            character.skills[key] = (character.skills[key] || 0) + 1;
-            character.skillPoints = (character.skillPoints || 0) - cost;
-            saveCharacters();
-            syncCharacterToBackend(character);
-            return true;
+            try {
+                const res = await fetch(BACKEND_URL + '/api/skill/upgrade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, branchId, nodeId })
+                });
+                const data = await res.json();
+                if (!data.ok) { showToast(data.error || 'Upgrade failed'); return false; }
+                // Update local state from server response (server is source of truth)
+                character.skills = data.skills;
+                character.skillPoints = data.skillPoints;
+                saveCharacters();
+                return true;
+            } catch (e) {
+                console.error('[upgradeSkill]', e);
+                showToast('Network error — please retry');
+                return false;
+            }
         }
 
         // Weapon definitions
@@ -9909,7 +10000,7 @@
         let aonRoundResults = []; // Track winner of each round ('player' or 'cpu')
 
         // Wardrobe (NFT) panel state
-        const WARDROBE_NFT_PROGRAM_SOLANA = 'FCHUBNft111111111111111111111111111111111111';
+        const WARDROBE_NFT_PROGRAM_SOLANA = 'ChubNft111111111111111111111111111111111111';
         const WARDROBE_NFT_CONTRACT_MONAD  = '0x0000000000000000000000000000000000000000';
         const HELIUS_API_KEY = 'YOUR_HELIUS_API_KEY'; // Replace after deployment
         let wardrobeWallet    = null;
@@ -10344,6 +10435,231 @@
         // Sync a character's state to the backend (fire-and-forget)
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
         const SYNC_SECRET  = 'fc_sync_lol'; // ← paste your SYNC_SECRET from Vercel env vars here
+
+        // ── On-chain AoN — Monad contract addresses ───────────────────────────
+        // Fill these in after deploying with `forge script DeployAoN.s.sol`
+        const AON_ESCROW_ADDRESS = ''; // e.g. '0x1234...'
+        const CHUB_TOKEN_ADDRESS = ''; // e.g. '0xabcd...'
+        const MONAD_CHAIN_ID = 10143; // Monad testnet
+
+        // ── On-chain AoN — Solana program ─────────────────────────────────────
+        // Fill these in after deploying with `anchor build && anchor deploy`
+        const FIGHTCHUB_AON_SOLANA_PROGRAM_ID = ''; // e.g. 'AoN111...' — fill after deploy
+        const CHARACTER_SIGNER_SOLANA_PUBKEY  = ''; // base58 pubkey of backend ed25519 key
+        const SOLANA_RPC_URL = 'https://api.devnet.solana.com'; // switch to mainnet when ready
+
+        // Minimal ABI for AoNEscrow (only the functions/events we call)
+        const AON_ESCROW_ABI = [
+            'function createRoom(uint256 entryFee, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig) external returns (uint256)',
+            'function joinRoom(uint256 roomId, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig, bytes32 userSeedHash) external payable',
+            'function getEntropyFee() external view returns (uint256)',
+            'function getRoom(uint256 roomId) external view returns (address p1, address p2, uint256 entryFee, uint8 state, uint64 createdAt, uint64 p2JoinedAt)',
+            'event RoomCreated(uint256 indexed roomId, address indexed p1, uint256 entryFee)',
+            'event P2Joined(uint256 indexed roomId, address indexed p2, uint64 entropySeq)',
+            'event MatchResolved(uint256 indexed roomId, address indexed winner, uint256 payout, uint32 turns)',
+        ];
+
+        // Minimal ABI for CHUB token (only approve/allowance needed for createRoom)
+        const CHUB_TOKEN_ABI = [
+            'function approve(address spender, uint256 amount) external returns (bool)',
+            'function allowance(address owner, address spender) external view returns (uint256)',
+            'function balanceOf(address account) external view returns (uint256)',
+        ];
+
+        // ── Pack character data for contract call ─────────────────────────────
+        // NOTE: warrior crusher=index4, rising_fury=index5 (on-chain ordering,
+        //       matches BattleSkillsLib._applySkill — swapped vs frontend SKILL_TREE array)
+        const ONCHAIN_BRANCH_ID = {
+            warrior: 0, guardian: 1, phantom: 2, vampirism: 3,
+            intimidation: 4, alchemy: 5, mastery: 6, champion: 7,
+        };
+        const ONCHAIN_NODE_INDEX = {
+            warrior:      { heavy_blow: 0, critical: 1, penetration: 2, berserker: 3, crusher: 4, rising_fury: 5, combat_mastery: 6 },
+            guardian:     { iron_hide: 0, endurance: 1, block: 2, thorns: 3, fortitude: 4, riposte: 5, last_breath: 6 },
+            phantom:      { reflexes: 0, light_step: 1, counterattack: 2, first_strike: 3, phantasm: 4, acceleration: 5, shadow: 6 },
+            vampirism:    { bloodthirst: 0, fangs: 1, drain: 2, curse: 3, dark_embrace: 4, absorption: 5, immortality: 6 },
+            intimidation: { gaze: 0, bleed: 1, fracture: 2, poison: 3, paralysis: 4, weaken: 5, domination: 6 },
+            alchemy:      { herbalism: 0, instinct: 1, extra_dose: 2, adrenaline: 3, metabolism: 4, purity: 5, hidden_reserve: 6 },
+            mastery:      { grip: 0, familiarity: 1, steel_strength: 2, weapon_instinct: 3, disarm: 4, discipline: 5, master_armorer: 6 },
+            champion:     { awakening: 0, iron_will: 1, aura: 2, decisive_moment: 3, master_synergy: 4, presence: 5, resonance: 6 },
+        };
+        const ONCHAIN_WEAPON_ID      = { bat: 0, knife: 1, mace: 2, sword: 3, axe: 4 };
+        const ONCHAIN_CONSUMABLE_ID  = { apple: 0, banana: 1, chicken: 2, steak: 3, small_potion: 4, big_potion: 5, bandage: 6, herb: 7 };
+        const ONCHAIN_SLOT_EMPTY     = 255; // 0xFF
+
+        function packSkillsForContract(skills) {
+            const bytes = [];
+            for (const [key, rank] of Object.entries(skills || {})) {
+                if (!rank || rank <= 0) continue;
+                const sep = key.indexOf('_');
+                if (sep < 0) continue;
+                const branchId = key.slice(0, sep);
+                const nodeId   = key.slice(sep + 1);
+                const bi = ONCHAIN_BRANCH_ID[branchId];
+                const ni = ONCHAIN_NODE_INDEX[branchId]?.[nodeId];
+                if (bi === undefined || ni === undefined) continue;
+                bytes.push(bi, ni, Math.min(rank, 10));
+            }
+            return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function packCharForContract(character, equippedConsumables) {
+            const cons = (equippedConsumables || []).slice(0, 2);
+            const weps = (character.equippedWeapons || []).slice(0, 5);
+            return {
+                level:        character.level || 1,
+                maxHp:        getCharacterMaxHp(character),
+                stats: {
+                    attack:   character.stats.attack   || 1,
+                    strength: character.stats.strength || 1,
+                    agility:  character.stats.agility  || 1,
+                    defense:  character.stats.defense  || 1,
+                },
+                skillsPacked: packSkillsForContract(character.skills),
+                consumables: [
+                    cons[0] !== undefined ? (ONCHAIN_CONSUMABLE_ID[cons[0]] ?? ONCHAIN_SLOT_EMPTY) : ONCHAIN_SLOT_EMPTY,
+                    cons[1] !== undefined ? (ONCHAIN_CONSUMABLE_ID[cons[1]] ?? ONCHAIN_SLOT_EMPTY) : ONCHAIN_SLOT_EMPTY,
+                ],
+                weapons: [0, 1, 2, 3, 4].map(i =>
+                    weps[i] !== undefined ? (ONCHAIN_WEAPON_ID[weps[i]] ?? ONCHAIN_SLOT_EMPTY) : ONCHAIN_SLOT_EMPTY
+                ),
+            };
+        }
+
+        // ── Get ethers signer from window.ethereum ────────────────────────────
+        async function getMonadSigner() {
+            if (!window.ethers || !window.ethereum) throw new Error('ethers.js or MetaMask not found');
+            const provider = new window.ethers.BrowserProvider(window.ethereum);
+            await provider.send('eth_requestAccounts', []);
+            const network = await provider.getNetwork();
+            if (Number(network.chainId) !== MONAD_CHAIN_ID) {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x' + MONAD_CHAIN_ID.toString(16) }],
+                });
+            }
+            return provider.getSigner();
+        }
+
+        // ── On-chain AoN: create room (P1) ────────────────────────────────────
+        async function aonCreateRoomOnChain(character, entryFeeChub) {
+            if (!AON_ESCROW_ADDRESS) { showToast('Contract not deployed yet'); return null; }
+            const signer     = await getMonadSigner();
+            const walletAddr = await signer.getAddress();
+
+            // 1. Get signed charData from backend
+            const sigResp = await fetch(BACKEND_URL + '/api/aon/sign-character', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                body: JSON.stringify({
+                    characterId:         character.id,
+                    walletAddress:       walletAddr,
+                    equippedConsumables: character.equippedConsumables || [],
+                }),
+            });
+            const sigData = await sigResp.json();
+            if (!sigData.ok) { showToast(sigData.error || 'Sign error'); return null; }
+
+            const entryFeeWei = window.ethers.parseUnits(String(entryFeeChub), 18);
+
+            // 2. Approve token spend (CHUB is burned — contract calls token.spend() directly,
+            //    which requires the token contract to approve the escrow as authorized spender)
+            //    Note: FightChubToken.spend() is called by the escrow, no ERC-20 approval needed
+            //    if escrow is setAuthorized(true). Keeping this comment for clarity.
+
+            // 3. Call createRoom on-chain
+            const escrow   = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, signer);
+            const tx       = await escrow.createRoom(
+                entryFeeWei,
+                sigData.charData,
+                BigInt(sigData.expiry),
+                sigData.backendSig,
+            );
+            const receipt  = await tx.wait();
+
+            // 4. Extract roomId from RoomCreated event
+            const iface   = new window.ethers.Interface(AON_ESCROW_ABI);
+            let roomId    = null;
+            for (const log of receipt.logs) {
+                try {
+                    const parsed = iface.parseLog(log);
+                    if (parsed && parsed.name === 'RoomCreated') {
+                        roomId = parsed.args.roomId.toString();
+                        break;
+                    }
+                } catch (_) {}
+            }
+            return roomId;
+        }
+
+        // ── On-chain AoN: join room (P2) ──────────────────────────────────────
+        async function aonJoinRoomOnChain(character, roomId) {
+            if (!AON_ESCROW_ADDRESS) { showToast('Contract not deployed yet'); return false; }
+            const signer     = await getMonadSigner();
+            const walletAddr = await signer.getAddress();
+
+            // 1. Get signed charData from backend
+            const sigResp = await fetch(BACKEND_URL + '/api/aon/sign-character', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                body: JSON.stringify({
+                    characterId:         character.id,
+                    walletAddress:       walletAddr,
+                    equippedConsumables: character.equippedConsumables || [],
+                }),
+            });
+            const sigData = await sigResp.json();
+            if (!sigData.ok) { showToast(sigData.error || 'Sign error'); return false; }
+
+            // 2. Get entropy fee (MON) from contract
+            const escrow    = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, signer);
+            const entropyFee = await escrow.getEntropyFee();
+
+            // 3. User seed: random bytes the player contributes to Pyth RNG
+            const userSeed = window.ethers.randomBytes(32);
+            const seedHash = window.ethers.keccak256(userSeed);
+
+            // 4. Call joinRoom
+            const tx      = await escrow.joinRoom(
+                BigInt(roomId),
+                sigData.charData,
+                BigInt(sigData.expiry),
+                sigData.backendSig,
+                seedHash,
+                { value: entropyFee },
+            );
+            await tx.wait();
+            return true;
+        }
+
+        // ── On-chain AoN: poll until MatchResolved ────────────────────────────
+        // Polls the RoomState (0=WaitingP2, 1=WaitingEntropy, 2=Resolved, 3=CircuitHold, 4=Cancelled)
+        // Returns { winner (address), turns, payout } or null on timeout/cancel
+        async function aonWaitForResult(roomId, timeoutMs = 120_000) {
+            if (!AON_ESCROW_ADDRESS) return null;
+            const provider = new window.ethers.BrowserProvider(window.ethereum);
+            const escrow   = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, provider);
+            const deadline = Date.now() + timeoutMs;
+            while (Date.now() < deadline) {
+                const [,, , state] = await escrow.getRoom(roomId);
+                if (Number(state) === 2 || Number(state) === 3) {
+                    // Resolved or CircuitHold — read MatchResolved event from recent logs
+                    const filter = escrow.filters.MatchResolved(roomId);
+                    const logs   = await escrow.queryFilter(filter, -200);
+                    if (logs.length > 0) {
+                        const e = logs[0];
+                        return {
+                            winner: e.args.winner,
+                            turns:  Number(e.args.turns),
+                            payout: window.ethers.formatUnits(e.args.payout, 18),
+                        };
+                    }
+                }
+                if (Number(state) === 4) return null; // Cancelled
+                await new Promise(r => setTimeout(r, 3000));
+            }
+            return null; // Timeout
+        }
 
         function syncPlayerToBackend() {
             if (!BACKEND_URL || !SYNC_SECRET || !playerSession) return;
@@ -14526,7 +14842,320 @@
             }
         }
 
+        // ── On-chain AoN matchmaking (P2P, real CHUB tokens on Monad) ──────────
+        // Flow:
+        //   P1: sign-character → createRoom → backend registers roomId
+        //   P2: backend finds roomId → sign-character → joinRoom
+        //   Both: poll getRoom until MatchResolved → show winner
+        async function aonStartMatchmakingOnChain() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+
+            aonClosePanel();
+            aonRoundsToWin = Math.ceil(aonFormat / 2);
+            aonScore = { player: 0, cpu: 0 };
+            aonCurrentRound = 0;
+            aonRoundResults = [];
+            aonActive = true;
+
+            // Show matchmaking overlay
+            const mm = document.createElement('div');
+            mm.className = 'aon-matchmaking';
+            mm.id = 'aon-matchmaking';
+            mm.innerHTML = `
+                <div class="aon-matchmaking-title">ON-CHAIN AoN</div>
+                <div class="aon-matchmaking-spinner"></div>
+                <div class="aon-matchmaking-status" id="aon-mm-status">Creating room on Monad...</div>
+            `;
+            document.getElementById('lobby-wrapper').appendChild(mm);
+            const statusEl = document.getElementById('aon-mm-status');
+
+            try {
+                // Step 1 — P1 creates room on-chain
+                statusEl.textContent = 'Waiting for wallet confirmation...';
+                const roomId = await aonCreateRoomOnChain(character, aonEntryFee);
+                if (!roomId) { mm.remove(); aonActive = false; return; }
+
+                // Step 2 — Register room with backend so P2 can find it
+                await fetch(BACKEND_URL + '/api/aon/room/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({
+                        playerId: playerSession?.playerId,
+                        roomId,
+                        entryFee: aonEntryFee,
+                        characterId: character.id,
+                    }),
+                }).catch(() => {}); // fire-and-forget
+
+                // Step 3 — Wait for opponent and contract resolution
+                statusEl.textContent = 'Waiting for opponent... (Room #' + roomId + ')';
+                const result = await aonWaitForResult(roomId, 3_600_000); // 1h timeout
+                mm.remove();
+
+                if (!result) {
+                    showNotice('Match cancelled or timed out.');
+                    aonActive = false;
+                    return;
+                }
+
+                // Step 4 — Show result
+                const myAddress = await (new window.ethers.BrowserProvider(window.ethereum)).getSigner().then(s => s.getAddress());
+                const didWin    = result.winner.toLowerCase() === myAddress.toLowerCase();
+                showNotice(
+                    (didWin ? '🏆 YOU WIN!' : '💀 YOU LOSE') +
+                    '\nPayout: ' + result.payout + ' CHUB' +
+                    '\nTurns: ' + result.turns
+                );
+                aonActive = false;
+            } catch (e) {
+                mm.remove();
+                aonActive = false;
+                console.error('[aon-onchain]', e);
+                showNotice('On-chain AoN error: ' + (e.reason || e.message || 'Unknown'));
+            }
+        }
+
+        // ── Solana AoN helpers ─────────────────────────────────────────────────
+
+        function _hexToBytes(hex) {
+            const b = new Uint8Array(hex.length / 2);
+            for (let i = 0; i < hex.length; i += 2) b[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+            return b;
+        }
+
+        // Mirrors canonical_char_bytes() in ed25519_verify.rs and sign-character-solana.ts
+        function _canonicalCharBytesForSolana(pubkeyBytes, cd, expiryBigInt) {
+            const hexStr    = (cd.skillsPacked || '').replace(/^0x/, '');
+            const skillsB   = hexStr ? _hexToBytes(hexStr) : new Uint8Array(0);
+            const cap = 32 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + skillsB.length + 2 + 5 + 8;
+            const buf = new Uint8Array(cap);
+            const dv  = new DataView(buf.buffer);
+            let o = 0;
+            buf.set(pubkeyBytes, o); o += 32;
+            dv.setUint32(o, cd.level,    true); o += 4;
+            dv.setUint32(o, cd.maxHp,    true); o += 4;
+            dv.setUint32(o, cd.attack,   true); o += 4;
+            dv.setUint32(o, cd.strength, true); o += 4;
+            dv.setUint32(o, cd.agility,  true); o += 4;
+            dv.setUint32(o, cd.defense,  true); o += 4;
+            dv.setUint32(o, skillsB.length, true); o += 4;
+            buf.set(skillsB, o); o += skillsB.length;
+            buf[o++] = cd.consumables[0];
+            buf[o++] = cd.consumables[1];
+            for (let i = 0; i < 5; i++) buf[o++] = cd.weapons[i];
+            const lo = Number(expiryBigInt & 0xFFFFFFFFn);
+            const hi = Number((expiryBigInt >> 32n) & 0xFFFFFFFFn);
+            dv.setUint32(o, lo, true); o += 4;
+            dv.setUint32(o, hi, true);
+            return buf;
+        }
+
+        // Anchor instruction discriminator: sha256("global:<name>")[0..8]
+        async function _anchorDiscriminator(name) {
+            const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('global:' + name));
+            return new Uint8Array(hash).slice(0, 8);
+        }
+
+        // Borsh-encode CharacterData for create_room / join_room instruction
+        function _borshEncodeCharData(cd) {
+            const hexStr  = (cd.skillsPacked || '').replace(/^0x/, '');
+            const skillsB = hexStr ? _hexToBytes(hexStr) : new Uint8Array(0);
+            const buf = new Uint8Array(4 + 4 + 4 + 4 + 4 + 4 + 4 + skillsB.length + 2 + 5);
+            const dv  = new DataView(buf.buffer);
+            let o = 0;
+            dv.setUint32(o, cd.level,    true); o += 4;
+            dv.setUint32(o, cd.maxHp,    true); o += 4;
+            dv.setUint32(o, cd.attack,   true); o += 4;
+            dv.setUint32(o, cd.strength, true); o += 4;
+            dv.setUint32(o, cd.agility,  true); o += 4;
+            dv.setUint32(o, cd.defense,  true); o += 4;
+            dv.setUint32(o, skillsB.length, true); o += 4;
+            buf.set(skillsB, o); o += skillsB.length;
+            buf[o++] = cd.consumables[0]; buf[o++] = cd.consumables[1];
+            for (let i = 0; i < 5; i++) buf[o++] = cd.weapons[i];
+            return buf;
+        }
+
+        // Build Anchor create_room instruction data
+        async function _buildCreateRoomIxData(roomIdBig, entryFeeBig, cd, expiryBig) {
+            const disc   = await _anchorDiscriminator('create_room');
+            const charB  = _borshEncodeCharData(cd);
+            const buf    = new Uint8Array(8 + 8 + 8 + charB.length + 8);
+            const dv     = new DataView(buf.buffer);
+            let o = 0;
+            buf.set(disc, o); o += 8;
+            dv.setUint32(o, Number(roomIdBig   & 0xFFFFFFFFn), true); o += 4;
+            dv.setUint32(o, Number(roomIdBig   >> 32n),        true); o += 4;
+            dv.setUint32(o, Number(entryFeeBig & 0xFFFFFFFFn), true); o += 4;
+            dv.setUint32(o, Number(entryFeeBig >> 32n),        true); o += 4;
+            buf.set(charB, o); o += charB.length;
+            dv.setUint32(o, Number(expiryBig & 0xFFFFFFFFn), true); o += 4;
+            dv.setUint32(o, Number(expiryBig >> 32n),        true);
+            return buf;
+        }
+
+        // Poll Room PDA until state = Resolved (2) / CircuitHold (3) / Cancelled (4)
+        // winner = last 33rd–last 2nd bytes of account data (Pubkey before bump u8)
+        async function _aonWaitForResultSolana(connection, roomPDA, myPubkeyStr, timeoutMs) {
+            const deadline = Date.now() + timeoutMs;
+            while (Date.now() < deadline) {
+                await new Promise(r => setTimeout(r, 4000));
+                try {
+                    const info = await connection.getAccountInfo(roomPDA, 'confirmed');
+                    if (!info?.data) continue;
+                    const data  = info.data;
+                    // state byte offset: 8(disc)+8(room_id)+32(p1)+32(p2)+8(entry_fee)+2(fee_bps) = 90
+                    const state = data[90];
+                    if (state === 4) return null; // Cancelled
+                    if (state === 2 || state === 3) { // Resolved or CircuitHold
+                        // winner Pubkey is 32 bytes before the final bump byte
+                        const winnerBytes = data.slice(data.length - 33, data.length - 1);
+                        const winner = new solanaWeb3.PublicKey(winnerBytes).toString();
+                        return { won: winner === myPubkeyStr, winner };
+                    }
+                } catch (e) {
+                    console.warn('[aon-solana-poll]', e);
+                }
+            }
+            return null; // timeout
+        }
+
+        async function aonStartMatchmakingSolana() {
+            if (!window.solanaWeb3) { showNotice('Solana web3.js failed to load'); return; }
+            const character = getSelectedCharacter();
+            if (!character) return;
+
+            // Connect Phantom
+            let pubkeyStr;
+            try {
+                const resp = await window.solana.connect();
+                pubkeyStr  = resp.publicKey.toString();
+            } catch (e) {
+                showNotice('Wallet connection cancelled');
+                return;
+            }
+
+            aonClosePanel();
+            aonRoundsToWin = Math.ceil(aonFormat / 2);
+            aonScore = { player: 0, cpu: 0 };
+            aonCurrentRound = 0;
+            aonRoundResults = [];
+            aonActive = true;
+
+            const mm = document.createElement('div');
+            mm.className = 'aon-matchmaking';
+            mm.id = 'aon-matchmaking';
+            mm.innerHTML = `
+                <div class="aon-matchmaking-title">ON-CHAIN AoN (SOLANA)</div>
+                <div class="aon-matchmaking-spinner"></div>
+                <div class="aon-matchmaking-status" id="aon-mm-status">Getting character signature...</div>
+            `;
+            document.getElementById('lobby-wrapper').appendChild(mm);
+            const statusEl = document.getElementById('aon-mm-status');
+
+            try {
+                // 1. Fetch backend character signature (ed25519 over canonical char bytes)
+                const sigRes  = await fetch(BACKEND_URL + '/api/aon/sign-character-solana', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ characterId: character.id, walletAddress: pubkeyStr }),
+                });
+                const sigData = await sigRes.json();
+                if (!sigData.ok) throw new Error(sigData.error || 'Signature request failed');
+                const { charData, signature, expiry } = sigData;
+                const expiryBig = BigInt(expiry);
+                const sigBytes  = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+
+                // 2. Generate room_id from current Unix timestamp (unique, fits u64)
+                const roomIdBig    = BigInt(Math.floor(Date.now() / 1000));
+                const entryFeeBig  = BigInt(aonEntryFee);
+
+                // 3. Derive Room PDA: seeds = [b"room", room_id_le_bytes]
+                const programId  = new solanaWeb3.PublicKey(FIGHTCHUB_AON_SOLANA_PROGRAM_ID);
+                const roomIdBuf  = new Uint8Array(8);
+                new DataView(roomIdBuf.buffer).setUint32(0, Number(roomIdBig & 0xFFFFFFFFn), true);
+                new DataView(roomIdBuf.buffer).setUint32(4, Number(roomIdBig >> 32n),        true);
+                const [roomPDA] = solanaWeb3.PublicKey.findProgramAddressSync(
+                    [Buffer.from('room'), roomIdBuf], programId);
+
+                // 4. Build Ed25519 precompile instruction (verifies character sig on-chain)
+                const myPubkey     = new solanaWeb3.PublicKey(pubkeyStr);
+                const signerPubkey = new solanaWeb3.PublicKey(CHARACTER_SIGNER_SOLANA_PUBKEY);
+                const canonicalMsg = _canonicalCharBytesForSolana(myPubkey.toBytes(), charData, expiryBig);
+                const ed25519Ix    = solanaWeb3.Ed25519Program.createInstructionWithPublicKey({
+                    publicKey: signerPubkey.toBytes(),
+                    message:   canonicalMsg,
+                    signature: sigBytes,
+                });
+
+                // 5. Build create_room instruction data (Anchor Borsh)
+                const ixData = await _buildCreateRoomIxData(roomIdBig, entryFeeBig, charData, expiryBig);
+                // NOTE: account metas must be filled once program is deployed and IDL is available.
+                // Replace the empty `keys` array with the correct ordered account metas.
+                const createRoomIx = new solanaWeb3.TransactionInstruction({
+                    programId,
+                    keys: [], // TODO: fill from IDL after deploy
+                    data: Buffer.from(ixData),
+                });
+
+                // 6. Sign and send via Phantom
+                statusEl.textContent = 'Waiting for wallet confirmation...';
+                const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
+                const { blockhash } = await connection.getLatestBlockhash();
+                const tx = new solanaWeb3.Transaction({ recentBlockhash: blockhash, feePayer: myPubkey });
+                tx.add(ed25519Ix, createRoomIx);
+                const { signature: txSig } = await window.solana.signAndSendTransaction(tx);
+                await connection.confirmTransaction(txSig, 'confirmed');
+
+                // 7. Register with backend matchmaking (fire-and-forget)
+                fetch(BACKEND_URL + '/api/aon/room/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({
+                        playerId: playerSession?.playerId,
+                        roomId: roomIdBig.toString(),
+                        entryFee: aonEntryFee,
+                        characterId: character.id,
+                        chain: 'solana',
+                    }),
+                }).catch(() => {});
+
+                // 8. Poll Room PDA for battle result
+                statusEl.textContent = 'Waiting for opponent... (Room #' + roomIdBig + ')';
+                const result = await _aonWaitForResultSolana(connection, roomPDA, pubkeyStr, 3_600_000);
+                mm.remove();
+
+                if (!result) {
+                    showNotice('Match cancelled or timed out.');
+                    aonActive = false;
+                    return;
+                }
+
+                showNotice(
+                    (result.won ? '🏆 YOU WIN!' : '💀 YOU LOSE') +
+                    '\nOn-chain Solana AoN — Room #' + roomIdBig
+                );
+                aonActive = false;
+            } catch (e) {
+                mm.remove();
+                aonActive = false;
+                console.error('[aon-solana]', e);
+                showNotice('Solana AoN error: ' + (e.message || 'Unknown error'));
+            }
+        }
+
         async function aonStartMatchmaking() {
+            // ── Solana on-chain mode: Phantom + deployed Solana program ───────────
+            if (FIGHTCHUB_AON_SOLANA_PROGRAM_ID && window.solana?.isPhantom) {
+                return aonStartMatchmakingSolana();
+            }
+            // ── Monad on-chain mode: use contracts if deployed and wallet available ──
+            if (AON_ESCROW_ADDRESS && window.ethereum) {
+                return aonStartMatchmakingOnChain();
+            }
+
+            // ── Off-chain fallback (vs CPU, uses Supabase tokens 🪙) ───────────
             if (globalTokens < aonEntryFee) {
                 showNotice('Not enough tokens! You need 🪙 ' + aonEntryFee + ' but only have 🪙 ' + globalTokens);
                 return;
@@ -16774,8 +17403,9 @@
 
             const btn = detailEl.querySelector('.snd-upgrade-btn');
             if (btn) {
-                btn.addEventListener('click', () => {
-                    if (upgradeSkill(character, branch.id, node.id)) {
+                btn.addEventListener('click', async () => {
+                    const ok = await upgradeSkill(character, branch.id, node.id);
+                    if (ok) {
                         renderSkillTree(character);
                         showNodeDetail(character, branch, node);
                     }
