@@ -12966,13 +12966,16 @@
                 actionsContainer.style.display = ''; // Show actions (change name, delete)
 
                 // Show upgrade button if there are pending level ups for this character
+                // Use visibility (not display) so the button always reserves its space and
+                // the character + arrows above don't shift when it appears/disappears.
                 const hasPendingUpgrades = pendingLevelUps.some(p => p.character && p.character.id === character.id);
+                upgradeBtn.style.display = ''; // always in layout when character is selected
                 if (hasPendingUpgrades) {
                     const count = pendingLevelUps.filter(p => p.character && p.character.id === character.id).length;
                     upgradeBtn.textContent = count > 1 ? `⬆️ UPGRADE STATS (${count})` : '⬆️ UPGRADE STATS';
-                    upgradeBtn.style.display = '';
+                    upgradeBtn.style.visibility = 'visible';
                 } else {
-                    upgradeBtn.style.display = 'none';
+                    upgradeBtn.style.visibility = 'hidden';
                 }
             } else {
                 nameEl.textContent = 'NO FIGHTER';
@@ -12983,6 +12986,7 @@
                 playBtn.disabled = true;
                 actionsContainer.style.display = 'none'; // Hide actions
                 upgradeBtn.style.display = 'none';
+                upgradeBtn.style.visibility = '';
             }
 
             // Update arrows
