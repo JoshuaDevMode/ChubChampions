@@ -1766,29 +1766,64 @@
             z-index: 1;
         }
 
-        .menu-char-lv-badge {
+        .menu-char-lv-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, #1e1608, #0a0804);
+            border: 2px solid #c8930a;
+            box-shadow: 0 0 10px rgba(200,147,10,0.35), inset 0 1px 0 rgba(255,215,0,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: 'Press Start 2P', monospace;
-            font-size: 0.6em;
+            font-size: 0.7em;
             color: #ffd700;
-            text-shadow: 1px 1px 0 #000;
-            white-space: nowrap;
+            text-shadow: 0 0 8px rgba(255,215,0,0.6), 1px 1px 0 #000;
             flex-shrink: 0;
         }
 
         .menu-char-exp-track {
             flex: 1;
-            background: rgba(0,0,0,0.5);
-            border-radius: 5px;
-            height: 14px;
+            background: rgba(0,0,0,0.55);
+            border-radius: 20px;
+            height: 26px;
             overflow: hidden;
-            border: 2px solid #4a2a14;
+            border: 1px solid rgba(200,147,10,0.2);
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .menu-character-exp-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4ade80, #22c55e);
-            transition: width 0.3s;
-            box-shadow: 0 0 10px rgba(74,222,128,0.5);
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            background: linear-gradient(90deg, #7a4e00, #c8930a 40%, #ffd700 75%, #ffe980);
+            transition: width 0.4s ease;
+            border-radius: 20px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+
+        .menu-char-xp-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5em;
+            color: rgba(255,255,255,0.45);
+            position: relative;
+            z-index: 1;
+            padding-left: 12px;
+            pointer-events: none;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .menu-char-exp-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.42em;
+            color: rgba(255,255,255,0.5);
+            position: absolute;
+            right: 12px;
+            z-index: 1;
+            pointer-events: none;
+            text-shadow: 1px 1px 0 #000;
         }
 
         .menu-character-actions {
@@ -7459,9 +7494,11 @@
                 <div class="menu-character-info" id="menu-character-info">
                     <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
                         <div class="menu-character-exp" id="menu-character-exp-container">
-                            <span class="menu-char-lv-badge" id="menu-char-lv-badge">LVL 1</span>
+                            <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
                             <div class="menu-char-exp-track">
                                 <div class="menu-character-exp-bar" id="menu-character-exp-bar"></div>
+                                <span class="menu-char-xp-label">XP</span>
+                                <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
                             </div>
                         </div>
                         <div class="menu-character-stats" id="menu-character-stats"></div>
@@ -12560,9 +12597,9 @@
                 const won = character.gamesWon || 0;
                 const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
 
-                // Level badge next to XP bar
+                // Level circle next to XP bar
                 const lvBadge = document.getElementById('menu-char-lv-badge');
-                if (lvBadge) lvBadge.textContent = character.level >= MAX_LEVEL ? 'MAX' : 'LVL ' + character.level;
+                if (lvBadge) lvBadge.textContent = character.level >= MAX_LEVEL ? '★' : String(character.level);
 
                 // Win rate + games row
                 if (played > 0) {
@@ -12587,6 +12624,8 @@
                 if (character.level < MAX_LEVEL) {
                     expContainer.style.display = '';
                     expBar.style.width = expPercent + '%';
+                    const expText = document.getElementById('menu-char-exp-text');
+                    if (expText) expText.textContent = Math.floor(character.exp || 0) + ' / ' + expNeeded;
                 } else {
                     expContainer.style.display = 'none';
                 }
