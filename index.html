@@ -14572,7 +14572,10 @@
             if (!img) return;
 
             img._idleSrc = img._idleSrc || img.src;
-            if (img._currentAnim) clearInterval(img._currentAnim);
+            if (img._currentAnim) { clearInterval(img._currentAnim); img._currentAnim = null; }
+            // Restore visibility and remove attack overlays in case a weapon attack was interrupted mid-animation
+            img.style.visibility = '';
+            fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay').forEach(el => el.remove());
 
             const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
             const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
@@ -14625,9 +14628,13 @@
                 img.classList.remove('sprite-reversed');
                 if (img._footstepInterval) { clearInterval(img._footstepInterval); img._footstepInterval = null; }
             }
-            // Remove weapon overlay
+            // Remove weapon run overlay
             const overlay = fighterEl.querySelector('.weapon-run-overlay');
             if (overlay) overlay.remove();
+            // Remove lingering weapon attack overlays and restore visibility
+            fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay').forEach(el => el.remove());
+            const _sraImg = fighterEl.querySelector('img');
+            if (_sraImg) _sraImg.style.visibility = '';
             stopSpriteAnimation(fighterEl);
         }
 
