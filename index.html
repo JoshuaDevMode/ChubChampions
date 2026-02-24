@@ -11751,7 +11751,8 @@
             attackerEl.classList.add('dashing');
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
-            animateRun(attackerEl, false);
+            const isWeaponAnim = !!WEAPONS[attackType];
+            animateRun(attackerEl, false, isWeaponAnim);
 
             // Advance toward opponent (combo follow-up is faster, already near mid)
             if (attacker === 'player') attackerEl.style.left  = '69%';
@@ -11787,8 +11788,7 @@
             }
 
             // Attack animation
-            const isWeaponAnim = !!WEAPONS[attackType];
-            const animType     = isWeaponAnim ? 'punch' : attackType;
+            const animType = isWeaponAnim ? 'punch' : attackType;
             animateAttack(attackerEl, animType, 500, isWeaponAnim ? attackType : undefined);
             await sleep(300);
 
@@ -11844,7 +11844,7 @@
             }
 
             // Return: combo first hit goes to midpoint, all others go to start
-            animateRun(attackerEl, true);
+            animateRun(attackerEl, true, isWeaponAnim);
             if (isComboFirst) {
                 if (attacker === 'player') attackerEl.style.left  = midPos;
                 else                       attackerEl.style.right = midPos;
@@ -14563,12 +14563,12 @@
             noise.stop(t + duration);
         }
 
-        function animateRun(fighterEl, reverse) {
+        function animateRun(fighterEl, reverse, useWeaponAnim) {
             const fighter = fighterEl.id; // 'player' or 'cpu'
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
-            const equippedWeapon = weaponState[fighter] ? weaponState[fighter].equippedWeapon : null;
+            const equippedWeapon = (useWeaponAnim && weaponState[fighter]) ? weaponState[fighter].equippedWeapon : null;
             const hasWeaponRun = equippedWeapon && img._weaponRunFrames && img._weaponRunFrames.length > 0;
 
             if (hasWeaponRun) {
