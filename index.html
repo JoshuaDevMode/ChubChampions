@@ -3978,7 +3978,7 @@
         /* ── Skill Map — Split Layout ─────────────────────────────────────────── */
         .skills-branch-tabs { display: none; }
 
-        /* Split: left=big tree, right=detail */
+        /* Split: stats | tree | detail */
         .skills-split {
             display: flex;
             gap: 10px;
@@ -3986,6 +3986,125 @@
             overflow: hidden;
             min-height: 0;
         }
+
+        /* ─── Left Stats Column ─────────────────────────────────── */
+        .skills-stats-col {
+            flex: 0 0 178px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.08) transparent;
+        }
+        .ssc-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 1.5px;
+            padding: 10px 12px 5px;
+        }
+        .ssc-stats { display: flex; flex-direction: column; gap: 2px; padding: 0 8px 8px; }
+        .ssc-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.025);
+        }
+        .ssc-stat-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: rgba(255,255,255,0.35); }
+        .ssc-stat-value { font-family: 'Press Start 2P', monospace; font-size: 9px; font-weight: 700; }
+        .ssc-stat.hp  .ssc-stat-value { color: #4ade80; text-shadow: 0 0 6px rgba(74,222,128,0.4); }
+        .ssc-stat.atk .ssc-stat-value { color: #f87171; text-shadow: 0 0 6px rgba(248,113,113,0.4); }
+        .ssc-stat.str .ssc-stat-value { color: #fb923c; text-shadow: 0 0 6px rgba(251,146,60,0.4); }
+        .ssc-stat.agi .ssc-stat-value { color: #22d3ee; text-shadow: 0 0 6px rgba(34,211,238,0.4); }
+        .ssc-stat.def .ssc-stat-value { color: #60a5fa; text-shadow: 0 0 6px rgba(96,165,250,0.4); }
+        .ssc-divider { height: 1px; background: rgba(255,255,255,0.055); margin: 4px 10px; }
+        .ssc-pts {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #ffd700;
+            padding: 4px 12px 8px;
+            text-shadow: 0 0 8px rgba(255,215,0,0.35);
+        }
+        .ssc-bonuses { display: flex; flex-direction: column; gap: 1px; padding: 0 8px 10px; }
+        .ssc-bonus-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.02);
+            border-left: 2px solid transparent;
+        }
+        .ssc-bonus-icon { font-size: 13px; flex-shrink: 0; line-height: 1; }
+        .ssc-bonus-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+        .ssc-bonus-val {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: rgba(255,255,255,0.55);
+            flex-shrink: 0;
+        }
+
+        /* ─── Mini Node Icons ───────────────────────────────────── */
+        .mini-node { position: relative; }
+        .mn-icon { font-size: 17px; line-height: 1; pointer-events: none; display: block; }
+        .mn-rank {
+            position: absolute;
+            bottom: 1px; right: 2px;
+            font-size: 8px;
+            font-weight: 900;
+            line-height: 1;
+            pointer-events: none;
+            text-shadow: 0 0 3px #000, 1px 1px 0 #000;
+        }
+        .mini-node.mn-locked .mn-icon { opacity: 0.1; }
+        .mini-node.mn-maxed  .mn-icon { filter: brightness(0) invert(1); }
+
+        /* ─── Skill Hover Tooltip ───────────────────────────────── */
+        .skill-tooltip {
+            position: fixed;
+            display: none;
+            flex-direction: column;
+            gap: 7px;
+            background: linear-gradient(160deg, #1a1408 0%, #0d0a06 100%);
+            border: 1px solid rgba(255,180,50,0.22);
+            border-top: 2px solid rgba(255,180,50,0.4);
+            border-radius: 10px;
+            padding: 12px 14px;
+            width: 220px;
+            z-index: 99999;
+            pointer-events: none;
+            box-shadow: 0 10px 32px rgba(0,0,0,0.85);
+        }
+        .stt-head { display: flex; align-items: center; gap: 10px; }
+        .stt-icon { font-size: 24px; flex-shrink: 0; line-height: 1; }
+        .stt-name { font-family: 'Press Start 2P', monospace; font-size: 9px; line-height: 1.35; }
+        .stt-desc {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7.5px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+            border-left: 2px solid rgba(255,180,50,0.25);
+            padding-left: 8px;
+        }
+        .stt-val { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; }
+        .stt-rank-dots { display: flex; gap: 3px; }
+        .stt-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+        .stt-dot.on { border-color: transparent; }
+
         .skills-map-col {
             flex: 1;
             overflow-y: auto;
@@ -7598,6 +7717,7 @@
             </div>
             <div class="skills-branch-tabs" id="skills-branch-tabs"></div>
             <div class="skills-split">
+                <div class="skills-stats-col" id="skills-stats-col"></div>
                 <div class="skills-map-col" id="skills-branch-content"></div>
                 <div class="skills-detail-col" id="skills-node-detail">
                     <div class="sdp-placeholder">
@@ -7608,6 +7728,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Skill Hover Tooltip -->
+    <div id="skill-tooltip" class="skill-tooltip"></div>
 
     <!-- NFT Wardrobe Panel -->
     <div class="wardrobe-panel" id="wardrobe-panel">
@@ -8741,6 +8864,24 @@
               desc: 'Each invested branch echoes effects',      values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% echo' },
           ]},
         ];
+
+        // ── Skill Node Icons ────────────────────────────────────────────────────────
+        const SKILL_ICONS = {
+            warrior_heavy_blow:      '💥', warrior_critical:        '🎯', warrior_penetration:     '🔱',
+            warrior_berserker:       '😤', warrior_rising_fury:     '🔥', warrior_crusher:         '⚒️', warrior_combat_mastery:  '⚡',
+            guardian_iron_hide:      '🛡️', guardian_endurance:      '💪', guardian_block:          '🪬',
+            guardian_thorns:         '🌵', guardian_fortitude:      '❤️', guardian_riposte:        '⚔️', guardian_last_breath:    '💨',
+            phantom_reflexes:        '👁️', phantom_light_step:      '🌬️', phantom_counterattack:   '↩️',
+            phantom_first_strike:    '⚡', phantom_phantasm:        '👻', phantom_acceleration:    '🏃', phantom_shadow:          '🌑',
+            vampirism_bloodthirst:   '🩸', vampirism_fangs:         '🦷', vampirism_drain:         '🌀',
+            vampirism_curse:         '💜', vampirism_dark_embrace:  '🌙', vampirism_absorption:    '⬛', vampirism_immortality:   '♾️',
+            intimidation_gaze:       '👀', intimidation_bleed:      '🔴', intimidation_fracture:   '💢',
+            intimidation_poison:     '☠️', intimidation_paralysis:  '⚡', intimidation_weaken:     '📉', intimidation_domination: '👊',
+            alchemy_herbalism:       '🌿', alchemy_instinct:        '💊', alchemy_extra_dose:      '⚗️',
+            alchemy_adrenaline:      '💉', alchemy_metabolism:      '🔄', alchemy_purity:          '✨', alchemy_hidden_reserve:  '🧪',
+            champion_awakening:      '🌟', champion_iron_will:      '💎', champion_aura:           '🔆',
+            champion_decisive_moment:'🎯', champion_master_synergy: '🔗', champion_presence:       '👑', champion_resonance:      '🌊',
+        };
 
         // ── Skill Helper Functions ──────────────────────────────────────────────────
 
@@ -17455,6 +17596,59 @@
             if (!character) return;
             document.getElementById('skills-available-points').textContent = character.skillPoints || 0;
             renderSkillMap(character);
+            renderSkillStatsPanel(character);
+        }
+
+        function renderSkillStatsPanel(character) {
+            const el = document.getElementById('skills-stats-col');
+            if (!el || !character) return;
+
+            const maxHp = getCharacterMaxHp(character);
+            const pts   = character.skillPoints || 0;
+
+            const fmtBonus = (val, unit) => {
+                if (!unit) return String(val);
+                if (unit.includes('%')) return '+' + (val * 100).toFixed(1) + '%';
+                if (unit.startsWith('x')) return val.toFixed(2) + 'x';
+                return (val > 0 ? '+' : '') + val;
+            };
+
+            const activeNodes = [];
+            for (const branch of SKILL_TREE) {
+                for (const node of branch.nodes) {
+                    const rank = getSkillRank(character, branch.id, node.id);
+                    if (rank === 0) continue;
+                    const icon = SKILL_ICONS[branch.id + '_' + node.id] || '⚡';
+                    activeNodes.push({ branch, node, rank, val: node.values[rank], icon });
+                }
+            }
+
+            const bonusesHtml = activeNodes.length === 0 ? '' :
+                '<div class="ssc-divider"></div>' +
+                '<div class="ssc-title">ACTIVE BONUSES</div>' +
+                '<div class="ssc-bonuses">' +
+                activeNodes.map(a =>
+                    '<div class="ssc-bonus-row" style="border-left-color:' + a.branch.color + '33">' +
+                    '<span class="ssc-bonus-icon">' + a.icon + '</span>' +
+                    '<span class="ssc-bonus-name" style="color:' + a.branch.color + '">' + a.node.name + '</span>' +
+                    '<span class="ssc-bonus-val">' + fmtBonus(a.val, a.node.unit) + '</span>' +
+                    '</div>'
+                ).join('') +
+                '</div>';
+
+            el.innerHTML =
+                '<div class="ssc-title">CHARACTER</div>' +
+                '<div class="ssc-stats">' +
+                '<div class="ssc-stat hp"><span class="ssc-stat-label">HP</span><span class="ssc-stat-value">' + maxHp + '</span></div>' +
+                '<div class="ssc-stat atk"><span class="ssc-stat-label">ATK</span><span class="ssc-stat-value">' + character.stats.attack + '</span></div>' +
+                '<div class="ssc-stat str"><span class="ssc-stat-label">STR</span><span class="ssc-stat-value">' + (character.stats.strength || 0) + '</span></div>' +
+                '<div class="ssc-stat agi"><span class="ssc-stat-label">AGI</span><span class="ssc-stat-value">' + (character.stats.agility || 0) + '</span></div>' +
+                '<div class="ssc-stat def"><span class="ssc-stat-label">DEF</span><span class="ssc-stat-value">' + character.stats.defense + '</span></div>' +
+                '</div>' +
+                '<div class="ssc-divider"></div>' +
+                '<div class="ssc-title">SKILL POINTS</div>' +
+                '<div class="ssc-pts">' + pts + ' available</div>' +
+                bonusesHtml;
         }
 
         // ── Skill Map — Mu Online visual style ──────────────────────────────────
@@ -17576,13 +17770,16 @@
             const isLocked   = !!lockReason && lockReason !== 'MAX';
             const isMaxed    = rank >= maxRank;
 
+            const icon = SKILL_ICONS[branch.id + '_' + node.id] || '•';
+
             const dot = document.createElement('div');
             dot.className = 'mini-node ' + (isMaxed ? 'mn-maxed' : isLocked ? 'mn-locked' : rank > 0 ? 'mn-active' : 'mn-empty');
             dot.style.setProperty('--bc', branch.color);
-            dot.textContent = isMaxed ? '★' : (rank > 0 ? rank : '');
-            dot.title = node.name;
             dot.dataset.branchId = branch.id;
             dot.dataset.nodeId   = node.id;
+            dot.innerHTML =
+                '<span class="mn-icon">' + icon + '</span>' +
+                (isMaxed ? '<span class="mn-rank">★</span>' : rank > 0 ? '<span class="mn-rank">' + rank + '</span>' : '');
 
             const label = document.createElement('div');
             label.className = 'mini-node-label';
@@ -17593,6 +17790,40 @@
             wrap.className = 'mini-node-wrap';
             wrap.appendChild(dot);
             wrap.appendChild(label);
+
+            // Hover tooltip
+            wrap.addEventListener('mouseenter', () => {
+                const tt = document.getElementById('skill-tooltip');
+                if (!tt) return;
+                const curRank = getSkillRank(character, branch.id, node.id);
+                const fmtV = v => {
+                    if (v == null) return '—';
+                    if (node.unit && node.unit.includes('%')) return (v * 100).toFixed(1) + '%';
+                    if (node.unit && node.unit.startsWith('x')) return v.toFixed(2) + 'x';
+                    return String(v);
+                };
+                const dotsHtml = Array.from({length: 10}, (_, i) =>
+                    '<span class="stt-dot' + (i < curRank ? ' on" style="background:' + branch.color + '"' : '"') + '></span>'
+                ).join('');
+                tt.style.display = 'flex';
+                tt.innerHTML =
+                    '<div class="stt-head">' +
+                    '<span class="stt-icon">' + icon + '</span>' +
+                    '<span class="stt-name" style="color:' + branch.color + '">' + node.name + '</span>' +
+                    '</div>' +
+                    '<div class="stt-desc">' + node.desc + '</div>' +
+                    '<div class="stt-rank-dots">' + dotsHtml + '</div>' +
+                    (curRank > 0 ? '<div class="stt-val">' + fmtV(node.values[curRank]) + ' ' + (node.unit || '') + '</div>' : '');
+                const rect = wrap.getBoundingClientRect();
+                const ttW = 230;
+                const left = rect.right + 8 + ttW > window.innerWidth ? rect.left - ttW - 8 : rect.right + 8;
+                tt.style.left = left + 'px';
+                tt.style.top  = Math.min(rect.top, window.innerHeight - 200) + 'px';
+            });
+            wrap.addEventListener('mouseleave', () => {
+                const tt = document.getElementById('skill-tooltip');
+                if (tt) tt.style.display = 'none';
+            });
 
             if (!forceLocked) {
                 wrap.addEventListener('click', e => {
