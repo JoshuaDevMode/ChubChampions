@@ -11672,6 +11672,10 @@
                         if (weaponState[event.fighter]) {
                             weaponState[event.fighter].equippedWeapon = event.weaponId;
                             weaponState[event.fighter].turnsRemaining = event.turns;
+                            // If server equipped a weapon not in local inventory, add it so HUD matches
+                            if (!weaponState[event.fighter].inventory.includes(event.weaponId)) {
+                                weaponState[event.fighter].inventory.push(event.weaponId);
+                            }
                             updateWeaponDisplay(event.fighter);
                         }
                         await sleep(80);
@@ -14567,41 +14571,33 @@
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
-            // Use normal run frames for the character body regardless of weapon.
-            // The weapon sprite appears only as an overlay so it always matches the
-            // actual weapon being used — RunningWeapon.png has a baked weapon in the
-            // art that doesn't match the player's equipped weapon.
-            const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
-            const hasWeaponOverlay = weaponIdForRun && weaponFrames.length > 0;
-
-            const charFrames = img._runFrames && img._runFrames.length > 0 ? img._runFrames : [];
-
             img._idleSrc = img._idleSrc || img.src;
             if (img._currentAnim) clearInterval(img._currentAnim);
 
-            if (charFrames.length > 0) {
+            const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
+            const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
+
+            if (hasWeaponRun) {
+                // Weapon run: character in weapon-holding pose + weapon overlay
+                const charFrames = img._weaponRunFrames;
                 let frame = 0;
                 img.src = charFrames[0];
 
-                // Create/reuse weapon overlay
-                let overlay = null;
-                if (hasWeaponOverlay) {
-                    overlay = fighterEl.querySelector('.weapon-run-overlay');
-                    if (!overlay) {
-                        overlay = document.createElement('img');
-                        overlay.className = 'weapon-run-overlay';
-                        fighterEl.querySelector('.fighter-body').appendChild(overlay);
-                    }
-                    overlay.src = weaponFrames[0];
+                let overlay = fighterEl.querySelector('.weapon-run-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('img');
+                    overlay.className = 'weapon-run-overlay';
+                    fighterEl.querySelector('.fighter-body').appendChild(overlay);
                 }
+                if (weaponFrames.length > 0) overlay.src = weaponFrames[0];
 
                 img._currentAnim = setInterval(function() {
                     frame = (frame + 1) % charFrames.length;
                     img.src = charFrames[frame];
-                    if (overlay) overlay.src = weaponFrames[frame % weaponFrames.length];
+                    if (weaponFrames.length > 0) overlay.src = weaponFrames[frame % weaponFrames.length];
                 }, 250);
             } else {
-                // Fallback: no run frames loaded
+                // Normal run (no weapon)
                 animateSprite(fighterEl, 'run', { loop: true, halfOnly: false, speed: 250 });
             }
 
