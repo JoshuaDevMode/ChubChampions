@@ -5485,6 +5485,148 @@
         }
         .session-login-btn:hover { filter: brightness(1.25); }
 
+        /* ─── Notification Bell ──────────────────────────────────── */
+        .notif-wrap {
+            position: relative;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+        .notif-bell {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,180,50,0.22);
+            border-radius: 8px;
+            color: #b8922a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.15s;
+        }
+        .notif-bell:hover {
+            border-color: rgba(255,215,0,0.55);
+            color: #ffd700;
+            background: rgba(255,180,50,0.1);
+        }
+        .notif-bell.has-notif { animation: bellRing 0.5s ease-in-out; }
+        @keyframes bellRing {
+            0%,100% { transform: rotate(0); }
+            20%     { transform: rotate(-15deg); }
+            40%     { transform: rotate(15deg); }
+            60%     { transform: rotate(-10deg); }
+            80%     { transform: rotate(10deg); }
+        }
+        .notif-badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            min-width: 16px; height: 16px;
+            background: #ef4444;
+            border: 2px solid #0a0704;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.35em;
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+            pointer-events: none;
+            line-height: 1;
+        }
+        .notif-badge.visible { display: flex; }
+        .notif-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 288px;
+            background: linear-gradient(160deg, #1a1208, #0d0b06);
+            border: 1px solid #5a3e10;
+            border-top: 2px solid #b8780a;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 36px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,180,50,0.04);
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .notif-panel.open { display: block; animation: notifDrop 0.18s ease-out; }
+        @keyframes notifDrop {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .notif-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,180,50,0.12);
+            background: rgba(255,150,20,0.04);
+        }
+        .notif-panel-header > span {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.48em;
+            color: #b8780a;
+            letter-spacing: 2px;
+        }
+        .notif-clear {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.38em;
+            color: #5a4828;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 4px;
+            padding: 3px 7px;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .notif-clear:hover { color: #f87171; border-color: rgba(248,113,113,0.5); }
+        .notif-list {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #5a3e10 transparent;
+        }
+        .notif-empty {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.42em;
+            color: #3a2a10;
+            text-align: center;
+            padding: 26px 12px;
+        }
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: background 0.1s;
+        }
+        .notif-item:hover { background: rgba(255,180,50,0.04); }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-icon { font-size: 1.1em; flex-shrink: 0; margin-top: 2px; }
+        .notif-content { flex: 1; min-width: 0; }
+        .notif-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.42em;
+            color: #e0c878;
+            line-height: 1.65;
+            word-break: break-word;
+        }
+        .notif-time {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.34em;
+            color: #3a2a10;
+            margin-top: 5px;
+        }
+        .notif-item.levelup .notif-text { color: #ffd700; }
+        .notif-item.weapon  .notif-text { color: #c084fc; }
+        .notif-item.chest   .notif-text { color: #60a5fa; }
+        .notif-item.pvp     .notif-text { color: #4ade80; }
+        .notif-item.aon     .notif-text { color: #fb923c; }
+        .notif-item.streak  .notif-text { color: #f97316; }
+
         .currency-item {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.65em;
@@ -7245,6 +7387,22 @@
                 <span class="currency-item" id="currency-tokens">🪙 0</span>
                 <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> 0 / 10</span>
                 <span class="currency-item xp-boost-indicator" id="xp-boost-indicator" style="display:none;">⚡ x1.0 (0)</span>
+            </div>
+            <!-- Notification Bell -->
+            <div class="notif-wrap" id="notif-wrap">
+                <button class="notif-bell" id="notif-bell" onclick="toggleNotifPanel()" title="Notifications">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="notif-badge" id="notif-badge"></span>
+                </button>
+                <div class="notif-panel" id="notif-panel">
+                    <div class="notif-panel-header">
+                        <span>ALERTS</span>
+                        <button class="notif-clear" onclick="clearAllNotifs()">CLEAR</button>
+                    </div>
+                    <div class="notif-list" id="notif-list">
+                        <div class="notif-empty">No notifications</div>
+                    </div>
+                </div>
             </div>
             <!-- Player session widget -->
             <div class="session-widget" id="session-widget">
@@ -9530,6 +9688,92 @@
             setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2200);
         }
 
+        // ── Notification System ────────────────────────────────────────────────
+        const _notifications = [];
+        let _unreadNotifCount = 0;
+        let _notifPanelOpen = false;
+
+        function addNotification(icon, text, type = '') {
+            _notifications.unshift({ icon, text, type, time: Date.now() });
+            if (_notifications.length > 40) _notifications.pop();
+            _unreadNotifCount++;
+            _updateNotifBadge();
+            if (_notifPanelOpen) _renderNotifList();
+            const bell = document.getElementById('notif-bell');
+            if (bell) {
+                bell.classList.remove('has-notif');
+                void bell.offsetWidth;
+                bell.classList.add('has-notif');
+                setTimeout(() => bell.classList.remove('has-notif'), 600);
+            }
+        }
+
+        function toggleNotifPanel() {
+            _notifPanelOpen = !_notifPanelOpen;
+            const panel = document.getElementById('notif-panel');
+            if (!panel) return;
+            if (_notifPanelOpen) {
+                panel.classList.add('open');
+                _unreadNotifCount = 0;
+                _updateNotifBadge();
+                _renderNotifList();
+                setTimeout(() => document.addEventListener('click', _notifOutsideClick, { once: true }), 0);
+            } else {
+                panel.classList.remove('open');
+            }
+        }
+
+        function _notifOutsideClick(e) {
+            const wrap = document.getElementById('notif-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                _notifPanelOpen = false;
+                const panel = document.getElementById('notif-panel');
+                if (panel) panel.classList.remove('open');
+            }
+        }
+
+        function _updateNotifBadge() {
+            const badge = document.getElementById('notif-badge');
+            if (!badge) return;
+            if (_unreadNotifCount > 0) {
+                badge.textContent = _unreadNotifCount > 9 ? '9+' : String(_unreadNotifCount);
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        }
+
+        function clearAllNotifs() {
+            _notifications.length = 0;
+            _unreadNotifCount = 0;
+            _updateNotifBadge();
+            _renderNotifList();
+        }
+
+        function _renderNotifList() {
+            const list = document.getElementById('notif-list');
+            if (!list) return;
+            if (_notifications.length === 0) {
+                list.innerHTML = '<div class="notif-empty">No notifications</div>';
+                return;
+            }
+            list.innerHTML = _notifications.map(n =>
+                '<div class="notif-item ' + n.type + '">' +
+                '<span class="notif-icon">' + n.icon + '</span>' +
+                '<div class="notif-content">' +
+                '<div class="notif-text">' + n.text + '</div>' +
+                '<div class="notif-time">' + _timeAgo(n.time) + '</div>' +
+                '</div></div>'
+            ).join('');
+        }
+
+        function _timeAgo(ts) {
+            const d = Date.now() - ts;
+            if (d < 60000)   return 'Just now';
+            if (d < 3600000) return Math.floor(d / 60000) + 'm ago';
+            return Math.floor(d / 3600000) + 'h ago';
+        }
+
         async function claimDailyReward(dayNum) {
             const reward = DAILY_REWARDS.find(r => r.day === dayNum);
             if (!reward) return;
@@ -9844,6 +10088,7 @@
 
             if (isNewWeapon) {
                 globalUnlockedWeapons.push(newWeapon.id);
+                addNotification('⚔️', 'New weapon unlocked: ' + newWeapon.name, 'weapon');
                 WEAPONS[newWeapon.id] = {
                     name: newWeapon.name,
                     img: newWeapon.img,
@@ -10973,6 +11218,7 @@
             if (joinData.status === 'complete') {
                 clearInterval(countdownInterval);
                 overlay.remove();
+                addNotification('⚔️', 'PvP opponent found: ' + (joinData.opponentName || 'Fighter'), 'pvp');
                 await startPvpBattle(joinData.result, joinData.rewards, joinData.opponentChar, joinData.opponentName, character);
                 return;
             }
@@ -10999,6 +11245,7 @@
                 if (pollData.status === 'complete') {
                     clearInterval(countdownInterval);
                     overlay.remove();
+                    addNotification('⚔️', 'PvP opponent found: ' + (pollData.opponentName || 'Fighter'), 'pvp');
                     await startPvpBattle(pollData.result, pollData.rewards, null, pollData.opponentName, character);
                     return;
                 }
@@ -14395,6 +14642,7 @@
                                 options: getRandomLevelUpOptions()
                             });
                             savePendingLevelUps();
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                         }
                     }
                 } else {
@@ -14415,6 +14663,7 @@
                                 options: getRandomLevelUpOptions()
                             });
                             savePendingLevelUps();
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                         }
                     }
                 }
@@ -14425,6 +14674,8 @@
                 // Chest
                 if (lastBattleRewards.chestTier && pendingVictoryChests.length < 4) {
                     pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, unlockStart: null, unlockDuration: null });
+                    const tierName = lastBattleRewards.chestTier.charAt(0).toUpperCase() + lastBattleRewards.chestTier.slice(1);
+                    addNotification('📦', tierName + ' chest earned!', 'chest');
                 }
                 // Win streak token bonus
                 winStreak = lastBattleRewards.newWinStreak;
