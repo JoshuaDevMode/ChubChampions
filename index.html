@@ -4031,6 +4031,11 @@
         .ssc-cstat-val { font-family: 'Press Start 2P', monospace; font-size: 9px; font-weight: 700; flex-shrink: 0; }
         .ssc-cstat.ssc-zero .ssc-cstat-val { color: rgba(255,255,255,0.22); }
         .ssc-cstat.ssc-nonzero .ssc-cstat-val { color: #ffd700; text-shadow: 0 0 6px rgba(255,215,0,0.4); }
+        .ssc-base-row { display: flex; align-items: center; gap: 7px; padding: 4px 10px 4px 8px; margin: 2px 6px; }
+        .ssc-base-name { font-family: 'Press Start 2P', monospace; font-size: 7px; color: rgba(255,255,255,0.55); flex: 1; }
+        .ssc-base-num { font-family: 'Press Start 2P', monospace; font-size: 9px; font-weight: 700; color: #a0c8ff; flex-shrink: 0; min-width: 28px; text-align: right; }
+        .ssc-base-fx { font-family: 'Press Start 2P', monospace; font-size: 6px; color: rgba(255,215,0,0.55); flex-shrink: 0; min-width: 44px; text-align: right; line-height: 1.4; }
+        .ssc-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 7px 10px 4px; }
 
         /* ─── Mini Node Icons ───────────────────────────────────── */
         .mini-node { position: relative; }
@@ -9209,18 +9214,7 @@
                     globalTokens = data.globalTokens || 0;
                     globalFragments = data.globalFragments || 0;
                     globalFragmentChestsOpened = data.globalFragmentChestsOpened || 0;
-                    // Migration: convert old formats to new object format
-                    if (typeof data.pendingVictoryChests === 'number') {
-                        pendingVictoryChests = [];
-                        for (let i = 0; i < Math.min(data.pendingVictoryChests, 4); i++) {
-                            pendingVictoryChests.push({ tier: 'bronze', unlockStart: null, unlockDuration: null });
-                        }
-                    } else if (Array.isArray(data.pendingVictoryChests) && data.pendingVictoryChests.length > 0 && typeof data.pendingVictoryChests[0] === 'string') {
-                        // Migration: old string array format → new object format
-                        pendingVictoryChests = data.pendingVictoryChests.map(t => ({ tier: t, unlockStart: null, unlockDuration: null }));
-                    } else {
-                        pendingVictoryChests = data.pendingVictoryChests || [];
-                    }
+                    // pendingVictoryChests: NOT loaded from localStorage — server is the only source of truth
                     globalCharactersCreated = data.globalCharactersCreated || 0;
                     winStreak = data.winStreak || 0;
                     shopItemCooldowns = data.shopItemCooldowns || {};
@@ -9285,7 +9279,6 @@
                     globalTokens: globalTokens,
                     globalFragments: globalFragments,
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
-                    pendingVictoryChests: pendingVictoryChests,
                     globalCharactersCreated: globalCharactersCreated,
                     winStreak: winStreak,
                     shopItemCooldowns: shopItemCooldowns,
@@ -11337,7 +11330,8 @@
         // Rewards returned by the last server battle (chest tier, streak tokens)
         let lastBattleRewards = null;
         // PvP: pre-computed battle result set by findPvpMatch before startGameWithCharacter
-        let _pvpBattleResult = null;
+        let _pvpBattleResult   = null;
+        let _preBattleFetch   = null; // Fetch started during countdown to hide server latency
         // Server-side AoN match ID returned by /api/aon/start; passed in each battle round
         let _aonMatchId = 0;
 
@@ -11348,6 +11342,44 @@
                 _pvpBattleResult = null;
                 lastBattleRewards = rewards;
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+                return;
+            }
+
+            // Use pre-fetched response (started during countdown) to eliminate post-countdown latency
+            const preFetch = _preBattleFetch;
+            _preBattleFetch = null;
+            if (preFetch) {
+                try {
+                    const resp = await preFetch;
+                    if (!resp.ok) {
+                        console.error('[server battle] pre-fetch API returned', resp.status);
+                        stopMatchTimer();
+                        game.inProgress = false;
+                        game.gameOver = true;
+                        showNotice('Could not connect to the server. Please check your connection and try again.');
+                        setTimeout(() => goToLobby(), 2000);
+                        return;
+                    }
+                    const result = await resp.json();
+                    if (!result.events || !result.winner) {
+                        console.error('[server battle] pre-fetch unexpected response format');
+                        stopMatchTimer();
+                        game.inProgress = false;
+                        game.gameOver = true;
+                        showNotice('Server error. Please try again.');
+                        setTimeout(() => goToLobby(), 2000);
+                        return;
+                    }
+                    lastBattleRewards = result.rewards || null;
+                    await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+                } catch (err) {
+                    console.error('[server battle] pre-fetch network error:', err);
+                    stopMatchTimer();
+                    game.inProgress = false;
+                    game.gameOver = true;
+                    showNotice('Connection lost. Please check your internet and try again.');
+                    setTimeout(() => goToLobby(), 2000);
+                }
                 return;
             }
 
@@ -11660,10 +11692,24 @@
                         break;
 
                     case 'attack': {
-                        const _nextEv = events[_ei + 1];
-                        const _prevEv = events[_ei - 1];
-                        const _isComboFirst  = _nextEv && _nextEv.type === 'combo';
-                        const _isComboFollow = _prevEv && _prevEv.type === 'combo';
+                        // Scan forward past log/skill_effect events to detect multi-hit sequences:
+                        // - explicit combo event      → standard combo
+                        // - another attack same fighter → light_step / turn_steal follow-up
+                        let _isComboFirst = false;
+                        for (let _f = _ei + 1; _f < events.length; _f++) {
+                            const _fev = events[_f];
+                            if (_fev.type === 'combo') { _isComboFirst = true; break; }
+                            if (_fev.type === 'attack') { _isComboFirst = _fev.attacker === event.attacker; break; }
+                            if (_fev.type !== 'log' && _fev.type !== 'skill_effect') break;
+                        }
+                        // Scan backward to detect if we are the follow-up of such a sequence
+                        let _isComboFollow = false;
+                        for (let _b = _ei - 1; _b >= 0; _b--) {
+                            const _bev = events[_b];
+                            if (_bev.type === 'combo') { _isComboFollow = true; break; }
+                            if (_bev.type === 'attack') { _isComboFollow = _bev.attacker === event.attacker; break; }
+                            if (_bev.type !== 'log' && _bev.type !== 'skill_effect') break;
+                        }
                         await animateServerAttack(event, _isComboFirst, _isComboFollow);
                         break;
                     }
@@ -11768,11 +11814,13 @@
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
+                playDodgeSound();
                 await sleep(200);
                 fighterBody.classList.remove('dodging');
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
+                playBlockSound();
                 // Block fills fury for both fighters
                 if (!game[attacker].furyActive) {
                     game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 0.75);
@@ -13250,6 +13298,46 @@
 
             startIdleBlink(game.player.element);
             startIdleBlink(game.cpu.element);
+
+            // Start the backend battle fetch NOW so it runs in parallel with the countdown
+            _preBattleFetch = null;
+            if (!_pvpBattleResult && playerSession) {
+                const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
+                _preBattleFetch = fetch(BACKEND_URL + '/api/battle/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({
+                        playerId:    playerSession.playerId,
+                        characterId: character.id,
+                        seed:        _preSeed,
+                        player: {
+                            id: 0, name: character.name, level: character.level || 1,
+                            stats: {
+                                attack:   character.stats.attack   || 35,
+                                strength: character.stats.strength || 35,
+                                agility:  character.stats.agility  || 35,
+                                defense:  character.stats.defense  || 35,
+                            },
+                            maxHp:               getCharacterMaxHp(character),
+                            skills:              character.skills             || {},
+                            equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
+                            equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
+                        },
+                        cpu: {
+                            id: 0, name: currentCpuName || 'CPU', level: currentCpuStats.level || 1,
+                            stats: {
+                                attack:   currentCpuStats.attack   || 35,
+                                strength: currentCpuStats.strength || 35,
+                                agility:  currentCpuStats.agility  || 35,
+                                defense:  currentCpuStats.defense  || 35,
+                            },
+                            maxHp: currentCpuStats.hp || 1000, skills: {}, equippedConsumables: [],
+                        },
+                        ...(aonActive && _aonMatchId ? { aonMatchId: _aonMatchId } : {}),
+                    }),
+                });
+            }
+
             await startCountdown();
 
             initWeaponInventory();
@@ -14094,12 +14182,15 @@
             // Apply hue shift to match character color
             // Calculamos el offset desde el color base del orbe (amarillo 60°) al color del personaje
             const targetHue = fighter === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-            const hueOffset = targetHue - FURY_ORB_BASE_HUE;
+            // hue=0 means the sprite has no shift applied (grey look) — keep orb at its base yellow
+            const hueOffset  = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
+            const glowHue    = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
+            const glowColor  = `hsl(${glowHue}, 100%, 60%)`;
 
             const orb = document.createElement('img');
             orb.src = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES[0] : FURY_ORB_SRC;
             orb.className = 'fury-orb';
-            orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2)`;
+            orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
             document.getElementById('arena').appendChild(orb);
             f.furyOrbEl = orb;
             updateFuryOrbPosition(fighter);
@@ -14785,7 +14876,9 @@
 
             // Get attacker's hue offset to color the lightning (from yellow base ~60°)
             const targetHue = attacker === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-            const hueOffset = targetHue - FURY_ORB_BASE_HUE;
+            const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
+            const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
+            const glowColor = `hsl(${glowHue}, 100%, 60%)`;
 
             const boltCount = 5 + Math.floor(Math.random() * 3);
 
@@ -14812,8 +14905,8 @@
                 lightning.style.setProperty('--duration', duration + 's');
                 lightning.style.animationDelay = delay + 's';
 
-                // Apply hue offset to match attacker's color
-                lightning.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1)`;
+                // Apply hue offset to match attacker's color + glow matching the orb
+                lightning.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
 
                 arena.appendChild(lightning);
                 lightning.addEventListener('animationend', () => lightning.remove(), { once: true });
@@ -17748,7 +17841,43 @@
                 return node.values[getSkillRank(character, branchId, nodeId)] || 0;
             };
 
-            const stats = [
+            // ── CHARACTER BASE STATS section ─────────────────────────────
+            const cs = character.stats || {};
+            const cAtk = cs.attack   || 0;
+            const cStr = cs.strength || 0;
+            const cAgi = cs.agility  || 0;
+            const cDef = cs.defense  || 0;
+            const cHp  = character.maxHp || BASE_HP;
+
+            // DEF → damage reduction: effectiveDef = sqrt(def)*12, red = eff/(100+eff)
+            const effDef    = Math.sqrt(cDef) * 12;
+            const defRed    = (effDef / (100 + effDef) * 100).toFixed(1);
+            // AGI → dodge chance when defending: 40% + agi*0.2% (cap 50%)
+            const agiDodge  = Math.min(50, 40 + cAgi * 0.2).toFixed(1);
+
+            const baseRows = [
+                { icon: '⚔️', label: 'ATK', num: cAtk, fx: '+' + cAtk + '% all dmg' },
+                { icon: '💪', label: 'STR', num: cStr, fx: '+' + cStr + '% kick/wpn' },
+                { icon: '💨', label: 'AGI', num: cAgi, fx: agiDodge + '% dodge'      },
+                { icon: '🛡️', label: 'DEF', num: cDef, fx: defRed   + '% dmg red.'   },
+                { icon: '❤️', label: 'HP',  num: cHp,  fx: ''                        },
+            ];
+
+            let html = '<div class="ssc-header">COMBAT STATS</div>';
+            html += '<div class="ssc-group-label">CHARACTER</div>';
+            for (const b of baseRows) {
+                html +=
+                    '<div class="ssc-base-row">' +
+                    '<span class="ssc-cstat-icon">' + b.icon + '</span>' +
+                    '<span class="ssc-base-name">' + b.label + '</span>' +
+                    '<span class="ssc-base-num">'  + b.num   + '</span>' +
+                    '<span class="ssc-base-fx">'   + b.fx    + '</span>' +
+                    '</div>';
+            }
+            html += '<hr class="ssc-divider">';
+
+            // ── SKILL BONUSES section ─────────────────────────────────────
+            const skillStats = [
                 { group: 'OFFENSE', icon: '💥', label: 'DMG BONUS',    val: getVal('warrior','heavy_blow') },
                 { group: 'OFFENSE', icon: '🎯', label: 'CRIT CHANCE',  val: getVal('warrior','critical') + getVal('mastery','grip') + getVal('champion','decisive_moment') },
                 { group: 'OFFENSE', icon: '🔱', label: 'ARMOR PIERCE', val: getVal('warrior','penetration') },
@@ -17765,19 +17894,18 @@
                 { group: 'STATUS',  icon: '⚡', label: 'PARALYSIS',    val: getVal('intimidation','paralysis') },
             ];
 
-            let html = '<div class="ssc-header">COMBAT STATS</div>';
             let lastGroup = null;
-            for (const s of stats) {
-                if (s.group !== lastGroup) {
-                    html += '<div class="ssc-group-label">' + s.group + '</div>';
-                    lastGroup = s.group;
+            for (const sk of skillStats) {
+                if (sk.group !== lastGroup) {
+                    html += '<div class="ssc-group-label">' + sk.group + '</div>';
+                    lastGroup = sk.group;
                 }
-                const pct = (s.val * 100).toFixed(1) + '%';
-                const isZero = s.val === 0;
+                const pct = (sk.val * 100).toFixed(1) + '%';
+                const isZero = sk.val === 0;
                 html +=
                     '<div class="ssc-cstat ' + (isZero ? 'ssc-zero' : 'ssc-nonzero') + '">' +
-                    '<span class="ssc-cstat-icon">' + s.icon + '</span>' +
-                    '<span class="ssc-cstat-label">' + s.label + '</span>' +
+                    '<span class="ssc-cstat-icon">' + sk.icon + '</span>' +
+                    '<span class="ssc-cstat-label">' + sk.label + '</span>' +
                     '<span class="ssc-cstat-val">' + pct + '</span>' +
                     '</div>';
             }
