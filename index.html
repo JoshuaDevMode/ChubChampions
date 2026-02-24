@@ -17874,11 +17874,11 @@
             const agiDodge  = Math.min(50, 40 + cAgi * 0.2).toFixed(1);
 
             const baseRows = [
-                { icon: '⚔️', label: 'ATK', num: cAtk, fx: '+' + cAtk + '% all dmg' },
-                { icon: '💪', label: 'STR', num: cStr, fx: '+' + cStr + '% kick/wpn' },
-                { icon: '💨', label: 'AGI', num: cAgi, fx: agiDodge + '% dodge'      },
-                { icon: '🛡️', label: 'DEF', num: cDef, fx: defRed   + '% dmg red.'   },
-                { icon: '❤️', label: 'HP',  num: cHp,  fx: ''                        },
+                { icon: '⚔️', label: 'ATK', num: cAtk, fx: '×' + (1 + cAtk * 0.01).toFixed(2) + ' all dmg'  },
+                { icon: '💪', label: 'STR', num: cStr, fx: '×' + (1 + cStr * 0.01).toFixed(2) + ' kick/wpn' },
+                { icon: '💨', label: 'AGI', num: cAgi, fx: agiDodge + '% dodge'                              },
+                { icon: '🛡️', label: 'DEF', num: cDef, fx: defRed   + '% dmg red.'                           },
+                { icon: '❤️', label: 'HP',  num: cHp,  fx: ''                                                },
             ];
 
             let html = '<div class="ssc-header">COMBAT STATS</div>';
