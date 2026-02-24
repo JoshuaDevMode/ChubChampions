@@ -5512,10 +5512,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 7px 20px;
-            background: linear-gradient(to bottom, rgba(18,14,8,0.99), rgba(8,6,3,0.99));
-            border-bottom: 2px solid #7a5514;
-            box-shadow: 0 3px 18px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,180,50,0.06);
+            padding: 2px 16px;
+            background: none;
+            border: 18px solid transparent;
+            border-image-source: url('Assets/UI/iron-frame.png');
+            border-image-slice: 15% fill;
+            border-image-width: 18px;
+            border-image-repeat: stretch;
+            filter: drop-shadow(0 4px 16px rgba(0,0,0,0.9));
             z-index: 50;
             box-sizing: border-box;
         }
