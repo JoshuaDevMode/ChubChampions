@@ -5569,12 +5569,22 @@
         .session-widget {
             display: flex;
             align-items: center;
-            gap: 8px;
             margin-left: 14px;
             padding-left: 14px;
             border-left: 1px solid rgba(255,255,255,0.12);
             flex-shrink: 0;
+            position: relative;
         }
+        .session-profile {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            border-radius: 7px;
+            padding: 4px 8px;
+            transition: background 0.15s;
+        }
+        .session-profile:hover { background: rgba(255,255,255,0.07); }
         .session-avatar {
             width: 26px;
             height: 26px;
@@ -5582,6 +5592,7 @@
             border: 2px solid #7c3aed;
             object-fit: cover;
             display: none;
+            flex-shrink: 0;
         }
         .session-name {
             font-family: 'Press Start 2P', monospace;
@@ -5592,19 +5603,46 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .session-logout-btn {
+        .session-chevron {
+            font-size: 9px;
+            color: rgba(167,139,250,0.5);
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+        .session-widget.sw-open .session-chevron { transform: rotate(180deg); }
+        .session-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: linear-gradient(160deg, #1c1624 0%, #0e0b16 100%);
+            border: 1px solid rgba(167,139,250,0.22);
+            border-top: 2px solid rgba(167,139,250,0.4);
+            border-radius: 9px;
+            padding: 5px;
+            min-width: 140px;
+            z-index: 99999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+        }
+        .session-widget.sw-open .session-dropdown { display: block; }
+        .session-disconnect-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            width: 100%;
             font-family: 'Press Start 2P', monospace;
-            font-size: 0.38em;
+            font-size: 7px;
             color: #f87171;
-            background: none;
-            border: 1px solid #f87171;
-            border-radius: 4px;
-            padding: 4px 7px;
+            background: transparent;
+            border: none;
+            padding: 9px 11px;
             cursor: pointer;
+            border-radius: 6px;
+            text-align: left;
             white-space: nowrap;
             transition: background 0.15s;
         }
-        .session-logout-btn:hover { background: rgba(248,113,113,0.15); }
+        .session-disconnect-btn:hover { background: rgba(248,113,113,0.1); }
         .session-login-btn {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.42em;
@@ -7559,9 +7597,14 @@
             </div>
             <!-- Player session widget -->
             <div class="session-widget" id="session-widget">
-                <img class="session-avatar" id="session-player-avatar" src="" alt="avatar">
-                <span class="session-name" id="session-player-name"></span>
-                <button class="session-logout-btn" id="session-logout-btn" style="display:none;" onclick="logoutPlayerSession()">LOGOUT</button>
+                <div class="session-profile" id="session-profile" onclick="toggleSessionMenu()" style="display:none;">
+                    <img class="session-avatar" id="session-player-avatar" src="" alt="avatar">
+                    <span class="session-name" id="session-player-name"></span>
+                    <span class="session-chevron">▾</span>
+                </div>
+                <div class="session-dropdown" id="session-dropdown">
+                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()">⏻ DISCONNECT</button>
+                </div>
                 <a class="session-login-btn" id="session-login-btn" href="https://fight-chub-backend.vercel.app/">🎮 LOGIN</a>
             </div>
         </div>
@@ -10712,7 +10755,7 @@
         function updatePlayerSessionUI() {
             const nameEl    = document.getElementById('session-player-name');
             const avatarEl  = document.getElementById('session-player-avatar');
-            const logoutBtn = document.getElementById('session-logout-btn');
+            const profileEl = document.getElementById('session-profile');
             const loginBtn  = document.getElementById('session-login-btn');
 
             if (playerSession) {
@@ -10721,13 +10764,13 @@
                     avatarEl.src = playerSession.avatar;
                     avatarEl.style.display = '';
                 }
-                if (logoutBtn) logoutBtn.style.display = '';
+                if (profileEl) profileEl.style.display = '';
                 if (loginBtn)  loginBtn.style.display  = 'none';
                 fetchWalletBalance();
             } else {
                 if (nameEl)    nameEl.textContent = '';
                 if (avatarEl)  avatarEl.style.display = 'none';
-                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (profileEl) profileEl.style.display = 'none';
                 if (loginBtn)  loginBtn.style.display  = '';
                 const balEl = document.getElementById('wallet-balance');
                 if (balEl) balEl.style.display = 'none';
@@ -10735,9 +10778,30 @@
         }
 
         function logoutPlayerSession() {
+            document.getElementById('session-widget')?.classList.remove('sw-open');
             playerSession = null;
             localStorage.removeItem('fightchub_session');
             updatePlayerSessionUI();
+        }
+
+        function toggleSessionMenu() {
+            const widget = document.getElementById('session-widget');
+            if (!widget) return;
+            const opening = !widget.classList.contains('sw-open');
+            widget.classList.toggle('sw-open');
+            if (opening) {
+                setTimeout(() => document.addEventListener('click', _sessionMenuOutside, { once: true }), 10);
+            }
+        }
+
+        function _sessionMenuOutside(e) {
+            const widget = document.getElementById('session-widget');
+            if (!widget) return;
+            if (!widget.contains(e.target)) {
+                widget.classList.remove('sw-open');
+            } else if (widget.classList.contains('sw-open')) {
+                document.addEventListener('click', _sessionMenuOutside, { once: true });
+            }
         }
 
         // ── Wallet Balance ─────────────────────────────────────────────────────────
