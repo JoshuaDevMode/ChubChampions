@@ -11752,7 +11752,7 @@
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
             const isWeaponAnim = !!WEAPONS[attackType];
-            animateRun(attackerEl, false, isWeaponAnim);
+            animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
 
             // Advance toward opponent (combo follow-up is faster, already near mid)
             if (attacker === 'player') attackerEl.style.left  = '69%';
@@ -11844,7 +11844,7 @@
             }
 
             // Return: combo first hit goes to midpoint, all others go to start
-            animateRun(attackerEl, true, isWeaponAnim);
+            animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
             if (isComboFirst) {
                 if (attacker === 'player') attackerEl.style.left  = midPos;
                 else                       attackerEl.style.right = midPos;
@@ -14563,42 +14563,45 @@
             noise.stop(t + duration);
         }
 
-        function animateRun(fighterEl, reverse, useWeaponAnim) {
-            const fighter = fighterEl.id; // 'player' or 'cpu'
+        function animateRun(fighterEl, reverse, weaponIdForRun) {
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
-            const equippedWeapon = (useWeaponAnim && weaponState[fighter]) ? weaponState[fighter].equippedWeapon : null;
-            const hasWeaponRun = equippedWeapon && img._weaponRunFrames && img._weaponRunFrames.length > 0;
+            // Use normal run frames for the character body regardless of weapon.
+            // The weapon sprite appears only as an overlay so it always matches the
+            // actual weapon being used — RunningWeapon.png has a baked weapon in the
+            // art that doesn't match the player's equipped weapon.
+            const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
+            const hasWeaponOverlay = weaponIdForRun && weaponFrames.length > 0;
 
-            if (hasWeaponRun) {
-                // Weapon run: animate character + weapon overlay in sync
-                const charFrames = img._weaponRunFrames;
-                const weaponFrames = _weaponRunFramesCache[equippedWeapon] || [];
+            const charFrames = img._runFrames && img._runFrames.length > 0 ? img._runFrames : [];
 
-                img._idleSrc = img._idleSrc || img.src;
+            img._idleSrc = img._idleSrc || img.src;
+            if (img._currentAnim) clearInterval(img._currentAnim);
+
+            if (charFrames.length > 0) {
                 let frame = 0;
                 img.src = charFrames[0];
-                if (img._currentAnim) clearInterval(img._currentAnim);
 
-                // Create weapon overlay
-                let overlay = fighterEl.querySelector('.weapon-run-overlay');
-                if (!overlay) {
-                    overlay = document.createElement('img');
-                    overlay.className = 'weapon-run-overlay';
-                    fighterEl.querySelector('.fighter-body').appendChild(overlay);
+                // Create/reuse weapon overlay
+                let overlay = null;
+                if (hasWeaponOverlay) {
+                    overlay = fighterEl.querySelector('.weapon-run-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('img');
+                        overlay.className = 'weapon-run-overlay';
+                        fighterEl.querySelector('.fighter-body').appendChild(overlay);
+                    }
+                    overlay.src = weaponFrames[0];
                 }
-                if (weaponFrames.length > 0) overlay.src = weaponFrames[0];
 
                 img._currentAnim = setInterval(function() {
                     frame = (frame + 1) % charFrames.length;
                     img.src = charFrames[frame];
-                    if (weaponFrames.length > 0) {
-                        overlay.src = weaponFrames[frame % weaponFrames.length];
-                    }
+                    if (overlay) overlay.src = weaponFrames[frame % weaponFrames.length];
                 }, 250);
             } else {
-                // Normal run (no weapon)
+                // Fallback: no run frames loaded
                 animateSprite(fighterEl, 'run', { loop: true, halfOnly: false, speed: 250 });
             }
 
