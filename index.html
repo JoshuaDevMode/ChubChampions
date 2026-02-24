@@ -9593,14 +9593,18 @@
             }, { once: true });
 
             yesBtn.addEventListener('click', async function() {
+                // Persist unlock start server-side first
+                const result = await spendOnServer('start_chest_unlock', { chestIndex: slotIndex });
+                if (!result.ok) {
+                    showNotice(result.error || 'Could not start chest unlock. Try again.');
+                    return;
+                }
                 chest.unlockStart = Date.now();
                 chest.unlockDuration = duration;
                 saveProgression();
                 startChestTimerIfNeeded();
                 updateVictoryChestSlots();
                 chestConfirmCleanup();
-                // Persist unlock start server-side
-                spendOnServer('start_chest_unlock', { chestIndex: slotIndex }).catch(() => {});
             }, { once: true });
 
             noBtn.addEventListener('click', function() {
@@ -10733,7 +10737,7 @@
                 globalFragmentChestsOpened = data.fragmentChestsOpened;
                 globalCharactersCreated    = data.charactersCreated;
                 winStreak                  = data.winStreak;
-                if (Array.isArray(data.pendingChests) && data.pendingChests.length > 0) {
+                if (Array.isArray(data.pendingChests)) {
                     pendingVictoryChests = data.pendingChests;
                 }
                 // Restore authoritative daily claim state
