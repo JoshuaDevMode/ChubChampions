@@ -493,6 +493,17 @@
             100% { transform: translate(40px, 0); }
         }
 
+        .jumping {
+            animation: jumpUp 0.55s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+        }
+
+        @keyframes jumpUp {
+            0%   { transform: translateY(0); }
+            35%  { transform: translateY(-90px); }
+            65%  { transform: translateY(-90px); }
+            100% { transform: translateY(0); }
+        }
+
         .blocking {
             animation: blockPushback 0.35s ease-out forwards;
         }
@@ -2742,6 +2753,235 @@
         .skills-icon-btn:active {
             transform: translateY(1px);
             filter: brightness(0.85);
+        }
+
+        /* CARE button (same style as SKILLS) */
+        .care-icon-btn {
+            background: linear-gradient(180deg, #001a2a 0%, #000b15 100%);
+            border: 2px solid #0a86c8;
+            border-radius: 8px;
+            color: #7dd3fc;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            padding: 7px 12px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(125,211,252,0.7);
+            box-shadow: 0 0 8px rgba(10,134,200,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+            transition: all 0.15s ease;
+        }
+        .care-icon-btn:hover {
+            border-color: #7dd3fc;
+            box-shadow: 0 0 20px rgba(125,211,252,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+            filter: brightness(1.15);
+        }
+        .care-icon-btn:active {
+            transform: translateY(1px);
+            filter: brightness(0.85);
+        }
+
+        /* Wellness bar in lobby */
+        .wellness-bar-container {
+            width: 100%;
+            margin-top: 4px;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+        .wellness-bar-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5.5px;
+            color: #ccc;
+            margin-bottom: 3px;
+        }
+        .wellness-bar-label .wellness-status-text {
+            text-transform: uppercase;
+        }
+        .wellness-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .wellness-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        /* CARE Panel overlay */
+        .care-panel {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 120;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+        .care-panel.active {
+            display: flex;
+        }
+        .care-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 12px;
+        }
+        .care-panel-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #7dd3fc;
+            text-shadow: 0 0 12px rgba(125,211,252,0.5);
+        }
+        .care-panel-close {
+            font-size: 28px;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .care-panel-close:hover { color: #fff; }
+
+        .care-wellness-big {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 16px;
+        }
+        .care-wellness-big .wellness-bar-track {
+            height: 14px;
+            border-radius: 7px;
+        }
+        .care-wellness-big .wellness-bar-label {
+            font-size: 7px;
+            margin-bottom: 5px;
+        }
+        .care-wellness-status-big {
+            text-align: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            margin-top: 6px;
+        }
+
+        .care-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .care-tab {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 8px 16px;
+            border: 2px solid #333;
+            border-radius: 6px 6px 0 0;
+            background: #111;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .care-tab.active {
+            border-color: #7dd3fc;
+            color: #7dd3fc;
+            background: #0a1520;
+        }
+        .care-tab:hover:not(.active) {
+            border-color: #555;
+            color: #bbb;
+        }
+
+        .care-items-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .care-item {
+            background: linear-gradient(180deg, #1a1205 0%, #0d0a03 100%);
+            border: 1px solid #3a2a10;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .care-item:hover {
+            border-color: #7dd3fc;
+            box-shadow: 0 0 12px rgba(125,211,252,0.2);
+            transform: translateY(-1px);
+        }
+        .care-item-icon {
+            font-size: 28px;
+        }
+        .care-item-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5.5px;
+            color: #e0d0a0;
+            text-align: center;
+        }
+        .care-item-restore {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            color: #4ade80;
+        }
+        .care-item-xp {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4.5px;
+            color: #facc15;
+        }
+        .care-item-count {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            color: #888;
+        }
+        .care-item.empty {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        /* Shop tabs */
+        .shop-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+        .shop-tab {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            padding: 6px 12px;
+            border: 1px solid #333;
+            border-radius: 6px 6px 0 0;
+            background: #111;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex: 1;
+            text-align: center;
+        }
+        .shop-tab.active {
+            border-color: #ffd700;
+            color: #ffd700;
+            background: #1a1200;
+        }
+        .shop-tab:hover:not(.active) {
+            border-color: #555;
+            color: #bbb;
         }
 
         .shop-panel {
@@ -7677,7 +7917,17 @@
                         </div>
                         <div class="menu-character-stats" id="menu-character-stats"></div>
                         <div class="menu-character-level" id="menu-character-level"></div>
+                        <div class="wellness-bar-container" id="wellness-bar-container" style="display:none;">
+                            <div class="wellness-bar-label">
+                                <span class="wellness-status-text" id="wellness-status-text">Healthy</span>
+                                <span id="wellness-value-text">100/100</span>
+                            </div>
+                            <div class="wellness-bar-track">
+                                <div class="wellness-bar-fill" id="wellness-bar-fill" style="width:100%;background:#4ade80;"></div>
+                            </div>
+                        </div>
                         <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
+                        <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                     </div>
                     <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">
                         ⬆️ UPGRADE STATS
@@ -7869,7 +8119,34 @@
             <span class="shop-close" id="shop-close">&times;</span>
         </div>
         <div class="shop-tokens" id="shop-tokens">🪙 0</div>
+        <div class="shop-tabs">
+            <div class="shop-tab active" id="shop-tab-potions" data-tab="potions">POTIONS</div>
+            <div class="shop-tab" id="shop-tab-wellness" data-tab="wellness">FOOD & MEDICAL</div>
+        </div>
         <div class="shop-grid" id="shop-grid"></div>
+    </div>
+
+    <!-- CARE Panel (Wellness) -->
+    <div class="care-panel" id="care-panel">
+        <div class="care-panel-header">
+            <div class="care-panel-title">FIGHTER CARE</div>
+            <span class="care-panel-close" id="care-panel-close">&times;</span>
+        </div>
+        <div class="care-wellness-big" id="care-wellness-big">
+            <div class="wellness-bar-label">
+                <span class="wellness-status-text" id="care-wellness-status">Healthy</span>
+                <span id="care-wellness-value">100/100</span>
+            </div>
+            <div class="wellness-bar-track">
+                <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
+            </div>
+            <div class="care-wellness-status-big" id="care-wellness-status-big" style="color:#4ade80;">Healthy</div>
+        </div>
+        <div class="care-tabs">
+            <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
+            <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
+        </div>
+        <div class="care-items-grid" id="care-items-grid"></div>
     </div>
 
     <!-- All or Nothing Panel -->
@@ -8747,33 +9024,67 @@
             headbutt: 60
         };
 
-        // Consumable definitions
-        const CONSUMABLE_TRIGGER_HP = 0.25;
-        const CONSUMABLES = {
-            apple:        { name: 'Apple',        category: 'fruit',  healPercent: 0.08, icon: '🍎' },
-            banana:       { name: 'Banana',       category: 'fruit',  healPercent: 0.10, icon: '🍌' },
-            chicken:      { name: 'Chicken',      category: 'meat',   healPercent: 0.15, icon: '🍗' },
-            steak:        { name: 'Steak',        category: 'meat',   healPercent: 0.18, icon: '🥩' },
-            small_potion: { name: 'Small Potion', category: 'potion', healPercent: 0.22, icon: '🧪' },
-            big_potion:   { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6, icon: '⚗️' },
-            bandage:      { name: 'Bandage',      category: 'cure',   healPercent: 0.30, icon: '🩹' },
-            herb:         { name: 'Herb',         category: 'cure',   healPercent: 0.35, hotTicks: 8, icon: '🌿' }
+        // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
+        const WELLNESS_ITEMS = {
+            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 8,  xpGrant: 5,  price: 8,  icon: '🍎' },
+            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 10, xpGrant: 6,  price: 8,  icon: '🍌' },
+            rice_bowl:      { name: 'Rice Bowl',       category: 'food',    wellnessRestore: 12, xpGrant: 7,  price: 10, icon: '🍚' },
+            energy_bar:     { name: 'Energy Bar',      category: 'food',    wellnessRestore: 15, xpGrant: 9,  price: 11, icon: '🍫' },
+            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 18, xpGrant: 10, price: 12, icon: '🍗' },
+            protein_shake:  { name: 'Protein Shake',   category: 'food',    wellnessRestore: 20, xpGrant: 12, price: 14, icon: '🥤' },
+            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 25, xpGrant: 14, price: 15, icon: '🥩' },
+            fighter_feast:  { name: "Fighter's Feast", category: 'food',    wellnessRestore: 35, xpGrant: 20, price: 22, icon: '🍖' },
+            ice_pack:       { name: 'Ice Pack',        category: 'medical', wellnessRestore: 15, xpGrant: 6,  price: 16, icon: '🧊' },
+            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 20, xpGrant: 8,  price: 21, icon: '🩹' },
+            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 30, xpGrant: 12, price: 30, icon: '🌿' },
+            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 40, xpGrant: 18, price: 35, icon: '💉' },
         };
+
+        // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
+        const CONSUMABLE_TRIGGER_HP = 0.25;
+        const BATTLE_CONSUMABLES = {
+            small_potion: { name: 'Small Potion', category: 'potion', healPercent: 0.22, icon: '🧪', price: 18 },
+            big_potion:   { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6, icon: '⚗️', price: 24 },
+        };
+        // Legacy alias — battle engine still references CONSUMABLES for heal logic
+        const CONSUMABLES = BATTLE_CONSUMABLES;
         const CONSUMABLE_MIN_LEVEL = 5;
         const CONSUMABLE_SHOP_PRICES = {
-            apple: 8, banana: 8, chicken: 12, steak: 15,
-            small_potion: 18, big_potion: 24, bandage: 21, herb: 30
+            small_potion: 18, big_potion: 24,
         };
+
+        // ===== WELLNESS SYSTEM CONSTANTS =====
+        const WELLNESS_MAX = 100;
+        const WELLNESS_DECAY_PER_HOUR = 1; // -1 wellness per hour since last fed
+        const WELLNESS_BATTLE_LOSS_FACTOR = 30; // max wellness lost from a single battle
+        const WELLNESS_STATUSES = [
+            { min: 76, label: 'Healthy',            color: '#4ade80', penalty: 0 },
+            { min: 51, label: 'Tired',              color: '#facc15', penalty: 0.05 },
+            { min: 26, label: 'Weakened',           color: '#f97316', penalty: 0.12 },
+            { min: 11, label: 'Exhausted',          color: '#ef4444', penalty: 0.20 },
+            { min: 0,  label: 'Critically Injured', color: '#7f1d1d', penalty: 1 }, // can't fight
+        ];
+        function getWellnessStatus(wellness) {
+            for (const s of WELLNESS_STATUSES) {
+                if (wellness >= s.min) return s;
+            }
+            return WELLNESS_STATUSES[WELLNESS_STATUSES.length - 1];
+        }
+        function getWellnessPenalty(wellness) {
+            const status = getWellnessStatus(wellness);
+            return status.penalty < 1 ? status.penalty : 0; // penalty=1 means can't fight, not a stat multiplier
+        }
         function getMaxEquippedConsumables(level) {
             if (level < 5) return 0;
             return Math.min(5, 1 + Math.floor((level - 5) / 10));
         }
+        // Chest drops: wellness items (food/medical) + battle consumables (potions)
         const CONSUMABLE_DROP_TABLES = {
-            bronze:    { chance: 0.15, pool: ['apple', 'banana'] },
-            silver:    { chance: 0.20, pool: ['apple', 'banana', 'chicken', 'steak'] },
-            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'big_potion'] },
-            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'bandage'] },
-            legendary: { chance: 1.00, pool: ['small_potion', 'big_potion', 'herb'], guaranteed: 'herb' }
+            bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
+            silver:    { chance: 0.20, pool: ['apple', 'banana', 'rice_bowl', 'chicken'], dropType: 'wellness' },
+            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'big_potion'], dropType: 'mixed' },
+            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'ice_pack', 'bandage'], dropType: 'mixed' },
+            legendary: { chance: 1.00, pool: ['big_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
         };
 
         // ===== SKILL TREE SYSTEM =====
@@ -9091,7 +9402,8 @@
         const WEAPON_TIERS = {
             5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            damage: 75,  critBonus: 0.08, longReach: true }],
             10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          damage: 95,  critBonus: 0.15 }],
-            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           damage: 115, critBonus: 0.08 }],
+            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           damage: 115, critBonus: 0.08 },
+                  { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         damage: 40,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
             20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          damage: 140, critBonus: 0.10 }],
             25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          damage: 165, critBonus: 0.12, longReach: true }],
             30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            damage: 190, critBonus: 0.06 }],
@@ -9100,7 +9412,6 @@
             60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   damage: 310, critBonus: 0.06 }],
             70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         damage: 360, critBonus: 0.10 }],
             80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  damage: 410, critBonus: 0.08 }],
-            90:  [{ id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         damage: 40,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
             100: [{ id: 'tier_gun',            name: 'Gun',            img: 'Assets/Weapons/Gun.png',            damage: 500, critBonus: 0.12 }]
         };
 
@@ -10142,9 +10453,16 @@
                     const dropTable = CONSUMABLE_DROP_TABLES[tierId];
                     const cPool = dropTable.pool;
                     const cId = cPool[Math.floor(Math.random() * cPool.length)];
-                    character.consumables.push(cId);
-                    const cons = CONSUMABLES[cId];
-                    rewardLines.push(cons.icon + ' ' + cons.name);
+                    if (WELLNESS_ITEMS[cId]) {
+                        if (!character.wellnessItems) character.wellnessItems = [];
+                        character.wellnessItems.push(cId);
+                        const wItem = WELLNESS_ITEMS[cId];
+                        rewardLines.push(wItem.icon + ' ' + wItem.name);
+                    } else {
+                        character.consumables.push(cId);
+                        const cons = BATTLE_CONSUMABLES[cId] || { icon: '?', name: cId };
+                        rewardLines.push(cons.icon + ' ' + cons.name);
+                    }
                     saveCharacters();
                 }
             } else {
@@ -10179,9 +10497,16 @@
                         }
                     }
                     droppedConsumables.forEach(cId => {
-                        character.consumables.push(cId);
-                        const cons = CONSUMABLES[cId];
-                        rewardLines.push(cons.icon + ' ' + cons.name);
+                        if (WELLNESS_ITEMS[cId]) {
+                            if (!character.wellnessItems) character.wellnessItems = [];
+                            character.wellnessItems.push(cId);
+                            const wItem = WELLNESS_ITEMS[cId];
+                            rewardLines.push(wItem.icon + ' ' + wItem.name);
+                        } else {
+                            character.consumables.push(cId);
+                            const cons = BATTLE_CONSUMABLES[cId] || { icon: '?', name: cId };
+                            rewardLines.push(cons.icon + ' ' + cons.name);
+                        }
                     });
                     if (droppedConsumables.length > 0) saveCharacters();
                 }
@@ -10614,8 +10939,12 @@
                 maxHp: maxHp, // HP calculated at creation, then only modified by level-ups
                 equippedWeapons: [], // Weapons selected for combat (max 5)
                 weaponDurability: {}, // { weaponId: 0-100 }, 100 = new, 0 = broken
-                consumables: [],          // Owned consumable IDs
+                consumables: [],          // Owned battle consumable IDs (potions)
                 equippedConsumables: [],   // Selected for battle (max 2)
+                wellnessItems: [],         // Owned wellness item IDs (food/medical)
+                wellness: 100,             // 0-100 wellness/condition
+                lastFedTimestamp: Date.now(), // for time-based decay
+                lastBattleTimestamp: null,    // timestamp of last battle
                 gamesPlayed: 0,
                 gamesWon: 0,
                 appearance: { body: null, legs: null, feet: null, weapon: null }
@@ -10644,6 +10973,79 @@
 
         function getCharacterDefense(character) {
             return character.stats.defense;
+        }
+
+        // ===== WELLNESS SYSTEM HELPERS =====
+        function applyWellnessDecay(character) {
+            if (character.wellness === undefined) return;
+            const now = Date.now();
+            const lastFed = character.lastFedTimestamp || now;
+            const hoursElapsed = (now - lastFed) / 3600000;
+            if (hoursElapsed > 0) {
+                const decay = Math.floor(hoursElapsed * WELLNESS_DECAY_PER_HOUR);
+                if (decay > 0) {
+                    character.wellness = Math.max(0, character.wellness - decay);
+                    // Don't reset lastFedTimestamp — decay accumulates until they feed
+                }
+            }
+        }
+
+        function applyWellnessDecayAll() {
+            let changed = false;
+            for (const c of characters) {
+                const before = c.wellness;
+                applyWellnessDecay(c);
+                if (c.wellness !== before) changed = true;
+            }
+            if (changed) saveCharacters();
+        }
+
+        function applyPostBattleWellnessLoss(character, wellnessLoss) {
+            if (!character || character.wellness === undefined) return;
+            character.wellness = Math.max(0, Math.round(character.wellness - wellnessLoss));
+            character.lastBattleTimestamp = Date.now();
+            saveCharacters();
+        }
+
+        async function feedCharacter(character, itemId) {
+            const item = WELLNESS_ITEMS[itemId];
+            if (!item) { showNotice('Unknown item!'); return null; }
+            const idx = (character.wellnessItems || []).indexOf(itemId);
+            if (idx === -1) { showNotice("You don't have this item!"); return null; }
+            if (character.wellness >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
+
+            // Call server endpoint
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/character/feed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        characterId: character.id,
+                        itemId: itemId,
+                    }),
+                });
+                const data = await resp.json();
+                if (!data.ok) { showNotice(data.error || 'Failed to use item'); return null; }
+
+                // Apply locally
+                character.wellnessItems.splice(idx, 1);
+                character.wellness = Math.min(WELLNESS_MAX, data.newWellness);
+                character.lastFedTimestamp = Date.now();
+                const xpResult = addExpToCharacter(character.id, data.xpGained);
+                saveCharacters();
+                return { newWellness: data.newWellness, xpGained: data.xpGained, leveledUp: xpResult.leveledUp };
+            } catch (e) {
+                console.warn('[feed] error:', e);
+                showNotice('Network error');
+                return null;
+            }
+        }
+
+        function canFight(character) {
+            if (!character) return false;
+            const w = character.wellness ?? 100;
+            return w > 10; // Critically Injured (0-10) = can't fight
         }
 
         function addExpToCharacter(characterId, exp) {
@@ -10934,6 +11336,33 @@
                         c.appearance = { body: null, legs: null, feet: null, weapon: null };
                         needsSave = true;
                     }
+                    // Migrate: add wellness system fields
+                    if (c.wellness === undefined) {
+                        c.wellness = 100;
+                        c.lastFedTimestamp = Date.now();
+                        c.lastBattleTimestamp = null;
+                        needsSave = true;
+                    }
+                    if (c.wellnessItems === undefined) {
+                        c.wellnessItems = [];
+                        // Move food/medical items from consumables to wellnessItems
+                        if (Array.isArray(c.consumables)) {
+                            const battleOnly = [];
+                            for (const id of c.consumables) {
+                                if (WELLNESS_ITEMS[id]) {
+                                    c.wellnessItems.push(id);
+                                } else {
+                                    battleOnly.push(id);
+                                }
+                            }
+                            c.consumables = battleOnly;
+                            // Clean equippedConsumables to only potions
+                            if (Array.isArray(c.equippedConsumables)) {
+                                c.equippedConsumables = c.equippedConsumables.filter(id => BATTLE_CONSUMABLES[id]);
+                            }
+                        }
+                        needsSave = true;
+                    }
                     // Migrate: rename branch IDs (strength→warrior, defense→guardian, agility→phantom)
                     if (c.skills) {
                         const keys = Object.keys(c.skills);
@@ -11044,7 +11473,7 @@
             mastery:      { grip: 0, familiarity: 1, steel_strength: 2, weapon_instinct: 3, disarm: 4, discipline: 5, master_armorer: 6 },
             champion:     { awakening: 0, iron_will: 1, aura: 2, decisive_moment: 3, master_synergy: 4, presence: 5, resonance: 6 },
         };
-        const ONCHAIN_WEAPON_ID      = { bat: 0, knife: 1, mace: 2, sword: 3, axe: 4 };
+        const ONCHAIN_WEAPON_ID      = { bat: 0, knife: 1, mace: 2, sword: 3, axe: 4, shield: 5 };
         const ONCHAIN_CONSUMABLE_ID  = { apple: 0, banana: 1, chicken: 2, steak: 3, small_potion: 4, big_potion: 5, bandage: 6, herb: 7 };
         const ONCHAIN_SLOT_EMPTY     = 255; // 0xFF
 
@@ -11271,6 +11700,12 @@
                         unlocked:   globalUnlockedWeapons      || [],
                     },
                     consumables: character.consumables || [],
+                    wellnessItems: character.wellnessItems || [],
+                    wellness_data: {
+                        wellness: character.wellness ?? 100,
+                        lastFedTimestamp: character.lastFedTimestamp || null,
+                        lastBattleTimestamp: character.lastBattleTimestamp || null,
+                    },
                 }),
             }).then(r => {
                 if (r.ok) console.log('[sync] character synced ok:', character.name);
@@ -11748,7 +12183,7 @@
         // isComboFirst: this hit is followed by a combo event (return to midpoint)
         // isComboFollow: this hit comes right after a combo event (start from midpoint)
         async function animateServerAttack(event, isComboFirst, isComboFollow) {
-            const { attacker, defender, attackType, defense, damage, isCrit, hasFury } = event;
+            const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
 
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
@@ -11780,7 +12215,11 @@
                     defImg._preDefenseSrc = defImg.src;
                     defImg.src = defImg._dodgeFrames[0];
                 }
-                fighterBody.classList.add('dodging');
+                if (jumpDodge) {
+                    fighterBody.classList.add('jumping');
+                } else {
+                    fighterBody.classList.add('dodging');
+                }
                 await sleep(150);
             } else if (defense === 'block') {
                 if (defImg && defImg._blockFrames && defImg._blockFrames.length > 0) {
@@ -11827,8 +12266,9 @@
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
                 playDodgeSound();
-                await sleep(200);
+                await sleep(jumpDodge ? 350 : 200);
                 fighterBody.classList.remove('dodging');
+                fighterBody.classList.remove('jumping');
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
@@ -11987,6 +12427,7 @@
         // Load player session (Privy) + characters on page load
         loadPlayerSession();
         loadCharacters();
+        applyWellnessDecayAll(); // Apply time-based wellness decay on load
         loadPendingLevelUps();
 
         // Load progression after characters (needs getSelectedCharacter)
@@ -12968,7 +13409,15 @@
                     expContainer.style.display = 'none';
                 }
 
-                playBtn.disabled = false;
+                // Wellness bar update
+                updateWellnessDisplay(character);
+
+                playBtn.disabled = !canFight(character);
+                if (!canFight(character)) {
+                    playBtn.title = 'Fighter is critically injured! Feed or heal first.';
+                } else {
+                    playBtn.title = '';
+                }
                 actionsContainer.style.display = ''; // Show actions (change name, delete)
 
                 // Show upgrade button if there are pending level ups for this character
@@ -15099,6 +15548,22 @@
 
             // Victory chest + win streak — server is the authority
             if (lastBattleRewards) {
+                // Wellness loss from battle
+                if (lastBattleRewards.wellnessLoss !== undefined && lastBattleRewards.wellnessLoss > 0) {
+                    const wChar = getSelectedCharacter();
+                    if (wChar) {
+                        applyPostBattleWellnessLoss(wChar, lastBattleRewards.wellnessLoss);
+                        log('Fighter condition: -' + lastBattleRewards.wellnessLoss + ' wellness', 'log-info');
+                        const wStatus = getWellnessStatus(wChar.wellness);
+                        if (wChar.wellness <= 10) {
+                            addNotification('🚨', wChar.name + ' is critically injured!', 'wellness');
+                        } else if (wChar.wellness <= 25) {
+                            addNotification('⚠️', wChar.name + ' is exhausted! (' + wChar.wellness + '/100)', 'wellness');
+                        } else if (wChar.wellness <= 50) {
+                            addNotification('⚠️', wChar.name + ' is weakened (' + wChar.wellness + '/100)', 'wellness');
+                        }
+                    }
+                }
                 // Chest
                 if (lastBattleRewards.chestTier && pendingVictoryChests.length < 4) {
                     pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, unlockStart: null, unlockDuration: null });
@@ -15470,6 +15935,10 @@
             const character = getSelectedCharacter();
             if (!character) {
                 showNotice('Create a fighter first!');
+                return;
+            }
+            if (!canFight(character)) {
+                showNotice('Fighter is critically injured! Feed or heal first.');
                 return;
             }
             // Reset selections
@@ -16381,6 +16850,7 @@
             const mmOverlay = document.getElementById('aon-matchmaking');
             if (mmOverlay) mmOverlay.remove();
 
+            applyWellnessDecayAll();
             populateInventoryPanel();
             updateLobbyCharacterDisplay();
             updateVictoryChestSlots();
@@ -17496,6 +17966,8 @@
             return h + 'h ' + m + 'm';
         }
 
+        let shopActiveTab = 'potions'; // 'potions' | 'wellness'
+
         function renderShop() {
             const grid = document.getElementById('shop-grid');
             if (!grid) return;
@@ -17506,7 +17978,11 @@
             const character = getSelectedCharacter();
             const limitReached = remaining <= 0;
 
-            // Fragment item (1/day, independent of consumable daily limit)
+            // Update tab styles
+            document.getElementById('shop-tab-potions').classList.toggle('active', shopActiveTab === 'potions');
+            document.getElementById('shop-tab-wellness').classList.toggle('active', shopActiveTab === 'wellness');
+
+            // Fragment item (always shown, independent of tabs)
             const today = new Date().toDateString();
             const fragBought = shopFragmentDate === today && shopFragmentBoughtToday;
             const canAffordFrag = globalTokens >= FRAGMENT_SHOP_PRICE && !fragBought;
@@ -17527,29 +18003,56 @@
             }
             grid.appendChild(fragItem);
 
-            Object.keys(CONSUMABLE_SHOP_PRICES).forEach(id => {
-                const cons = CONSUMABLES[id];
-                const price = CONSUMABLE_SHOP_PRICES[id];
-                const cooldown = getItemCooldownRemaining(id);
-                const onCooldown = cooldown > 0;
-                const canAfford = globalTokens >= price && !onCooldown && !limitReached;
-                const item = document.createElement('div');
-                item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
-                const hotLabel = cons.hotTicks ? ' (HoT)' : '';
-                const priceOrCooldown = onCooldown
-                    ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
-                    : limitReached
-                        ? '<div class="shop-item-cooldown">SOLD OUT</div>'
-                        : '<div class="shop-item-price">🪙 ' + price + '</div>';
-                item.innerHTML = '<div class="shop-item-icon">' + cons.icon + '</div>' +
-                    '<div class="shop-item-name">' + cons.name + '</div>' +
-                    '<div class="shop-item-heal">+' + Math.round(cons.healPercent * 100) + '% HP' + hotLabel + '</div>' +
-                    priceOrCooldown;
-                if (canAfford && character) {
-                    item.addEventListener('click', () => buyConsumable(id));
-                }
-                grid.appendChild(item);
-            });
+            if (shopActiveTab === 'potions') {
+                // Battle consumables (potions)
+                Object.keys(CONSUMABLE_SHOP_PRICES).forEach(id => {
+                    const cons = BATTLE_CONSUMABLES[id];
+                    const price = CONSUMABLE_SHOP_PRICES[id];
+                    const cooldown = getItemCooldownRemaining(id);
+                    const onCooldown = cooldown > 0;
+                    const canAfford = globalTokens >= price && !onCooldown && !limitReached;
+                    const item = document.createElement('div');
+                    item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
+                    const hotLabel = cons.hotTicks ? ' (HoT)' : '';
+                    const priceOrCooldown = onCooldown
+                        ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
+                        : limitReached
+                            ? '<div class="shop-item-cooldown">SOLD OUT</div>'
+                            : '<div class="shop-item-price">🪙 ' + price + '</div>';
+                    item.innerHTML = '<div class="shop-item-icon">' + cons.icon + '</div>' +
+                        '<div class="shop-item-name">' + cons.name + '</div>' +
+                        '<div class="shop-item-heal">+' + Math.round(cons.healPercent * 100) + '% HP' + hotLabel + '</div>' +
+                        priceOrCooldown;
+                    if (canAfford && character) {
+                        item.addEventListener('click', () => buyConsumable(id));
+                    }
+                    grid.appendChild(item);
+                });
+            } else {
+                // Wellness items (food & medical)
+                Object.keys(WELLNESS_ITEMS).forEach(id => {
+                    const wItem = WELLNESS_ITEMS[id];
+                    const price = wItem.price;
+                    const cooldown = getItemCooldownRemaining(id);
+                    const onCooldown = cooldown > 0;
+                    const canAfford = globalTokens >= price && !onCooldown && !limitReached;
+                    const item = document.createElement('div');
+                    item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
+                    const priceOrCooldown = onCooldown
+                        ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
+                        : limitReached
+                            ? '<div class="shop-item-cooldown">SOLD OUT</div>'
+                            : '<div class="shop-item-price">🪙 ' + price + '</div>';
+                    item.innerHTML = '<div class="shop-item-icon">' + wItem.icon + '</div>' +
+                        '<div class="shop-item-name">' + wItem.name + '</div>' +
+                        '<div class="shop-item-heal">+' + wItem.wellnessRestore + ' Wellness | +' + wItem.xpGrant + ' XP</div>' +
+                        priceOrCooldown;
+                    if (canAfford && character) {
+                        item.addEventListener('click', () => buyWellnessItem(id));
+                    }
+                    grid.appendChild(item);
+                });
+            }
         }
 
         function getShopPurchasesRemaining() {
@@ -17578,6 +18081,29 @@
             saveProgression();
             renderShop();
             showNotice('Bought ' + cons.icon + ' ' + cons.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
+        }
+
+        async function buyWellnessItem(id) {
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Select a character first!'); return; }
+            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily purchase limit reached!'); return; }
+            if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
+            const wItem = WELLNESS_ITEMS[id];
+            if (!wItem || globalTokens < wItem.price) { showNotice('Not enough tokens!'); return; }
+
+            const result = await spendOnServer('buy_wellness_item', { itemId: id, characterId: character.id });
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
+
+            const today = new Date().toDateString();
+            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
+            shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
+            if (!character.wellnessItems) character.wellnessItems = [];
+            character.wellnessItems.push(id);
+            saveCharacters();
+            saveProgression();
+            renderShop();
+            showNotice('Bought ' + wItem.icon + ' ' + wItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
         }
 
         async function buyFragment() {
@@ -17616,6 +18142,118 @@
             document.getElementById('shop-panel').classList.remove('active');
         }
 
+        // ===== WELLNESS DISPLAY FUNCTIONS =====
+
+        function updateWellnessDisplay(character) {
+            const container = document.getElementById('wellness-bar-container');
+            if (!container) return;
+            if (!character) { container.style.display = 'none'; return; }
+
+            container.style.display = '';
+            const w = character.wellness ?? 100;
+            const status = getWellnessStatus(w);
+            const pct = Math.max(0, Math.min(100, w));
+
+            document.getElementById('wellness-bar-fill').style.width = pct + '%';
+            document.getElementById('wellness-bar-fill').style.background = status.color;
+            document.getElementById('wellness-status-text').textContent = status.label;
+            document.getElementById('wellness-status-text').style.color = status.color;
+            document.getElementById('wellness-value-text').textContent = w + '/' + WELLNESS_MAX;
+        }
+
+        function updateCareWellnessDisplay(character) {
+            if (!character) return;
+            const w = character.wellness ?? 100;
+            const status = getWellnessStatus(w);
+            const pct = Math.max(0, Math.min(100, w));
+
+            const fill = document.getElementById('care-wellness-fill');
+            if (fill) {
+                fill.style.width = pct + '%';
+                fill.style.background = status.color;
+            }
+            const statusEl = document.getElementById('care-wellness-status');
+            if (statusEl) { statusEl.textContent = status.label; statusEl.style.color = status.color; }
+            const valueEl = document.getElementById('care-wellness-value');
+            if (valueEl) valueEl.textContent = w + '/' + WELLNESS_MAX;
+            const bigStatus = document.getElementById('care-wellness-status-big');
+            if (bigStatus) { bigStatus.textContent = status.label; bigStatus.style.color = status.color; }
+        }
+
+        let careActiveTab = 'food'; // 'food' | 'medical'
+
+        function renderCarePanel() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            updateCareWellnessDisplay(character);
+
+            // Update tab styles
+            document.getElementById('care-tab-food').classList.toggle('active', careActiveTab === 'food');
+            document.getElementById('care-tab-medical').classList.toggle('active', careActiveTab === 'medical');
+
+            const grid = document.getElementById('care-items-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const items = character.wellnessItems || [];
+            // Count items by ID
+            const counts = {};
+            items.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+
+            // Filter by active tab
+            const filtered = Object.keys(counts).filter(id => {
+                const wItem = WELLNESS_ITEMS[id];
+                return wItem && wItem.category === careActiveTab;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#555;font-family:\'Press Start 2P\',monospace;font-size:6px;padding:20px;">No ' + careActiveTab + ' items. Buy some from the Shop!</div>';
+                return;
+            }
+
+            filtered.forEach(id => {
+                const wItem = WELLNESS_ITEMS[id];
+                const count = counts[id];
+                const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
+                const card = document.createElement('div');
+                card.className = 'care-item' + (atMax ? ' empty' : '');
+                card.innerHTML =
+                    '<div class="care-item-icon">' + wItem.icon + '</div>' +
+                    '<div class="care-item-name">' + wItem.name + '</div>' +
+                    '<div class="care-item-restore">+' + wItem.wellnessRestore + ' Wellness</div>' +
+                    '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' +
+                    '<div class="care-item-count">x' + count + '</div>';
+                if (!atMax) {
+                    card.addEventListener('click', async () => {
+                        card.style.pointerEvents = 'none';
+                        card.style.opacity = '0.5';
+                        const result = await feedCharacter(character, id);
+                        if (result) {
+                            showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP');
+                            if (result.leveledUp) {
+                                addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            }
+                        }
+                        renderCarePanel();
+                        updateWellnessDisplay(character);
+                        updateLobbyCharacterDisplay();
+                    });
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function openCarePanel() {
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Select a character first!'); return; }
+            renderCarePanel();
+            document.getElementById('care-panel').classList.add('active');
+        }
+
+        function closeCarePanel() {
+            document.getElementById('care-panel').classList.remove('active');
+        }
+
         function populateInventoryPanel() {
             const grid = document.getElementById('inventory-weapons-grid');
             if (!grid) return;
@@ -17637,9 +18275,10 @@
                 return;
             }
 
-            // Show unlocked weapons (base + unlocked)
-            Object.keys(WEAPONS).forEach(weaponKey => {
+            // Show only weapons the player has unlocked through chests
+            globalUnlockedWeapons.forEach(weaponKey => {
                 const weapon = WEAPONS[weaponKey];
+                if (!weapon) return; // safety: skip if not loaded into WEAPONS yet
                 const isEquipped = character && character.equippedWeapons && character.equippedWeapons.includes(weaponKey);
                 const canEquip = character && (!character.equippedWeapons || character.equippedWeapons.length < getMaxEquippedWeapons(character.level));
                 const durability = character ? getWeaponDurability(character, weaponKey) : 100;
@@ -17761,7 +18400,7 @@
             // Build owned consumable counts
             grid.innerHTML = '';
             if (!character || !character.consumables || character.consumables.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#666;font-family:\'Press Start 2P\',monospace;font-size:0.45em;padding:15px;">No consumables yet.<br>Visit the Shop or open chests!</div>';
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#666;font-family:\'Press Start 2P\',monospace;font-size:0.45em;padding:15px;">No potions yet.<br>Buy from the Shop (Potions tab)!</div>';
                 return;
             }
 
@@ -17770,16 +18409,16 @@
                 counts[id] = (counts[id] || 0) + 1;
             });
 
-            // Group by category
-            const categories = ['fruit', 'meat', 'potion', 'cure'];
-            const categoryNames = { fruit: '🍎 Fruit', meat: '🍖 Meat', potion: '🧪 Potions', cure: '🩹 Cures' };
+            // Battle consumables only (potions) — wellness items are in the CARE panel
+            const categories = ['potion'];
+            const categoryNames = { potion: '🧪 Potions' };
 
             categories.forEach(cat => {
-                const items = Object.keys(counts).filter(id => CONSUMABLES[id] && CONSUMABLES[id].category === cat);
+                const items = Object.keys(counts).filter(id => BATTLE_CONSUMABLES[id] && BATTLE_CONSUMABLES[id].category === cat);
                 if (items.length === 0) return;
 
                 items.forEach(consId => {
-                    const cons = CONSUMABLES[consId];
+                    const cons = BATTLE_CONSUMABLES[consId];
                     const qty = counts[consId];
                     const equippedCount = character.equippedConsumables ? character.equippedConsumables.filter(e => e === consId).length : 0;
                     const isEquipped = equippedCount > 0;
@@ -17867,16 +18506,17 @@
             const cDef = cs.defense  || 0;
             const cHp  = character.maxHp || BASE_HP;
 
-            // DEF → damage reduction: effectiveDef = sqrt(def)*12, red = eff/(100+eff)
-            const effDef    = Math.sqrt(cDef) * 12;
+            // DEF → damage reduction: effectiveDef = sqrt(def)*4, red = eff/(100+eff)
+            const effDef    = Math.sqrt(cDef) * 4;
             const defRed    = (effDef / (100 + effDef) * 100).toFixed(1);
-            // AGI → dodge chance when defending: 40% + agi*0.2% (cap 50%)
-            const agiDodge  = Math.min(50, 40 + cAgi * 0.2).toFixed(1);
+            // AGI → dodge within defense roll: 15% + agi*0.1% (cap 50%); jump dodge: agi*0.05% (cap 25%)
+            const agiDodge  = Math.min(50, 15 + cAgi * 0.1).toFixed(1);
+            const jumpDodge = Math.min(25, cAgi * 0.05).toFixed(1);
 
             const baseRows = [
-                { icon: '⚔️', label: 'ATK', num: cAtk, fx: '×' + (1 + cAtk * 0.01).toFixed(2) + ' all dmg'  },
-                { icon: '💪', label: 'STR', num: cStr, fx: '×' + (1 + cStr * 0.01).toFixed(2) + ' kick/wpn' },
-                { icon: '💨', label: 'AGI', num: cAgi, fx: agiDodge + '% dodge'                              },
+                { icon: '⚔️', label: 'ATK', num: cAtk, fx: '×' + (1 + cAtk * 0.0025).toFixed(3) + ' all dmg'  },
+                { icon: '💪', label: 'STR', num: cStr, fx: '×' + (1 + cStr * 0.004).toFixed(3) + ' wpn / ×' + (1 + cStr * 0.0025).toFixed(3) + ' kick' },
+                { icon: '💨', label: 'AGI', num: cAgi, fx: agiDodge + '% dodge / ' + jumpDodge + '% jump'     },
                 { icon: '🛡️', label: 'DEF', num: cDef, fx: defRed   + '% dmg red.'                           },
                 { icon: '❤️', label: 'HP',  num: cHp,  fx: ''                                                },
             ];
@@ -18778,6 +19418,29 @@
             closeShop();
         });
 
+        // Shop tab switching
+        document.querySelectorAll('.shop-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                shopActiveTab = tab.dataset.tab;
+                renderShop();
+            });
+        });
+
+        // CARE button + panel
+        document.getElementById('menu-care-btn').addEventListener('click', () => {
+            openCarePanel();
+        });
+        document.getElementById('care-panel-close').addEventListener('click', () => {
+            closeCarePanel();
+        });
+        // Care tab switching
+        document.querySelectorAll('.care-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                careActiveTab = tab.dataset.tab;
+                renderCarePanel();
+            });
+        });
+
         // Inventory filter tabs
         document.querySelectorAll('.inv-filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -18888,6 +19551,10 @@
         document.getElementById('menu-play-btn').addEventListener('click', async () => {
             const character = getSelectedCharacter();
             if (!character) return;
+            if (!canFight(character)) {
+                showNotice('Fighter is critically injured! Feed or heal first.');
+                return;
+            }
             await findPvpMatch(character);
         });
 
