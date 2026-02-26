@@ -18851,6 +18851,10 @@
             if (getItemCooldownRemaining(itemId) > 0) { showNotice('This item is on cooldown!'); return null; }
             if (globalTokens < item.price) { showNotice('Not enough tokens!'); return null; }
 
+            // Ensure character exists in Supabase BEFORE spend, so the UPDATE on
+            // wellness_items in economy/spend finds the row and saves the item.
+            try { await syncCharacterToBackend(character); } catch(_) {}
+
             const buyResult = await spendOnServer('buy_wellness_item', { itemId, characterId: character.id });
             if (!buyResult.ok) { showNotice(buyResult.error || 'Not enough tokens!'); return null; }
 
@@ -18936,6 +18940,9 @@
             if (getShopPurchasesRemaining() <= 0) { showNotice('Daily shop limit reached!'); return null; }
             if (getItemCooldownRemaining(id) > 0) { showNotice('This activity is on cooldown!'); return null; }
             if (globalTokens < mItem.price) { showNotice('Not enough tokens!'); return null; }
+
+            // Ensure character exists in Supabase BEFORE spend
+            try { await syncCharacterToBackend(character); } catch(_) {}
 
             // Step 1: Buy (adds to moraleItems on backend)
             const buyResult = await spendOnServer('buy_morale_item', { itemId: id, characterId: character.id });
