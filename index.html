@@ -2922,7 +2922,7 @@
             justify-content: space-between;
             margin-top: 5px;
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
+            font-size: 6px;
             line-height: 1.6;
         }
         .hint-minus { color: #f87171; }
@@ -2936,7 +2936,7 @@
         }
         .care-activity-free-badge {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 7px;
             color: #4ade80;
             border: 1px solid #4ade80;
             border-radius: 4px;
@@ -2956,7 +2956,7 @@
         /* Buy button inside care item card */
         .care-item-buy-btn {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 7px;
             background: linear-gradient(135deg, #d97706, #f59e0b);
             color: #000;
             border: none;
@@ -2967,10 +2967,10 @@
             width: 100%;
         }
         .care-item-buy-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-        .care-item-owned-badge { color: #4ade80; font-family: 'Press Start 2P', monospace; font-size: 4px; margin-top: 3px; }
-        .care-item-cd-text { font-family: 'Press Start 2P', monospace; font-size: 4px; color: #9ca3af; margin-top: 3px; }
-        /* Drop zone glow on character */
-        #menu-character-container.care-drop-target {
+        .care-item-owned-badge { color: #4ade80; font-family: 'Press Start 2P', monospace; font-size: 6px; margin-top: 3px; }
+        .care-item-cd-text { font-family: 'Press Start 2P', monospace; font-size: 6px; color: #9ca3af; margin-top: 3px; }
+        /* Drop zone glow on character section */
+        .menu-character-section.care-drop-target #menu-character-container {
             outline: 3px dashed #60a5fa;
             outline-offset: 6px;
             filter: brightness(1.35) drop-shadow(0 0 14px #60a5fa);
@@ -2982,7 +2982,7 @@
             left: 50%;
             transform: translateX(-50%);
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 7px;
             color: #93c5fd;
             background: rgba(0,0,0,0.7);
             border: 1px solid rgba(96,165,250,0.4);
@@ -3004,12 +3004,12 @@
             justify-content: space-between;
             align-items: center;
             font-family: 'Press Start 2P', monospace;
-            font-size: 6px;
+            font-size: 8px;
             color: #93c5fd;
         }
         .care-stat-status {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 7px;
             text-align: right;
             margin-top: 1px;
         }
@@ -3020,7 +3020,7 @@
         }
         .care-section-subtitle {
             font-family: 'Press Start 2P', monospace;
-            font-size: 6px;
+            font-size: 7.5px;
             color: #60a5fa;
             margin-bottom: 6px;
             text-transform: uppercase;
@@ -3035,7 +3035,7 @@
         }
         .care-tab {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 7px;
             padding: 5px 8px;
             border: 1px solid rgba(96,165,250,0.3);
             border-radius: 4px 4px 0 0;
@@ -3086,24 +3086,24 @@
         .care-item-icon { font-size: 18px; }
         .care-item-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4px;
+            font-size: 6px;
             color: #e0e7ff;
             text-align: center;
         }
         .care-item-restore {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4px;
+            font-size: 6px;
             color: #4ade80;
         }
         .care-item-restore.morale-restore { color: #f97316; }
         .care-item-xp {
             font-family: 'Press Start 2P', monospace;
-            font-size: 3.5px;
+            font-size: 5.5px;
             color: #facc15;
         }
         .care-item-count {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4px;
+            font-size: 6px;
             color: #7dd3fc;
         }
 
@@ -3130,17 +3130,17 @@
         .care-activity-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
         .care-activity-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5.5px;
+            font-size: 7.5px;
             color: #e0e7ff;
         }
         .care-activity-stats {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4px;
+            font-size: 6px;
             color: #94a3b8;
         }
         .care-activity-buy-btn {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5.5px;
+            font-size: 7px;
             background: linear-gradient(to bottom, #d97706, #b45309);
             border: 2px solid #f59e0b;
             border-radius: 6px;
@@ -3163,10 +3163,69 @@
         }
         .care-activity-cooldown-text {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
+            font-size: 6px;
             color: #6b7280;
             flex-shrink: 0;
         }
+
+        /* Care buy-confirm modal */
+        .care-confirm-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            border-radius: 0;
+        }
+        .care-confirm-box {
+            background: linear-gradient(180deg, #0f2044 0%, #060d1c 100%);
+            border: 2px solid #60a5fa;
+            border-radius: 10px;
+            padding: 22px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 240px;
+            box-shadow: 0 0 24px rgba(96,165,250,0.3);
+        }
+        .care-confirm-icon { font-size: 38px; }
+        .care-confirm-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: #e0e7ff;
+        }
+        .care-confirm-desc {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: #93c5fd;
+            line-height: 1.6;
+        }
+        .care-confirm-btns { display: flex; gap: 10px; margin-top: 4px; }
+        .care-confirm-yes {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            background: linear-gradient(to bottom, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 16px;
+            cursor: pointer;
+        }
+        .care-confirm-no {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            background: linear-gradient(to bottom, #ef4444, #dc2626);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 16px;
+            cursor: pointer;
+        }
+        .care-confirm-yes:hover, .care-confirm-no:hover { filter: brightness(1.12); }
 
         /* Morale bar in lobby (below wellness bar) */
         .morale-bar-container {
@@ -18765,13 +18824,40 @@
             return feedResult;
         }
 
+        // ── Care buy-confirm modal ─────────────────────────────────────────────
+        function careBuyConfirm(item, owned) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.className = 'care-confirm-overlay';
+                const desc = owned
+                    ? 'Use this item?'
+                    : '🪙 ' + item.price + ' tokens\nBuy and use?';
+                overlay.innerHTML =
+                    '<div class="care-confirm-box">' +
+                        '<div class="care-confirm-icon">' + item.icon + '</div>' +
+                        '<div class="care-confirm-name">' + item.name + '</div>' +
+                        '<div class="care-confirm-desc" style="white-space:pre-line;">' + desc + '</div>' +
+                        '<div class="care-confirm-btns">' +
+                            '<button class="care-confirm-yes">✓ YES</button>' +
+                            '<button class="care-confirm-no">✕ NO</button>' +
+                        '</div>' +
+                    '</div>';
+                document.getElementById('care-panel').appendChild(overlay);
+                overlay.querySelector('.care-confirm-yes').addEventListener('click', () => { overlay.remove(); resolve(true); });
+                overlay.querySelector('.care-confirm-no').addEventListener('click', () => { overlay.remove(); resolve(false); });
+            });
+        }
+
         // ── Care panel drag-and-drop handlers ─────────────────────────────────
         function _careDragOver(e) {
             e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
             e.currentTarget.classList.add('care-drop-target');
         }
         function _careDragLeave(e) {
-            e.currentTarget.classList.remove('care-drop-target');
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('care-drop-target');
+            }
         }
         async function _careItemDrop(e) {
             e.preventDefault();
@@ -18783,6 +18869,8 @@
             const wItem = WELLNESS_ITEMS[itemId];
             if (!wItem) return;
             const owned = (character.wellnessItems || []).includes(itemId);
+            const confirmed = await careBuyConfirm(wItem, owned);
+            if (!confirmed) return;
             const result = owned
                 ? await feedCharacter(character, itemId)
                 : await buyAndFeedCharacter(character, itemId);
@@ -18994,6 +19082,7 @@
                     card.dataset.itemId = id;
                     card.addEventListener('dragstart', e => {
                         e.dataTransfer.setData('careItemId', id);
+                        e.dataTransfer.effectAllowed = 'copy';
                         card.classList.add('dragging');
                     });
                     card.addEventListener('dragend', () => card.classList.remove('dragging'));
@@ -19021,6 +19110,8 @@
                     const actionable = !atMax && (owned || (!onCooldown && canAfford && !shopFull));
                     if (actionable) {
                         card.addEventListener('click', async () => {
+                            const confirmed = await careBuyConfirm(wItem, owned);
+                            if (!confirmed) return;
                             card.style.pointerEvents = 'none';
                             card.style.opacity = '0.5';
                             const result = owned
@@ -19097,6 +19188,11 @@
                     if (!disabled) {
                         const btn = row.querySelector('.care-activity-buy-btn');
                         if (btn) btn.addEventListener('click', async () => {
+                            const confirmed = await careBuyConfirm(
+                                { icon: mItem.icon, name: mItem.name, price: mItem.price },
+                                false
+                            );
+                            if (!confirmed) return;
                             btn.disabled = true;
                             btn.textContent = '...';
                             await buyAndBoostMorale(character, id);
@@ -19117,7 +19213,7 @@
             renderCarePanel();
             document.getElementById('care-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('care-mode');
-            const cc = document.getElementById('menu-character-container');
+            const cc = document.querySelector('.menu-character-section');
             cc.addEventListener('dragover',  _careDragOver);
             cc.addEventListener('dragleave', _careDragLeave);
             cc.addEventListener('drop',      _careItemDrop);
@@ -19126,7 +19222,7 @@
         function closeCarePanel() {
             document.getElementById('care-panel').classList.remove('active');
             document.getElementById('main-menu').classList.remove('care-mode');
-            const cc = document.getElementById('menu-character-container');
+            const cc = document.querySelector('.menu-character-section');
             cc.removeEventListener('dragover',  _careDragOver);
             cc.removeEventListener('dragleave', _careDragLeave);
             cc.removeEventListener('drop',      _careItemDrop);
