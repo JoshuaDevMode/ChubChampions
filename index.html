@@ -2816,77 +2816,106 @@
             transition: width 0.5s ease, background-color 0.5s ease;
         }
 
-        /* CARE Panel overlay */
+        /* ===== CARE PANEL (left-sliding, like inventory) ===== */
         .care-panel {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
-            z-index: 120;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            padding: 20px 10px;
+            top: 0;
+            left: 0;
+            width: 500px;
+            height: 100%;
             box-sizing: border-box;
+            background: none;
+            border: 40px solid transparent;
+            border-image-source: url('Assets/UI/window-frame.png');
+            border-image-slice: 15% fill;
+            border-image-width: 40px;
+            border-image-repeat: stretch;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            transform: translateX(-560px);
+            transition: transform 0.5s ease;
+            overflow: hidden;
         }
         .care-panel.active {
-            display: flex;
+            transform: translateX(0);
         }
-        .care-panel-header {
+        .care-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            gap: 0;
+        }
+        .care-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(101,67,33,0.5);
         }
-        .care-panel-title {
+        .care-title {
             font-family: 'Press Start 2P', monospace;
-            font-size: 14px;
-            color: #7dd3fc;
-            text-shadow: 0 0 12px rgba(125,211,252,0.5);
+            font-size: 11px;
+            color: #4a2c0a;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
         }
-        .care-panel-close {
-            font-size: 28px;
-            color: #888;
+        .care-close {
+            font-size: 2em;
+            color: #4a2c0a;
             cursor: pointer;
+            transition: color 0.2s;
             line-height: 1;
         }
-        .care-panel-close:hover { color: #fff; }
+        .care-close:hover { color: #8b0000; }
 
-        .care-wellness-big {
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 16px;
+        .care-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
         }
-        .care-wellness-big .wellness-bar-track {
-            height: 14px;
-            border-radius: 7px;
-        }
-        .care-wellness-big .wellness-bar-label {
-            font-size: 7px;
-            margin-bottom: 5px;
-        }
-        .care-wellness-status-big {
-            text-align: center;
+        .care-section-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-family: 'Press Start 2P', monospace;
-            font-size: 8px;
-            margin-top: 6px;
+            font-size: 7px;
+            color: #ccc;
+        }
+        .care-stat-status {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            text-align: right;
+        }
+        .care-divider {
+            height: 1px;
+            background: rgba(101,67,33,0.4);
+            margin: 10px 0;
+        }
+        .care-section-subtitle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5.5px;
+            color: #888;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
+        /* Tabs (food/medical) */
         .care-tabs {
             display: flex;
             gap: 4px;
-            margin-bottom: 12px;
         }
         .care-tab {
             font-family: 'Press Start 2P', monospace;
-            font-size: 7px;
-            padding: 8px 16px;
-            border: 2px solid #333;
-            border-radius: 6px 6px 0 0;
-            background: #111;
+            font-size: 6px;
+            padding: 6px 12px;
+            border: 1px solid #555;
+            border-radius: 4px 4px 0 0;
+            background: rgba(0,0,0,0.3);
             color: #888;
             cursor: pointer;
             transition: all 0.15s;
@@ -2894,67 +2923,88 @@
         .care-tab.active {
             border-color: #7dd3fc;
             color: #7dd3fc;
-            background: #0a1520;
+            background: rgba(125,211,252,0.08);
         }
         .care-tab:hover:not(.active) {
-            border-color: #555;
+            border-color: #777;
             color: #bbb;
         }
 
+        /* Wellness items grid */
         .care-items-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            width: 100%;
-            max-width: 400px;
+            gap: 6px;
+            margin-top: 2px;
         }
-        .care-item {
-            background: linear-gradient(180deg, #1a1205 0%, #0d0a03 100%);
-            border: 1px solid #3a2a10;
+
+        /* Activities grid (buy + use directly) */
+        .care-activities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        /* Item cards shared style */
+        .care-item, .care-activity-item {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid #444;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             cursor: pointer;
             transition: all 0.15s;
         }
-        .care-item:hover {
-            border-color: #7dd3fc;
-            box-shadow: 0 0 12px rgba(125,211,252,0.2);
+        .care-item:hover, .care-activity-item:hover {
+            border-color: #a78bfa;
+            box-shadow: 0 0 10px rgba(167,139,250,0.2);
             transform: translateY(-1px);
         }
-        .care-item-icon {
-            font-size: 28px;
+        .care-item.empty, .care-activity-item.cant-afford {
+            opacity: 0.4;
+            cursor: default;
         }
+        .care-item.empty:hover, .care-activity-item.cant-afford:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #444;
+        }
+        .care-item-icon { font-size: 22px; }
         .care-item-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5.5px;
+            font-size: 5px;
             color: #e0d0a0;
             text-align: center;
         }
         .care-item-restore {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 4.5px;
             color: #4ade80;
         }
+        .care-item-restore.morale-restore { color: #f97316; }
         .care-item-xp {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
+            font-size: 4px;
             color: #facc15;
         }
         .care-item-count {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
+            font-size: 4.5px;
             color: #888;
         }
-        .care-item.empty {
-            opacity: 0.3;
-            cursor: default;
+        .care-activity-price {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4.5px;
+            color: #fbbf24;
         }
-        .care-item-restore.morale-restore {
-            color: #f97316;
+        .care-activity-cooldown {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4px;
+            color: #888;
         }
 
         /* Morale bar in lobby (below wellness bar) */
@@ -2990,69 +3040,7 @@
             transition: width 0.5s ease, background-color 0.5s ease;
         }
 
-        /* CARE panel redesigned — grid layout */
-        .care-grid {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 12px;
-            width: 100%;
-            max-width: 420px;
-            margin-bottom: 12px;
-        }
-        .care-left {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        .care-sprite {
-            width: 120px;
-            height: 120px;
-            image-rendering: pixelated;
-            border: 2px solid #333;
-            border-radius: 8px;
-            background: #0a0a0a;
-            object-fit: contain;
-        }
-        .care-play-btn {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 7px;
-            padding: 8px 16px;
-            background: linear-gradient(180deg, #2a1060 0%, #1a0a40 100%);
-            border: 2px solid #7c3aed;
-            border-radius: 8px;
-            color: #c4b5fd;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .care-play-btn:hover {
-            border-color: #a78bfa;
-            box-shadow: 0 0 12px rgba(167,139,250,0.3);
-        }
-        .care-right {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .care-stat-block {
-            width: 100%;
-        }
-        .care-stat-block .wellness-bar-track,
-        .care-stat-block .morale-bar-track {
-            height: 12px;
-            border-radius: 6px;
-        }
-        .care-stat-block .wellness-bar-label,
-        .care-stat-block .morale-bar-label {
-            font-size: 6.5px;
-            margin-bottom: 4px;
-        }
-        .care-stat-status {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 6px;
-            margin-top: 3px;
-            text-align: right;
-        }
+        /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
 
         /* Mini-game placeholder screen */
         .minigame-screen {
@@ -3286,6 +3274,45 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 5px;
+        }
+
+        .shop-item-happy-pill {
+            grid-column: 1 / -1;
+            border-color: rgba(167, 94, 209, 0.45);
+            background: rgba(167, 94, 209, 0.08);
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 14px 18px;
+        }
+        .shop-item-happy-pill:hover {
+            border-color: #a855f7;
+            background: rgba(167, 94, 209, 0.2);
+            transform: translateY(-2px);
+        }
+        .shop-item-happy-pill.cant-afford:hover {
+            border-color: rgba(167, 94, 209, 0.45);
+            background: rgba(167, 94, 209, 0.08);
+            transform: none;
+        }
+        .shop-item-happy-pill .shop-item-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .shop-item-happy-pill .shop-item-name {
+            color: #d8b4fe;
+        }
+        .happy-pill-badge {
+            font-size: 9px;
+            font-weight: 700;
+            background: #7c3aed;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+            margin-left: 4px;
         }
 
         .menu-btn-create {
@@ -7949,7 +7976,6 @@
         .combat-dur-fill.dur-green { background: #22c55e; }
         .combat-dur-fill.dur-yellow { background: #eab308; }
         .combat-dur-fill.dur-red { background: #ef4444; }
-
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
@@ -8274,51 +8300,52 @@
         <div class="shop-tabs">
             <div class="shop-tab active" id="shop-tab-potions" data-tab="potions">POTIONS</div>
             <div class="shop-tab" id="shop-tab-wellness" data-tab="wellness">FOOD & MEDICAL</div>
-            <div class="shop-tab" id="shop-tab-activities" data-tab="activities">ACTIVITIES</div>
         </div>
         <div class="shop-grid" id="shop-grid"></div>
     </div>
 
     <!-- CARE Panel (Wellness) -->
     <div class="care-panel" id="care-panel">
-        <div class="care-panel-header">
-            <div class="care-panel-title">FIGHTER CARE</div>
-            <span class="care-panel-close" id="care-panel-close">&times;</span>
-        </div>
-        <div class="care-grid">
-            <div class="care-left">
-                <img class="care-sprite" id="care-sprite" src="" alt="Fighter">
-                <button class="care-play-btn" id="care-play-btn">🎮 PLAY</button>
+        <div class="care-container">
+            <div class="care-header">
+                <div class="care-title">FIGHTER CARE</div>
+                <span class="care-close" id="care-panel-close">&times;</span>
             </div>
-            <div class="care-right">
-                <div class="care-stat-block">
-                    <div class="wellness-bar-label">
-                        <span class="wellness-status-text" id="care-wellness-status">Healthy</span>
-                        <span id="care-wellness-value">100/100</span>
-                    </div>
-                    <div class="wellness-bar-track">
-                        <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
-                    </div>
-                    <div class="care-stat-status" id="care-wellness-status-big" style="color:#4ade80;">Healthy</div>
+
+            <!-- Wellness Section -->
+            <div class="care-section">
+                <div class="care-section-label">
+                    <span>❤️ WELLNESS</span>
+                    <span id="care-wellness-value">100/100</span>
                 </div>
-                <div class="care-stat-block">
-                    <div class="morale-bar-label">
-                        <span class="morale-status-text" id="care-morale-status">Fired Up</span>
-                        <span id="care-morale-value">100/100</span>
-                    </div>
-                    <div class="morale-bar-track">
-                        <div class="morale-bar-fill" id="care-morale-fill" style="width:100%;background:#f97316;"></div>
-                    </div>
-                    <div class="care-stat-status" id="care-morale-status-big" style="color:#f97316;">Fired Up</div>
+                <div class="wellness-bar-track" style="margin-bottom:4px;">
+                    <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
                 </div>
+                <div class="care-stat-status" id="care-wellness-status" style="color:#4ade80;">Healthy</div>
+                <div class="care-tabs" style="margin-top:10px;">
+                    <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
+                    <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
+                </div>
+                <div class="care-items-grid" id="care-wellness-grid"></div>
+            </div>
+
+            <!-- Divider -->
+            <div class="care-divider"></div>
+
+            <!-- Morale Section -->
+            <div class="care-section">
+                <div class="care-section-label">
+                    <span>🔥 MORALE</span>
+                    <span id="care-morale-value">100/100</span>
+                </div>
+                <div class="morale-bar-track" style="margin-bottom:4px;">
+                    <div class="morale-bar-fill" id="care-morale-fill" style="width:100%;background:#f97316;"></div>
+                </div>
+                <div class="care-stat-status" id="care-morale-status" style="color:#f97316;">Fired Up</div>
+                <div class="care-section-subtitle">ACTIVITIES — buy &amp; use instantly</div>
+                <div class="care-activities-grid" id="care-activities-grid"></div>
             </div>
         </div>
-        <div class="care-tabs">
-            <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
-            <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
-            <div class="care-tab" id="care-tab-activities" data-tab="activities">ACTIVITIES</div>
-        </div>
-        <div class="care-items-grid" id="care-items-grid"></div>
     </div>
 
     <!-- Mini-game placeholder -->
@@ -9205,6 +9232,7 @@
 
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
+            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 25, icon: '💊' },
             apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 8,  xpGrant: 5,  price: 8,  icon: '🍎' },
             banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 10, xpGrant: 6,  price: 8,  icon: '🍌' },
             rice_bowl:      { name: 'Rice Bowl',       category: 'food',    wellnessRestore: 12, xpGrant: 7,  price: 10, icon: '🍚' },
@@ -9258,13 +9286,13 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.5; // -0.5 per hour (~8 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  price: 6,  icon: '🎵' },
-            comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, price: 7,  icon: '📖' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 12, price: 9,  icon: '🥊' },
-            energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, price: 11, icon: '⚡' },
-            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, price: 14, icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, price: 18, icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, price: 30, icon: '👑' },
+            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 6,  icon: '🎵' },
+            comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 7,  icon: '📖' },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 9,  icon: '🥊' },
+            energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, xpGrant: 8,  price: 11, icon: '⚡' },
+            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 14, icon: '📣' },
+            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 18, icon: '🎬' },
+            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 30, icon: '👑' },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -9665,6 +9693,9 @@
         let shopFragmentDate = '';
         let shopFragmentBoughtToday = false;
         const FRAGMENT_SHOP_PRICE = 5;
+        const HAPPY_PILL_ABSENCE_HOURS = 36;
+        let lastLoginTimestamp = null;   // saved to localStorage — previous session start
+        let happyPillAvailable = false;  // computed once on load, stays true until bought
 
         // XP Boost system
         let xpBoostMultiplier = 1.0;
@@ -9758,6 +9789,7 @@
                     shopPurchaseDate = data.shopPurchaseDate || '';
                     shopFragmentDate = data.shopFragmentDate || '';
                     shopFragmentBoughtToday = data.shopFragmentBoughtToday || false;
+                    lastLoginTimestamp = data.lastLoginTimestamp || null;
                     xpBoostMultiplier = data.xpBoostMultiplier || 1.0;
                     xpBoostBattlesLeft = data.xpBoostBattlesLeft || 0;
                     pendingXpBoosts = data.pendingXpBoosts || [];
@@ -9800,6 +9832,13 @@
             } catch (e) {
                 console.error('Error loading progression:', e);
             }
+            // Compute happy pill availability from PREVIOUS login before updating timestamp
+            if (lastLoginTimestamp && (Date.now() - lastLoginTimestamp) >= HAPPY_PILL_ABSENCE_HOURS * 3600000) {
+                happyPillAvailable = true;
+            }
+            // Update login timestamp to now for next session comparison
+            lastLoginTimestamp = Date.now();
+            saveProgression();
             updateCurrencyUI();
             updateVictoryChestSlots();
             updateXpBoostSlots();
@@ -9829,7 +9868,8 @@
                     dailyChestsEarned: dailyChestsEarned,
                     dailyChestDate: dailyChestDate,
                     shopFragmentDate: shopFragmentDate,
-                    shopFragmentBoughtToday: shopFragmentBoughtToday
+                    shopFragmentBoughtToday: shopFragmentBoughtToday,
+                    lastLoginTimestamp: lastLoginTimestamp
                 }));
             } catch (e) {
                 console.error('Error saving progression:', e);
@@ -10985,18 +11025,18 @@
         const EXP_INCREASE_PER_LEVEL = 10; // +10 per level (linear)
         const HP_INCREASE_PER_LEVEL = 0.05; // 5%
         // Battle mode EXP (max 10 battles/day for EXP)
-        const EXP_PER_WIN_MIN = 40;
-        const EXP_PER_WIN_MAX = 60;
-        const EXP_PER_LOSS_MIN = 5;
-        const EXP_PER_LOSS_MAX = 15;
+        const EXP_PER_WIN_MIN = 30;
+        const EXP_PER_WIN_MAX = 45;
+        const EXP_PER_LOSS_MIN = 4;
+        const EXP_PER_LOSS_MAX = 11;
         // All or Nothing mode EXP (max 2 wins/day for EXP)
-        const AON_EXP_PER_WIN_MIN = 55;
-        const AON_EXP_PER_WIN_MAX = 80;
-        const AON_EXP_PER_LOSS_MIN = 10;
-        const AON_EXP_PER_LOSS_MAX = 20;
+        const AON_EXP_PER_WIN_MIN = 41;
+        const AON_EXP_PER_WIN_MAX = 60;
+        const AON_EXP_PER_LOSS_MIN = 8;
+        const AON_EXP_PER_LOSS_MAX = 15;
         const DAILY_BATTLE_LIMIT = 10;
         const DAILY_CHEST_LIMIT = 8;
-        const DAILY_AON_LIMIT = 2;
+        const DAILY_AON_LIMIT = 3;
 
         let characters = [];
         let selectedCharacterId = null;
@@ -11307,8 +11347,9 @@
                 character.moraleItems.splice(idx, 1);
                 character.morale = Math.min(MORALE_MAX, data.newMorale);
                 character.lastMoraleTimestamp = Date.now();
+                const xpResult = data.xpGained ? addExpToCharacter(character.id, data.xpGained) : { leveledUp: false };
                 saveCharacters();
-                return { newMorale: data.newMorale };
+                return { newMorale: data.newMorale, xpGained: data.xpGained || 0, leveledUp: xpResult.leveledUp };
             } catch (e) {
                 console.warn('[boost] error:', e);
                 showNotice('Network error');
@@ -11341,14 +11382,15 @@
                 character.wellnessItems.splice(idx, 1);
                 character.wellness = Math.min(WELLNESS_MAX, data.newWellness);
                 character.lastFedTimestamp = Date.now();
-                // Feeding also restores +2 morale
+                // Feeding also restores morale (amount depends on item)
+                const moraleBonus = item.moraleBonus ?? 2;
                 if (character.morale !== undefined) {
-                    character.morale = Math.min(MORALE_MAX, (character.morale || 0) + 2);
+                    character.morale = Math.min(MORALE_MAX, (character.morale || 0) + moraleBonus);
                     character.lastMoraleTimestamp = Date.now();
                 }
                 const xpResult = addExpToCharacter(character.id, data.xpGained);
                 saveCharacters();
-                return { newWellness: data.newWellness, xpGained: data.xpGained, leveledUp: xpResult.leveledUp, moraleBonus: 2 };
+                return { newWellness: data.newWellness, xpGained: data.xpGained, leveledUp: xpResult.leveledUp, moraleBonus };
             } catch (e) {
                 console.warn('[feed] error:', e);
                 showNotice('Network error');
@@ -13740,9 +13782,12 @@
                 updateWellnessDisplay(character);
                 updateMoraleDisplay(character);
 
-                playBtn.disabled = !canFight(character);
+                const isDepressed = (character.morale ?? 100) < 20;
+                playBtn.disabled = !canFight(character) || isDepressed;
                 if (!canFight(character)) {
                     playBtn.title = 'Fighter is critically injured! Feed or heal first.';
+                } else if (isDepressed) {
+                    playBtn.title = 'Fighter is too depressed to fight! Use activities to boost morale.';
                 } else {
                     playBtn.title = '';
                 }
@@ -16286,10 +16331,6 @@
                 showNotice('Fighter is critically injured! Feed or heal first.');
                 return;
             }
-            if ((character.morale ?? 100) < 20) {
-                showNotice('Fighter morale is too low for All-or-Nothing! Use activities to boost morale.');
-                return;
-            }
             // Reset selections
             document.querySelectorAll('.aon-fee-btn').forEach(b => b.classList.remove('selected'));
             document.querySelectorAll('.aon-format-btn').forEach(b => b.classList.remove('selected'));
@@ -18331,7 +18372,6 @@
             // Update tab styles
             document.getElementById('shop-tab-potions').classList.toggle('active', shopActiveTab === 'potions');
             document.getElementById('shop-tab-wellness').classList.toggle('active', shopActiveTab === 'wellness');
-            document.getElementById('shop-tab-activities').classList.toggle('active', shopActiveTab === 'activities');
 
             // Fragment item (always shown, independent of tabs)
             const today = new Date().toDateString();
@@ -18353,6 +18393,26 @@
                 fragItem.addEventListener('click', buyFragment);
             }
             grid.appendChild(fragItem);
+
+            // Happy Pill — visible when player was absent 36+ hours and doesn't already have one
+            const alreadyHasPill = character && (character.wellnessItems || []).includes('happy_pill');
+            if (happyPillAvailable && !alreadyHasPill) {
+                const pill = WELLNESS_ITEMS['happy_pill'];
+                const canAffordPill = globalTokens >= pill.price;
+                const pillCard = document.createElement('div');
+                pillCard.className = 'shop-item shop-item-happy-pill' + (canAffordPill ? '' : ' cant-afford');
+                pillCard.innerHTML =
+                    '<div class="shop-item-icon">' + pill.icon + '</div>' +
+                    '<div class="shop-item-info">' +
+                        '<div class="shop-item-name">' + pill.name + ' <span class="happy-pill-badge">COMEBACK</span></div>' +
+                        '<div class="shop-item-heal">+' + pill.wellnessRestore + ' Wellness | +' + pill.moraleBonus + ' Morale</div>' +
+                    '</div>' +
+                    '<div class="shop-item-price">🪙 ' + pill.price + '</div>';
+                if (canAffordPill && character) {
+                    pillCard.addEventListener('click', buyHappyPill);
+                }
+                grid.appendChild(pillCard);
+            }
 
             if (shopActiveTab === 'potions') {
                 // Battle consumables (potions)
@@ -18379,30 +18439,8 @@
                     }
                     grid.appendChild(item);
                 });
-            } else if (shopActiveTab === 'activities') {
-                // Morale items (activities)
-                Object.keys(MORALE_ITEMS).forEach(id => {
-                    const mItem = MORALE_ITEMS[id];
-                    const price = mItem.price;
-                    const cooldown = getItemCooldownRemaining(id);
-                    const onCooldown = cooldown > 0;
-                    const canAfford = globalTokens >= price && !onCooldown && !limitReached;
-                    const item = document.createElement('div');
-                    item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
-                    const priceOrCooldown = onCooldown
-                        ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
-                        : limitReached
-                            ? '<div class="shop-item-cooldown">SOLD OUT</div>'
-                            : '<div class="shop-item-price">🪙 ' + price + '</div>';
-                    item.innerHTML = '<div class="shop-item-icon">' + mItem.icon + '</div>' +
-                        '<div class="shop-item-name">' + mItem.name + '</div>' +
-                        '<div class="shop-item-heal">+' + mItem.moraleRestore + ' Morale</div>' +
-                        priceOrCooldown;
-                    if (canAfford && character) {
-                        item.addEventListener('click', () => buyMoraleItem(id));
-                    }
-                    grid.appendChild(item);
-                });
+            if (false) {
+                // activities tab removed — morale items are now in the CARE panel
             } else {
                 // Wellness items (food & medical)
                 Object.keys(WELLNESS_ITEMS).forEach(id => {
@@ -18481,6 +18519,26 @@
             showNotice('Bought ' + wItem.icon + ' ' + wItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
         }
 
+        async function buyHappyPill() {
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Select a character first!'); return; }
+            if (!happyPillAvailable) { showNotice('Happy Pill not available yet!'); return; }
+            if ((character.wellnessItems || []).includes('happy_pill')) { showNotice('Your fighter already has a Happy Pill!'); return; }
+            const pill = WELLNESS_ITEMS['happy_pill'];
+            if (globalTokens < pill.price) { showNotice('Not enough tokens!'); return; }
+
+            const result = await spendOnServer('buy_wellness_item', { itemId: 'happy_pill', characterId: character.id });
+            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
+
+            if (!character.wellnessItems) character.wellnessItems = [];
+            character.wellnessItems.push('happy_pill');
+            happyPillAvailable = false; // consumed this comeback event
+            saveCharacters();
+            saveProgression();
+            renderShop();
+            showNotice('💊 Happy Pill bought! Use it from the CARE panel to recover.');
+        }
+
         async function buyMoraleItem(id) {
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character first!'); return; }
@@ -18502,6 +18560,35 @@
             saveProgression();
             renderShop();
             showNotice('Bought ' + mItem.icon + ' ' + mItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
+        }
+
+        async function buyAndBoostMorale(character, id) {
+            const mItem = MORALE_ITEMS[id];
+            if (!mItem) { showNotice('Unknown activity!'); return null; }
+            if ((character.morale ?? 100) >= MORALE_MAX) { showNotice('Fighter is already at max morale!'); return null; }
+            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily shop limit reached!'); return null; }
+            if (getItemCooldownRemaining(id) > 0) { showNotice('This activity is on cooldown!'); return null; }
+            if (globalTokens < mItem.price) { showNotice('Not enough tokens!'); return null; }
+
+            // Step 1: Buy (adds to moraleItems on backend)
+            const buyResult = await spendOnServer('buy_morale_item', { itemId: id, characterId: character.id });
+            if (!buyResult.ok) { showNotice(buyResult.error || 'Not enough tokens!'); return null; }
+
+            const today = new Date().toDateString();
+            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
+            shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
+            if (!character.moraleItems) character.moraleItems = [];
+            character.moraleItems.push(id);
+            saveProgression();
+
+            // Step 2: Use immediately
+            const useResult = await boostMorale(character, id);
+            if (!useResult) { showNotice('Bought but could not use item!'); return null; }
+
+            showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale | +' + (mItem.xpGrant || 0) + ' XP');
+            if (useResult.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+            return useResult;
         }
 
         async function buyFragment() {
@@ -18571,7 +18658,7 @@
 
             document.getElementById('morale-bar-fill').style.width = pct + '%';
             document.getElementById('morale-bar-fill').style.background = status.color;
-            document.getElementById('morale-status-text').textContent = status.label;
+            document.getElementById('morale-status-text').textContent = 'Morale: ' + status.label;
             document.getElementById('morale-status-text').style.color = status.color;
             document.getElementById('morale-value-text').textContent = m + '/' + MORALE_MAX;
         }
@@ -18591,8 +18678,6 @@
             if (statusEl) { statusEl.textContent = status.label; statusEl.style.color = status.color; }
             const valueEl = document.getElementById('care-wellness-value');
             if (valueEl) valueEl.textContent = w + '/' + WELLNESS_MAX;
-            const bigStatus = document.getElementById('care-wellness-status-big');
-            if (bigStatus) { bigStatus.textContent = status.label; bigStatus.style.color = status.color; }
         }
 
         function updateCareMoraleDisplay(character) {
@@ -18607,14 +18692,12 @@
                 fill.style.background = status.color;
             }
             const statusEl = document.getElementById('care-morale-status');
-            if (statusEl) { statusEl.textContent = status.label; statusEl.style.color = status.color; }
+            if (statusEl) { statusEl.textContent = 'Morale: ' + status.label; statusEl.style.color = status.color; }
             const valueEl = document.getElementById('care-morale-value');
             if (valueEl) valueEl.textContent = m + '/' + MORALE_MAX;
-            const bigStatus = document.getElementById('care-morale-status-big');
-            if (bigStatus) { bigStatus.textContent = status.label; bigStatus.style.color = status.color; }
         }
 
-        let careActiveTab = 'food'; // 'food' | 'medical' | 'activities'
+        let careActiveTab = 'food'; // 'food' | 'medical'
 
         function renderCarePanel() {
             const character = getSelectedCharacter();
@@ -18622,105 +18705,94 @@
             updateCareWellnessDisplay(character);
             updateCareMoraleDisplay(character);
 
-            // Update sprite
-            const spriteEl = document.getElementById('care-sprite');
-            const menuImg = document.getElementById('menu-character-img');
-            if (spriteEl && menuImg) spriteEl.src = menuImg.src;
-
-            // Update tab styles
+            // Wellness tab styles
             document.getElementById('care-tab-food').classList.toggle('active', careActiveTab === 'food');
             document.getElementById('care-tab-medical').classList.toggle('active', careActiveTab === 'medical');
-            document.getElementById('care-tab-activities').classList.toggle('active', careActiveTab === 'activities');
 
-            const grid = document.getElementById('care-items-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            if (careActiveTab === 'activities') {
-                // Render morale items
-                const items = character.moraleItems || [];
-                const counts = {};
-                items.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
-
-                const filtered = Object.keys(counts).filter(id => !!MORALE_ITEMS[id]);
-
-                if (filtered.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#555;font-family:\'Press Start 2P\',monospace;font-size:6px;padding:20px;">No activities. Buy some from the Shop!</div>';
-                    return;
-                }
-
-                filtered.forEach(id => {
-                    const mItem = MORALE_ITEMS[id];
-                    const count = counts[id];
-                    const atMax = (character.morale ?? 100) >= MORALE_MAX;
-                    const card = document.createElement('div');
-                    card.className = 'care-item' + (atMax ? ' empty' : '');
-                    card.innerHTML =
-                        '<div class="care-item-icon">' + mItem.icon + '</div>' +
-                        '<div class="care-item-name">' + mItem.name + '</div>' +
-                        '<div class="care-item-restore morale-restore">+' + mItem.moraleRestore + ' Morale</div>' +
-                        '<div class="care-item-count">x' + count + '</div>';
-                    if (!atMax) {
-                        card.addEventListener('click', async () => {
-                            card.style.pointerEvents = 'none';
-                            card.style.opacity = '0.5';
-                            const result = await boostMorale(character, id);
-                            if (result) {
-                                showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale');
-                            }
-                            renderCarePanel();
-                            updateMoraleDisplay(character);
-                            updateLobbyCharacterDisplay();
-                        });
-                    }
-                    grid.appendChild(card);
-                });
-            } else {
-                // Render wellness items (food / medical)
+            // --- Wellness items (from inventory) ---
+            const wellnessGrid = document.getElementById('care-wellness-grid');
+            if (wellnessGrid) {
+                wellnessGrid.innerHTML = '';
                 const items = character.wellnessItems || [];
                 const counts = {};
                 items.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
-
                 const filtered = Object.keys(counts).filter(id => {
                     const wItem = WELLNESS_ITEMS[id];
                     return wItem && wItem.category === careActiveTab;
                 });
-
                 if (filtered.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#555;font-family:\'Press Start 2P\',monospace;font-size:6px;padding:20px;">No ' + careActiveTab + ' items. Buy some from the Shop!</div>';
-                    return;
+                    wellnessGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#555;font-family:\'Press Start 2P\',monospace;font-size:5px;padding:12px;">No ' + careActiveTab + ' items.<br>Buy from Shop!</div>';
+                } else {
+                    filtered.forEach(id => {
+                        const wItem = WELLNESS_ITEMS[id];
+                        const count = counts[id];
+                        const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
+                        const card = document.createElement('div');
+                        card.className = 'care-item' + (atMax ? ' empty' : '');
+                        card.innerHTML =
+                            '<div class="care-item-icon">' + wItem.icon + '</div>' +
+                            '<div class="care-item-name">' + wItem.name + '</div>' +
+                            '<div class="care-item-restore">+' + wItem.wellnessRestore + ' Wellness</div>' +
+                            (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
+                            '<div class="care-item-count">x' + count + '</div>';
+                        if (!atMax) {
+                            card.addEventListener('click', async () => {
+                                card.style.pointerEvents = 'none';
+                                card.style.opacity = '0.5';
+                                const result = await feedCharacter(character, id);
+                                if (result) {
+                                    const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
+                                    showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
+                                    if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                                }
+                                renderCarePanel();
+                                updateWellnessDisplay(character);
+                                updateMoraleDisplay(character);
+                                updateLobbyCharacterDisplay();
+                            });
+                        }
+                        wellnessGrid.appendChild(card);
+                    });
                 }
+            }
 
-                filtered.forEach(id => {
-                    const wItem = WELLNESS_ITEMS[id];
-                    const count = counts[id];
-                    const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
+            // --- Morale activities (buy + use directly) ---
+            const activitiesGrid = document.getElementById('care-activities-grid');
+            if (activitiesGrid) {
+                activitiesGrid.innerHTML = '';
+                Object.keys(MORALE_ITEMS).forEach(id => {
+                    const mItem = MORALE_ITEMS[id];
+                    const atMax = (character.morale ?? 100) >= MORALE_MAX;
+                    const cooldown = getItemCooldownRemaining(id);
+                    const onCooldown = cooldown > 0;
+                    const canAfford = globalTokens >= mItem.price && !onCooldown && getShopPurchasesRemaining() > 0;
                     const card = document.createElement('div');
-                    card.className = 'care-item' + (atMax ? ' empty' : '');
+                    const disabled = atMax || !canAfford;
+                    card.className = 'care-activity-item' + (disabled ? ' cant-afford' : '');
+                    const priceOrStatus = onCooldown
+                        ? '<div class="care-activity-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
+                        : atMax
+                            ? '<div class="care-activity-cooldown">MORALE FULL</div>'
+                            : getShopPurchasesRemaining() <= 0
+                                ? '<div class="care-activity-cooldown">LIMIT REACHED</div>'
+                                : '<div class="care-activity-price">🪙 ' + mItem.price + '</div>';
                     card.innerHTML =
-                        '<div class="care-item-icon">' + wItem.icon + '</div>' +
-                        '<div class="care-item-name">' + wItem.name + '</div>' +
-                        '<div class="care-item-restore">+' + wItem.wellnessRestore + ' Wellness</div>' +
-                        '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' +
-                        '<div class="care-item-count">x' + count + '</div>';
-                    if (!atMax) {
+                        '<div class="care-item-icon">' + mItem.icon + '</div>' +
+                        '<div class="care-item-name">' + mItem.name + '</div>' +
+                        '<div class="care-item-restore morale-restore">+' + mItem.moraleRestore + ' Morale</div>' +
+                        '<div class="care-item-xp">+' + mItem.xpGrant + ' XP</div>' +
+                        priceOrStatus;
+                    if (!disabled) {
                         card.addEventListener('click', async () => {
                             card.style.pointerEvents = 'none';
                             card.style.opacity = '0.5';
-                            const result = await feedCharacter(character, id);
-                            if (result) {
-                                showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + (result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : ''));
-                                if (result.leveledUp) {
-                                    addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                                }
-                            }
+                            await buyAndBoostMorale(character, id);
                             renderCarePanel();
-                            updateWellnessDisplay(character);
                             updateMoraleDisplay(character);
                             updateLobbyCharacterDisplay();
                         });
                     }
-                    grid.appendChild(card);
+                    activitiesGrid.appendChild(card);
                 });
             }
         }
@@ -19923,12 +19995,7 @@
             });
         });
 
-        // PLAY button → mini-game placeholder
-        document.getElementById('care-play-btn').addEventListener('click', () => {
-            closeCarePanel();
-            document.getElementById('lobby-wrapper').style.display = 'none';
-            document.getElementById('minigame-screen').classList.add('active');
-        });
+        // PLAY button → mini-game placeholder (care-play-btn removed from CARE panel)
         document.getElementById('minigame-back-btn').addEventListener('click', () => {
             document.getElementById('minigame-screen').classList.remove('active');
             document.getElementById('lobby-wrapper').style.display = '';
@@ -20046,6 +20113,10 @@
             if (!character) return;
             if (!canFight(character)) {
                 showNotice('Fighter is critically injured! Feed or heal first.');
+                return;
+            }
+            if ((character.morale ?? 100) < 20) {
+                showNotice('Fighter is too depressed to fight! Use activities to boost morale.');
                 return;
             }
             await findPvpMatch(character);
