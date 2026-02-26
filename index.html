@@ -1457,11 +1457,12 @@
             transition: transform 0.5s ease, transform-origin 0.5s ease;
         }
 
-        /* Character moves to 890/1280 ≈ 70% when panel opens → zoom bg toward that point */
+        /* Background follows the character: same translate+scale so the stone platform
+           stays centered behind the character (left gap is hidden under the 500px panel) */
         .main-menu.inventory-mode .lobby-bg,
         .main-menu.care-mode .lobby-bg {
-            transform-origin: 70% center;
-            transform: scale(1.15);
+            transform-origin: center center;
+            transform: translateX(250px) scale(1.15);
         }
 
         /* Nebula layer */
