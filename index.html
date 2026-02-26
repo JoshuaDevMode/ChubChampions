@@ -18641,7 +18641,7 @@
 
             document.getElementById('wellness-bar-fill').style.width = pct + '%';
             document.getElementById('wellness-bar-fill').style.background = status.color;
-            document.getElementById('wellness-status-text').textContent = status.label;
+            document.getElementById('wellness-status-text').textContent = 'Wellness: ' + status.label;
             document.getElementById('wellness-status-text').style.color = status.color;
             document.getElementById('wellness-value-text').textContent = w + '/' + WELLNESS_MAX;
         }
@@ -18675,7 +18675,7 @@
                 fill.style.background = status.color;
             }
             const statusEl = document.getElementById('care-wellness-status');
-            if (statusEl) { statusEl.textContent = status.label; statusEl.style.color = status.color; }
+            if (statusEl) { statusEl.textContent = 'Wellness: ' + status.label; statusEl.style.color = status.color; }
             const valueEl = document.getElementById('care-wellness-value');
             if (valueEl) valueEl.textContent = w + '/' + WELLNESS_MAX;
         }
