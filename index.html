@@ -18439,10 +18439,8 @@
                     }
                     grid.appendChild(item);
                 });
-            if (false) {
-                // activities tab removed — morale items are now in the CARE panel
-            } else {
-                // Wellness items (food & medical)
+            } else if (shopActiveTab === 'wellness') {
+                // Wellness items (food & medical) — activities moved to CARE panel
                 Object.keys(WELLNESS_ITEMS).forEach(id => {
                     const wItem = WELLNESS_ITEMS[id];
                     const price = wItem.price;
