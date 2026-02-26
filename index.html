@@ -2904,6 +2904,22 @@
             border: 1px solid rgba(96,165,250,0.18);
             border-radius: 8px;
             padding: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .care-stat-col.care-stat-clickable {
+            cursor: pointer;
+        }
+        .care-stat-col.care-stat-clickable.active {
+            border-color: rgba(96,165,250,0.7);
+            box-shadow: 0 0 12px rgba(96,165,250,0.2), inset 0 0 8px rgba(96,165,250,0.06);
+        }
+        .care-stat-col.care-stat-clickable:not(.active):hover {
+            border-color: rgba(96,165,250,0.4);
+        }
+        /* Content area below the stat boxes */
+        #care-content-area {
+            flex: 1;
+            overflow-y: auto;
         }
         .care-section-label {
             display: flex;
@@ -8379,10 +8395,9 @@
                 <span class="care-close" id="care-panel-close">&times;</span>
             </div>
 
-            <!-- Wellness + Morale side by side -->
+            <!-- Wellness + Morale side by side (clickable to select content below) -->
             <div class="care-stats-row">
-                <!-- Wellness Column -->
-                <div class="care-stat-col">
+                <div class="care-stat-col care-stat-clickable active" id="care-wellness-col">
                     <div class="care-section-label">
                         <span>❤️ WELLNESS</span>
                         <span id="care-wellness-value">100/100</span>
@@ -8391,15 +8406,8 @@
                         <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
                     </div>
                     <div class="care-stat-status" id="care-wellness-status" style="color:#4ade80;">Healthy</div>
-                    <div class="care-tabs">
-                        <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
-                        <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
-                    </div>
-                    <div class="care-items-grid" id="care-wellness-grid"></div>
                 </div>
-
-                <!-- Morale Column -->
-                <div class="care-stat-col">
+                <div class="care-stat-col care-stat-clickable" id="care-morale-col">
                     <div class="care-section-label">
                         <span>🔥 MORALE</span>
                         <span id="care-morale-value">100/100</span>
@@ -8411,12 +8419,9 @@
                 </div>
             </div>
 
-            <!-- Divider -->
-            <div class="care-divider"></div>
-
-            <!-- Activities Section -->
-            <div class="care-section-subtitle">⚡ ACTIVITIES — buy &amp; use instantly</div>
-            <div class="care-activities-list" id="care-activities-list"></div>
+            <!-- Shared content area — renders wellness items or activities depending on selection -->
+            <div class="care-divider" id="care-content-divider"></div>
+            <div id="care-content-area"></div>
         </div>
     </div>
 
@@ -18767,7 +18772,8 @@
             if (valueEl) valueEl.textContent = m + '/' + MORALE_MAX;
         }
 
-        let careActiveTab = 'food'; // 'food' | 'medical'
+        let careActiveTab     = 'food';      // 'food' | 'medical'
+        let careActiveSection = 'wellness';  // 'wellness' | 'morale'
 
         function renderCarePanel() {
             const character = getSelectedCharacter();
@@ -18775,23 +18781,43 @@
             updateCareWellnessDisplay(character);
             updateCareMoraleDisplay(character);
 
-            // Wellness tab styles
-            document.getElementById('care-tab-food').classList.toggle('active', careActiveTab === 'food');
-            document.getElementById('care-tab-medical').classList.toggle('active', careActiveTab === 'medical');
+            // Highlight active stat box
+            const wCol = document.getElementById('care-wellness-col');
+            const mCol = document.getElementById('care-morale-col');
+            if (wCol) wCol.classList.toggle('active', careActiveSection === 'wellness');
+            if (mCol) mCol.classList.toggle('active', careActiveSection === 'morale');
 
-            // --- Wellness items (from inventory) ---
-            const wellnessGrid = document.getElementById('care-wellness-grid');
-            if (wellnessGrid) {
-                wellnessGrid.innerHTML = '';
+            // Render content area
+            const area = document.getElementById('care-content-area');
+            if (!area) return;
+            area.innerHTML = '';
+
+            if (careActiveSection === 'wellness') {
+                // Food / Medical tabs
+                const tabRow = document.createElement('div');
+                tabRow.className = 'care-tabs';
+                tabRow.style.marginBottom = '8px';
+                ['food', 'medical'].forEach(tab => {
+                    const t = document.createElement('div');
+                    t.className = 'care-tab' + (careActiveTab === tab ? ' active' : '');
+                    t.textContent = tab.toUpperCase();
+                    t.addEventListener('click', () => { careActiveTab = tab; renderCarePanel(); });
+                    tabRow.appendChild(t);
+                });
+                area.appendChild(tabRow);
+
+                // Items grid
+                const grid = document.createElement('div');
+                grid.className = 'care-items-grid';
                 const items = character.wellnessItems || [];
                 const counts = {};
                 items.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
                 const filtered = Object.keys(counts).filter(id => {
-                    const wItem = WELLNESS_ITEMS[id];
-                    return wItem && wItem.category === careActiveTab;
+                    const w = WELLNESS_ITEMS[id];
+                    return w && w.category === careActiveTab;
                 });
                 if (filtered.length === 0) {
-                    wellnessGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#555;font-family:\'Press Start 2P\',monospace;font-size:5px;padding:12px;">No ' + careActiveTab + ' items.<br>Buy from Shop!</div>';
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#4b5563;font-family:\'Press Start 2P\',monospace;font-size:5px;padding:16px;">No ' + careActiveTab + ' items.<br><br>Buy from Shop!</div>';
                 } else {
                     filtered.forEach(id => {
                         const wItem = WELLNESS_ITEMS[id];
@@ -18821,15 +18847,20 @@
                                 updateLobbyCharacterDisplay();
                             });
                         }
-                        wellnessGrid.appendChild(card);
+                        grid.appendChild(card);
                     });
                 }
-            }
+                area.appendChild(grid);
 
-            // --- Morale activities — vertical list with buy button ---
-            const activitiesList = document.getElementById('care-activities-list');
-            if (activitiesList) {
-                activitiesList.innerHTML = '';
+            } else {
+                // Morale activities — vertical list
+                const subtitle = document.createElement('div');
+                subtitle.className = 'care-section-subtitle';
+                subtitle.textContent = '⚡ ACTIVITIES — buy & use instantly';
+                area.appendChild(subtitle);
+
+                const list = document.createElement('div');
+                list.className = 'care-activities-list';
                 const atMax = (character.morale ?? 100) >= MORALE_MAX;
                 const shopFull = getShopPurchasesRemaining() <= 0;
                 Object.keys(MORALE_ITEMS).forEach(id => {
@@ -18872,8 +18903,9 @@
                             updateLobbyCharacterDisplay();
                         });
                     }
-                    activitiesList.appendChild(row);
+                    list.appendChild(row);
                 });
+                area.appendChild(list);
             }
         }
 
@@ -20069,12 +20101,14 @@
         document.getElementById('care-panel-close').addEventListener('click', () => {
             closeCarePanel();
         });
-        // Care tab switching
-        document.querySelectorAll('.care-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                careActiveTab = tab.dataset.tab;
-                renderCarePanel();
-            });
+        // Care stat-box section switching (wellness / morale)
+        document.getElementById('care-wellness-col').addEventListener('click', () => {
+            careActiveSection = 'wellness';
+            renderCarePanel();
+        });
+        document.getElementById('care-morale-col').addEventListener('click', () => {
+            careActiveSection = 'morale';
+            renderCarePanel();
         });
 
         // PLAY button → mini-game placeholder (care-play-btn removed from CARE panel)
