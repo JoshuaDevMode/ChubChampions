@@ -4956,6 +4956,22 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(168,85,247,0.3);
         }
+        .inventory-weapon-card[draggable="true"] { cursor: grab; }
+        .inventory-weapon-card.inv-dragging { opacity: 0.3 !important; transform: none !important; cursor: grabbing; }
+        .inv-equipment-slot[draggable="true"] { cursor: grab; }
+        .inv-equipment-slot.inv-dragging { opacity: 0.3; cursor: grabbing; }
+        .inv-equipment-slot.inv-drop-over {
+            border-color: #22c55e !important;
+            background: rgba(34,197,94,0.25) !important;
+            box-shadow: 0 0 14px rgba(34,197,94,0.55);
+            transform: scale(1.15);
+        }
+        .inventory-weapons-grid.inv-unequip-over {
+            outline: 2px dashed #ef4444;
+            outline-offset: 4px;
+            border-radius: 8px;
+            background: rgba(239,68,68,0.04);
+        }
 
         .inventory-weapon-icon {
             display: flex;
@@ -18919,6 +18935,10 @@
         let careActiveTab     = 'food';      // 'food' | 'medical'
         let careActiveSection = 'wellness';  // 'wellness' | 'morale'
 
+        // Inventory weapon drag state
+        let _invDragWeaponId = null;
+        let _invDragSource   = null; // 'inventory' | 'equipped'
+
         function renderCarePanel() {
             const character = getSelectedCharacter();
             if (!character) return;
@@ -19189,6 +19209,23 @@
                         }
                     });
                 }
+
+                // Drag to equip (from inventory) or drag to unequip (from equipped)
+                if (!isBroken || isEquipped) {
+                    card.draggable = true;
+                    card.addEventListener('dragstart', e => {
+                        _invDragWeaponId = weaponKey;
+                        _invDragSource   = isEquipped ? 'equipped' : 'inventory';
+                        card.classList.add('inv-dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('inv-dragging');
+                        _invDragWeaponId = null;
+                        _invDragSource   = null;
+                    });
+                }
+
                 grid.appendChild(card);
             });
 
@@ -20307,6 +20344,24 @@
             document.getElementById('lobby-wrapper').style.display = '';
         });
 
+        // Inventory grid: drop equipped weapon here to unequip
+        (function() {
+            const invGrid = document.getElementById('inventory-weapons-grid');
+            invGrid.addEventListener('dragover', e => {
+                if (_invDragSource === 'equipped') { e.preventDefault(); invGrid.classList.add('inv-unequip-over'); }
+            });
+            invGrid.addEventListener('dragleave', e => {
+                if (!invGrid.contains(e.relatedTarget)) invGrid.classList.remove('inv-unequip-over');
+            });
+            invGrid.addEventListener('drop', e => {
+                e.preventDefault();
+                invGrid.classList.remove('inv-unequip-over');
+                if (_invDragSource === 'equipped' && _invDragWeaponId) {
+                    unequipWeapon(_invDragWeaponId);
+                }
+            });
+        })();
+
         // Inventory filter tabs
         document.querySelectorAll('.inv-filter-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -20618,10 +20673,35 @@
                     slot.innerHTML = weaponIconHTML(weapon, 28);
                     slot.title = weapon.name;
                     slot.addEventListener('click', () => showWeaponAction(weaponId, true));
+                    // Drag equipped weapon out to unequip
+                    slot.draggable = true;
+                    slot.addEventListener('dragstart', e => {
+                        _invDragWeaponId = weaponId;
+                        _invDragSource   = 'equipped';
+                        slot.classList.add('inv-dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    slot.addEventListener('dragend', () => {
+                        slot.classList.remove('inv-dragging');
+                        _invDragWeaponId = null;
+                        _invDragSource   = null;
+                    });
                 } else {
                     slot.className = 'inv-equipment-slot empty';
                     slot.textContent = '+';
-                    slot.title = 'Add weapon';
+                    slot.title = 'Drag a weapon here to equip';
+                    // Drop zone: accept weapon from inventory
+                    slot.addEventListener('dragover', e => {
+                        if (_invDragSource === 'inventory') { e.preventDefault(); slot.classList.add('inv-drop-over'); }
+                    });
+                    slot.addEventListener('dragleave', () => slot.classList.remove('inv-drop-over'));
+                    slot.addEventListener('drop', e => {
+                        e.preventDefault();
+                        slot.classList.remove('inv-drop-over');
+                        if (_invDragSource === 'inventory' && _invDragWeaponId) {
+                            equipWeapon(_invDragWeaponId);
+                        }
+                    });
                 }
                 container.appendChild(slot);
             }
