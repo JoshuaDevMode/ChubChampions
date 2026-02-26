@@ -9376,8 +9376,8 @@
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
         const WELLNESS_MAX = 100;
-        const WELLNESS_DECAY_PER_HOUR = 0.5; // -0.5 per hour (~8 days to zero from full)
-        const WELLNESS_BATTLE_LOSS_FACTOR = 10; // max wellness lost from a single battle
+        const WELLNESS_DECAY_PER_HOUR = 0.7; // -0.7 per hour (~6 days to zero from full)
+        const WELLNESS_BATTLE_LOSS_FACTOR = 20; // max wellness lost from a single battle
         const WELLNESS_STATUSES = [
             { min: 76, label: 'Healthy',            color: '#4ade80', penalty: 0 },
             { min: 51, label: 'Tired',              color: '#facc15', penalty: 0.05 },
@@ -9398,7 +9398,7 @@
 
         // ===== MORALE SYSTEM CONSTANTS =====
         const MORALE_MAX = 100;
-        const MORALE_DECAY_PER_HOUR = 0.2; // -0.2 per hour (~21 days to zero)
+        const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
             music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 6,  icon: '🎵' },
             comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 7,  icon: '📖' },
