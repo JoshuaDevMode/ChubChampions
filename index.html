@@ -2768,7 +2768,21 @@
             filter: brightness(0.85);
         }
 
-        /* CARE button — full-width centered below wellness + morale bars */
+        /* Wrapper: wellness+morale bars on the left, CARE button on the right */
+        .menu-bars-with-care {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .menu-bars-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* CARE button — right of bars, centered vertically */
         .care-icon-btn {
             background: linear-gradient(180deg, #001a2a 0%, #000b15 100%);
             border: 2px solid #0a86c8;
@@ -2784,7 +2798,9 @@
             text-shadow: 0 0 8px rgba(125,211,252,0.7);
             box-shadow: 0 0 8px rgba(10,134,200,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
             transition: all 0.15s ease;
-            margin-top: 4px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            align-self: center;
         }
         .care-icon-btn:hover {
             border-color: #7dd3fc;
@@ -8340,25 +8356,29 @@
                             <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-character-level" id="menu-character-level"></div>
-                        <div class="wellness-bar-container" id="wellness-bar-container" style="display:none;">
-                            <div class="wellness-bar-label">
-                                <span class="wellness-status-text" id="wellness-status-text">Healthy</span>
-                                <span id="wellness-value-text">100/100</span>
+                        <div class="menu-bars-with-care">
+                            <div class="menu-bars-col">
+                                <div class="wellness-bar-container" id="wellness-bar-container" style="display:none;">
+                                    <div class="wellness-bar-label">
+                                        <span class="wellness-status-text" id="wellness-status-text">Healthy</span>
+                                        <span id="wellness-value-text">100/100</span>
+                                    </div>
+                                    <div class="wellness-bar-track">
+                                        <div class="wellness-bar-fill" id="wellness-bar-fill" style="width:100%;background:#4ade80;"></div>
+                                    </div>
+                                </div>
+                                <div class="morale-bar-container" id="morale-bar-container" style="display:none;">
+                                    <div class="morale-bar-label">
+                                        <span class="morale-status-text" id="morale-status-text">Fired Up</span>
+                                        <span id="morale-value-text">100/100</span>
+                                    </div>
+                                    <div class="morale-bar-track">
+                                        <div class="morale-bar-fill" id="morale-bar-fill" style="width:100%;background:#f97316;"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="wellness-bar-track">
-                                <div class="wellness-bar-fill" id="wellness-bar-fill" style="width:100%;background:#4ade80;"></div>
-                            </div>
+                            <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                         </div>
-                        <div class="morale-bar-container" id="morale-bar-container" style="display:none;">
-                            <div class="morale-bar-label">
-                                <span class="morale-status-text" id="morale-status-text">Fired Up</span>
-                                <span id="morale-value-text">100/100</span>
-                            </div>
-                            <div class="morale-bar-track">
-                                <div class="morale-bar-fill" id="morale-bar-fill" style="width:100%;background:#f97316;"></div>
-                            </div>
-                        </div>
-                        <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                     </div>
                     <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">
                         ⬆️ UPGRADE STATS
