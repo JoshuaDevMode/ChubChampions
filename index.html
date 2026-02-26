@@ -11643,6 +11643,9 @@
             if (idx === -1) { showNotice("You don't have this item!"); return null; }
             if (character.wellness >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
 
+            // Ensure character exists in Supabase before calling feed
+            try { await syncCharacterToBackend(character); } catch(_) {}
+
             // Call server endpoint
             try {
                 const resp = await fetch(BACKEND_URL + '/api/character/feed', {
@@ -12309,8 +12312,8 @@
         }
 
         function syncCharacterToBackend(character) {
-            if (!BACKEND_URL || !SYNC_SECRET) return;
-            fetch(BACKEND_URL + '/api/character/sync', {
+            if (!BACKEND_URL || !SYNC_SECRET) return Promise.resolve();
+            return fetch(BACKEND_URL + '/api/character/sync', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
