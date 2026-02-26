@@ -2816,7 +2816,28 @@
             transition: width 0.5s ease, background-color 0.5s ease;
         }
 
-        /* ===== CARE PANEL (left-sliding, like inventory) ===== */
+        /* ===== CARE PANEL (left-sliding, blue theme) ===== */
+        .main-menu.care-mode .menu-buttons-left,
+        .main-menu.care-mode .menu-buttons-bottom,
+        .main-menu.care-mode .lobby-currency-bar {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .main-menu.care-mode .menu-character-section {
+            transform: translateX(250px) scale(1.15);
+        }
+        .main-menu.care-mode .menu-character-arrow,
+        .main-menu.care-mode .menu-character-name,
+        .main-menu.care-mode .menu-stats-panel,
+        .main-menu.care-mode .menu-character-actions,
+        .main-menu.care-mode .menu-upgrade-stats,
+        .main-menu.care-mode .menu-create-btn-plus,
+        .main-menu.care-mode .menu-arrow-container,
+        .main-menu.care-mode .menu-char-left-col {
+            display: none;
+        }
+
         .care-panel {
             position: absolute;
             top: 0;
@@ -2824,18 +2845,15 @@
             width: 500px;
             height: 100%;
             box-sizing: border-box;
-            background: none;
-            border: 40px solid transparent;
-            border-image-source: url('Assets/UI/window-frame.png');
-            border-image-slice: 15% fill;
-            border-image-width: 40px;
-            border-image-repeat: stretch;
+            background: linear-gradient(180deg, #0c1a3a 0%, #091326 60%, #060d1c 100%);
+            border-right: 2px solid rgba(96,165,250,0.35);
+            box-shadow: inset 0 0 40px rgba(37,99,235,0.08), 4px 0 24px rgba(0,0,0,0.5);
             z-index: 1100;
             display: flex;
             flex-direction: column;
-            padding: 10px;
-            transform: translateX(-560px);
-            transition: transform 0.5s ease;
+            padding: 18px 16px 12px;
+            transform: translateX(-510px);
+            transition: transform 0.4s ease;
             overflow: hidden;
         }
         .care-panel.active {
@@ -2852,54 +2870,65 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid rgba(101,67,33,0.5);
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(96,165,250,0.25);
         }
         .care-title {
             font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            color: #4a2c0a;
-            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+            font-size: 10px;
+            color: #93c5fd;
+            text-shadow: 0 0 12px rgba(96,165,250,0.5);
         }
         .care-close {
-            font-size: 2em;
-            color: #4a2c0a;
+            font-size: 1.8em;
+            color: #60a5fa;
             cursor: pointer;
             transition: color 0.2s;
             line-height: 1;
         }
-        .care-close:hover { color: #8b0000; }
+        .care-close:hover { color: #fff; }
 
-        .care-section {
+        /* Two-column row for Wellness + Morale */
+        .care-stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .care-stat-col {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 5px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(96,165,250,0.18);
+            border-radius: 8px;
+            padding: 8px;
         }
         .care-section-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: 'Press Start 2P', monospace;
-            font-size: 7px;
-            color: #ccc;
+            font-size: 6px;
+            color: #93c5fd;
         }
         .care-stat-status {
             font-family: 'Press Start 2P', monospace;
-            font-size: 6px;
+            font-size: 5px;
             text-align: right;
+            margin-top: 1px;
         }
         .care-divider {
             height: 1px;
-            background: rgba(101,67,33,0.4);
-            margin: 10px 0;
+            background: rgba(96,165,250,0.2);
+            margin: 8px 0;
         }
         .care-section-subtitle {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5.5px;
-            color: #888;
-            margin-top: 8px;
+            font-size: 6px;
+            color: #60a5fa;
+            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -2908,103 +2937,141 @@
         .care-tabs {
             display: flex;
             gap: 4px;
+            margin-top: 5px;
         }
         .care-tab {
             font-family: 'Press Start 2P', monospace;
-            font-size: 6px;
-            padding: 6px 12px;
-            border: 1px solid #555;
+            font-size: 5px;
+            padding: 5px 8px;
+            border: 1px solid rgba(96,165,250,0.3);
             border-radius: 4px 4px 0 0;
             background: rgba(0,0,0,0.3);
-            color: #888;
+            color: #60a5fa;
             cursor: pointer;
             transition: all 0.15s;
         }
         .care-tab.active {
-            border-color: #7dd3fc;
-            color: #7dd3fc;
-            background: rgba(125,211,252,0.08);
+            border-color: #60a5fa;
+            color: #fff;
+            background: rgba(96,165,250,0.15);
         }
         .care-tab:hover:not(.active) {
-            border-color: #777;
-            color: #bbb;
+            border-color: #93c5fd;
+            color: #93c5fd;
         }
 
-        /* Wellness items grid */
+        /* Wellness items grid (small 2-col inside the stat col) */
         .care-items-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
             margin-top: 2px;
         }
-
-        /* Activities grid (buy + use directly) */
-        .care-activities-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            margin-top: 2px;
-        }
-
-        /* Item cards shared style */
-        .care-item, .care-activity-item {
-            background: rgba(0,0,0,0.35);
-            border: 1px solid #444;
-            border-radius: 8px;
-            padding: 8px;
+        .care-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(96,165,250,0.2);
+            border-radius: 6px;
+            padding: 5px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             cursor: pointer;
             transition: all 0.15s;
         }
-        .care-item:hover, .care-activity-item:hover {
-            border-color: #a78bfa;
-            box-shadow: 0 0 10px rgba(167,139,250,0.2);
+        .care-item:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 0 8px rgba(96,165,250,0.2);
             transform: translateY(-1px);
         }
-        .care-item.empty, .care-activity-item.cant-afford {
+        .care-item.empty {
             opacity: 0.4;
             cursor: default;
         }
-        .care-item.empty:hover, .care-activity-item.cant-afford:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: #444;
-        }
-        .care-item-icon { font-size: 22px; }
+        .care-item.empty:hover { transform: none; box-shadow: none; border-color: rgba(96,165,250,0.2); }
+        .care-item-icon { font-size: 18px; }
         .care-item-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 5px;
-            color: #e0d0a0;
+            font-size: 4px;
+            color: #e0e7ff;
             text-align: center;
         }
         .care-item-restore {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
+            font-size: 4px;
             color: #4ade80;
         }
         .care-item-restore.morale-restore { color: #f97316; }
         .care-item-xp {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4px;
+            font-size: 3.5px;
             color: #facc15;
         }
         .care-item-count {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
-            color: #888;
+            font-size: 4px;
+            color: #7dd3fc;
         }
-        .care-activity-price {
+
+        /* Activities — vertical list */
+        .care-activities-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 2px;
+        }
+        .care-activity-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(96,165,250,0.15);
+            border-radius: 7px;
+            padding: 7px 8px;
+            transition: border-color 0.15s;
+        }
+        .care-activity-row:hover { border-color: rgba(96,165,250,0.4); }
+        .care-activity-row.cant-afford { opacity: 0.45; }
+        .care-activity-icon { font-size: 20px; flex-shrink: 0; }
+        .care-activity-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .care-activity-name {
             font-family: 'Press Start 2P', monospace;
-            font-size: 4.5px;
-            color: #fbbf24;
+            font-size: 5.5px;
+            color: #e0e7ff;
         }
-        .care-activity-cooldown {
+        .care-activity-stats {
             font-family: 'Press Start 2P', monospace;
             font-size: 4px;
-            color: #888;
+            color: #94a3b8;
+        }
+        .care-activity-buy-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5.5px;
+            background: linear-gradient(to bottom, #d97706, #b45309);
+            border: 2px solid #f59e0b;
+            border-radius: 6px;
+            color: #fff;
+            padding: 6px 9px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: filter 0.1s;
+            box-shadow: 0 2px 0 #78350f;
+            white-space: nowrap;
+        }
+        .care-activity-buy-btn:hover { filter: brightness(1.2); }
+        .care-activity-buy-btn:active { transform: translateY(1px); box-shadow: none; }
+        .care-activity-buy-btn:disabled {
+            background: #374151;
+            border-color: #4b5563;
+            color: #6b7280;
+            cursor: default;
+            box-shadow: none;
+        }
+        .care-activity-cooldown-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4.5px;
+            color: #6b7280;
+            flex-shrink: 0;
         }
 
         /* Morale bar in lobby (below wellness bar) */
@@ -8304,47 +8371,52 @@
         <div class="shop-grid" id="shop-grid"></div>
     </div>
 
-    <!-- CARE Panel (Wellness) -->
+    <!-- CARE Panel -->
     <div class="care-panel" id="care-panel">
         <div class="care-container">
             <div class="care-header">
-                <div class="care-title">FIGHTER CARE</div>
+                <div class="care-title">🏥 FIGHTER CARE</div>
                 <span class="care-close" id="care-panel-close">&times;</span>
             </div>
 
-            <!-- Wellness Section -->
-            <div class="care-section">
-                <div class="care-section-label">
-                    <span>❤️ WELLNESS</span>
-                    <span id="care-wellness-value">100/100</span>
+            <!-- Wellness + Morale side by side -->
+            <div class="care-stats-row">
+                <!-- Wellness Column -->
+                <div class="care-stat-col">
+                    <div class="care-section-label">
+                        <span>❤️ WELLNESS</span>
+                        <span id="care-wellness-value">100/100</span>
+                    </div>
+                    <div class="wellness-bar-track">
+                        <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
+                    </div>
+                    <div class="care-stat-status" id="care-wellness-status" style="color:#4ade80;">Healthy</div>
+                    <div class="care-tabs">
+                        <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
+                        <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
+                    </div>
+                    <div class="care-items-grid" id="care-wellness-grid"></div>
                 </div>
-                <div class="wellness-bar-track" style="margin-bottom:4px;">
-                    <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
+
+                <!-- Morale Column -->
+                <div class="care-stat-col">
+                    <div class="care-section-label">
+                        <span>🔥 MORALE</span>
+                        <span id="care-morale-value">100/100</span>
+                    </div>
+                    <div class="morale-bar-track">
+                        <div class="morale-bar-fill" id="care-morale-fill" style="width:100%;background:#f97316;"></div>
+                    </div>
+                    <div class="care-stat-status" id="care-morale-status" style="color:#f97316;">Fired Up</div>
                 </div>
-                <div class="care-stat-status" id="care-wellness-status" style="color:#4ade80;">Healthy</div>
-                <div class="care-tabs" style="margin-top:10px;">
-                    <div class="care-tab active" id="care-tab-food" data-tab="food">FOOD</div>
-                    <div class="care-tab" id="care-tab-medical" data-tab="medical">MEDICAL</div>
-                </div>
-                <div class="care-items-grid" id="care-wellness-grid"></div>
             </div>
 
             <!-- Divider -->
             <div class="care-divider"></div>
 
-            <!-- Morale Section -->
-            <div class="care-section">
-                <div class="care-section-label">
-                    <span>🔥 MORALE</span>
-                    <span id="care-morale-value">100/100</span>
-                </div>
-                <div class="morale-bar-track" style="margin-bottom:4px;">
-                    <div class="morale-bar-fill" id="care-morale-fill" style="width:100%;background:#f97316;"></div>
-                </div>
-                <div class="care-stat-status" id="care-morale-status" style="color:#f97316;">Fired Up</div>
-                <div class="care-section-subtitle">ACTIVITIES — buy &amp; use instantly</div>
-                <div class="care-activities-grid" id="care-activities-grid"></div>
-            </div>
+            <!-- Activities Section -->
+            <div class="care-section-subtitle">⚡ ACTIVITIES — buy &amp; use instantly</div>
+            <div class="care-activities-list" id="care-activities-list"></div>
         </div>
     </div>
 
@@ -18754,43 +18826,53 @@
                 }
             }
 
-            // --- Morale activities (buy + use directly) ---
-            const activitiesGrid = document.getElementById('care-activities-grid');
-            if (activitiesGrid) {
-                activitiesGrid.innerHTML = '';
+            // --- Morale activities — vertical list with buy button ---
+            const activitiesList = document.getElementById('care-activities-list');
+            if (activitiesList) {
+                activitiesList.innerHTML = '';
+                const atMax = (character.morale ?? 100) >= MORALE_MAX;
+                const shopFull = getShopPurchasesRemaining() <= 0;
                 Object.keys(MORALE_ITEMS).forEach(id => {
                     const mItem = MORALE_ITEMS[id];
-                    const atMax = (character.morale ?? 100) >= MORALE_MAX;
                     const cooldown = getItemCooldownRemaining(id);
                     const onCooldown = cooldown > 0;
-                    const canAfford = globalTokens >= mItem.price && !onCooldown && getShopPurchasesRemaining() > 0;
-                    const card = document.createElement('div');
-                    const disabled = atMax || !canAfford;
-                    card.className = 'care-activity-item' + (disabled ? ' cant-afford' : '');
-                    const priceOrStatus = onCooldown
-                        ? '<div class="care-activity-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
-                        : atMax
-                            ? '<div class="care-activity-cooldown">MORALE FULL</div>'
-                            : getShopPurchasesRemaining() <= 0
-                                ? '<div class="care-activity-cooldown">LIMIT REACHED</div>'
-                                : '<div class="care-activity-price">🪙 ' + mItem.price + '</div>';
-                    card.innerHTML =
-                        '<div class="care-item-icon">' + mItem.icon + '</div>' +
-                        '<div class="care-item-name">' + mItem.name + '</div>' +
-                        '<div class="care-item-restore morale-restore">+' + mItem.moraleRestore + ' Morale</div>' +
-                        '<div class="care-item-xp">+' + mItem.xpGrant + ' XP</div>' +
-                        priceOrStatus;
+                    const canAfford = globalTokens >= mItem.price;
+                    const disabled = atMax || onCooldown || !canAfford || shopFull;
+
+                    const row = document.createElement('div');
+                    row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
+
+                    let rightEl;
+                    if (onCooldown) {
+                        rightEl = '<span class="care-activity-cooldown-text">⏳ ' + formatShopCooldown(cooldown) + '</span>';
+                    } else if (atMax) {
+                        rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
+                    } else if (shopFull) {
+                        rightEl = '<span class="care-activity-cooldown-text">LIMIT 3/3</span>';
+                    } else {
+                        rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + mItem.price + '</button>';
+                    }
+
+                    row.innerHTML =
+                        '<span class="care-activity-icon">' + mItem.icon + '</span>' +
+                        '<div class="care-activity-info">' +
+                            '<div class="care-activity-name">' + mItem.name + '</div>' +
+                            '<div class="care-activity-stats">+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP</div>' +
+                        '</div>' +
+                        rightEl;
+
                     if (!disabled) {
-                        card.addEventListener('click', async () => {
-                            card.style.pointerEvents = 'none';
-                            card.style.opacity = '0.5';
+                        const btn = row.querySelector('.care-activity-buy-btn');
+                        if (btn) btn.addEventListener('click', async () => {
+                            btn.disabled = true;
+                            btn.textContent = '...';
                             await buyAndBoostMorale(character, id);
                             renderCarePanel();
                             updateMoraleDisplay(character);
                             updateLobbyCharacterDisplay();
                         });
                     }
-                    activitiesGrid.appendChild(card);
+                    activitiesList.appendChild(row);
                 });
             }
         }
@@ -18800,10 +18882,12 @@
             if (!character) { showNotice('Select a character first!'); return; }
             renderCarePanel();
             document.getElementById('care-panel').classList.add('active');
+            document.getElementById('main-menu').classList.add('care-mode');
         }
 
         function closeCarePanel() {
             document.getElementById('care-panel').classList.remove('active');
+            document.getElementById('main-menu').classList.remove('care-mode');
         }
 
         function populateInventoryPanel() {
