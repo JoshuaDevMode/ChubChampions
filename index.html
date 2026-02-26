@@ -1454,11 +1454,14 @@
             background-size: 400% 300%;
             z-index: 0;
             transform-origin: center center;
-            transition: transform 0.5s ease;
+            transition: transform 0.5s ease, transform-origin 0.5s ease;
         }
 
-        .main-menu.inventory-mode .lobby-bg {
-            transform: scale(1.15) translateX(55px);
+        /* Character moves to 890/1280 ≈ 70% when panel opens → zoom bg toward that point */
+        .main-menu.inventory-mode .lobby-bg,
+        .main-menu.care-mode .lobby-bg {
+            transform-origin: 70% center;
+            transform: scale(1.15);
         }
 
         /* Nebula layer */
