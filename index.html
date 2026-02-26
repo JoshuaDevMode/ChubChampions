@@ -2916,6 +2916,35 @@
         .care-stat-col.care-stat-clickable:not(.active):hover {
             border-color: rgba(96,165,250,0.4);
         }
+        /* Hint rows inside stat boxes */
+        .care-stat-hints {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4.5px;
+            line-height: 1.6;
+        }
+        .hint-minus { color: #f87171; }
+        .hint-plus  { color: #4ade80; }
+
+        /* Free / passive activity row */
+        .care-activity-passive {
+            opacity: 0.75;
+            border-color: rgba(74,222,128,0.25) !important;
+            background: rgba(74,222,128,0.04) !important;
+        }
+        .care-activity-free-badge {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            color: #4ade80;
+            border: 1px solid #4ade80;
+            border-radius: 4px;
+            padding: 3px 5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         /* Content area below the stat boxes */
         #care-content-area {
             flex: 1;
@@ -8406,6 +8435,10 @@
                         <div class="wellness-bar-fill" id="care-wellness-fill" style="width:100%;background:#4ade80;"></div>
                     </div>
                     <div class="care-stat-status" id="care-wellness-status" style="color:#4ade80;">Healthy</div>
+                    <div class="care-stat-hints">
+                        <span class="hint-minus">▼ Battles · Time</span>
+                        <span class="hint-plus">▲ Food · Medical</span>
+                    </div>
                 </div>
                 <div class="care-stat-col care-stat-clickable" id="care-morale-col">
                     <div class="care-section-label">
@@ -8416,6 +8449,10 @@
                         <div class="morale-bar-fill" id="care-morale-fill" style="width:100%;background:#f97316;"></div>
                     </div>
                     <div class="care-stat-status" id="care-morale-status" style="color:#f97316;">Fired Up</div>
+                    <div class="care-stat-hints">
+                        <span class="hint-minus">▼ Losses · Time</span>
+                        <span class="hint-plus">▲ Wins · Activities</span>
+                    </div>
                 </div>
             </div>
 
@@ -9339,8 +9376,8 @@
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
         const WELLNESS_MAX = 100;
-        const WELLNESS_DECAY_PER_HOUR = 1; // -1 wellness per hour since last fed
-        const WELLNESS_BATTLE_LOSS_FACTOR = 30; // max wellness lost from a single battle
+        const WELLNESS_DECAY_PER_HOUR = 0.5; // -0.5 per hour (~8 days to zero from full)
+        const WELLNESS_BATTLE_LOSS_FACTOR = 10; // max wellness lost from a single battle
         const WELLNESS_STATUSES = [
             { min: 76, label: 'Healthy',            color: '#4ade80', penalty: 0 },
             { min: 51, label: 'Tired',              color: '#facc15', penalty: 0.05 },
@@ -9361,7 +9398,7 @@
 
         // ===== MORALE SYSTEM CONSTANTS =====
         const MORALE_MAX = 100;
-        const MORALE_DECAY_PER_HOUR = 0.5; // -0.5 per hour (~8 days to zero)
+        const MORALE_DECAY_PER_HOUR = 0.2; // -0.2 per hour (~21 days to zero)
         const MORALE_ITEMS = {
             music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 6,  icon: '🎵' },
             comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 7,  icon: '📖' },
@@ -11389,10 +11426,9 @@
                 delta = 5;
                 if (winStreak >= 3) delta += 10;
             } else {
-                // Check consecutive losses (gamesPlayed went up but gamesWon didn't)
-                delta = -8;
-                // If last battle was also a loss (tracked by checking if morale was already penalised recently)
-                if (character._lastBattleWasLoss) delta = -12;
+                delta = -5;
+                // Extra penalty for consecutive losses
+                if (character._lastBattleWasLoss) delta = -8;
             }
             character.morale = Math.max(0, Math.min(MORALE_MAX, character.morale + delta));
             character.lastMoraleTimestamp = Date.now();
@@ -18861,6 +18897,19 @@
 
                 const list = document.createElement('div');
                 list.className = 'care-activities-list';
+
+                // Free passive: win a battle
+                const freeRow = document.createElement('div');
+                freeRow.className = 'care-activity-row care-activity-passive';
+                freeRow.innerHTML =
+                    '<span class="care-activity-icon">⚔️</span>' +
+                    '<div class="care-activity-info">' +
+                        '<div class="care-activity-name">Win a Battle</div>' +
+                        '<div class="care-activity-stats">+5 Morale &nbsp;·&nbsp; +15 on win streak (3+)</div>' +
+                    '</div>' +
+                    '<span class="care-activity-free-badge">FREE</span>';
+                list.appendChild(freeRow);
+
                 const atMax = (character.morale ?? 100) >= MORALE_MAX;
                 const shopFull = getShopPurchasesRemaining() <= 0;
                 Object.keys(MORALE_ITEMS).forEach(id => {
