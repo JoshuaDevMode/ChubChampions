@@ -2945,6 +2945,55 @@
             flex-shrink: 0;
         }
 
+        /* Owned item card */
+        .care-item.care-item-owned {
+            border-color: rgba(74,222,128,0.55);
+            background: rgba(74,222,128,0.07);
+        }
+        /* Drag states */
+        .care-item[draggable="true"] { cursor: grab; }
+        .care-item.dragging { opacity: 0.35; cursor: grabbing; }
+        /* Buy button inside care item card */
+        .care-item-buy-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 5px;
+            cursor: pointer;
+            margin-top: 3px;
+            width: 100%;
+        }
+        .care-item-buy-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+        .care-item-owned-badge { color: #4ade80; font-family: 'Press Start 2P', monospace; font-size: 4px; margin-top: 3px; }
+        .care-item-cd-text { font-family: 'Press Start 2P', monospace; font-size: 4px; color: #9ca3af; margin-top: 3px; }
+        /* Drop zone glow on character */
+        #menu-character-container.care-drop-target {
+            outline: 3px dashed #60a5fa;
+            outline-offset: 6px;
+            filter: brightness(1.35) drop-shadow(0 0 14px #60a5fa);
+        }
+        /* Drag hint label that appears over character in care mode */
+        #care-drag-hint {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            color: #93c5fd;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(96,165,250,0.4);
+            border-radius: 4px;
+            padding: 4px 8px;
+            pointer-events: none;
+            white-space: nowrap;
+            display: none;
+        }
+        .care-mode #care-drag-hint { display: block; }
+
         /* Content area below the stat boxes */
         #care-content-area {
             flex: 1;
@@ -8178,6 +8227,7 @@
                     <div class="menu-character-container" id="menu-character-container">
                         <div class="menu-character-bg"></div>
                         <img src="Assets/Player/Movement/Character.png" class="menu-character-img" id="menu-character-img" alt="Fighter">
+                        <div id="care-drag-hint">⬅ DROP ITEM HERE</div>
                     </div>
                     <div class="menu-arrow-container">
                         <div class="menu-create-btn-wrap">
@@ -18673,6 +18723,64 @@
             showNotice('Bought ' + mItem.icon + ' ' + mItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
         }
 
+        // Buy a wellness item from the shop then immediately use it — used by care panel click/drag
+        async function buyAndFeedCharacter(character, itemId) {
+            const item = WELLNESS_ITEMS[itemId];
+            if (!item) { showNotice('Unknown item!'); return null; }
+            if ((character.wellness ?? 100) >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
+            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily shop limit reached!'); return null; }
+            if (getItemCooldownRemaining(itemId) > 0) { showNotice('This item is on cooldown!'); return null; }
+            if (globalTokens < item.price) { showNotice('Not enough tokens!'); return null; }
+
+            const buyResult = await spendOnServer('buy_wellness_item', { itemId, characterId: character.id });
+            if (!buyResult.ok) { showNotice(buyResult.error || 'Not enough tokens!'); return null; }
+
+            const today = new Date().toDateString();
+            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
+            shopDailyPurchases++;
+            shopItemCooldowns[itemId] = Date.now();
+            if (!character.wellnessItems) character.wellnessItems = [];
+            character.wellnessItems.push(itemId);
+            saveCharacters();
+            saveProgression();
+
+            const feedResult = await feedCharacter(character, itemId);
+            if (!feedResult) { showNotice('Bought but could not use item!'); return null; }
+            return feedResult;
+        }
+
+        // ── Care panel drag-and-drop handlers ─────────────────────────────────
+        function _careDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('care-drop-target');
+        }
+        function _careDragLeave(e) {
+            e.currentTarget.classList.remove('care-drop-target');
+        }
+        async function _careItemDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('care-drop-target');
+            const itemId = e.dataTransfer.getData('careItemId');
+            if (!itemId) return;
+            const character = getSelectedCharacter();
+            if (!character) return;
+            const wItem = WELLNESS_ITEMS[itemId];
+            if (!wItem) return;
+            const owned = (character.wellnessItems || []).includes(itemId);
+            const result = owned
+                ? await feedCharacter(character, itemId)
+                : await buyAndFeedCharacter(character, itemId);
+            if (result) {
+                const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
+                showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
+                if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+            }
+            renderCarePanel();
+            updateWellnessDisplay(character);
+            updateMoraleDisplay(character);
+            updateLobbyCharacterDisplay();
+        }
+
         async function buyAndBoostMorale(character, id) {
             const mItem = MORALE_ITEMS[id];
             if (!mItem) { showNotice('Unknown activity!'); return null; }
@@ -18842,50 +18950,75 @@
                 });
                 area.appendChild(tabRow);
 
-                // Items grid
+                // Items grid — shows ALL items for this tab (owned + purchasable)
                 const grid = document.createElement('div');
                 grid.className = 'care-items-grid';
-                const items = character.wellnessItems || [];
+                const ownedItems = character.wellnessItems || [];
                 const counts = {};
-                items.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
-                const filtered = Object.keys(counts).filter(id => {
-                    const w = WELLNESS_ITEMS[id];
-                    return w && w.category === careActiveTab;
-                });
-                if (filtered.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#4b5563;font-family:\'Press Start 2P\',monospace;font-size:5px;padding:16px;">No ' + careActiveTab + ' items.<br><br>Buy from Shop!</div>';
-                } else {
-                    filtered.forEach(id => {
-                        const wItem = WELLNESS_ITEMS[id];
-                        const count = counts[id];
-                        const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
-                        const card = document.createElement('div');
-                        card.className = 'care-item' + (atMax ? ' empty' : '');
-                        card.innerHTML =
-                            '<div class="care-item-icon">' + wItem.icon + '</div>' +
-                            '<div class="care-item-name">' + wItem.name + '</div>' +
-                            '<div class="care-item-restore">+' + wItem.wellnessRestore + ' Wellness</div>' +
-                            (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
-                            '<div class="care-item-count">x' + count + '</div>';
-                        if (!atMax) {
-                            card.addEventListener('click', async () => {
-                                card.style.pointerEvents = 'none';
-                                card.style.opacity = '0.5';
-                                const result = await feedCharacter(character, id);
-                                if (result) {
-                                    const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
-                                    showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
-                                    if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                                }
-                                renderCarePanel();
-                                updateWellnessDisplay(character);
-                                updateMoraleDisplay(character);
-                                updateLobbyCharacterDisplay();
-                            });
-                        }
-                        grid.appendChild(card);
+                ownedItems.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+                // food tab also shows 'special' items (e.g. happy_pill)
+                const tabItems = Object.entries(WELLNESS_ITEMS).filter(([, w]) =>
+                    careActiveTab === 'food' ? (w.category === 'food' || w.category === 'special') : w.category === careActiveTab
+                );
+                const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
+                const shopFull = getShopPurchasesRemaining() <= 0;
+                tabItems.forEach(([id, wItem]) => {
+                    const count = counts[id] || 0;
+                    const owned = count > 0;
+                    const onCooldown = getItemCooldownRemaining(id) > 0;
+                    const canAfford = globalTokens >= wItem.price;
+
+                    const card = document.createElement('div');
+                    card.className = 'care-item' + (owned ? ' care-item-owned' : '') + (atMax ? ' empty' : '');
+                    card.draggable = !atMax;
+                    card.dataset.itemId = id;
+                    card.addEventListener('dragstart', e => {
+                        e.dataTransfer.setData('careItemId', id);
+                        card.classList.add('dragging');
                     });
-                }
+                    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                    let actionEl;
+                    if (atMax) {
+                        actionEl = '<div class="care-item-cd-text">FULL</div>';
+                    } else if (owned) {
+                        actionEl = '<div class="care-item-owned-badge">x' + count + ' ✓</div>';
+                    } else if (onCooldown) {
+                        actionEl = '<div class="care-item-cd-text">⏳ ' + formatShopCooldown(getItemCooldownRemaining(id)) + '</div>';
+                    } else if (shopFull) {
+                        actionEl = '<div class="care-item-cd-text">LIMIT</div>';
+                    } else {
+                        actionEl = '<button class="care-item-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + wItem.price + '</button>';
+                    }
+
+                    card.innerHTML =
+                        '<div class="care-item-icon">' + wItem.icon + '</div>' +
+                        '<div class="care-item-name">' + wItem.name + '</div>' +
+                        '<div class="care-item-restore">+' + wItem.wellnessRestore + '</div>' +
+                        (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
+                        actionEl;
+
+                    const actionable = !atMax && (owned || (!onCooldown && canAfford && !shopFull));
+                    if (actionable) {
+                        card.addEventListener('click', async () => {
+                            card.style.pointerEvents = 'none';
+                            card.style.opacity = '0.5';
+                            const result = owned
+                                ? await feedCharacter(character, id)
+                                : await buyAndFeedCharacter(character, id);
+                            if (result) {
+                                const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
+                                showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
+                                if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            }
+                            renderCarePanel();
+                            updateWellnessDisplay(character);
+                            updateMoraleDisplay(character);
+                            updateLobbyCharacterDisplay();
+                        });
+                    }
+                    grid.appendChild(card);
+                });
                 area.appendChild(grid);
 
             } else {
@@ -18964,11 +19097,19 @@
             renderCarePanel();
             document.getElementById('care-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('care-mode');
+            const cc = document.getElementById('menu-character-container');
+            cc.addEventListener('dragover',  _careDragOver);
+            cc.addEventListener('dragleave', _careDragLeave);
+            cc.addEventListener('drop',      _careItemDrop);
         }
 
         function closeCarePanel() {
             document.getElementById('care-panel').classList.remove('active');
             document.getElementById('main-menu').classList.remove('care-mode');
+            const cc = document.getElementById('menu-character-container');
+            cc.removeEventListener('dragover',  _careDragOver);
+            cc.removeEventListener('dragleave', _careDragLeave);
+            cc.removeEventListener('drop',      _careItemDrop);
         }
 
         function populateInventoryPanel() {
