@@ -19240,32 +19240,15 @@
         // ─────────── LOBBY SPRITE PRE-LOADER ───────────────────
         let _lobbySpritesLoaded = false;
 
-        async function preloadLobbySprites() {
+        function preloadLobbySprites() {
+            // Remove the loading overlay immediately — sprite sheets are loaded
+            // lazily by the battle loading screen before each fight.
             const overlay = document.getElementById('lobby-loading-overlay');
-            const bar     = document.getElementById('llo-bar');
-
-            if (_lobbySpritesLoaded) {
-                if (overlay) { overlay.classList.add('llo-hidden'); setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500); }
-                return;
-            }
-
-            if (bar) bar.style.width = '15%';
-
-            try {
-                // Load all base sprite sheets for both fighter elements.
-                // Skin layers (none yet) will be composited in processAllFighterImages() before each battle.
-                await processAllFighterImages(false);
-                _lobbySpritesLoaded = true;
-                if (bar) bar.style.width = '100%';
-            } catch (e) {
-                console.warn('[preload] sprite loading failed:', e);
-            }
-
-            await new Promise(r => setTimeout(r, 280));
             if (overlay) {
                 overlay.classList.add('llo-hidden');
                 setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
             }
+            _lobbySpritesLoaded = true;
         }
 
         // All characters share the same base sprite sheets — nothing to reload on character switch.
