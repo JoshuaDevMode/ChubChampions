@@ -18010,7 +18010,7 @@
             return composited;
         }
 
-        async function processAllFighterImages(keepCpuHue) {
+        async function processAllFighterImages(keepCpuHue, skipWeapons = false) {
             const playerCharacter = getSelectedCharacter();
             const imgs = document.querySelectorAll('.fighter img');
             for (const img of imgs) {
@@ -18139,41 +18139,35 @@
                     }
                 }
             }
-            // Preload weapon run sprite sheets for all weapons (base + all tiers)
-            const allWeaponEntries = [];
-            // Base weapons
-            for (const id of Object.keys(WEAPONS)) {
-                allWeaponEntries.push({ id: id, img: WEAPONS[id].img });
-            }
-            // Tier weapons (may include weapons not yet in WEAPONS)
-            for (const tier of CHEST_LEVEL_TIERS) {
-                if (WEAPON_TIERS[tier]) {
-                    WEAPON_TIERS[tier].forEach(w => {
-                        if (!allWeaponEntries.some(e => e.img === w.img)) {
-                            allWeaponEntries.push({ id: w.id, img: w.img });
-                        }
-                    });
+            if (!skipWeapons) {
+                // Preload weapon run sprite sheets for all weapons (base + all tiers)
+                const allWeaponEntries = [];
+                for (const id of Object.keys(WEAPONS)) {
+                    allWeaponEntries.push({ id: id, img: WEAPONS[id].img });
                 }
-            }
-            for (const entry of allWeaponEntries) {
-                if (!_weaponRunFramesCache[entry.id] && entry.img) {
-                    const runPath = entry.img.replace('.png', ' Run.png');
-                    try {
-                        _weaponRunFramesCache[entry.id] = await extractFrames(runPath, 5, 2);
-                    } catch(e) {
-                        _weaponRunFramesCache[entry.id] = [];
+                for (const tier of CHEST_LEVEL_TIERS) {
+                    if (WEAPON_TIERS[tier]) {
+                        WEAPON_TIERS[tier].forEach(w => {
+                            if (!allWeaponEntries.some(e => e.img === w.img)) {
+                                allWeaponEntries.push({ id: w.id, img: w.img });
+                            }
+                        });
                     }
                 }
-                if (!_weaponAttackFramesCache[entry.id] && entry.img) {
-                    const attackPath = entry.img.replace('.png', ' Attack.png');
-                    try {
-                        _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2);
-                    } catch(e) {
-                        _weaponAttackFramesCache[entry.id] = [];
+                for (const entry of allWeaponEntries) {
+                    if (!_weaponRunFramesCache[entry.id] && entry.img) {
+                        const runPath = entry.img.replace('.png', ' Run.png');
+                        try { _weaponRunFramesCache[entry.id] = await extractFrames(runPath, 5, 2); }
+                        catch(e) { _weaponRunFramesCache[entry.id] = []; }
+                    }
+                    if (!_weaponAttackFramesCache[entry.id] && entry.img) {
+                        const attackPath = entry.img.replace('.png', ' Attack.png');
+                        try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2); }
+                        catch(e) { _weaponAttackFramesCache[entry.id] = []; }
                     }
                 }
             }
-            console.log('All fighter sprite sheets processed. Active blob URLs: ' + _activeBlobURLs.size);
+            console.log('Fighter sprite sheets processed (skipWeapons=' + skipWeapons + '). Active blob URLs: ' + _activeBlobURLs.size);
         }
 
         async function applyCpuHueShift(img, hue) {
@@ -19240,20 +19234,65 @@
         // ─────────── LOBBY SPRITE PRE-LOADER ───────────────────
         let _lobbySpritesLoaded = false;
 
-        function preloadLobbySprites() {
-            // Remove the loading overlay immediately — sprite sheets are loaded
-            // lazily by the battle loading screen before each fight.
+        async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
+            const bar     = document.getElementById('llo-bar');
+            if (bar) bar.style.width = '10%';
+
+            try {
+                // Load only character sprite sheets (punch, kick, uppercut, headbutt,
+                // run, hurt, dodge, block, idle-blink, loser, win).
+                // Skips all weapon sprite preloading — that runs per-weapon below.
+                await processAllFighterImages(false, true);
+                if (bar) bar.style.width = '70%';
+
+                // Preload weapon sprites for the equipped weapons of the selected character only.
+                const char = getSelectedCharacter();
+                const equippedWeapons = (char?.equippedWeapons || []).filter(id => WEAPONS[id]);
+                for (const weaponId of equippedWeapons) {
+                    const weaponImg = WEAPONS[weaponId]?.img;
+                    if (!weaponImg) continue;
+                    if (!_weaponRunFramesCache[weaponId]) {
+                        try { _weaponRunFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Run.png'), 5, 2); }
+                        catch(e) { _weaponRunFramesCache[weaponId] = []; }
+                    }
+                    if (!_weaponAttackFramesCache[weaponId]) {
+                        try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                        catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                    }
+                }
+                if (bar) bar.style.width = '100%';
+                _lobbySpritesLoaded = true;
+            } catch(e) {
+                console.warn('[preload] sprite loading failed:', e);
+            }
+
+            await new Promise(r => setTimeout(r, 260));
             if (overlay) {
                 overlay.classList.add('llo-hidden');
                 setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
             }
-            _lobbySpritesLoaded = true;
         }
 
-        // All characters share the same base sprite sheets — nothing to reload on character switch.
-        // When skin sprite sheets are added, this function will handle per-character compositing.
-        async function refreshLobbyRunFrames() { /* no-op until skin sheets are implemented */ }
+        // Called when the selected character changes in the lobby.
+        // Base sprite sheets are shared across all characters so nothing to re-extract.
+        // But we do cache the equipped weapon sprites for the newly selected character.
+        async function refreshLobbyRunFrames() {
+            const char = getSelectedCharacter();
+            const equippedWeapons = (char?.equippedWeapons || []).filter(id => WEAPONS[id]);
+            for (const weaponId of equippedWeapons) {
+                const weaponImg = WEAPONS[weaponId]?.img;
+                if (!weaponImg) continue;
+                if (!_weaponRunFramesCache[weaponId]) {
+                    try { _weaponRunFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Run.png'), 5, 2); }
+                    catch(e) { _weaponRunFramesCache[weaponId] = []; }
+                }
+                if (!_weaponAttackFramesCache[weaponId]) {
+                    try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                    catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                }
+            }
+        }
         // ────────────────────────────────────────────────────────
 
         // ─────────────────── MINI-GAME ENGINE ───────────────────
@@ -21644,6 +21683,18 @@
             syncCharacterToBackend(character);
             updateMenuEquipmentPanel();
             updateInvEquipmentSlots();
+            // Preload this weapon's sprites in background so they're ready before battle
+            (async () => {
+                const weaponImg = WEAPONS[weaponId]?.img;
+                if (weaponImg && !_weaponRunFramesCache[weaponId]) {
+                    try { _weaponRunFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Run.png'), 5, 2); }
+                    catch(e) { _weaponRunFramesCache[weaponId] = []; }
+                }
+                if (weaponImg && !_weaponAttackFramesCache[weaponId]) {
+                    try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                    catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                }
+            })();
             if (document.getElementById('inventory-panel').classList.contains('active')) {
                 populateInventoryPanel();
             }
