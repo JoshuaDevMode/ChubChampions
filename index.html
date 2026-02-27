@@ -3386,6 +3386,58 @@
         }
         .mg-hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #444; }
 
+        /* ── Login gate (shown when no session) ─────────────────────────── */
+        #login-gate {
+            position: fixed; inset: 0; z-index: 9999;
+            background: radial-gradient(ellipse at center, #12102a 0%, #06050f 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 20px;
+        }
+        #login-gate.hidden { display: none; }
+        .lg-logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(18px, 4vw, 32px);
+            color: #c4b5fd;
+            text-shadow: 0 0 30px rgba(167,139,250,0.6), 0 0 70px rgba(124,58,237,0.3);
+            letter-spacing: 4px; margin-bottom: 4px;
+        }
+        .lg-tagline {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(6px, 1.2vw, 9px);
+            color: #6b7280; letter-spacing: 1px;
+        }
+        .lg-card {
+            background: linear-gradient(135deg, #1e1a2e 0%, #12101e 100%);
+            border: 2px solid #7c3aed; border-radius: 14px;
+            padding: 40px 48px; display: flex; flex-direction: column;
+            align-items: center; gap: 18px;
+            box-shadow: 0 0 60px rgba(124,58,237,0.25);
+            max-width: 360px; width: 90%;
+        }
+        .lg-icon { width: 64px; image-rendering: pixelated; }
+        .lg-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(8px, 1.8vw, 13px); color: #fff;
+            text-align: center; line-height: 1.6;
+        }
+        .lg-sub {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(5px, 1vw, 8px); color: #9ca3af;
+            text-align: center;
+        }
+        .lg-btn {
+            display: block; width: 100%; padding: 14px 0;
+            background: linear-gradient(to bottom, #7c3aed, #5b21b6);
+            border: 2px solid #a78bfa; border-radius: 10px;
+            color: #fff; font-family: 'Press Start 2P', monospace;
+            font-size: clamp(7px, 1.4vw, 11px); letter-spacing: 1px;
+            cursor: pointer; text-align: center; text-decoration: none;
+            box-shadow: 0 4px 0 #3b0764;
+            transition: filter 0.1s, transform 0.1s;
+        }
+        .lg-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        .lg-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #3b0764; }
+
         /* Lobby pre-load overlay */
         #lobby-loading-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -8352,6 +8404,18 @@
     <div class="lobby-wrapper" id="lobby-wrapper">
 
     <!-- Pre-load overlay: shown until sprites are ready, then fades out -->
+    <!-- Login gate — shown when not authenticated -->
+    <div id="login-gate" class="hidden">
+        <div class="lg-logo">FIGHTCHUB</div>
+        <div class="lg-tagline">THE ARENA AWAITS</div>
+        <div class="lg-card">
+            <img class="lg-icon" src="Assets/UI/stone-frame.png" alt="FightChub">
+            <div class="lg-title">CONNECT TO<br>ENTER THE ARENA</div>
+            <div class="lg-sub">Login with X or connect your wallet</div>
+            <a class="lg-btn" href="https://fight-chub-backend.vercel.app/">🎮 &nbsp;PLAY NOW</a>
+        </div>
+    </div>
+
     <div id="lobby-loading-overlay">
         <div class="llo-logo">FIGHTCHUB</div>
         <div class="llo-sub">LOADING FIGHTER DATA...</div>
@@ -11894,7 +11958,18 @@
                 } catch(e) {}
             }
             updatePlayerSessionUI();
-            if (playerSession) syncStateFromServer();
+            if (playerSession) {
+                syncStateFromServer();
+            } else {
+                showLoginGate();
+            }
+        }
+
+        function showLoginGate() {
+            document.getElementById('login-gate').classList.remove('hidden');
+            // Hide the loading overlay so it doesn't block behind the gate
+            const overlay = document.getElementById('lobby-loading-overlay');
+            if (overlay) overlay.style.display = 'none';
         }
 
         // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
@@ -11987,6 +12062,7 @@
                 .filter(k => k.startsWith('fightchub_'))
                 .forEach(k => localStorage.removeItem(k));
             updatePlayerSessionUI();
+            showLoginGate();
         }
 
         async function deleteAccount() {
@@ -13278,16 +13354,16 @@
 
         // Load player session (Privy) + characters on page load
         loadPlayerSession();
-        loadCharacters();
-        applyWellnessDecayAll(); // Apply time-based wellness decay on load
-        applyMoraleDecayAll(); // Apply time-based morale decay on load
-        loadPendingLevelUps();
 
-        // Load progression after characters (needs getSelectedCharacter)
-        loadProgression();
-
-        // Pre-load run sprite frames before showing the lobby
-        preloadLobbySprites();
+        // Only load game data and sprites if logged in
+        if (playerSession) {
+            loadCharacters();
+            applyWellnessDecayAll();
+            applyMoraleDecayAll();
+            loadPendingLevelUps();
+            loadProgression();
+            preloadLobbySprites();
+        }
 
         // ===== BATTLE RESUME / FORFEIT CHECK =====
         function showForfeitToast(message) {
