@@ -19288,12 +19288,14 @@
             // Gather character sprite frames from battle player element if available
             const _charImg  = document.getElementById('menu-character-img');
             const _fightImg = document.getElementById('player')?.querySelector('img');
-            const runFrames   = (_fightImg?._runFrames?.length   ? _fightImg._runFrames   : null);
-            const punchFrames = (_fightImg?._punchFrames?.length ? _fightImg._punchFrames : null);
-            const kickFrames  = (_fightImg?._kickFrames?.length  ? _fightImg._kickFrames  : null);
+            const runFrames      = (_fightImg?._runFrames?.length      ? _fightImg._runFrames      : null);
+            const punchFrames    = (_fightImg?._punchFrames?.length    ? _fightImg._punchFrames    : null);
+            const kickFrames     = (_fightImg?._kickFrames?.length     ? _fightImg._kickFrames     : null);
+            const uppercutFrames = (_fightImg?._uppercutFrames?.length ? _fightImg._uppercutFrames : null);
+            const headbuttFrames = (_fightImg?._headbuttFrames?.length ? _fightImg._headbuttFrames : null);
             const staticSrc = _charImg?.src || null;
             if (itemId === 'jump_training')    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc);
-            else if (itemId === 'punching_bag') _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames);
+            else if (itemId === 'punching_bag') _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames);
             mgScreen.classList.add('active');
         }
 
@@ -19462,93 +19464,183 @@
             return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', jump); document.removeEventListener('keydown', onKey); };
         }
 
-        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs) {
-            const DURATION = 30;
-            const GW = 720, GH = 300;
-            const COMBO_WIN = 0.65;
+        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs) {
+            // ── Guitar Hero–style punching bag ────────────────────────────────────
+            const DURATION   = 30;
+            const GW = 720, GH = 310;
+            const NOTE_SPEED = 320;   // px/sec, notes scroll right→left
+            const HIT_X      = 118;   // x of the hit line
+            const HIT_WINDOW = 32;    // ±px to count as a hit
+            const NOTE_R     = 19;    // note circle radius
 
-            // ── Bag physics ────────────────────────────────────────────────────────
-            // Bag hangs from PIVOT, swings like a pendulum
-            const PIVOT_X = GW * 0.70, PIVOT_Y = 14;
-            const ROPE    = 55;                  // rope length to top of bag
-            const BAG_W   = 78, BAG_H = 128;    // bag draw size
+            // ── 4 attack lanes ────────────────────────────────────────────────────
+            const LANE_COUNT  = 4;
+            const LANE_KEYS   = ['q','w','e','r'];
+            const LANE_NAMES  = ['PUNCH','KICK','UPPER','HEAD'];
+            const LANE_LTRS   = ['P','K','U','H'];
+            const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6','#ef4444'];
+            const LANE_Y      = [82, 142, 202, 262];   // center y per lane
+            const LANE_H      = 52;
+
+            // ── Character ─────────────────────────────────────────────────────────
+            const CHAR_X = 8, CHAR_W = 68, CHAR_H = 88;
+            const CHAR_GROUND = GH - 12;
+
+            // ── Bag ───────────────────────────────────────────────────────────────
+            const BAG_PX = 648, BAG_PY = 8, BAG_ROPE = 42, BAG_W = 52, BAG_H = 88;
             let bagAngle = 0, bagVel = 0;
 
-            // ── Character dimensions & position ────────────────────────────────────
-            const CHAR_W = 96, CHAR_H = 112;
-            const CHAR_GROUND = GH - 20;         // feet Y
-            const CHAR_X = 28;                   // left edge of character draw box
-
-            // ── Sprite frames ──────────────────────────────────────────────────────
+            // ── Sprite frames ─────────────────────────────────────────────────────
             function loadImgs(urls) {
-                if (!urls || !urls.length) return null;
-                return urls.map(u => { const img = new Image(); img.src = u; return img; });
+                if (!urls?.length) return null;
+                return urls.map(u => { const i = new Image(); i.src = u; return i; });
             }
-            const punchImgs = loadImgs(punchFrameURLs);
-            const kickImgs  = loadImgs(kickFrameURLs);
+            const FRAMES = [
+                loadImgs(punchFrameURLs),
+                loadImgs(kickFrameURLs),
+                loadImgs(uppercutFrameURLs),
+                loadImgs(headbuttFrameURLs),
+            ];
+            // Which sprite frame index is playing and for which lane
+            let animLane = -1, spriteIdx = 0, spriteTimer = 0;
+            const FRAME_DT = 0.065;
 
-            // Contact frame = ~65% through the animation (fist extends forward)
-            const punchContact = punchImgs ? Math.floor(punchImgs.length * 0.65) : -1;
-            const kickContact  = kickImgs  ? Math.floor(kickImgs.length  * 0.65) : -1;
+            // ── Note sequence generation ──────────────────────────────────────────
+            // Each note: { lane, spawnTime, hit, miss }
+            // x position at time t: GW - NOTE_SPEED*(t - spawnTime)
+            function noteX(n) { return GW - NOTE_SPEED * (elapsed - n.spawnTime); }
+            function genSequence() {
+                const seq = [];
+                let t = 1.6;
+                while (t < DURATION - 0.5) {
+                    seq.push({ lane: Math.floor(Math.random() * LANE_COUNT), spawnTime: t, hit: false, miss: false });
+                    // 30% chance of a quick double-note in a different lane
+                    if (Math.random() < 0.28) {
+                        t += 0.28 + Math.random() * 0.15;
+                        if (t < DURATION - 0.5) {
+                            let nl; do { nl = Math.floor(Math.random() * LANE_COUNT); } while (nl === seq[seq.length-1].lane);
+                            seq.push({ lane: nl, spawnTime: t, hit: false, miss: false });
+                        }
+                    }
+                    t += 0.82 + Math.random() * 0.52;
+                }
+                return seq;
+            }
+            const notes = genSequence();
+            const TOTAL_NOTES = notes.length;
 
-            // ── Sprite state ───────────────────────────────────────────────────────
-            let isAnimating = false, isKick = false;
-            let spriteIdx = 0, spriteTimer = 0;
-            const FRAME_DT = 0.06;   // seconds per frame
-            let hasHitThisSwing = false;
-            let hitCount = 0;       // counts hits to alternate punch/kick
-
-            // ── Game state ─────────────────────────────────────────────────────────
-            let elapsed = 0, lt = 0, gameOver = false;
-            let hits = 0, combo = 0, maxCombo = 0, lastHitTime = 0;
+            // ── State ─────────────────────────────────────────────────────────────
+            let elapsed = 0, lt = 0, gameOver = false, animId;
+            let hits = 0, misses = 0, combo = 0, maxCombo = 0;
             let particles = [];
-            let animId;
+            let laneFlash = [0,0,0,0];   // red miss flash per lane
+            let hitFlash  = [0,0,0,0];   // green hit flash per lane
+            let hitTexts  = [];          // floating PERFECT / GREAT / GOOD / MISS
 
-            // ── Load bag image ─────────────────────────────────────────────────────
+            // ── Bag image ─────────────────────────────────────────────────────────
             const bagImg = new Image();
             bagImg.src = 'Assets/UI/Punching-Bag.png';
 
-            // ── UI elements ────────────────────────────────────────────────────────
+            // ── UI ────────────────────────────────────────────────────────────────
             const timerFill = _mgTimerBar(area);
             const canvas = document.createElement('canvas');
             canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
             area.appendChild(canvas);
-            const statsEl = document.createElement('div');
-            statsEl.className = 'mg-score'; statsEl.textContent = 'HITS: 0   COMBO: ×0';
-            area.appendChild(statsEl);
-            const hint = document.createElement('div');
-            hint.className = 'mg-hint'; hint.textContent = 'CLICK TO HIT THE BAG!';
-            area.appendChild(hint);
-
             const ctx = canvas.getContext('2d');
 
-            // ── Click handler ──────────────────────────────────────────────────────
-            function onCanvasClick() {
-                if (gameOver || isAnimating) return;
-                // Alternate kick every 3 hits (if kick frames available)
-                isKick = !!(kickImgs && hitCount > 0 && hitCount % 3 === 2);
-                hitCount++;
-                spriteIdx = 0; spriteTimer = 0;
-                hasHitThisSwing = false;
-                isAnimating = true;
-            }
-            canvas.addEventListener('click', onCanvasClick);
+            const statsEl = document.createElement('div');
+            statsEl.className = 'mg-score';
+            statsEl.textContent = 'HITS: 0 / ' + TOTAL_NOTES + '   COMBO: ×0';
+            area.appendChild(statsEl);
 
-            // ── End game ───────────────────────────────────────────────────────────
+            // On-screen Q/W/E/R buttons
+            const btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:5px;';
+            const btnEls = LANE_KEYS.map((key, i) => {
+                const btn = document.createElement('button');
+                btn.innerHTML = '<span style="font-size:11px;display:block">' + key.toUpperCase() + '</span>' +
+                    '<span style="font-size:7px;opacity:0.8;display:block">' + LANE_NAMES[i] + '</span>';
+                btn.style.cssText = 'font-family:"Press Start 2P",monospace;width:80px;height:48px;' +
+                    'background:' + LANE_COLORS[i] + '22;border:2px solid ' + LANE_COLORS[i] + ';' +
+                    'color:' + LANE_COLORS[i] + ';cursor:pointer;border-radius:6px;' +
+                    'transition:background 0.08s;line-height:1.5;';
+                btn.addEventListener('mousedown', () => tryHit(i));
+                btnRow.appendChild(btn);
+                return btn;
+            });
+            area.appendChild(btnRow);
+
+            const hint = document.createElement('div');
+            hint.className = 'mg-hint';
+            hint.textContent = 'PRESS Q / W / E / R (OR CLICK) WHEN THE ICON HITS THE LINE!';
+            area.appendChild(hint);
+
+            // ── Button flash ──────────────────────────────────────────────────────
+            function flashBtn(i, ok) {
+                btnEls[i].style.background = ok ? LANE_COLORS[i] + 'aa' : '#ef444466';
+                setTimeout(() => { if (btnEls[i]) btnEls[i].style.background = LANE_COLORS[i] + '22'; }, 120);
+            }
+
+            // ── Hit logic ─────────────────────────────────────────────────────────
+            function tryHit(lane) {
+                if (gameOver) return;
+                flashBtn(lane, true);
+                // Find closest note in this lane within hit window
+                let best = null, bestDist = Infinity;
+                for (const n of notes) {
+                    if (n.hit || n.miss || n.lane !== lane) continue;
+                    const dist = Math.abs(noteX(n) - HIT_X);
+                    if (dist <= HIT_WINDOW && dist < bestDist) { best = n; bestDist = dist; }
+                }
+                if (best) {
+                    best.hit = true;
+                    hits++; combo++;
+                    maxCombo = Math.max(maxCombo, combo);
+                    statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
+                    // Start character attack animation for this lane
+                    animLane = lane; spriteIdx = 0; spriteTimer = 0;
+                    // Bag impulse — uppercut & headbutt hit slightly harder
+                    bagVel += (lane >= 2 ? 0.22 : 0.17) + Math.min(combo - 1, 8) * 0.015;
+                    hitFlash[lane] = 0.22;
+                    // Quality label
+                    const qual = bestDist < 10 ? 'PERFECT!' : bestDist < 22 ? 'GREAT!' : 'GOOD';
+                    const qcol = bestDist < 10 ? '#fbbf24' : bestDist < 22 ? '#22c55e' : '#60a5fa';
+                    hitTexts.push({ text: qual, x: HIT_X + 8, y: LANE_Y[lane] - NOTE_R - 4, vy: -42, alpha: 1, col: qcol });
+                    // Particles
+                    for (let i = 0; i < 8; i++)
+                        particles.push({ x: HIT_X, y: LANE_Y[lane],
+                            vx: -(Math.random()*90+15), vy:(Math.random()-0.5)*80,
+                            life: 0.44, col: LANE_COLORS[lane] });
+                } else {
+                    // Wrong timing — brief red flash on lane
+                    laneFlash[lane] = 0.18;
+                }
+            }
+
+            // ── Keyboard ──────────────────────────────────────────────────────────
+            function onKey(e) {
+                const i = LANE_KEYS.indexOf(e.key.toLowerCase());
+                if (i >= 0) { e.preventDefault(); tryHit(i); }
+            }
+            document.addEventListener('keydown', onKey);
+
+            // ── End game ──────────────────────────────────────────────────────────
             function endGame() {
                 cancelAnimationFrame(animId);
-                canvas.removeEventListener('click', onCanvasClick);
+                document.removeEventListener('keydown', onKey);
                 area.innerHTML = '';
-                const rating = hits >= 70 ? 'BEAST MODE!' : hits >= 40 ? 'GREAT WORKOUT!' : 'GOOD EFFORT!';
+                const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
+                const rating = acc >= 90 ? 'PERFECT!' : acc >= 70 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
                 const r = document.createElement('div'); r.className = 'mg-result';
                 r.innerHTML = '<div class="mg-result-title">' + rating + '</div>' +
-                    '<div class="mg-result-score">TOTAL HITS: ' + hits + '</div>' +
+                    '<div class="mg-result-score">HITS: ' + hits + ' / ' + TOTAL_NOTES + '</div>' +
+                    '<div class="mg-result-score">ACCURACY: ' + acc + '%</div>' +
                     '<div class="mg-result-score">BEST COMBO: ×' + maxCombo + '</div>' +
                     '<div class="mg-hint">MORALE & XP ALREADY REWARDED</div>';
                 area.appendChild(r);
             }
 
-            // ── Main loop ──────────────────────────────────────────────────────────
+            // ── Main loop ─────────────────────────────────────────────────────────
             function loop(ts) {
                 if (!lt) lt = ts;
                 const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
@@ -19558,141 +19650,194 @@
                     timerFill.style.width = Math.max(0, (1 - elapsed / DURATION) * 100) + '%';
                     if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
 
-                    // Combo decay
-                    const nowSec = performance.now() / 1000;
-                    if (combo > 0 && nowSec - lastHitTime > COMBO_WIN) {
-                        combo = 0;
-                        statsEl.textContent = 'HITS: ' + hits + '   COMBO: ×0';
-                    }
-
-                    // Sprite animation
-                    if (isAnimating) {
-                        const frames = isKick ? kickImgs : punchImgs;
-                        const contact = isKick ? kickContact : punchContact;
-                        if (frames && frames.length) {
-                            spriteTimer += dt;
-                            while (spriteTimer >= FRAME_DT) {
-                                spriteTimer -= FRAME_DT;
-                                // Register hit at contact frame
-                                if (spriteIdx === contact && !hasHitThisSwing) {
-                                    hasHitThisSwing = true;
-                                    const now2 = performance.now() / 1000;
-                                    hits++;
-                                    combo = (now2 - lastHitTime < COMBO_WIN) ? combo + 1 : 1;
-                                    maxCombo = Math.max(maxCombo, combo);
-                                    lastHitTime = now2;
-                                    // Physics impulse — kicks hit harder
-                                    bagVel += (isKick ? 0.22 : 0.15) + Math.min(combo - 1, 7) * 0.018;
-                                    statsEl.textContent = 'HITS: ' + hits + '   COMBO: ×' + combo;
-                                    // Spawn particles at bag left edge contact point
-                                    const bpx = PIVOT_X + Math.sin(bagAngle) * ROPE;
-                                    const bpy = PIVOT_Y + Math.cos(bagAngle) * ROPE;
-                                    const hitX = bpx - Math.cos(bagAngle) * BAG_W * 0.45;
-                                    const hitY = bpy + BAG_H * 0.45;
-                                    for (let i = 0; i < 7; i++)
-                                        particles.push({
-                                            x: hitX, y: hitY,
-                                            vx: -(Math.random() * 90 + 30),
-                                            vy: (Math.random() - 0.5) * 90,
-                                            life: 0.42
-                                        });
-                                }
-                                spriteIdx++;
-                                if (spriteIdx >= frames.length) { isAnimating = false; spriteIdx = 0; break; }
-                            }
-                        } else {
-                            isAnimating = false;
+                    // Auto-miss notes that scrolled past hit zone
+                    for (const n of notes) {
+                        if (n.hit || n.miss) continue;
+                        if (noteX(n) < HIT_X - HIT_WINDOW - NOTE_R) {
+                            n.miss = true;
+                            misses++; combo = 0;
+                            statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
+                            hitTexts.push({ text: 'MISS', x: HIT_X + 8, y: LANE_Y[n.lane] - NOTE_R - 4, vy: -38, alpha: 1, col: '#888' });
                         }
                     }
 
-                    // Pendulum physics
+                    // Sprite animation
+                    if (animLane >= 0) {
+                        const fr = FRAMES[animLane];
+                        if (fr?.length) {
+                            spriteTimer += dt;
+                            while (spriteTimer >= FRAME_DT) {
+                                spriteTimer -= FRAME_DT;
+                                spriteIdx++;
+                                if (spriteIdx >= fr.length) { animLane = -1; spriteIdx = 0; break; }
+                            }
+                        } else animLane = -1;
+                    }
+
+                    // Bag pendulum
                     bagVel -= Math.sin(bagAngle) * 6 * dt;
                     bagVel *= 0.978;
                     bagAngle += bagVel * dt;
 
+                    // Flashes
+                    for (let i = 0; i < 4; i++) {
+                        if (laneFlash[i] > 0) laneFlash[i] -= dt;
+                        if (hitFlash[i]  > 0) hitFlash[i]  -= dt;
+                    }
+
                     // Particles
                     particles = particles.filter(p => {
-                        p.x += p.vx * dt; p.y += p.vy * dt;
-                        p.vy += 220 * dt; p.life -= dt;
+                        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 200 * dt; p.life -= dt;
                         return p.life > 0;
+                    });
+
+                    // Floating texts
+                    hitTexts = hitTexts.filter(t => {
+                        t.y += t.vy * dt; t.alpha -= 2.2 * dt;
+                        return t.alpha > 0;
                     });
                 }
 
-                // ── Draw ────────────────────────────────────────────────────────────
+                // ── Draw ──────────────────────────────────────────────────────────
                 ctx.clearRect(0, 0, GW, GH);
-                ctx.fillStyle = '#080810'; ctx.fillRect(0, 0, GW, GH);
+                ctx.fillStyle = '#07070f'; ctx.fillRect(0, 0, GW, GH);
 
-                // Floor line
-                ctx.strokeStyle = '#1a1830'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(0, CHAR_GROUND + 4); ctx.lineTo(GW, CHAR_GROUND + 4); ctx.stroke();
+                // Lane tracks
+                for (let i = 0; i < LANE_COUNT; i++) {
+                    const y0 = LANE_Y[i] - LANE_H / 2;
+                    ctx.fillStyle = i % 2 === 0 ? '#0c0c1e' : '#090914';
+                    ctx.fillRect(0, y0, GW, LANE_H);
+                    // Left color stripe
+                    ctx.fillStyle = LANE_COLORS[i] + '44';
+                    ctx.fillRect(0, y0, 5, LANE_H);
+                    // Bottom separator
+                    ctx.strokeStyle = '#1c1c30'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(0, y0 + LANE_H); ctx.lineTo(GW, y0 + LANE_H); ctx.stroke();
+                    // Hit flash (green)
+                    if (hitFlash[i] > 0) {
+                        ctx.save(); ctx.globalAlpha = (hitFlash[i] / 0.22) * 0.28;
+                        ctx.fillStyle = '#22c55e';
+                        ctx.fillRect(HIT_X - 26, y0, 60, LANE_H);
+                        ctx.restore();
+                    }
+                    // Miss flash (red)
+                    if (laneFlash[i] > 0) {
+                        ctx.save(); ctx.globalAlpha = (laneFlash[i] / 0.18) * 0.28;
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(0, y0, GW, LANE_H);
+                        ctx.restore();
+                    }
+                }
 
-                // Ceiling mount
-                ctx.fillStyle = '#3a3a4a'; ctx.fillRect(PIVOT_X - 10, 0, 20, PIVOT_Y + 6);
-
-                // Bag position (top of bag)
-                const bpx = PIVOT_X + Math.sin(bagAngle) * ROPE;
-                const bpy = PIVOT_Y + Math.cos(bagAngle) * ROPE;
-
-                // Rope / chain
+                // Hit zone dashed line
                 ctx.save();
-                ctx.strokeStyle = '#555'; ctx.lineWidth = 3;
-                ctx.setLineDash([5, 4]);
-                ctx.beginPath(); ctx.moveTo(PIVOT_X, PIVOT_Y); ctx.lineTo(bpx, bpy); ctx.stroke();
+                ctx.strokeStyle = '#ffffff55'; ctx.lineWidth = 2;
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath();
+                ctx.moveTo(HIT_X, LANE_Y[0] - LANE_H / 2);
+                ctx.lineTo(HIT_X, LANE_Y[LANE_COUNT - 1] + LANE_H / 2);
+                ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.restore();
 
-                // Shadow under bag
-                const shadowX = PIVOT_X + Math.sin(bagAngle) * (ROPE + BAG_H * 0.9);
-                ctx.save();
-                ctx.globalAlpha = 0.18; ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.ellipse(shadowX, CHAR_GROUND + 4, BAG_W * 0.38, 6, 0, 0, Math.PI * 2);
-                ctx.fill(); ctx.restore();
-
-                // Bag image (rotated around PIVOT)
-                ctx.save();
-                ctx.translate(PIVOT_X, PIVOT_Y);
-                ctx.rotate(bagAngle);
-                if (bagImg.complete && bagImg.naturalWidth > 0) {
-                    ctx.drawImage(bagImg, -BAG_W / 2, ROPE, BAG_W, BAG_H);
-                } else {
-                    // Fallback gradient bag
-                    const g = ctx.createLinearGradient(-BAG_W / 2, ROPE, BAG_W / 2, ROPE);
-                    g.addColorStop(0, '#b91c1c'); g.addColorStop(0.4, '#ef4444'); g.addColorStop(1, '#b91c1c');
-                    ctx.fillStyle = g;
-                    _mgRoundRect(ctx, -BAG_W / 2, ROPE, BAG_W, BAG_H, 10); ctx.fill();
-                }
-                ctx.restore();
-
-                // Character sprite
-                const activeFrames = isAnimating ? (isKick ? kickImgs : punchImgs) : punchImgs || kickImgs;
-                const drawIdx = isAnimating ? Math.min(spriteIdx, (activeFrames?.length ?? 1) - 1) : 0;
-                if (activeFrames && activeFrames[drawIdx]?.complete && activeFrames[drawIdx].naturalWidth > 0) {
+                // Target rings at hit zone (one per lane)
+                for (let i = 0; i < LANE_COUNT; i++) {
+                    const cy = LANE_Y[i];
                     ctx.save();
-                    // Sprites face left by default → flip so character faces right toward bag
-                    ctx.translate(CHAR_X + CHAR_W, CHAR_GROUND - CHAR_H);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(activeFrames[drawIdx], 0, 0, CHAR_W, CHAR_H);
+                    ctx.strokeStyle = LANE_COLORS[i]; ctx.lineWidth = 2; ctx.globalAlpha = 0.45;
+                    ctx.beginPath(); ctx.arc(HIT_X, cy, NOTE_R + 5, 0, Math.PI * 2); ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = LANE_COLORS[i] + '55';
+                    ctx.font = '6px "Press Start 2P", monospace';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(LANE_KEYS[i].toUpperCase(), HIT_X, cy);
                     ctx.restore();
                 }
 
-                // Hit particles
-                for (const p of particles) {
+                // Notes
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                for (const n of notes) {
+                    if (n.hit) continue;
+                    const nx = noteX(n);
+                    if (nx > GW + NOTE_R) continue;       // not on screen yet
+                    if (nx < HIT_X - NOTE_R * 4) continue; // already gone
+                    const cy = LANE_Y[n.lane];
+                    const col = n.miss ? '#3a3a50' : LANE_COLORS[n.lane];
                     ctx.save();
-                    ctx.globalAlpha = p.life / 0.42;
-                    ctx.fillStyle = p.life > 0.22 ? '#fbbf24' : '#f97316';
+                    if (n.miss) ctx.globalAlpha = 0.35;
+                    if (!n.miss) { ctx.shadowBlur = 10; ctx.shadowColor = col; }
+                    // Circle
+                    ctx.fillStyle = col + (n.miss ? 'ff' : '30');
+                    ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+                    ctx.beginPath(); ctx.arc(nx, cy, NOTE_R, 0, Math.PI * 2);
+                    ctx.fill(); ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    // Attack letter
+                    ctx.fillStyle = n.miss ? '#55556a' : '#fff';
+                    ctx.font = 'bold 8px "Press Start 2P", monospace';
+                    ctx.fillText(LANE_LTRS[n.lane], nx, cy);
+                    ctx.restore();
+                }
+                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+                // ── Bag (top-right) ────────────────────────────────────────────────
+                const bpx = BAG_PX + Math.sin(bagAngle) * BAG_ROPE;
+                const bpy = BAG_PY + Math.cos(bagAngle) * BAG_ROPE;
+                ctx.fillStyle = '#3a3a4a'; ctx.fillRect(BAG_PX - 8, 0, 16, BAG_PY + 6);
+                ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(BAG_PX, BAG_PY); ctx.lineTo(bpx, bpy); ctx.stroke();
+                ctx.save();
+                ctx.translate(BAG_PX, BAG_PY); ctx.rotate(bagAngle);
+                if (bagImg.complete && bagImg.naturalWidth > 0) {
+                    ctx.drawImage(bagImg, -BAG_W / 2, BAG_ROPE, BAG_W, BAG_H);
+                } else {
+                    const g = ctx.createLinearGradient(-BAG_W/2, BAG_ROPE, BAG_W/2, BAG_ROPE);
+                    g.addColorStop(0,'#b91c1c'); g.addColorStop(0.4,'#ef4444'); g.addColorStop(1,'#b91c1c');
+                    ctx.fillStyle = g; _mgRoundRect(ctx,-BAG_W/2,BAG_ROPE,BAG_W,BAG_H,8); ctx.fill();
+                }
+                ctx.restore();
+
+                // ── Character sprite (left, overlaid on lanes) ─────────────────────
+                const activeFr = animLane >= 0 ? FRAMES[animLane] : null;
+                const idleFr   = FRAMES[0] || FRAMES[1] || FRAMES[2] || FRAMES[3];
+                const drawFr   = activeFr || idleFr;
+                const drawIdx  = activeFr ? Math.min(spriteIdx, activeFr.length - 1) : 0;
+                if (drawFr?.[drawIdx]?.complete && drawFr[drawIdx].naturalWidth > 0) {
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(0, 0, CHAR_X + CHAR_W + 6, GH); ctx.clip();
+                    ctx.translate(CHAR_X + CHAR_W, CHAR_GROUND - CHAR_H);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(drawFr[drawIdx], 0, 0, CHAR_W, CHAR_H);
+                    ctx.restore();
+                }
+
+                // Particles
+                for (const p of particles) {
+                    ctx.save(); ctx.globalAlpha = p.life / 0.44;
+                    ctx.fillStyle = p.col;
                     ctx.fillRect(p.x - 2, p.y - 2, 5, 5);
                     ctx.restore();
                 }
 
-                // Combo label on canvas
+                // Floating hit quality texts
+                ctx.textAlign = 'left';
+                for (const t of hitTexts) {
+                    ctx.save(); ctx.globalAlpha = t.alpha;
+                    ctx.fillStyle = t.col;
+                    ctx.font = '7px "Press Start 2P", monospace';
+                    ctx.fillText(t.text, t.x, t.y);
+                    ctx.restore();
+                }
+                ctx.textAlign = 'left';
+
+                // Combo banner (top center of canvas)
                 if (combo >= 3) {
-                    const colors = ['#f97316', '#ef4444', '#8b5cf6', '#ec4899'];
+                    const comboColors = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
                     ctx.save();
-                    ctx.font = 'bold 9px "Press Start 2P", monospace';
-                    ctx.fillStyle = colors[Math.min(Math.floor((combo - 3) / 2), 3)];
-                    ctx.globalAlpha = 0.92;
-                    ctx.fillText('×' + combo + ' COMBO!', bpx + BAG_W / 2 + 8, bpy + BAG_H * 0.5);
+                    ctx.font = 'bold 10px "Press Start 2P", monospace';
+                    ctx.fillStyle = comboColors[Math.min(Math.floor((combo-3)/2), 3)];
+                    ctx.globalAlpha = 0.9; ctx.textAlign = 'center';
+                    ctx.fillText('×' + combo + ' COMBO!', GW / 2, 18);
                     ctx.restore();
                 }
 
@@ -19700,7 +19845,7 @@
             }
 
             animId = requestAnimationFrame(loop);
-            return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', onCanvasClick); };
+            return () => { cancelAnimationFrame(animId); document.removeEventListener('keydown', onKey); };
         }
         // ───────────────────────────────────────────────────────
 
