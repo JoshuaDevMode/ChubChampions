@@ -3319,18 +3319,18 @@
 
         /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
 
-        /* Mini-game placeholder screen */
+        /* Mini-game screen — full viewport overlay */
         .minigame-screen {
             display: none;
-            position: absolute;
+            position: fixed;
             top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 130;
+            width: 100vw; height: 100vh;
+            background: rgba(4,4,10,0.98);
+            z-index: 500;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 18px;
         }
         .minigame-screen.active {
             display: flex;
@@ -3363,7 +3363,7 @@
         }
 
         /* Mini-game canvas + UI */
-        .mg-timer-wrap { width: 100%; max-width: 500px; }
+        .mg-timer-wrap { width: 100%; max-width: 860px; }
         .mg-timer-bar {
             width: 100%; height: 8px;
             background: #111; border-radius: 4px;
@@ -19209,7 +19209,14 @@
             if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
             gameArea.innerHTML = '';
             titleEl.textContent = itemIcon + ' ' + itemName.toUpperCase();
-            if (itemId === 'jump_training')  _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea);
+            // Close care panel so it doesn't show beneath the mini-game
+            closeCarePanel();
+            // Gather character run frames from battle player element if available
+            const _charImg = document.getElementById('menu-character-img');
+            const _fightImg = document.getElementById('player')?.querySelector('img');
+            const runFrames = (_fightImg?._runFrames?.length ? _fightImg._runFrames : null);
+            const staticSrc = _charImg?.src || null;
+            if (itemId === 'jump_training')    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc);
             else if (itemId === 'punching_bag') _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea);
             mgScreen.classList.add('active');
         }
@@ -19237,10 +19244,10 @@
             return fill;
         }
 
-        function _mgLaunchJumpTraining(area) {
-            const DURATION = 30, GW = 500, GH = 175;
-            const GROUND_Y = 130, PX = 80, PW = 26, PH = 38;
-            const GRAVITY = 1850, JUMP_VY = -570;
+        function _mgLaunchJumpTraining(area, runFrames, staticSrc) {
+            const DURATION = 30, GW = 860, GH = 260;
+            const GROUND_Y = 195, PX = 100, PW = 64, PH = 80;
+            const GRAVITY = 1900, JUMP_VY = -620;
 
             const timerFill = _mgTimerBar(area);
             const canvas = document.createElement('canvas');
@@ -19254,9 +19261,19 @@
             const ctx = canvas.getContext('2d');
             let elapsed = 0, lt = 0, score = 0, gameOver = false;
             let pY = 0, pVY = 0, grounded = true;
-            let obstacles = [], nextObs = 1.5, obsSpeed = 180;
+            let obstacles = [], nextObs = 1.5, obsSpeed = 220;
             let alive = true, deathTimer = 0;
             let animId;
+
+            // Load sprite frames as Image objects for canvas drawing
+            let spriteFrames = [];  // HTMLImageElement array
+            let spriteIdx = 0, spriteTimer = 0;
+            const SPRITE_FPS = 9;
+            if (runFrames && runFrames.length) {
+                spriteFrames = runFrames.map(src => { const img = new Image(); img.src = src; return img; });
+            } else if (staticSrc) {
+                const img = new Image(); img.src = staticSrc; spriteFrames = [img];
+            }
 
             function jump() { if (!alive || gameOver) return; if (grounded) { pVY = JUMP_VY; grounded = false; } }
             canvas.addEventListener('click', jump);
@@ -19284,49 +19301,85 @@
                     if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
                     if (!alive) {
                         deathTimer += dt;
-                        if (deathTimer > 0.6) { gameOver = true; endGame(); return; }
+                        if (deathTimer > 0.7) { gameOver = true; endGame(); return; }
                     } else {
-                        if (!grounded) { pVY += GRAVITY * dt; pY += pVY * dt; if (pY >= 0) { pY = 0; pVY = 0; grounded = true; } }
+                        if (!grounded) {
+                            pVY += GRAVITY * dt; pY += pVY * dt;
+                            if (pY >= 0) { pY = 0; pVY = 0; grounded = true; }
+                        }
+                        // Advance sprite frame only when running on ground
+                        if (grounded && spriteFrames.length > 1) {
+                            spriteTimer += dt;
+                            if (spriteTimer >= 1 / SPRITE_FPS) { spriteTimer = 0; spriteIdx = (spriteIdx + 1) % spriteFrames.length; }
+                        }
                         nextObs -= dt;
-                        if (nextObs <= 0) { obstacles.push({ x: GW + 10, w: 18, h: 30 + Math.random() * 24 }); nextObs = 1.1 + Math.random() * 0.9; }
-                        obsSpeed = 185 + elapsed * 4;
+                        if (nextObs <= 0) {
+                            obstacles.push({ x: GW + 10, w: 22, h: 38 + Math.random() * 32 });
+                            nextObs = 1.0 + Math.random() * 0.85;
+                        }
+                        obsSpeed = 220 + elapsed * 5;
                         const kept = [];
                         for (const o of obstacles) {
                             o.x -= obsSpeed * dt;
                             if (o.x + o.w < 0) { score++; scoreEl.textContent = 'SCORE: ' + score; continue; }
                             const py2 = GROUND_Y + pY - PH, oy = GROUND_Y - o.h;
-                            if (PX < o.x + o.w && PX + PW > o.x && py2 < oy + o.h && py2 + PH > oy) alive = false;
+                            // Tighter hitbox (80% of sprite size)
+                            const hbInset = 10;
+                            if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x && py2 + hbInset < oy + o.h && py2 + PH > oy) alive = false;
                             else kept.push(o);
                         }
                         obstacles = kept;
                     }
                 }
+
+                // ── Draw ──
                 ctx.clearRect(0, 0, GW, GH);
-                ctx.fillStyle = '#080810'; ctx.fillRect(0, 0, GW, GH);
-                // scrolling stars
-                ctx.fillStyle = 'rgba(255,255,255,0.22)';
-                for (let i = 0; i < 24; i++) {
-                    const sx = ((i * 79 + elapsed * 22) % GW), sy = (i * 31) % (GROUND_Y - 20);
-                    ctx.fillRect(sx | 0, sy | 0, 1, 1);
+                // Sky
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+                skyGrad.addColorStop(0, '#06060f');
+                skyGrad.addColorStop(1, '#0e0e20');
+                ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, GW, GH);
+                // Scrolling stars
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                for (let i = 0; i < 40; i++) {
+                    const sx = ((i * 97 + elapsed * 30) % GW) | 0, sy = ((i * 41) % (GROUND_Y - 30)) | 0;
+                    ctx.fillRect(sx, sy, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
                 }
-                // ground
-                ctx.fillStyle = '#13131f'; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
+                // Ground
+                const gGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
+                gGrad.addColorStop(0, '#1a1a30'); gGrad.addColorStop(1, '#0d0d18');
+                ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
                 ctx.fillStyle = '#f97316'; ctx.fillRect(0, GROUND_Y, GW, 3);
-                // obstacles
+                // Ground line details
+                ctx.fillStyle = 'rgba(249,115,22,0.2)'; ctx.fillRect(0, GROUND_Y + 6, GW, 2);
+
+                // Obstacles (cones/blocks)
                 for (const o of obstacles) {
                     const oy = GROUND_Y - o.h;
-                    ctx.fillStyle = '#dc2626'; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 3); ctx.fill();
-                    ctx.fillStyle = '#ef4444'; ctx.fillRect(o.x + 3, oy + 3, o.w - 6, 5);
+                    const obsGrad = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+                    obsGrad.addColorStop(0, '#b91c1c'); obsGrad.addColorStop(0.5, '#ef4444'); obsGrad.addColorStop(1, '#b91c1c');
+                    ctx.fillStyle = obsGrad; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 4); ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
                 }
-                // player
+
+                // Player sprite
                 const drawY = GROUND_Y + pY - PH;
-                const alpha = alive ? 1 : 0.3;
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = '#c4b5fd'; _mgRoundRect(ctx, PX, drawY, PW, PH, 3); ctx.fill();
-                ctx.fillStyle = '#7c3aed'; ctx.fillRect(PX + 4, drawY + 10, PW - 8, 18);
-                ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 6, drawY, 14, 11);
+                ctx.globalAlpha = alive ? 1 : 0.35;
+                if (spriteFrames.length && spriteFrames[spriteIdx]?.complete) {
+                    // Use character sprite — flip horizontally if needed (sprites face left by default in battle)
+                    ctx.save();
+                    ctx.translate(PX + PW, drawY);
+                    ctx.scale(-1, 1); // flip to face right
+                    ctx.drawImage(spriteFrames[spriteIdx], 0, 0, PW, PH);
+                    ctx.restore();
+                } else {
+                    // Fallback: draw simple fighter shape
+                    ctx.fillStyle = '#c4b5fd'; _mgRoundRect(ctx, PX, drawY, PW, PH, 4); ctx.fill();
+                    ctx.fillStyle = '#7c3aed'; ctx.fillRect(PX + 6, drawY + 18, PW - 12, 28);
+                    ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 10, drawY + 2, 20, 16);
+                }
                 ctx.globalAlpha = 1;
-                if (!alive) { ctx.fillStyle = 'rgba(220,38,38,0.2)'; ctx.fillRect(0, 0, GW, GH); }
+                if (!alive) { ctx.fillStyle = 'rgba(220,38,38,0.18)'; ctx.fillRect(0, 0, GW, GH); }
                 animId = requestAnimationFrame(loop);
             }
             animId = requestAnimationFrame(loop);
@@ -19334,8 +19387,8 @@
         }
 
         function _mgLaunchPunchingBag(area) {
-            const DURATION = 30, GW = 360, GH = 220;
-            const AX = GW / 2, AY = 18, ROPE = 65, BW = 52, BH = 92;
+            const DURATION = 30, GW = 520, GH = 300;
+            const AX = GW / 2, AY = 22, ROPE = 80, BW = 64, BH = 112;
             const COMBO_WIN = 0.65;
 
             const timerFill = _mgTimerBar(area);
