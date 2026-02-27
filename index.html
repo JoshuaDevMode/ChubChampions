@@ -9520,18 +9520,18 @@
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
             happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 25, icon: '💊' },
-            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 8,  xpGrant: 5,  price: 8,  icon: '🍎' },
-            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 10, xpGrant: 6,  price: 8,  icon: '🍌' },
-            rice_bowl:      { name: 'Rice Bowl',       category: 'food',    wellnessRestore: 12, xpGrant: 7,  price: 10, icon: '🍚' },
-            energy_bar:     { name: 'Energy Bar',      category: 'food',    wellnessRestore: 15, xpGrant: 9,  price: 11, icon: '🍫' },
-            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 18, xpGrant: 10, price: 12, icon: '🍗' },
-            protein_shake:  { name: 'Protein Shake',   category: 'food',    wellnessRestore: 20, xpGrant: 12, price: 14, icon: '🥤' },
-            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 25, xpGrant: 14, price: 15, icon: '🥩' },
-            fighter_feast:  { name: "Fighter's Feast", category: 'food',    wellnessRestore: 35, xpGrant: 20, price: 22, icon: '🍖' },
-            ice_pack:       { name: 'Ice Pack',        category: 'medical', wellnessRestore: 15, xpGrant: 6,  price: 16, icon: '🧊' },
-            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 20, xpGrant: 8,  price: 21, icon: '🩹' },
-            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 30, xpGrant: 12, price: 30, icon: '🌿' },
-            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 40, xpGrant: 18, price: 35, icon: '💉' },
+            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 6,  icon: '🍎' },
+            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 7,  icon: '🍌' },
+            rice_bowl:      { name: 'Rice Bowl',       category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 9,  icon: '🍚' },
+            energy_bar:     { name: 'Energy Bar',      category: 'food',    wellnessRestore: 18, xpGrant: 9,  price: 10, icon: '🍫' },
+            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 11, icon: '🍗' },
+            protein_shake:  { name: 'Protein Shake',   category: 'food',    wellnessRestore: 26, xpGrant: 12, price: 13, icon: '🥤' },
+            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 14, icon: '🥩' },
+            fighter_feast:  { name: "Fighter's Feast", category: 'food',    wellnessRestore: 42, xpGrant: 20, price: 20, icon: '🍖' },
+            ice_pack:       { name: 'Ice Pack',        category: 'medical', wellnessRestore: 20, xpGrant: 6,  price: 13, icon: '🧊' },
+            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 18, icon: '🩹' },
+            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 24, icon: '🌿' },
+            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 30, icon: '💉' },
         };
 
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
@@ -9573,13 +9573,14 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 6,  icon: '🎵' },
-            comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 7,  icon: '📖' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 9,  icon: '🥊' },
-            energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, xpGrant: 8,  price: 11, icon: '⚡' },
-            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 14, icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 18, icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 30, icon: '👑' },
+            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 5,  icon: '🎵' },
+            comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 6,  icon: '📖' },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 3,  icon: '🥊', interactive: true },
+            energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, xpGrant: 8,  price: 10, icon: '⚡' },
+            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 13, icon: '📣' },
+            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 17, icon: '🎬' },
+            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 28, icon: '👑' },
+            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 3,  icon: '🏃', interactive: true },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -19249,6 +19250,7 @@
                     const row = document.createElement('div');
                     row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
 
+                    const isInteractive = !!mItem.interactive;
                     let rightEl;
                     if (onCooldown) {
                         rightEl = '<span class="care-activity-cooldown-text">⏳ ' + formatShopCooldown(cooldown) + '</span>';
@@ -19257,7 +19259,8 @@
                     } else if (shopFull) {
                         rightEl = '<span class="care-activity-cooldown-text">LIMIT 3/3</span>';
                     } else {
-                        rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + mItem.price + '</button>';
+                        const btnLabel = isInteractive ? '🎮 PLAY (' + mItem.price + '🪙)' : '🪙 ' + mItem.price;
+                        rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>' + btnLabel + '</button>';
                     }
 
                     row.innerHTML =
@@ -19282,6 +19285,14 @@
                             renderCarePanel();
                             updateMoraleDisplay(character);
                             updateLobbyCharacterDisplay();
+                            if (isInteractive) {
+                                const mgScreen = document.getElementById('minigame-screen');
+                                const mgTitle  = mgScreen.querySelector('.minigame-title');
+                                const mgSub    = mgScreen.querySelector('.minigame-subtitle');
+                                if (mgTitle) mgTitle.textContent = mItem.icon + ' ' + mItem.name.toUpperCase();
+                                if (mgSub)   mgSub.textContent  = 'Coming soon';
+                                mgScreen.classList.add('active');
+                            }
                         });
                     }
                     list.appendChild(row);
