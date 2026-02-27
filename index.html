@@ -1414,6 +1414,31 @@
             100% { transform: translate(-50%, -100%) scale(1.2); opacity: 0; }
         }
 
+        @keyframes comboPop {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+            18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.25); }
+            32%  { transform: translate(-50%, -50%) scale(0.95); }
+            65%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -64%); }
+        }
+        .battle-combo-counter {
+            position: absolute; top: 36%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25; display: flex; flex-direction: column;
+            align-items: center; line-height: 1; pointer-events: none;
+            animation: comboPop 0.95s forwards;
+        }
+        .combo-x {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 2.4em; letter-spacing: -2px;
+        }
+        .combo-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.72em; color: #fff;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.85);
+            letter-spacing: 2px;
+        }
+
         @keyframes victoryBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-30px); }
@@ -3335,6 +3360,43 @@
         .minigame-back-btn:hover {
             border-color: #888;
             color: #fff;
+        }
+
+        /* Mini-game canvas + UI */
+        .mg-timer-wrap { width: 100%; max-width: 500px; }
+        .mg-timer-bar {
+            width: 100%; height: 8px;
+            background: #111; border-radius: 4px;
+            border: 1px solid #2a2a2a; overflow: hidden;
+        }
+        .mg-timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #dc2626);
+            border-radius: 4px; transition: width 0.15s linear;
+        }
+        .mg-canvas {
+            border: 2px solid #222; border-radius: 8px;
+            display: block; cursor: pointer; max-width: 100%;
+        }
+        .mg-score {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px; color: #f97316; letter-spacing: 1px;
+        }
+        .mg-hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #444; }
+        .mg-result {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 16px;
+            animation: mg-fade-in 0.4s ease;
+        }
+        .mg-result-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px; color: #4ade80; text-align: center;
+            text-shadow: 0 0 20px rgba(74,222,128,0.45);
+        }
+        .mg-result-score { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #c4b5fd; }
+        @keyframes mg-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         /* Shop tabs */
@@ -8635,10 +8697,10 @@
         </div>
     </div>
 
-    <!-- Mini-game placeholder -->
+    <!-- Mini-game screen -->
     <div class="minigame-screen" id="minigame-screen">
-        <div class="minigame-title">🏃 JUMP TRAINING</div>
-        <div class="minigame-subtitle">Coming soon</div>
+        <div class="minigame-title" id="minigame-title">MINI-GAME</div>
+        <div id="minigame-game-area" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:520px;"></div>
         <button class="minigame-back-btn" id="minigame-back-btn">BACK</button>
     </div>
 
@@ -12735,6 +12797,7 @@
 
         // Replays a server-computed event log with the existing animation system.
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
+            let _comboCount = 1; // tracks hits in current combo sequence
             for (let _ei = 0; _ei < events.length; _ei++) {
                 const event = events[_ei];
                 if (game.gameOver) break;
@@ -12811,30 +12874,30 @@
                     }
 
                     case 'combo':
-                        showComboText();
-                        await sleep(100);
+                        _comboCount++;
+                        showComboHit(_comboCount);
+                        await sleep(120);
                         break;
 
                     case 'attack': {
-                        // Scan forward past log/skill_effect events to detect multi-hit sequences:
-                        // - explicit combo event      → standard combo
-                        // - another attack same fighter → light_step / turn_steal follow-up
-                        let _isComboFirst = false;
+                        // Separate real combos (preceded/followed by 'combo' event)
+                        // from Light Step (consecutive attacks from same fighter, no combo event)
+                        let _isComboFirst = false, _isComboFollow = false;
+                        let _isLSFirst    = false, _isLSFollow    = false;
                         for (let _f = _ei + 1; _f < events.length; _f++) {
                             const _fev = events[_f];
-                            if (_fev.type === 'combo') { _isComboFirst = true; break; }
-                            if (_fev.type === 'attack') { _isComboFirst = _fev.attacker === event.attacker; break; }
+                            if (_fev.type === 'combo')  { _isComboFirst = true; break; }
+                            if (_fev.type === 'attack') { _isLSFirst = _fev.attacker === event.attacker; break; }
                             if (_fev.type !== 'log' && _fev.type !== 'skill_effect') break;
                         }
-                        // Scan backward to detect if we are the follow-up of such a sequence
-                        let _isComboFollow = false;
                         for (let _b = _ei - 1; _b >= 0; _b--) {
                             const _bev = events[_b];
-                            if (_bev.type === 'combo') { _isComboFollow = true; break; }
-                            if (_bev.type === 'attack') { _isComboFollow = _bev.attacker === event.attacker; break; }
+                            if (_bev.type === 'combo')  { _isComboFollow = true; break; }
+                            if (_bev.type === 'attack') { _isLSFollow = _bev.attacker === event.attacker; break; }
                             if (_bev.type !== 'log' && _bev.type !== 'skill_effect') break;
                         }
-                        await animateServerAttack(event, _isComboFirst, _isComboFollow);
+                        if (!_isComboFollow) _comboCount = 1; // new combo sequence — reset counter
+                        await animateServerAttack(event, _isComboFirst, _isComboFollow, _isLSFirst, _isLSFollow);
                         break;
                     }
 
@@ -12857,9 +12920,9 @@
         }
 
         // Animates a single attack event from the server log.
-        // isComboFirst: this hit is followed by a combo event (return to midpoint)
-        // isComboFollow: this hit comes right after a combo event (start from midpoint)
-        async function animateServerAttack(event, isComboFirst, isComboFollow) {
+        // isComboFirst/Follow: real combo (stays in place between hits)
+        // isLSFirst/Follow: Light Step follow-up (old midpoint run behavior)
+        async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
 
             const attackerEl  = game[attacker].element;
@@ -12874,14 +12937,27 @@
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
             const isWeaponAnim = !!WEAPONS[attackType];
-            animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
 
-            // Advance toward opponent (combo follow-up is faster, already near mid)
-            if (attacker === 'player') attackerEl.style.left  = '69%';
-            else                       attackerEl.style.right = '69%';
-            await sleep(isComboFollow ? 180 : 300);
-            stopRunAnimation(attackerEl);
-            playFootstep();
+            if (isComboFollow) {
+                // Real combo follow-up: already at opponent, brief wind-up only
+                await sleep(70);
+            } else if (isLSFollow) {
+                // Light Step follow-up: run from midpoint to opponent (shorter distance)
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                if (attacker === 'player') attackerEl.style.left  = '67%';
+                else                       attackerEl.style.right = '67%';
+                await sleep(190);
+                stopRunAnimation(attackerEl);
+                playFootstep();
+            } else {
+                // Normal first hit: run from starting corner to opponent
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                if (attacker === 'player') attackerEl.style.left  = '67%';
+                else                       attackerEl.style.right = '67%';
+                await sleep(300);
+                stopRunAnimation(attackerEl);
+                playFootstep();
+            }
 
             // Defense visuals
             const defImg      = defenderEl.querySelector('img');
@@ -12970,18 +13046,25 @@
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             }
 
-            // Return: combo first hit goes to midpoint, all others go to start
-            animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+            // Return phase
             if (isComboFirst) {
-                if (attacker === 'player') attackerEl.style.left  = midPos;
-                else                       attackerEl.style.right = midPos;
-                await sleep(200);
+                // Real combo: hold position, next hit fires from here
+                await sleep(90);
+            } else if (isLSFirst) {
+                // Light Step first hit: step back to midpoint before follow-up
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+                if (attacker === 'player') attackerEl.style.left  = '44%';
+                else                       attackerEl.style.right = '44%';
+                await sleep(210);
+                stopRunAnimation(attackerEl);
             } else {
+                // Last hit (or solo attack): run back to starting corner
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
                 if (attacker === 'player') attackerEl.style.left  = '8%';
                 else                       attackerEl.style.right = '8%';
                 await sleep(350);
+                stopRunAnimation(attackerEl);
             }
-            stopRunAnimation(attackerEl);
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
             defenderEl.style.zIndex = '';
@@ -15934,12 +16017,17 @@
                 if (img._blinkTimeout) { clearTimeout(img._blinkTimeout); img._blinkTimeout = null; }
             }
             stopSpriteAnimation(fighterEl);
-        }function showComboText() {
-            const comboEl = document.createElement('div');
-            comboEl.textContent = 'COMBO!';
-            comboEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:bold;color:#ff0;text-shadow:3px 3px 0 #f00;z-index:20;animation:floatUp 1s forwards;pointer-events:none;';
-            document.getElementById('arena').appendChild(comboEl);
-            comboEl.addEventListener('animationend', () => comboEl.remove(), { once: true });
+        }function showComboHit(count) {
+            document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
+            const colors = ['#fbbf24', '#f97316', '#ef4444', '#8b5cf6', '#ec4899'];
+            const color  = colors[Math.min(count - 2, colors.length - 1)];
+            const el = document.createElement('div');
+            el.className = 'battle-combo-counter';
+            el.innerHTML =
+                '<span class="combo-x" style="color:' + color + ';text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 18px ' + color + '">×' + count + '</span>' +
+                '<span class="combo-label">COMBO</span>';
+            document.getElementById('arena').appendChild(el);
+            el.addEventListener('animationend', () => el.remove(), { once: true });
         }
 
         
@@ -19111,6 +19199,259 @@
         let _invDragWeaponId = null;
         let _invDragSource   = null; // 'inventory' | 'equipped'
 
+        // ─────────────────── MINI-GAME ENGINE ───────────────────
+        let _activeMinigameCleanup = null;
+
+        function launchMinigame(itemId, itemIcon, itemName) {
+            const mgScreen = document.getElementById('minigame-screen');
+            const titleEl  = document.getElementById('minigame-title');
+            const gameArea = document.getElementById('minigame-game-area');
+            if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
+            gameArea.innerHTML = '';
+            titleEl.textContent = itemIcon + ' ' + itemName.toUpperCase();
+            if (itemId === 'jump_training')  _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea);
+            else if (itemId === 'punching_bag') _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea);
+            mgScreen.classList.add('active');
+        }
+
+        function _mgRoundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.arcTo(x + w, y, x + w, y + r, r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+            ctx.lineTo(x + r, y + h);
+            ctx.arcTo(x, y + h, x, y + h - r, r);
+            ctx.lineTo(x, y + r);
+            ctx.arcTo(x, y, x + r, y, r);
+            ctx.closePath();
+        }
+
+        function _mgTimerBar(parent) {
+            const wrap = document.createElement('div'); wrap.className = 'mg-timer-wrap';
+            const bar  = document.createElement('div'); bar.className = 'mg-timer-bar';
+            const fill = document.createElement('div'); fill.className = 'mg-timer-fill';
+            fill.style.width = '100%';
+            bar.appendChild(fill); wrap.appendChild(bar); parent.appendChild(wrap);
+            return fill;
+        }
+
+        function _mgLaunchJumpTraining(area) {
+            const DURATION = 30, GW = 500, GH = 175;
+            const GROUND_Y = 130, PX = 80, PW = 26, PH = 38;
+            const GRAVITY = 1850, JUMP_VY = -570;
+
+            const timerFill = _mgTimerBar(area);
+            const canvas = document.createElement('canvas');
+            canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
+            area.appendChild(canvas);
+            const scoreEl = document.createElement('div'); scoreEl.className = 'mg-score'; scoreEl.textContent = 'SCORE: 0';
+            area.appendChild(scoreEl);
+            const hint = document.createElement('div'); hint.className = 'mg-hint'; hint.textContent = 'CLICK OR PRESS SPACE TO JUMP';
+            area.appendChild(hint);
+
+            const ctx = canvas.getContext('2d');
+            let elapsed = 0, lt = 0, score = 0, gameOver = false;
+            let pY = 0, pVY = 0, grounded = true;
+            let obstacles = [], nextObs = 1.5, obsSpeed = 180;
+            let alive = true, deathTimer = 0;
+            let animId;
+
+            function jump() { if (!alive || gameOver) return; if (grounded) { pVY = JUMP_VY; grounded = false; } }
+            canvas.addEventListener('click', jump);
+            function onKey(e) { if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); jump(); } }
+            document.addEventListener('keydown', onKey);
+
+            function endGame() {
+                cancelAnimationFrame(animId);
+                canvas.removeEventListener('click', jump);
+                document.removeEventListener('keydown', onKey);
+                area.innerHTML = '';
+                const r = document.createElement('div'); r.className = 'mg-result';
+                r.innerHTML = '<div class="mg-result-title">TRAINING COMPLETE!</div>' +
+                    '<div class="mg-result-score">OBSTACLES CLEARED: ' + score + '</div>' +
+                    '<div class="mg-hint">MORALE & XP ALREADY REWARDED</div>';
+                area.appendChild(r);
+            }
+
+            function loop(ts) {
+                if (!lt) lt = ts;
+                const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
+                if (!gameOver) {
+                    elapsed += dt;
+                    timerFill.style.width = Math.max(0, (1 - elapsed / DURATION) * 100) + '%';
+                    if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
+                    if (!alive) {
+                        deathTimer += dt;
+                        if (deathTimer > 0.6) { gameOver = true; endGame(); return; }
+                    } else {
+                        if (!grounded) { pVY += GRAVITY * dt; pY += pVY * dt; if (pY >= 0) { pY = 0; pVY = 0; grounded = true; } }
+                        nextObs -= dt;
+                        if (nextObs <= 0) { obstacles.push({ x: GW + 10, w: 18, h: 30 + Math.random() * 24 }); nextObs = 1.1 + Math.random() * 0.9; }
+                        obsSpeed = 185 + elapsed * 4;
+                        const kept = [];
+                        for (const o of obstacles) {
+                            o.x -= obsSpeed * dt;
+                            if (o.x + o.w < 0) { score++; scoreEl.textContent = 'SCORE: ' + score; continue; }
+                            const py2 = GROUND_Y + pY - PH, oy = GROUND_Y - o.h;
+                            if (PX < o.x + o.w && PX + PW > o.x && py2 < oy + o.h && py2 + PH > oy) alive = false;
+                            else kept.push(o);
+                        }
+                        obstacles = kept;
+                    }
+                }
+                ctx.clearRect(0, 0, GW, GH);
+                ctx.fillStyle = '#080810'; ctx.fillRect(0, 0, GW, GH);
+                // scrolling stars
+                ctx.fillStyle = 'rgba(255,255,255,0.22)';
+                for (let i = 0; i < 24; i++) {
+                    const sx = ((i * 79 + elapsed * 22) % GW), sy = (i * 31) % (GROUND_Y - 20);
+                    ctx.fillRect(sx | 0, sy | 0, 1, 1);
+                }
+                // ground
+                ctx.fillStyle = '#13131f'; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
+                ctx.fillStyle = '#f97316'; ctx.fillRect(0, GROUND_Y, GW, 3);
+                // obstacles
+                for (const o of obstacles) {
+                    const oy = GROUND_Y - o.h;
+                    ctx.fillStyle = '#dc2626'; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 3); ctx.fill();
+                    ctx.fillStyle = '#ef4444'; ctx.fillRect(o.x + 3, oy + 3, o.w - 6, 5);
+                }
+                // player
+                const drawY = GROUND_Y + pY - PH;
+                const alpha = alive ? 1 : 0.3;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#c4b5fd'; _mgRoundRect(ctx, PX, drawY, PW, PH, 3); ctx.fill();
+                ctx.fillStyle = '#7c3aed'; ctx.fillRect(PX + 4, drawY + 10, PW - 8, 18);
+                ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 6, drawY, 14, 11);
+                ctx.globalAlpha = 1;
+                if (!alive) { ctx.fillStyle = 'rgba(220,38,38,0.2)'; ctx.fillRect(0, 0, GW, GH); }
+                animId = requestAnimationFrame(loop);
+            }
+            animId = requestAnimationFrame(loop);
+            return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', jump); document.removeEventListener('keydown', onKey); };
+        }
+
+        function _mgLaunchPunchingBag(area) {
+            const DURATION = 30, GW = 360, GH = 220;
+            const AX = GW / 2, AY = 18, ROPE = 65, BW = 52, BH = 92;
+            const COMBO_WIN = 0.65;
+
+            const timerFill = _mgTimerBar(area);
+            const canvas = document.createElement('canvas');
+            canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
+            area.appendChild(canvas);
+            const statsEl = document.createElement('div'); statsEl.className = 'mg-score'; statsEl.textContent = 'HITS: 0   COMBO: ×0';
+            area.appendChild(statsEl);
+            const hint = document.createElement('div'); hint.className = 'mg-hint'; hint.textContent = 'CLICK THE BAG TO PUNCH!';
+            area.appendChild(hint);
+
+            const ctx = canvas.getContext('2d');
+            let elapsed = 0, lt = 0, gameOver = false;
+            let hits = 0, combo = 0, maxCombo = 0, lastHit = 0;
+            let bagAngle = 0, bagVel = 0, punchFlash = 0;
+            let particles = [];
+            let animId;
+
+            function punch(e) {
+                if (gameOver) return;
+                const rect = canvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) * (GW / rect.width);
+                const my = (e.clientY - rect.top) * (GH / rect.height);
+                const bx = AX + Math.sin(bagAngle) * ROPE;
+                const by = AY + Math.cos(bagAngle) * ROPE;
+                if (Math.abs(mx - bx) < BW / 2 + 20 && Math.abs(my - (by + BH / 2)) < BH / 2 + 20) {
+                    const now = performance.now() / 1000;
+                    hits++;
+                    combo = (now - lastHit < COMBO_WIN) ? combo + 1 : 1;
+                    maxCombo = Math.max(maxCombo, combo);
+                    lastHit = now;
+                    bagVel += 0.13 + Math.min(combo, 8) * 0.02;
+                    punchFlash = 0.12;
+                    for (let i = 0; i < 5; i++)
+                        particles.push({ x: bx, y: by + BH / 2, vx: (Math.random() - 0.5) * 130, vy: -Math.random() * 80 - 40, life: 0.38 });
+                    statsEl.textContent = 'HITS: ' + hits + '   COMBO: ×' + combo;
+                }
+            }
+            canvas.addEventListener('click', punch);
+
+            function endGame() {
+                cancelAnimationFrame(animId); canvas.removeEventListener('click', punch);
+                area.innerHTML = '';
+                const rating = hits >= 70 ? 'BEAST MODE! 💪' : hits >= 40 ? 'GREAT WORKOUT!' : 'GOOD EFFORT!';
+                const r = document.createElement('div'); r.className = 'mg-result';
+                r.innerHTML = '<div class="mg-result-title">' + rating + '</div>' +
+                    '<div class="mg-result-score">TOTAL HITS: ' + hits + '</div>' +
+                    '<div class="mg-result-score">BEST COMBO: ×' + maxCombo + '</div>' +
+                    '<div class="mg-hint">MORALE & XP ALREADY REWARDED</div>';
+                area.appendChild(r);
+            }
+
+            function loop(ts) {
+                if (!lt) lt = ts;
+                const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
+                if (!gameOver) {
+                    elapsed += dt;
+                    timerFill.style.width = Math.max(0, (1 - elapsed / DURATION) * 100) + '%';
+                    if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
+                    const nowSec = performance.now() / 1000;
+                    if (combo > 0 && nowSec - lastHit > COMBO_WIN) { combo = 0; statsEl.textContent = 'HITS: ' + hits + '   COMBO: ×0'; }
+                    bagVel -= Math.sin(bagAngle) * 5 * dt;
+                    bagVel *= 0.975;
+                    bagAngle += bagVel * dt;
+                    if (punchFlash > 0) punchFlash -= dt;
+                    particles = particles.filter(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 200 * dt; p.life -= dt; return p.life > 0; });
+                }
+                ctx.clearRect(0, 0, GW, GH);
+                ctx.fillStyle = '#080810'; ctx.fillRect(0, 0, GW, GH);
+                // ceiling mount
+                ctx.fillStyle = '#333'; ctx.fillRect(AX - 8, 0, 16, AY + 4);
+                const bx = AX + Math.sin(bagAngle) * ROPE;
+                const by = AY + Math.cos(bagAngle) * ROPE;
+                // chain
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(AX, AY); ctx.lineTo(bx, by); ctx.stroke();
+                // shadow
+                ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.ellipse(bx + (bx - AX) * 0.12, GH - 10, BW / 2 * 0.65, 8, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+                // bag body
+                ctx.save(); ctx.translate(bx, by);
+                const punching = punchFlash > 0;
+                const grad = ctx.createLinearGradient(-BW / 2, 0, BW / 2, 0);
+                grad.addColorStop(0, punching ? '#b91c1c' : '#92400e');
+                grad.addColorStop(0.35, punching ? '#ef4444' : '#d97706');
+                grad.addColorStop(1, punching ? '#b91c1c' : '#78350f');
+                ctx.fillStyle = grad; _mgRoundRect(ctx, -BW / 2, 0, BW, BH, 10); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fillRect(-BW / 2 + 5, BH * 0.27, BW - 10, 6);
+                ctx.fillRect(-BW / 2 + 5, BH * 0.55, BW - 10, 6);
+                ctx.fillStyle = '#1c1917'; _mgRoundRect(ctx, -BW / 2 + 4, BH - 16, BW - 8, 16, 6); ctx.fill();
+                ctx.fillStyle = '#44403c'; ctx.fillRect(-10, -8, 20, 10);
+                ctx.restore();
+                // particles
+                for (const p of particles) {
+                    ctx.save(); ctx.globalAlpha = p.life / 0.38;
+                    ctx.fillStyle = p.life > 0.2 ? '#fbbf24' : '#f97316';
+                    ctx.fillRect(p.x - 2, p.y - 2, 4, 4); ctx.restore();
+                }
+                // combo text
+                if (combo >= 3) {
+                    const colors = ['#f97316', '#ef4444', '#8b5cf6', '#ec4899'];
+                    ctx.font = '9px "Press Start 2P", monospace';
+                    ctx.fillStyle = colors[Math.min(Math.floor((combo - 3) / 2), 3)];
+                    ctx.globalAlpha = 0.92;
+                    ctx.fillText('×' + combo + ' COMBO!', bx + BW / 2 + 6, by + BH / 2);
+                    ctx.globalAlpha = 1;
+                }
+                animId = requestAnimationFrame(loop);
+            }
+            animId = requestAnimationFrame(loop);
+            return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', punch); };
+        }
+        // ───────────────────────────────────────────────────────
+
         function renderCarePanel() {
             const character = getSelectedCharacter();
             if (!character) return;
@@ -19286,12 +19627,7 @@
                             updateMoraleDisplay(character);
                             updateLobbyCharacterDisplay();
                             if (isInteractive) {
-                                const mgScreen = document.getElementById('minigame-screen');
-                                const mgTitle  = mgScreen.querySelector('.minigame-title');
-                                const mgSub    = mgScreen.querySelector('.minigame-subtitle');
-                                if (mgTitle) mgTitle.textContent = mItem.icon + ' ' + mItem.name.toUpperCase();
-                                if (mgSub)   mgSub.textContent  = 'Coming soon';
-                                mgScreen.classList.add('active');
+                                launchMinigame(id, mItem.icon, mItem.name);
                             }
                         });
                     }
@@ -20528,8 +20864,10 @@
             renderCarePanel();
         });
 
-        // PLAY button → mini-game placeholder (care-play-btn removed from CARE panel)
+        // Mini-game back button — stop active game and return to lobby
         document.getElementById('minigame-back-btn').addEventListener('click', () => {
+            if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
+            document.getElementById('minigame-game-area').innerHTML = '';
             document.getElementById('minigame-screen').classList.remove('active');
             document.getElementById('lobby-wrapper').style.display = '';
         });
