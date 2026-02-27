@@ -8421,7 +8421,7 @@
             <img class="lg-frame-img" src="Assets/UI/stone-frame.png" alt="">
             <div class="lg-frame-content">
                 <div class="lg-title">CONNECT TO<br>ENTER<br>THE ARENA</div>
-                <a class="lg-btn" href="https://fight-chub-backend.vercel.app/?force=1">🎮 &nbsp;LOGIN TO PLAY</a>
+                <button class="lg-btn" onclick="openLoginPopup()">🎮 &nbsp;LOGIN TO PLAY</button>
                 <div class="lg-sub">Login with X or<br>connect your wallet</div>
             </div>
         </div>
@@ -8478,7 +8478,7 @@
                     <button class="session-disconnect-btn" onclick="logoutPlayerSession()">⏻ DISCONNECT</button>
                     <button class="session-disconnect-btn" style="color:#f87171;border-color:#f87171;margin-top:4px;" onclick="deleteAccount()">🗑 DELETE ACCOUNT</button>
                 </div>
-                <a class="session-login-btn" id="session-login-btn" href="https://fight-chub-backend.vercel.app/?force=1">🎮 LOGIN</a>
+                <button class="session-login-btn" id="session-login-btn" onclick="openLoginPopup()">🎮 LOGIN</button>
             </div>
         </div>
 
@@ -11981,6 +11981,38 @@
             // Hide the loading overlay so it doesn't block behind the gate
             const overlay = document.getElementById('lobby-loading-overlay');
             if (overlay) overlay.style.display = 'none';
+        }
+
+        // Opens Privy login in a popup; on success the popup sends postMessage and closes
+        function openLoginPopup() {
+            const url = 'https://fight-chub-backend.vercel.app/?force=1';
+            const w = 480, h = 620;
+            const left = Math.max(0, Math.round((screen.width  - w) / 2));
+            const top  = Math.max(0, Math.round((screen.height - h) / 2));
+            const popup = window.open(url, 'privy_login',
+                'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes');
+
+            if (!popup) {
+                // Popup blocked — fall back to full redirect
+                window.location.href = url;
+                return;
+            }
+
+            function onPrivyMsg(event) {
+                if (!event.data || event.data.type !== 'privy_session') return;
+                window.removeEventListener('message', onPrivyMsg);
+                const d = event.data;
+                const params = new URLSearchParams({
+                    playerId: d.playerId || '',
+                    wallet:   d.wallet   || '',
+                    name:     d.name     || 'Fighter',
+                    avatar:   d.avatar   || '',
+                    token:    d.token    || '',
+                });
+                // Reload page with session params — loadPlayerSession() handles the rest
+                window.location.href = window.location.pathname + '?' + params.toString();
+            }
+            window.addEventListener('message', onPrivyMsg);
         }
 
         // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
