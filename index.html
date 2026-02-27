@@ -9537,14 +9537,14 @@
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
         const CONSUMABLE_TRIGGER_HP = 0.25;
         const BATTLE_CONSUMABLES = {
-            small_potion: { name: 'Small Potion', category: 'potion', healPercent: 0.22, icon: '🧪', price: 18 },
-            big_potion:   { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6, icon: '⚗️', price: 24 },
+            small_potion: { name: 'Small Potion', category: 'potion', healPercent: 0.22, icon: '🧪', price: 12 },
+            big_potion:   { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6, icon: '⚗️', price: 16 },
         };
         // Legacy alias — battle engine still references CONSUMABLES for heal logic
         const CONSUMABLES = BATTLE_CONSUMABLES;
         const CONSUMABLE_MIN_LEVEL = 5;
         const CONSUMABLE_SHOP_PRICES = {
-            small_potion: 18, big_potion: 24,
+            small_potion: 12, big_potion: 16,
         };
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
