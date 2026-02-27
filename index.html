@@ -3383,6 +3383,31 @@
             font-size: 9px; color: #f97316; letter-spacing: 1px;
         }
         .mg-hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #444; }
+
+        /* Lobby pre-load overlay */
+        #lobby-loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #05050d;
+            z-index: 900;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+            transition: opacity 0.45s ease;
+        }
+        #lobby-loading-overlay.llo-hidden { opacity: 0; pointer-events: none; }
+        .llo-logo {
+            font-family: 'Press Start 2P', monospace; font-size: 22px;
+            color: #c4b5fd; text-shadow: 0 0 24px rgba(196,181,253,0.55), 0 0 60px rgba(124,58,237,0.3);
+            letter-spacing: 3px;
+        }
+        .llo-sub { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #444; letter-spacing: 1px; }
+        .llo-bar-wrap {
+            width: 220px; height: 6px; background: #111;
+            border-radius: 3px; border: 1px solid #1e1e1e; overflow: hidden;
+        }
+        .llo-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #7c3aed, #f97316);
+            border-radius: 3px; transition: width 0.25s ease;
+        }
         .mg-result {
             display: flex; flex-direction: column;
             align-items: center; gap: 16px;
@@ -8323,6 +8348,14 @@
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
+
+    <!-- Pre-load overlay: shown until sprites are ready, then fades out -->
+    <div id="lobby-loading-overlay">
+        <div class="llo-logo">FIGHTCHUB</div>
+        <div class="llo-sub">LOADING FIGHTER DATA...</div>
+        <div class="llo-bar-wrap"><div class="llo-bar" id="llo-bar"></div></div>
+    </div>
+
     <div class="main-menu" id="main-menu">
         <div class="lobby-bg" id="lobby-bg"></div>
         <!-- Fullscreen button (mobile, lobby) -->
@@ -13194,6 +13227,9 @@
         // Load progression after characters (needs getSelectedCharacter)
         loadProgression();
 
+        // Pre-load run sprite frames before showing the lobby
+        preloadLobbySprites();
+
         // ===== BATTLE RESUME / FORFEIT CHECK =====
         function showForfeitToast(message) {
             const toast = document.createElement('div');
@@ -14229,6 +14265,7 @@
                 selectedCharacterId = characters[charIndex - 1].id;
                 saveCharacters();
                 updateLobbyCharacterDisplay();
+                refreshLobbyRunFrames();
             }
         }
 
@@ -14240,6 +14277,7 @@
                 selectedCharacterId = characters[charIndex + 1].id;
                 saveCharacters();
                 updateLobbyCharacterDisplay();
+                refreshLobbyRunFrames();
             }
         }
 
@@ -19198,6 +19236,85 @@
         // Inventory weapon drag state
         let _invDragWeaponId = null;
         let _invDragSource   = null; // 'inventory' | 'equipped'
+
+        // ─────────── LOBBY SPRITE PRE-LOADER ───────────────────
+        let _lobbyPreloadCharId = null; // tracks which character's sprites are loaded
+
+        async function preloadLobbySprites() {
+            const overlay = document.getElementById('lobby-loading-overlay');
+            const bar     = document.getElementById('llo-bar');
+            const character = getSelectedCharacter();
+
+            // Nothing to load without a character
+            if (!character) {
+                if (overlay) { overlay.classList.add('llo-hidden'); setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500); }
+                return;
+            }
+
+            // Already loaded for this character — just hide overlay
+            if (_lobbyPreloadCharId === character.id) {
+                if (overlay) { overlay.classList.add('llo-hidden'); setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500); }
+                return;
+            }
+
+            // Show bar starting at 0 → 40% (begin)
+            if (bar) bar.style.width = '40%';
+
+            const img = document.querySelector('#player img');
+            if (!img) {
+                if (overlay) overlay.classList.add('llo-hidden');
+                return;
+            }
+
+            // Revoke stale run frames from a previous character
+            if (img._runFrames && _lobbyPreloadCharId !== null) {
+                revokeBlobURLs(img._runFrames);
+                img._runFrames = null;
+            }
+
+            try {
+                const src = img.dataset.run;
+                if (src) {
+                    const layers = getAppearanceLayers(character, 'run');
+                    if (layers.length > 0) {
+                        img._runFrames = await extractFramesWithLayers(src, layers, 5, 2);
+                    } else {
+                        img._runFrames = await extractFrames(src, 5, 2);
+                    }
+                }
+                _lobbyPreloadCharId = character.id;
+                if (bar) bar.style.width = '100%';
+            } catch (e) {
+                console.warn('[preload] run frames failed:', e);
+            }
+
+            // Short pause so bar reaches 100% visually, then fade out
+            await new Promise(r => setTimeout(r, 280));
+            if (overlay) {
+                overlay.classList.add('llo-hidden');
+                setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
+            }
+        }
+
+        // Re-run preload (without overlay) when character changes in lobby
+        async function refreshLobbyRunFrames() {
+            const character = getSelectedCharacter();
+            if (!character || _lobbyPreloadCharId === character.id) return;
+            const img = document.querySelector('#player img');
+            if (!img) return;
+            if (img._runFrames) { revokeBlobURLs(img._runFrames); img._runFrames = null; }
+            try {
+                const src = img.dataset.run;
+                if (src) {
+                    const layers = getAppearanceLayers(character, 'run');
+                    img._runFrames = layers.length > 0
+                        ? await extractFramesWithLayers(src, layers, 5, 2)
+                        : await extractFrames(src, 5, 2);
+                    _lobbyPreloadCharId = character.id;
+                }
+            } catch (e) { console.warn('[preload] refresh run frames failed:', e); }
+        }
+        // ────────────────────────────────────────────────────────
 
         // ─────────────────── MINI-GAME ENGINE ───────────────────
         let _activeMinigameCleanup = null;
