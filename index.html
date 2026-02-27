@@ -3391,7 +3391,7 @@
             position: fixed; inset: 0; z-index: 9999;
             background: radial-gradient(ellipse at center, #12102a 0%, #06050f 100%);
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 20px;
+            align-items: center; justify-content: center; gap: 16px;
         }
         #login-gate.hidden { display: none; }
         .lg-logo {
@@ -3399,44 +3399,53 @@
             font-size: clamp(18px, 4vw, 32px);
             color: #c4b5fd;
             text-shadow: 0 0 30px rgba(167,139,250,0.6), 0 0 70px rgba(124,58,237,0.3);
-            letter-spacing: 4px; margin-bottom: 4px;
+            letter-spacing: 4px; margin-bottom: 2px;
         }
         .lg-tagline {
             font-family: 'Press Start 2P', monospace;
             font-size: clamp(6px, 1.2vw, 9px);
             color: #6b7280; letter-spacing: 1px;
         }
-        .lg-card {
-            background: linear-gradient(135deg, #1e1a2e 0%, #12101e 100%);
-            border: 2px solid #7c3aed; border-radius: 14px;
-            padding: 40px 48px; display: flex; flex-direction: column;
-            align-items: center; gap: 18px;
-            box-shadow: 0 0 60px rgba(124,58,237,0.25);
-            max-width: 360px; width: 90%;
+        /* Stone-frame used as the actual window */
+        .lg-frame-wrap {
+            position: relative;
+            width: clamp(260px, 52vmin, 400px);
+            height: clamp(260px, 52vmin, 400px);
+            filter: drop-shadow(0 0 28px rgba(124,58,237,0.55));
         }
-        .lg-icon { width: 64px; image-rendering: pixelated; }
+        .lg-frame-img {
+            width: 100%; height: 100%;
+            image-rendering: pixelated; display: block;
+        }
+        /* Content sits inside the hollow stone border (~17% inset on each side) */
+        .lg-frame-content {
+            position: absolute;
+            inset: 17%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+        }
         .lg-title {
             font-family: 'Press Start 2P', monospace;
-            font-size: clamp(8px, 1.8vw, 13px); color: #fff;
-            text-align: center; line-height: 1.6;
+            font-size: clamp(7px, 1.6vmin, 12px); color: #e9d5ff;
+            text-align: center; line-height: 1.7;
         }
         .lg-sub {
             font-family: 'Press Start 2P', monospace;
-            font-size: clamp(5px, 1vw, 8px); color: #9ca3af;
-            text-align: center;
+            font-size: clamp(4px, 0.9vmin, 7px); color: #9ca3af;
+            text-align: center; line-height: 1.6;
         }
         .lg-btn {
-            display: block; width: 100%; padding: 14px 0;
+            display: block; width: 90%; padding: 10px 0;
             background: linear-gradient(to bottom, #7c3aed, #5b21b6);
-            border: 2px solid #a78bfa; border-radius: 10px;
+            border: 2px solid #a78bfa; border-radius: 8px;
             color: #fff; font-family: 'Press Start 2P', monospace;
-            font-size: clamp(7px, 1.4vw, 11px); letter-spacing: 1px;
+            font-size: clamp(6px, 1.3vmin, 10px); letter-spacing: 1px;
             cursor: pointer; text-align: center; text-decoration: none;
-            box-shadow: 0 4px 0 #3b0764;
+            box-shadow: 0 3px 0 #3b0764;
             transition: filter 0.1s, transform 0.1s;
         }
         .lg-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
-        .lg-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #3b0764; }
+        .lg-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #3b0764; }
 
         /* Lobby pre-load overlay */
         #lobby-loading-overlay {
@@ -8408,11 +8417,13 @@
     <div id="login-gate" class="hidden">
         <div class="lg-logo">FIGHTCHUB</div>
         <div class="lg-tagline">THE ARENA AWAITS</div>
-        <div class="lg-card">
-            <img class="lg-icon" src="Assets/UI/stone-frame.png" alt="FightChub">
-            <div class="lg-title">CONNECT TO<br>ENTER THE ARENA</div>
-            <div class="lg-sub">Login with X or connect your wallet</div>
-            <a class="lg-btn" href="https://fight-chub-backend.vercel.app/">🎮 &nbsp;PLAY NOW</a>
+        <div class="lg-frame-wrap">
+            <img class="lg-frame-img" src="Assets/UI/stone-frame.png" alt="">
+            <div class="lg-frame-content">
+                <div class="lg-title">CONNECT TO<br>ENTER<br>THE ARENA</div>
+                <a class="lg-btn" href="https://fight-chub-backend.vercel.app/">🎮 &nbsp;PLAY NOW</a>
+                <div class="lg-sub">Login with X or<br>connect your wallet</div>
+            </div>
         </div>
     </div>
 
