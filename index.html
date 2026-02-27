@@ -1422,7 +1422,7 @@
             100% { opacity: 0; transform: translate(-50%, -64%); }
         }
         .battle-combo-counter {
-            position: absolute; top: 36%; left: 50%;
+            position: absolute; top: 52%; left: 58%;
             transform: translate(-50%, -50%);
             z-index: 25; display: flex; flex-direction: column;
             align-items: center; line-height: 1; pointer-events: none;
@@ -3363,7 +3363,7 @@
         }
 
         /* Mini-game canvas + UI */
-        .mg-timer-wrap { width: 100%; max-width: 860px; }
+        .mg-timer-wrap { width: 100%; max-width: 980px; }
         .mg-timer-bar {
             width: 100%; height: 8px;
             background: #111; border-radius: 4px;
@@ -3376,7 +3376,9 @@
         }
         .mg-canvas {
             border: 2px solid #222; border-radius: 8px;
-            display: block; cursor: pointer; max-width: 100%;
+            display: block; cursor: pointer;
+            max-width: min(980px, 95vw);
+            height: auto;
         }
         .mg-score {
             font-family: 'Press Start 2P', monospace;
@@ -12964,7 +12966,7 @@
                     case 'combo':
                         _comboCount++;
                         showComboHit(_comboCount);
-                        await sleep(120);
+                        await sleep(60);
                         break;
 
                     case 'attack': {
@@ -13027,8 +13029,10 @@
             const isWeaponAnim = !!WEAPONS[attackType];
 
             if (isComboFollow) {
-                // Real combo follow-up: already at opponent, brief wind-up only
-                await sleep(70);
+                // Real combo follow-up: snap to combat position in case anything reset it
+                if (attacker === 'player') attackerEl.style.left  = '67%';
+                else                       attackerEl.style.right = '67%';
+                await sleep(50);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
@@ -13137,7 +13141,7 @@
             // Return phase
             if (isComboFirst) {
                 // Real combo: hold position, next hit fires from here
-                await sleep(90);
+                await sleep(60);
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
                 animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
@@ -13158,7 +13162,7 @@
             defenderEl.style.zIndex = '';
             startIdleBlink(defenderEl);
             startIdleBlink(attackerEl);
-            await sleep(500);
+            await sleep(isComboFirst ? 80 : 500);
         }
 
         // ===== WEAPON DURABILITY HELPERS =====
@@ -19168,7 +19172,10 @@
             const useResult = await boostMorale(character, id);
             if (!useResult) { showNotice('Bought but could not use item!'); return null; }
 
-            showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale | +' + (mItem.xpGrant || 0) + ' XP');
+            // Skip notice for interactive items — the minigame launching is the feedback
+            if (!mItem.interactive) {
+                showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale | +' + (mItem.xpGrant || 0) + ' XP');
+            }
             if (useResult.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
             return useResult;
         }
@@ -19400,9 +19407,9 @@
         }
 
         function _mgLaunchJumpTraining(area, runFrames, staticSrc) {
-            const DURATION = 30, GW = 860, GH = 260;
-            const GROUND_Y = 195, PX = 100, PW = 64, PH = 80;
-            const GRAVITY = 1900, JUMP_VY = -620;
+            const DURATION = 30, GW = 980, GH = 360;
+            const GROUND_Y = 280, PX = 110, PW = 80, PH = 100;
+            const GRAVITY = 1900, JUMP_VY = -700;
 
             const timerFill = _mgTimerBar(area);
             const canvas = document.createElement('canvas');
@@ -19423,7 +19430,7 @@
             // Load sprite frames as Image objects for canvas drawing
             let spriteFrames = [];  // HTMLImageElement array
             let spriteIdx = 0, spriteTimer = 0;
-            const SPRITE_FPS = 9;
+            const SPRITE_FPS = 14;
             if (runFrames && runFrames.length) {
                 spriteFrames = runFrames.map(src => { const img = new Image(); img.src = src; return img; });
             } else if (staticSrc) {
@@ -19521,12 +19528,7 @@
                 const drawY = GROUND_Y + pY - PH;
                 ctx.globalAlpha = alive ? 1 : 0.35;
                 if (spriteFrames.length && spriteFrames[spriteIdx]?.complete) {
-                    // Use character sprite — flip horizontally if needed (sprites face left by default in battle)
-                    ctx.save();
-                    ctx.translate(PX + PW, drawY);
-                    ctx.scale(-1, 1); // flip to face right
-                    ctx.drawImage(spriteFrames[spriteIdx], 0, 0, PW, PH);
-                    ctx.restore();
+                    ctx.drawImage(spriteFrames[spriteIdx], PX, drawY, PW, PH);
                 } else {
                     // Fallback: draw simple fighter shape
                     ctx.fillStyle = '#c4b5fd'; _mgRoundRect(ctx, PX, drawY, PW, PH, 4); ctx.fill();
