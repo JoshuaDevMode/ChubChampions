@@ -19274,14 +19274,8 @@
 
             try {
                 const src = img.dataset.run;
-                if (src) {
-                    const layers = getAppearanceLayers(character, 'run');
-                    if (layers.length > 0) {
-                        img._runFrames = await extractFramesWithLayers(src, layers, 5, 2);
-                    } else {
-                        img._runFrames = await extractFrames(src, 5, 2);
-                    }
-                }
+                // Load base run frames only — skin layer sheets load in processAllFighterImages() before battle
+                if (src) img._runFrames = await extractFrames(src, 5, 2);
                 _lobbyPreloadCharId = character.id;
                 if (bar) bar.style.width = '100%';
             } catch (e) {
@@ -19305,13 +19299,8 @@
             if (img._runFrames) { revokeBlobURLs(img._runFrames); img._runFrames = null; }
             try {
                 const src = img.dataset.run;
-                if (src) {
-                    const layers = getAppearanceLayers(character, 'run');
-                    img._runFrames = layers.length > 0
-                        ? await extractFramesWithLayers(src, layers, 5, 2)
-                        : await extractFrames(src, 5, 2);
-                    _lobbyPreloadCharId = character.id;
-                }
+                // Base frames only — skin layers are composited in processAllFighterImages() before battle
+                if (src) { img._runFrames = await extractFrames(src, 5, 2); _lobbyPreloadCharId = character.id; }
             } catch (e) { console.warn('[preload] refresh run frames failed:', e); }
         }
         // ────────────────────────────────────────────────────────
