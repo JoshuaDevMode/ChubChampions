@@ -8399,6 +8399,7 @@
                 </div>
                 <div class="session-dropdown" id="session-dropdown">
                     <button class="session-disconnect-btn" onclick="logoutPlayerSession()">⏻ DISCONNECT</button>
+                    <button class="session-disconnect-btn" style="color:#f87171;border-color:#f87171;margin-top:4px;" onclick="deleteAccount()">🗑 DELETE ACCOUNT</button>
                 </div>
                 <a class="session-login-btn" id="session-login-btn" href="https://fight-chub-backend.vercel.app/">🎮 LOGIN</a>
             </div>
@@ -11734,13 +11735,18 @@
             try {
                 const resp = await fetch(BACKEND_URL + '/api/character/boost', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         characterId: character.id,
                         itemId: itemId,
                     }),
                 });
+                if (resp.status === 401 || resp.status === 403) {
+                    showNotice('Session expired. Please log in again.');
+                    setTimeout(() => { window.location.href = 'https://fight-chub-backend.vercel.app/'; }, 1800);
+                    return null;
+                }
                 const data = await resp.json();
                 if (!data.ok) { showNotice(data.error || 'Failed to use item'); return null; }
 
@@ -11771,13 +11777,18 @@
             try {
                 const resp = await fetch(BACKEND_URL + '/api/character/feed', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         characterId: character.id,
                         itemId: itemId,
                     }),
                 });
+                if (resp.status === 401 || resp.status === 403) {
+                    showNotice('Session expired. Please log in again.');
+                    setTimeout(() => { window.location.href = 'https://fight-chub-backend.vercel.app/'; }, 1800);
+                    return null;
+                }
                 const data = await resp.json();
                 if (!data.ok) { showNotice(data.error || 'Failed to use item'); return null; }
 
@@ -11859,7 +11870,7 @@
         }
 
         // ===== PLAYER SESSION (Privy login) =====
-        let playerSession = null; // { playerId, wallet, name, avatar }
+        let playerSession = null; // { playerId, wallet, name, avatar, token }
 
         function loadPlayerSession() {
             const params = new URLSearchParams(window.location.search);
@@ -11870,6 +11881,7 @@
                     wallet:   params.get('wallet')  || '',
                     name:     params.get('name')    || 'Fighter',
                     avatar:   params.get('avatar')  || '',
+                    token:    params.get('token')   || '',
                 };
                 localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
                 window.history.replaceState({}, '', window.location.pathname);
@@ -11883,6 +11895,15 @@
             if (playerSession) syncStateFromServer();
         }
 
+        // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
+        function getAuthHeaders() {
+            const base = { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET };
+            if (playerSession?.token) {
+                return { ...base, 'Authorization': 'Bearer ' + playerSession.token };
+            }
+            return base;
+        }
+
         // Fetch authoritative economy state from server and override local values
         async function syncStateFromServer() {
             if (!playerSession) return;
@@ -11894,6 +11915,19 @@
                 });
                 if (!resp.ok) return;
                 const data = await resp.json();
+
+                // Account deleted from server — clear all local game data
+                if (data.notFound) {
+                    console.warn('[state] account not found on server — clearing local data');
+                    Object.keys(localStorage)
+                        .filter(k => k.startsWith('fightchub_') && k !== 'fightchub_session')
+                        .forEach(k => localStorage.removeItem(k));
+                    globalTokens = 0; globalFragments = 0; globalCrystals = 0;
+                    pendingVictoryChests = []; winStreak = 0;
+                    updateCurrencyUI(); updateVictoryChestSlots();
+                    return;
+                }
+
                 globalTokens               = data.tokens;
                 globalFragments            = data.fragments;
                 globalCrystals             = data.crystals ?? globalCrystals;
@@ -11947,8 +11981,24 @@
         function logoutPlayerSession() {
             document.getElementById('session-widget')?.classList.remove('sw-open');
             playerSession = null;
-            localStorage.removeItem('fightchub_session');
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('fightchub_'))
+                .forEach(k => localStorage.removeItem(k));
             updatePlayerSessionUI();
+        }
+
+        async function deleteAccount() {
+            if (!playerSession) return;
+            if (!confirm('Delete your account? This cannot be undone. All characters and progress will be lost.')) return;
+            document.getElementById('session-widget')?.classList.remove('sw-open');
+            try {
+                await fetch(BACKEND_URL + '/api/player/delete', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession.playerId }),
+                });
+            } catch(e) { /* ignore network errors — still clear locally */ }
+            logoutPlayerSession();
         }
 
         function toggleSessionMenu() {
@@ -12491,9 +12541,14 @@
             try {
                 const resp = await fetch(BACKEND_URL + '/api/economy/spend', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId, action, ...payload }),
                 });
+                if (resp.status === 401 || resp.status === 403) {
+                    showNotice('Session expired. Please log in again.');
+                    setTimeout(() => { window.location.href = 'https://fight-chub-backend.vercel.app/'; }, 1800);
+                    return { ok: false, error: 'Session expired' };
+                }
                 const data = await resp.json();
                 if (data.ok) {
                     globalTokens   = data.newTokens;
@@ -17145,7 +17200,7 @@
             try {
                 startResp = await fetch(BACKEND_URL + '/api/aon/start', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({
                         playerId:  playerSession?.playerId,
                         format:    Math.ceil(aonFormat / 2), // rounds needed to win
