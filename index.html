@@ -6509,6 +6509,12 @@
             border-radius: 5px;
             padding: 3px 9px;
         }
+        #currency-crystals {
+            color: #7dd9f5;
+            text-shadow: 1px 1px 0 #000, 0 0 8px rgba(100,200,255,0.35);
+            background: rgba(80,180,255,0.07);
+            border-color: rgba(100,200,255,0.25);
+        }
         .chain-balance {
             cursor: pointer;
             transition: opacity 0.15s, transform 0.1s;
@@ -8270,6 +8276,7 @@
             <div class="top-currency-group">
                 <span class="currency-item" id="currency-tokens">🪙 0</span>
                 <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> 0 / 10</span>
+                <span class="currency-item" id="currency-crystals" title="Crystals — used for rare skins">💎 0</span>
                 <span class="currency-item chain-balance" id="wallet-balance" style="display:none;" onclick="refreshWalletBalance()" title="Wallet balance — click to refresh"></span>
             </div>
             <!-- Notification Bell -->
@@ -9543,7 +9550,7 @@
         // ===== WELLNESS SYSTEM CONSTANTS =====
         const WELLNESS_MAX = 100;
         const WELLNESS_DECAY_PER_HOUR = 0.7; // -0.7 per hour (~6 days to zero from full)
-        const WELLNESS_BATTLE_LOSS_FACTOR = 20; // max wellness lost from a single battle
+        const WELLNESS_BATTLE_LOSS_FACTOR = 10; // max wellness lost from a single battle
         const WELLNESS_STATUSES = [
             { min: 76, label: 'Healthy',            color: '#4ade80', penalty: 0 },
             { min: 51, label: 'Tired',              color: '#facc15', penalty: 0.05 },
@@ -9946,6 +9953,7 @@
         // Token & Fragment economy
         let globalTokens = 0;
         let globalFragments = 0;
+        let globalCrystals = 0;
         let globalFragmentChestsOpened = 0;
         let pendingVictoryChests = []; // array of { tier, unlockStart, unlockDuration }
         let chestTimerInterval = null; // global interval for updating chest countdowns
@@ -9985,36 +9993,36 @@
         // Daily Claim system
         const FRAG_DAILY_ICON = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         const DAILY_REWARDS = [
-            { day: 1,  type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 2,  type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 3,  type: 'chest',      tier: 'bronze', icon: '<img src="Assets/UI/Chests/Common.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 4,  type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 5,  type: 'tokens',    amount: 2, icon: '🪙', label: '2 🪙' },
-            { day: 6,  type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 7,  type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 8,  type: 'xpboost',   mult: 1.5, battles: 5, icon: '⚡', label: '⚡1.5x' },
-            { day: 9,  type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 10, type: 'chest',      tier: 'bronze', icon: '<img src="Assets/UI/Chests/Common.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 11, type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 12, type: 'tokens',    amount: 2, icon: '🪙', label: '2 🪙' },
-            { day: 13, type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 14, type: 'xpboost',   mult: 1.5, battles: 5, icon: '⚡', label: '⚡1.5x' },
-            { day: 15, type: 'chest',      tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 16, type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 17, type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 18, type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 19, type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 20, type: 'tokens',    amount: 2, icon: '🪙', label: '2 🪙' },
-            { day: 21, type: 'xpboost',   mult: 1.5, battles: 5, icon: '⚡', label: '⚡1.5x' },
-            { day: 22, type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 23, type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 24, type: 'combo',     tokens: 3, fragments: 1, icon: '🎁', label: '3🪙+1' },
-            { day: 25, type: 'tokens',    amount: 2, icon: '🪙', label: '2 🪙' },
-            { day: 26, type: 'fragments',  amount: 1, icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 27, type: 'tokens',    amount: 1, icon: '🪙', label: '1 🪙' },
-            { day: 28, type: 'xpboost',   mult: 1.5, battles: 5, icon: '⚡', label: '⚡1.5x' },
-            { day: 29, type: 'tokens',    amount: 2, icon: '🪙', label: '2 🪙' },
-            { day: 30, type: 'chest',      tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' }
+            { day: 1,  type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
+            { day: 2,  type: 'fragments',    amount: 1,  icon: FRAG_DAILY_ICON, label: '1x' },
+            { day: 3,  type: 'chest',        tier: 'bronze', icon: '<img src="Assets/UI/Chests/Common.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
+            { day: 4,  type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
+            { day: 5,  type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 6,  type: 'fragments',    amount: 1,  icon: FRAG_DAILY_ICON, label: '1x' },
+            { day: 7,  type: 'chest',        tier: 'silver', icon: '<img src="Assets/UI/Chests/Silver.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
+            { day: 8,  type: 'xpboost',      mult: 2,   battles: 5,  icon: '⚡', label: '⚡2x' },
+            { day: 9,  type: 'combo',        tokens: 3, fragments: 1, icon: '🎁', label: '3🪙+1' },
+            { day: 10, type: 'chest',        tier: 'silver', icon: '<img src="Assets/UI/Chests/Silver.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
+            { day: 11, type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
+            { day: 12, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 13, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
+            { day: 14, type: 'chest',        tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
+            { day: 15, type: 'xpboost',      mult: 1.5, battles: 10, icon: '⚡', label: '⚡1.5x' },
+            { day: 16, type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
+            { day: 17, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
+            { day: 18, type: 'combo',        tokens: 5, fragments: 1, icon: '🎁', label: '5🪙+1' },
+            { day: 19, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 20, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 21, type: 'chest',        tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
+            { day: 22, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
+            { day: 23, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 24, type: 'combo',        tokens: 8, fragments: 2, icon: '🎁', label: '8🪙+2' },
+            { day: 25, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 26, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
+            { day: 27, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
+            { day: 28, type: 'xpboost',      mult: 2,   battles: 5,  icon: '⚡', label: '⚡2x' },
+            { day: 29, type: 'combo',        tokens: 5, fragments: 1, icon: '🎁', label: '5🪙+1' },
+            { day: 30, type: 'chest_tokens', tier: 'epic', tokens: 5,  icon: '<img src="Assets/UI/Chests/Epic.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Epic+🪙' },
         ];
 
         let dailyClaimData = {
@@ -10026,11 +10034,11 @@
         const CHEST_IMG_PATH = 'Assets/UI/Chests/';
         const FRAG_ICON_HTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         const VICTORY_CHEST_TIERS = [
-            { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 1,  fragments: 0, xpMult: 0,    prob: 0.60, singleReward: true },
-            { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 2,  fragments: 1, xpMult: 0,    prob: 0.26, singleReward: true },
-            { id: 'gold',       name: 'GOLD',        img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 4,  fragments: 1, xpMult: 1.25, prob: 0.10, singleReward: true },
-            { id: 'epic',       name: 'EPIC',        img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 8,  fragments: 2, xpMult: 1.5,  prob: 0.03 },
-            { id: 'legendary',  name: 'LEGENDARY',   img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [15, 25], fragments: 4, xpMult: 0, prob: 0.01 }
+            { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 2,        fragments: 0, xpMult: 0,    prob: 0.60,  singleReward: true },
+            { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 4,        fragments: 1, xpMult: 0,    prob: 0.26,  singleReward: true },
+            { id: 'gold',       name: 'GOLD',        img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 8,        fragments: 1, xpMult: 1.25, prob: 0.10,  singleReward: true },
+            { id: 'epic',       name: 'EPIC',        img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 16,       fragments: 2, xpMult: 1.5,  prob: 0.032 },
+            { id: 'legendary',  name: 'LEGENDARY',   img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [28, 40], fragments: 4, xpMult: 0,    prob: 0.008 }
         ];
         const XP_BOOST_DURATION = 5;
 
@@ -10060,6 +10068,7 @@
                     globalUnlockedWeapons = data.globalUnlockedWeapons || [];
                     globalTokens = data.globalTokens || 0;
                     globalFragments = data.globalFragments || 0;
+                    globalCrystals = data.globalCrystals || 0;
                     globalFragmentChestsOpened = data.globalFragmentChestsOpened || 0;
                     // pendingVictoryChests: NOT loaded from localStorage — server is the only source of truth
                     globalCharactersCreated = data.globalCharactersCreated || 0;
@@ -10133,6 +10142,7 @@
                     globalUnlockedWeapons: globalUnlockedWeapons,
                     globalTokens: globalTokens,
                     globalFragments: globalFragments,
+                    globalCrystals: globalCrystals,
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
                     globalCharactersCreated: globalCharactersCreated,
                     winStreak: winStreak,
@@ -10330,11 +10340,13 @@
         function updateCurrencyUI() {
             const tokensEl = document.getElementById('currency-tokens');
             const fragmentsEl = document.getElementById('currency-fragments');
+            const crystalsEl = document.getElementById('currency-crystals');
             const fragBtn = document.getElementById('fragment-chest-button');
             const fragBar = document.getElementById('fragment-bar');
             const fragBarText = document.getElementById('fragment-bar-text');
             const fragLabel = document.getElementById('fragment-chest-label');
             if (tokensEl) tokensEl.textContent = '🪙 ' + globalTokens;
+            if (crystalsEl) crystalsEl.textContent = '💎 ' + globalCrystals;
             const cost = getFragmentChestCost();
             if (fragmentsEl) fragmentsEl.innerHTML = '<img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> ' + globalFragments + ' / ' + cost;
             // Update fragment chest widget
@@ -10578,12 +10590,14 @@
             }
 
             // Apply server-authoritative balances
-            globalTokens   = serverReward.newTokenBalance;
+            globalTokens    = serverReward.newTokenBalance;
             globalFragments = serverReward.newFragBalance;
+            globalCrystals  = serverReward.newCrystalBalance;
 
             // Build reward lines from server response
             if (serverReward.tokens > 0)    rewardLines.push('+' + serverReward.tokens + ' 🪙');
             if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
+            if (serverReward.crystal)       rewardLines.push('💎 +1 CRYSTAL!');
             if (serverReward.xpBoost) {
                 pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
                 rewardLines.push('⚡ x' + serverReward.xpBoost.mult + ' XP BOOST earned!');
@@ -10884,6 +10898,17 @@
                     updateXpBoostSlots();
                     showDailyClaimToast(toastText);
                     // Close daily overlay before opening chest
+                    document.getElementById('daily-claim-overlay').classList.remove('active');
+                    await openInstantChest(reward.tier, result.chestReward);
+                    return;
+                case 'chest_tokens':
+                    toastText += getChestTierById(reward.tier).name + ' Chest! +' + reward.tokens + ' 🪙';
+                    saveProgression();
+                    updateCurrencyUI();
+                    renderDailyClaimGrid();
+                    updateDailyClaimIndicator();
+                    updateXpBoostSlots();
+                    showDailyClaimToast(toastText);
                     document.getElementById('daily-claim-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
                     return;
@@ -11775,6 +11800,7 @@
                 const data = await resp.json();
                 globalTokens               = data.tokens;
                 globalFragments            = data.fragments;
+                globalCrystals             = data.crystals ?? globalCrystals;
                 globalFragmentChestsOpened = data.fragmentChestsOpened;
                 globalCharactersCreated    = data.charactersCreated;
                 winStreak                  = data.winStreak;
@@ -16246,7 +16272,13 @@
                 winStreak = lastBattleRewards.newWinStreak;
                 if (lastBattleRewards.tokensEarned > 0) {
                     globalTokens += lastBattleRewards.tokensEarned;
-                    showNotice('🔥 ' + winStreak + ' WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙 bonus!');
+                    if (winStreak === 5) {
+                        showNotice('🔥 5 WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙');
+                    } else if (winStreak === 3) {
+                        showNotice('🔥 3 WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙');
+                    } else {
+                        showNotice('+' + lastBattleRewards.tokensEarned + ' 🪙');
+                    }
                 }
                 lastBattleRewards = null;
             } else {
