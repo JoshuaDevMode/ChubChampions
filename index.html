@@ -19610,12 +19610,10 @@
         }
 
         function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs) {
-            // ── Full-screen canvas: character+bag fill left ¾, column on right ─────
+            // ── Constants ─────────────────────────────────────────────────────────
             const DURATION   = 30;
             const GW = 680, GH = 410;
             const NOTE_SPEED = 166;
-
-            // ── Note column ───────────────────────────────────────────────────────
             const COL_LEFT   = 560;
             const COL_W      = 108;
             const NOTE_W     = 93;
@@ -19623,50 +19621,24 @@
             const HIT_CY     = 316;
             const HIT_H      = 46;
             const HIT_WINDOW = 21;
-
             const LANE_KEYS   = ['q','w','e'];
             const LANE_LABELS = ['Q','W','E'];
             const LANE_NAMES  = ['PUNCH','KICK','UPPER'];
             const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6'];
-
-            // ── Character: rendered at natural aspect ratio, lobby-size (320px wide) ─
             const CHAR_W     = 252;
             const CHAR_X     = 103;
-            const CHAR_BOTTOM = GH - 10;
-
-            // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
             const BAG_PIVOT_X = 308;
             const BAG_PIVOT_Y = 8;
             const BAG_ROPE    = 47;
-            const BAG_W       = 316; // display width; height = BAG_W * naturalRatio (capped)
-            let   bagDrawH    = 344; // updated once image loads; capped so bag fits canvas
-            let   bagAngle = 0, bagVel = 0, bagFlash = 0;
+            const BAG_W       = 316;
+            let   bagDrawH    = 344;
+            let   bagAngle = 0, bagVel = 0;
 
-            // ── Sprite frames — pre-rendered to offscreen canvas at display size ─────
-            function loadAndPrerender(urls, w) {
-                if (!urls?.length) return null;
-                return urls.map(u => {
-                    const img = new Image();
-                    const oc = document.createElement('canvas');
-                    oc.width = 1; oc.height = 1; // placeholder until loaded
-                    img.onload = () => {
-                        if (!img.naturalWidth) return;
-                        const h = Math.round(w * img.naturalHeight / img.naturalWidth);
-                        oc.width = w; oc.height = h;
-                        oc.getContext('2d').drawImage(img, 0, 0, w, h);
-                    };
-                    img.src = u;
-                    return oc;
-                });
-            }
-            const FRAMES = [
-                loadAndPrerender(punchFrameURLs, CHAR_W),
-                loadAndPrerender(kickFrameURLs, CHAR_W),
-                loadAndPrerender(uppercutFrameURLs, CHAR_W),
-                loadAndPrerender(headbuttFrameURLs, CHAR_W),
-            ];
+            // ── Frame URL sets (used directly as img.src — browser caches them) ───
+            const FRAME_URL_SETS = [punchFrameURLs, kickFrameURLs, uppercutFrameURLs];
             let animLane = -1, spriteIdx = 0, spriteTimer = 0;
             const FRAME_DT = 0.065;
+            let _charSrc = '';
 
             // ── Notes ─────────────────────────────────────────────────────────────
             function noteY(n) { return -NOTE_H + NOTE_SPEED * (elapsed - n.spawnTime); }
@@ -19692,49 +19664,101 @@
             // ── State ─────────────────────────────────────────────────────────────
             let elapsed = 0, lt = 0, gameOver = false, animId;
             let hits = 0, misses = 0, combo = 0, maxCombo = 0;
-            let hitTexts = [];
 
-            // ── Bag asset — pre-rendered to offscreen canvas for 1:1 blit ──────────
-            const bagImg = new Image();
-            let bagOffscreen = null;
-            bagImg.onload = () => {
-                if (bagImg.naturalWidth > 0) {
+            // ── Timer bar ─────────────────────────────────────────────────────────
+            const timerFill = _mgTimerBar(area);
+
+            // ── DOM game area: bag+char as CSS imgs; canvas only for notes ─────────
+            // Wrapper controls responsive width; inner gameArea stays 680×410 and scales
+            const wrapEl = document.createElement('div');
+            wrapEl.style.cssText = 'display:block;width:100%;max-width:min(980px,95vw);margin:0 auto;border:2px solid #222;border-radius:8px;overflow:hidden;cursor:pointer;background:#07070f;';
+            area.appendChild(wrapEl);
+
+            const gameArea = document.createElement('div');
+            gameArea.style.cssText = 'position:relative;width:' + GW + 'px;height:' + GH + 'px;background:#07070f;overflow:hidden;transform-origin:top left;';
+            wrapEl.appendChild(gameArea);
+
+            function applyScale() {
+                const w = wrapEl.offsetWidth || GW;
+                const s = w / GW;
+                gameArea.style.transform = 'scale(' + s + ')';
+                wrapEl.style.height = Math.round(GH * s) + 'px';
+            }
+            applyScale();
+            window.addEventListener('resize', applyScale);
+
+            // Static CSS elements (zero per-frame cost) ───────────────────────────
+            const divEl = document.createElement('div');
+            divEl.style.cssText = 'position:absolute;left:' + (COL_LEFT-6) + 'px;top:0;width:1px;height:100%;background:#1a1a35;';
+            gameArea.appendChild(divEl);
+
+            const mountEl = document.createElement('div');
+            mountEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-11) + 'px;top:0;width:22px;height:' + (BAG_PIVOT_Y+7) + 'px;background:#2a2a3a;border-radius:0 0 3px 3px;';
+            gameArea.appendChild(mountEl);
+
+            const boltEl = document.createElement('div');
+            boltEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-5) + 'px;top:' + (BAG_PIVOT_Y-5) + 'px;width:10px;height:10px;background:#666;border-radius:50%;';
+            gameArea.appendChild(boltEl);
+
+            const noteColEl = document.createElement('div');
+            noteColEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;background:#0c0c20;';
+            gameArea.appendChild(noteColEl);
+
+            const noteAccentEl = document.createElement('div');
+            noteAccentEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:4px;height:' + GH + 'px;background:rgba(124,58,237,0.094);';
+            gameArea.appendChild(noteAccentEl);
+
+            const hzTop = HIT_CY - HIT_H / 2;
+            const hzEl = document.createElement('div');
+            hzEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:' + hzTop + 'px;width:' + COL_W + 'px;height:' + HIT_H + 'px;background:rgba(255,255,255,0.027);border:2px solid rgba(196,181,253,0.73);box-sizing:border-box;';
+            gameArea.appendChild(hzEl);
+
+            // Pendulum: rotates via single CSS transform (GPU-composited, zero canvas cost)
+            const pendulumEl = document.createElement('div');
+            pendulumEl.style.cssText = 'position:absolute;left:' + BAG_PIVOT_X + 'px;top:' + BAG_PIVOT_Y + 'px;transform-origin:0 0;transform:rotate(0rad);will-change:transform;';
+            gameArea.appendChild(pendulumEl);
+
+            const ropeEl = document.createElement('div');
+            ropeEl.style.cssText = 'position:absolute;left:-1.5px;top:0;width:3px;height:' + BAG_ROPE + 'px;background:#4a4a5a;';
+            pendulumEl.appendChild(ropeEl);
+
+            const bagEl = document.createElement('img');
+            bagEl.src = 'Assets/UI/Punching-Bag.png';
+            bagEl.style.cssText = 'position:absolute;left:' + (-BAG_W/2) + 'px;top:' + BAG_ROPE + 'px;width:' + BAG_W + 'px;height:auto;image-rendering:pixelated;user-select:none;-webkit-user-drag:none;';
+            bagEl.draggable = false;
+            bagEl.onload = () => {
+                if (bagEl.naturalWidth > 0) {
                     const maxH = GH - BAG_PIVOT_Y - BAG_ROPE - 10;
-                    bagDrawH = Math.min(Math.round(BAG_W * bagImg.naturalHeight / bagImg.naturalWidth), maxH);
-                    bagOffscreen = document.createElement('canvas');
-                    bagOffscreen.width = BAG_W; bagOffscreen.height = bagDrawH;
-                    bagOffscreen.getContext('2d').drawImage(bagImg, 0, 0, BAG_W, bagDrawH);
+                    bagDrawH = Math.min(Math.round(BAG_W * bagEl.naturalHeight / bagEl.naturalWidth), maxH);
                 }
             };
-            bagImg.src = 'Assets/UI/Punching-Bag.png';
+            pendulumEl.appendChild(bagEl);
 
-            // ── Canvas + UI ───────────────────────────────────────────────────────
-            const timerFill = _mgTimerBar(area);
-            const canvas = document.createElement('canvas');
-            canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
-            area.appendChild(canvas);
+            // Character: CSS img — src updated only when animation frame changes
+            const charEl = document.createElement('img');
+            charEl.style.cssText = 'position:absolute;left:' + CHAR_X + 'px;bottom:10px;width:' + CHAR_W + 'px;height:auto;image-rendering:pixelated;user-select:none;-webkit-user-drag:none;';
+            charEl.draggable = false;
+            gameArea.appendChild(charEl);
 
-            // ── Static background (pre-rendered once, blitted each frame) ──────────
-            const staticBg = document.createElement('canvas');
-            staticBg.width = GW; staticBg.height = GH;
-            const sb = staticBg.getContext('2d');
-            sb.fillStyle = '#07070f'; sb.fillRect(0, 0, GW, GH);
-            sb.strokeStyle = '#1a1a35'; sb.lineWidth = 1;
-            sb.beginPath(); sb.moveTo(COL_LEFT - 6, 0); sb.lineTo(COL_LEFT - 6, GH); sb.stroke();
-            sb.fillStyle = '#0c0c20'; sb.fillRect(COL_LEFT, 0, COL_W, GH);
-            sb.fillStyle = '#7c3aed18'; sb.fillRect(COL_LEFT, 0, 4, GH);
-            { const hzt = HIT_CY - HIT_H / 2, a = 10;
-              sb.fillStyle = '#ffffff07'; sb.fillRect(COL_LEFT, hzt, COL_W, HIT_H);
-              sb.strokeStyle = '#c4b5fdbb'; sb.lineWidth = 2;
-              sb.strokeRect(COL_LEFT + 1, hzt + 1, COL_W - 2, HIT_H - 2);
-              sb.strokeStyle = '#c4b5fd'; sb.lineWidth = 3; sb.beginPath();
-              sb.moveTo(COL_LEFT,hzt+a); sb.lineTo(COL_LEFT,hzt); sb.lineTo(COL_LEFT+a,hzt);
-              sb.moveTo(COL_LEFT+COL_W-a,hzt); sb.lineTo(COL_LEFT+COL_W,hzt); sb.lineTo(COL_LEFT+COL_W,hzt+a);
-              sb.moveTo(COL_LEFT,hzt+HIT_H-a); sb.lineTo(COL_LEFT,hzt+HIT_H); sb.lineTo(COL_LEFT+a,hzt+HIT_H);
-              sb.moveTo(COL_LEFT+COL_W-a,hzt+HIT_H); sb.lineTo(COL_LEFT+COL_W,hzt+HIT_H); sb.lineTo(COL_LEFT+COL_W,hzt+HIT_H-a);
-              sb.stroke(); }
-            const ctx = canvas.getContext('2d');
+            // Notes canvas: only 108×410 (84% fewer pixels than full canvas)
+            const notesCanvas = document.createElement('canvas');
+            notesCanvas.width = COL_W; notesCanvas.height = GH;
+            notesCanvas.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;pointer-events:none;';
+            gameArea.appendChild(notesCanvas);
+            const nCtx = notesCanvas.getContext('2d');
+            nCtx.imageSmoothingEnabled = false;
 
+            // Floating texts container (CSS-animated divs, no per-frame canvas cost)
+            const ftEl = document.createElement('div');
+            ftEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:visible;font:bold 11px monospace;';
+            gameArea.appendChild(ftEl);
+
+            // Combo banner
+            const comboEl = document.createElement('div');
+            comboEl.style.cssText = 'position:absolute;top:20px;left:0;width:' + (COL_LEFT-6) + 'px;text-align:center;font:bold 13px monospace;display:none;';
+            gameArea.appendChild(comboEl);
+
+            // ── Stats + buttons + hint ────────────────────────────────────────────
             const statsEl = document.createElement('div');
             statsEl.className = 'mg-score';
             statsEl.textContent = 'HITS: 0 / ' + TOTAL_NOTES + '   COMBO: ×0';
@@ -19757,8 +19781,22 @@
 
             const hint = document.createElement('div');
             hint.className = 'mg-hint';
-            hint.textContent = 'PRESS Q / W / E / R WHEN THE LETTER IS INSIDE THE BOX';
+            hint.textContent = 'PRESS Q / W / E WHEN THE LETTER IS INSIDE THE BOX';
             area.appendChild(hint);
+
+            // ── Helpers ───────────────────────────────────────────────────────────
+            function addFloatingText(text, x, y, col) {
+                const el = document.createElement('div');
+                el.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;color:' + col + ';white-space:nowrap;transform:translateX(-50%);pointer-events:none;';
+                el.textContent = text;
+                ftEl.appendChild(el);
+                requestAnimationFrame(() => {
+                    el.style.transition = 'top 0.45s linear,opacity 0.45s linear';
+                    el.style.top = (y - 50) + 'px';
+                    el.style.opacity = '0';
+                });
+                setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
+            }
 
             function flashBtn(i) {
                 btnEls[i].style.background = LANE_COLORS[i] + 'aa';
@@ -19786,7 +19824,7 @@
                 const qcol = bestDist < 9 ? '#fbbf24' : bestDist < 20 ? '#22c55e' : '#60a5fa';
                 const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
                 const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
-                hitTexts.push({ text: qual, x: bpx, y: bpy + bagDrawH * 0.25, vy: -80, alpha: 1, col: qcol });
+                addFloatingText(qual, bpx, bpy + Math.round(bagDrawH * 0.25), qcol);
             }
 
             function onKey(e) {
@@ -19799,6 +19837,7 @@
             function endGame() {
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
+                window.removeEventListener('resize', applyScale);
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
                 const rating = acc >= 90 ? 'PERFECT!' : acc >= 70 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
@@ -19811,12 +19850,12 @@
                 area.appendChild(r);
             }
 
-            // ── Main loop ─────────────────────────────────────────────────────────
+            // ── Main loop (minimal canvas work: only 108×410 note column) ─────────
             function loop(ts) {
-                animId = requestAnimationFrame(loop); // schedule next before any work
+                animId = requestAnimationFrame(loop);
                 if (!lt) { lt = ts; return; }
                 const dt = Math.min((ts - lt) / 1000, 0.05);
-                if (dt < 0.014) return; // cap ~71fps — prevents 120Hz displays doubling load
+                if (dt < 0.014) return;
                 lt = ts;
 
                 if (!gameOver) {
@@ -19829,105 +19868,77 @@
                         if (noteY(n) > HIT_CY + HIT_WINDOW + NOTE_H) {
                             n.miss = true; misses++; combo = 0;
                             statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
-                            hitTexts.push({ text: 'MISS', x: COL_LEFT + COL_W / 2, y: HIT_CY, vy: -35, alpha: 1, col: '#555' });
+                            addFloatingText('MISS', COL_LEFT + COL_W / 2, HIT_CY, '#666');
                         }
                     }
 
                     if (animLane >= 0) {
-                        const fr = FRAMES[animLane];
-                        if (fr?.length) {
-                            spriteTimer += dt;
-                            while (spriteTimer >= FRAME_DT) {
-                                spriteTimer -= FRAME_DT; spriteIdx++;
-                                if (spriteIdx >= fr.length) { animLane = -1; spriteIdx = 0; break; }
-                            }
-                        } else animLane = -1;
+                        spriteTimer += dt;
+                        while (spriteTimer >= FRAME_DT) {
+                            spriteTimer -= FRAME_DT; spriteIdx++;
+                            const fr = FRAME_URL_SETS[animLane];
+                            if (!fr?.length || spriteIdx >= fr.length) { animLane = -1; spriteIdx = 0; break; }
+                        }
                     }
 
                     bagVel -= Math.sin(bagAngle) * 7.5 * dt;
-                    bagVel *= Math.exp(-1.2 * dt); // frame-rate independent damping
+                    bagVel *= Math.exp(-1.2 * dt);
                     bagAngle += bagVel * dt;
-
-                    hitTexts = hitTexts.filter(t => { t.y += t.vy * dt; t.alpha -= 2.4 * dt; return t.alpha > 0; });
                 }
 
-                // ── Draw ──────────────────────────────────────────────────────────
-                ctx.drawImage(staticBg, 0, 0); // blit pre-rendered static background
-                ctx.imageSmoothingEnabled = false;
+                // ── Bag: single CSS transform (browser compositor, GPU) ────────────
+                pendulumEl.style.transform = 'rotate(' + bagAngle + 'rad)';
 
-                // ── Bag ───────────────────────────────────────────────────────────
-                const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
-                const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
-                ctx.fillStyle = '#2a2a3a'; ctx.fillRect(BAG_PIVOT_X - 11, 0, 22, BAG_PIVOT_Y + 7);
-                ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 5, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 63); ctx.stroke();
-                // setTransform avoids save/restore canvas state copy
-                const cos = Math.cos(bagAngle), sin = Math.sin(bagAngle);
-                ctx.setTransform(cos, sin, -sin, cos, bpx, bpy);
-                if (bagOffscreen) {
-                    ctx.drawImage(bagOffscreen, -BAG_W / 2, 0);
-                } else if (bagImg.complete && bagImg.naturalWidth > 0) {
-                    ctx.drawImage(bagImg, -BAG_W / 2, 0, BAG_W, bagDrawH);
-                } else {
-                    const g = ctx.createLinearGradient(-BAG_W / 2, 0, BAG_W / 2, 0);
-                    g.addColorStop(0, '#b91c1c'); g.addColorStop(0.45, '#ef4444'); g.addColorStop(1, '#b91c1c');
-                    ctx.fillStyle = g; _mgRoundRect(ctx, -BAG_W / 2, 0, BAG_W, bagDrawH, 12); ctx.fill();
-                }
-                ctx.setTransform(1, 0, 0, 1, 0, 0); // reset to identity
-
-                // ── Character: 1:1 blit from pre-rendered offscreen canvas ──────────
-                const activeFr = animLane >= 0 ? FRAMES[animLane] : null;
-                const idleFr   = FRAMES[0] || FRAMES[1] || FRAMES[2] || FRAMES[3];
-                const drawFr   = activeFr || idleFr;
-                const drawIdx  = activeFr ? Math.min(spriteIdx, activeFr.length - 1) : 0;
-                const charOc   = drawFr?.[drawIdx];
-                if (charOc && charOc.height > 1) {
-                    ctx.drawImage(charOc, CHAR_X, CHAR_BOTTOM - charOc.height);
-                }
-                // ── Floating texts ─────────────────────────────────────────────────
-                ctx.font = 'bold 11px monospace';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                for (const t of hitTexts) {
-                    ctx.globalAlpha = t.alpha;
-                    ctx.fillStyle = t.col;
-                    ctx.fillText(t.text, t.x, t.y);
+                // ── Character: update src only when frame changes ─────────────────
+                const activeUrls = animLane >= 0 ? FRAME_URL_SETS[animLane] : null;
+                const idleUrls   = FRAME_URL_SETS.find(s => s?.length);
+                const useUrls    = activeUrls || idleUrls;
+                if (useUrls?.length) {
+                    const useIdx = activeUrls ? Math.min(spriteIdx, useUrls.length - 1) : 0;
+                    const newSrc = useUrls[useIdx];
+                    if (_charSrc !== newSrc) { charEl.src = newSrc; _charSrc = newSrc; }
                 }
 
-                // Combo banner
+                // ── Combo banner ──────────────────────────────────────────────────
                 if (combo >= 3) {
                     const ccols = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
-                    ctx.globalAlpha = 0.9;
-                    ctx.fillStyle = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
-                    ctx.fillText('×' + combo + ' COMBO!', (COL_LEFT - 6) / 2, 24);
+                    const ct = '×' + combo + ' COMBO!';
+                    if (comboEl.textContent !== ct) comboEl.textContent = ct;
+                    comboEl.style.color = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
+                    if (comboEl.style.display !== 'block') comboEl.style.display = 'block';
+                } else if (comboEl.style.display !== 'none') {
+                    comboEl.style.display = 'none';
                 }
-                ctx.globalAlpha = 1;
 
-                // Notes — no clip(), font set once, no nested save/restore per note
-                const noteNX = COL_LEFT + (COL_W - NOTE_W) / 2;
+                // ── Notes canvas (108×410 only) ───────────────────────────────────
+                nCtx.clearRect(0, 0, COL_W, GH);
+                const noteNX = (COL_W - NOTE_W) / 2;
                 const noteCX = noteNX + NOTE_W / 2;
-                ctx.font = 'bold 16px monospace';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                nCtx.font = 'bold 16px monospace';
+                nCtx.textAlign = 'center'; nCtx.textBaseline = 'middle';
                 for (const n of notes) {
                     if (n.hit) continue;
                     const ny = noteY(n);
                     if (ny < -NOTE_H || ny > GH + NOTE_H) continue;
                     const nTop = ny - NOTE_H / 2;
                     const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
-                    ctx.globalAlpha = n.miss ? 0.28 : 1;
-                    ctx.fillStyle = n.miss ? col : col + '28';
-                    ctx.fillRect(noteNX, nTop, NOTE_W, NOTE_H);
-                    ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2;
-                    ctx.strokeRect(noteNX + 1, nTop + 1, NOTE_W - 2, NOTE_H - 2);
-                    ctx.fillStyle = n.miss ? '#44445a' : '#fff';
-                    ctx.fillText(LANE_LABELS[n.lane], noteCX, ny);
+                    nCtx.globalAlpha = n.miss ? 0.28 : 1;
+                    nCtx.fillStyle = n.miss ? col : col + '28';
+                    nCtx.fillRect(noteNX, nTop, NOTE_W, NOTE_H);
+                    nCtx.strokeStyle = col; nCtx.lineWidth = n.miss ? 1 : 2;
+                    nCtx.strokeRect(noteNX + 1, nTop + 1, NOTE_W - 2, NOTE_H - 2);
+                    nCtx.fillStyle = n.miss ? '#44445a' : '#fff';
+                    nCtx.fillText(LANE_LABELS[n.lane], noteCX, ny);
                 }
-                ctx.globalAlpha = 1;
-                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+                nCtx.globalAlpha = 1;
             }
 
             animId = requestAnimationFrame(loop);
-            return () => { cancelAnimationFrame(animId); document.removeEventListener('keydown', onKey); };
+            return () => {
+                cancelAnimationFrame(animId);
+                document.removeEventListener('keydown', onKey);
+                window.removeEventListener('resize', applyScale);
+            };
         }
         // ───────────────────────────────────────────────────────
 
