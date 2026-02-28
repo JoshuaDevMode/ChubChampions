@@ -19649,6 +19649,7 @@
             const LANE_LABELS = ['Q','W','E'];
             const LANE_NAMES  = ['PUNCH','KICK','UPPER'];
             const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6'];
+            const COMBO_COLORS = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
             const CHAR_W     = 252;
             const CHAR_X     = 103;
             const BAG_PIVOT_X = 308;
@@ -19766,26 +19767,18 @@
             charEl.draggable = false;
             gameArea.appendChild(charEl);
 
-            // CSS keyframe: browser compositor moves notes on GPU, zero canvas cost
-            const noteStyle = document.createElement('style');
-            const noteFallDur = ((GH + NOTE_H * 2) / NOTE_SPEED).toFixed(3);
-            noteStyle.textContent = '@keyframes mg-notefall{from{transform:translateY(' + (-NOTE_H) + 'px)}to{transform:translateY(' + (GH + NOTE_H) + 'px)}}';
-            document.head.appendChild(noteStyle);
-
-            // Notes container (clips overflow so pre-delay notes are hidden)
-            const noteNX = (COL_W - NOTE_W) / 2;
-            const notesContainer = document.createElement('div');
-            notesContainer.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;overflow:hidden;pointer-events:none;';
-            gameArea.appendChild(notesContainer);
-
-            // Pre-build note divs (added to DOM atomically at game start to sync timing)
-            for (const n of notes) {
-                const col = LANE_COLORS[n.lane];
-                const el = document.createElement('div');
-                el.style.cssText = 'position:absolute;left:' + noteNX + 'px;top:0;width:' + NOTE_W + 'px;height:' + NOTE_H + 'px;line-height:' + NOTE_H + 'px;text-align:center;font:bold 16px monospace;color:#fff;background:' + col + '28;border:2px solid ' + col + ';box-sizing:border-box;animation:mg-notefall ' + noteFallDur + 's linear ' + n.spawnTime + 's both;';
-                el.textContent = LANE_LABELS[n.lane];
-                n.el = el;
-            }
+            // Tiny note canvas — 108×410px, only the note column.
+            // Replaces 40 concurrent CSS keyframe animations with one small canvas redraw.
+            // At most 2-5 notes are visible at once → trivial canvas work per frame.
+            const noteNX = Math.floor((COL_W - NOTE_W) / 2);
+            const noteCanvas = document.createElement('canvas');
+            noteCanvas.width = COL_W; noteCanvas.height = GH;
+            noteCanvas.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;pointer-events:none;';
+            gameArea.appendChild(noteCanvas);
+            const nctx = noteCanvas.getContext('2d');
+            nctx.font = 'bold 16px monospace';
+            nctx.textAlign = 'center';
+            nctx.textBaseline = 'middle';
 
             // Floating texts container (CSS-animated divs, no per-frame canvas cost)
             const ftEl = document.createElement('div');
@@ -19854,8 +19847,7 @@
                     if (dist <= HIT_WINDOW && dist < bestDist) { best = n; bestDist = dist; }
                 }
                 if (!best) return;
-                best.hit = true;
-                if (best.el) best.el.style.display = 'none';
+                best.hit = true; // canvas will skip it next frame
                 hits++; combo++;
                 maxCombo = Math.max(maxCombo, combo);
                 statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
@@ -19911,7 +19903,6 @@
                             n.miss = true; misses++; combo = 0;
                             statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
                             addFloatingText('MISS', COL_LEFT + COL_W / 2, HIT_CY, '#666');
-                            if (n.el) { n.el.style.background = '#252535'; n.el.style.borderColor = '#252535'; n.el.style.color = '#44445a'; n.el.style.opacity = '0.28'; }
                         }
                     }
 
@@ -19943,11 +19934,10 @@
 
                 // ── Combo banner ──────────────────────────────────────────────────
                 if (combo >= 3) {
-                    const ccols = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
                     const ct = '×' + combo + ' COMBO!';
                     if (comboEl.textContent !== ct) comboEl.textContent = ct;
                     if (combo !== _lastCombo) {
-                        comboEl.style.color = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
+                        comboEl.style.color = COMBO_COLORS[Math.min(Math.floor((combo - 3) / 2), 3)];
                         _lastCombo = combo;
                     }
                     if (comboEl.style.display !== 'block') comboEl.style.display = 'block';
@@ -19956,13 +19946,34 @@
                     _lastCombo = -1;
                 }
 
-                // No canvas work — CSS animations handle note movement on the GPU
+                // ── Notes canvas: clear + draw only currently-visible notes ──────
+                nctx.clearRect(0, 0, COL_W, GH);
+                for (const n of notes) {
+                    if (n.hit) continue;
+                    const ny = noteY(n);
+                    if (ny < -NOTE_H || ny > GH) continue;
+                    const col = LANE_COLORS[n.lane];
+                    if (n.miss) {
+                        nctx.fillStyle = '#252535';
+                        nctx.strokeStyle = '#333348';
+                        nctx.fillRect(noteNX, ny, NOTE_W, NOTE_H);
+                        nctx.lineWidth = 2;
+                        nctx.strokeRect(noteNX + 1, ny + 1, NOTE_W - 2, NOTE_H - 2);
+                    } else {
+                        nctx.fillStyle = col + '28';
+                        nctx.strokeStyle = col;
+                        nctx.fillRect(noteNX, ny, NOTE_W, NOTE_H);
+                        nctx.lineWidth = 2;
+                        nctx.strokeRect(noteNX + 1, ny + 1, NOTE_W - 2, NOTE_H - 2);
+                        nctx.fillStyle = '#ffffff';
+                        nctx.fillText(LANE_LABELS[n.lane], COL_W / 2, ny + NOTE_H / 2);
+                    }
+                }
             }
 
-            // Add all notes to DOM atomically so their CSS animation clocks are synced
+            // Start loop — canvas draws notes each frame, no DOM manipulation needed
             animId = requestAnimationFrame(function startFrame(ts) {
                 lt = ts;
-                for (const n of notes) notesContainer.appendChild(n.el);
                 animId = requestAnimationFrame(loop);
             });
 
@@ -19970,7 +19981,6 @@
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
                 window.removeEventListener('resize', applyScale);
-                noteStyle.remove();
             };
         }
         // ───────────────────────────────────────────────────────
