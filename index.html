@@ -15217,35 +15217,41 @@
             return html;
         }
 
+        // Cached skill tooltip element and last-measured dimensions
+        let _skillTip = null;
+        let _skillTipW = 0, _skillTipH = 0;
+
         function showSkillTooltip(character, label, e) {
-            const tip = document.getElementById('skill-tooltip');
+            if (!_skillTip) _skillTip = document.getElementById('skill-tooltip');
+            const tip = _skillTip;
             if (!tip) return;
             tip.innerHTML = buildSkillTooltipHTML(character, label);
             tip.classList.add('visible');
+            // Measure size once per hover (after innerHTML update); no write-then-read needed
+            const rect = tip.getBoundingClientRect();
+            _skillTipW = rect.width;
+            _skillTipH = rect.height;
             positionSkillTooltip(e);
         }
 
         function positionSkillTooltip(e) {
-            const tip = document.getElementById('skill-tooltip');
+            const tip = _skillTip;
             if (!tip || !tip.classList.contains('visible')) return;
             const pad = 14;
-            tip.style.left = '0px';
-            tip.style.top = '0px';
-            const rect = tip.getBoundingClientRect();
             let x = e.clientX + pad;
             let y = e.clientY + pad;
-            if (x + rect.width > window.innerWidth - 4) x = e.clientX - rect.width - pad;
-            if (y + rect.height > window.innerHeight - 4) y = e.clientY - rect.height - pad;
+            if (x + _skillTipW > window.innerWidth - 4) x = e.clientX - _skillTipW - pad;
+            if (y + _skillTipH > window.innerHeight - 4) y = e.clientY - _skillTipH - pad;
             tip.style.left = Math.max(4, x) + 'px';
             tip.style.top = Math.max(4, y) + 'px';
         }
 
         function hideSkillTooltip() {
-            const tip = document.getElementById('skill-tooltip');
-            if (tip) tip.classList.remove('visible');
+            if (_skillTip) _skillTip.classList.remove('visible');
         }
 
         function initSkillTooltipListeners() {
+            _skillTip = document.getElementById('skill-tooltip'); // prime cache
             const playerInfo = document.getElementById('player-hud-info');
             const cpuInfo = document.getElementById('cpu-hud-info');
             if (!playerInfo || !cpuInfo) return;
@@ -15486,6 +15492,7 @@
                 cpuDef:           document.getElementById('cpu-def-display'),
                 cpuStr:           document.getElementById('cpu-str-display'),
                 cpuAgi:           document.getElementById('cpu-agi-display'),
+                arena:            document.getElementById('arena'),
             };
         }
 
@@ -15509,12 +15516,12 @@
             f.fury = f.maxFury;
 
             // Crear capas de efecto de furia
-            const arena = document.getElementById('arena');
+            const arena = hudEl.arena || document.getElementById('arena');
 
             // Limpiar overlays existentes para recrearlos frescos
             let existingSaturator = document.querySelector('.fury-saturator');
-            let existingGray = document.querySelector('.fury-grayscale-overlay');
-            let existingDarkness = document.querySelector('.fury-darkness');
+            let existingGray = _furyGrayOverlay || document.querySelector('.fury-grayscale-overlay');
+            let existingDarkness = _furyDarknessEl || document.querySelector('.fury-darkness');
 
             // Capa 1: Fondo saturado (se ve a través del agujero)
             if (!existingSaturator) {
@@ -15547,7 +15554,12 @@
                 } else {
                     arena.appendChild(darkness);
                 }
+                existingDarkness = darkness;
             }
+
+            // Cache overlay refs for hot path in updateFuryLight
+            _furyGrayOverlay = existingGray;
+            _furyDarknessEl = existingDarkness;
 
             // El personaje con furia sobre la oscuridad
             f.element.classList.add('fury-glow');
@@ -15583,7 +15595,7 @@
             orb.src = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES[0] : FURY_ORB_SRC;
             orb.className = 'fury-orb';
             orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
-            document.getElementById('arena').appendChild(orb);
+            (hudEl.arena || document.getElementById('arena')).appendChild(orb);
             f.furyOrbEl = orb;
             updateFuryOrbPosition(fighter);
 
@@ -15655,7 +15667,7 @@
         function updateFuryOrbPosition(fighter) {
             const f = game[fighter];
             if (!f.furyOrbEl || !f.furyActive) return;
-            const arena = document.getElementById('arena');
+            const arena = hudEl.arena || document.getElementById('arena');
             const zoom = getGameZoom();
             const arenaRect = arena.getBoundingClientRect();
             const body = f.element.querySelector('.fighter-body') || f.element;
@@ -15669,13 +15681,16 @@
         // Variable global para el parpadeo constante del hueco
         let furyBlinkCounter = 0;
         let _lastFuryMask = '';
+        // Cached overlay element refs — set in activateFury, cleared in deactivateFury
+        let _furyGrayOverlay = null;
+        let _furyDarknessEl = null;
 
         function updateFuryLight(fighter) {
-            const grayOverlay = document.querySelector('.fury-grayscale-overlay');
-            const darkness = document.querySelector('.fury-darkness');
+            const grayOverlay = _furyGrayOverlay;
+            const darkness = _furyDarknessEl;
             if (!grayOverlay) return;
 
-            const arena = document.getElementById('arena');
+            const arena = hudEl.arena || document.getElementById('arena');
             const zoom = getGameZoom();
             const arenaRect = arena.getBoundingClientRect();
 
@@ -15846,16 +15861,19 @@
 
             // Quitar oscuridad y filtros si ninguno tiene furia activa
             if (!game.player.furyActive && !game.cpu.furyActive) {
-                const darkness = document.querySelector('.fury-darkness');
+                const darkness = _furyDarknessEl || document.querySelector('.fury-darkness');
                 if (darkness) {
                     darkness.style.animation = 'fadeIn 0.3s ease-out reverse forwards';
                     setTimeout(() => darkness.remove(), 300);
                 }
-                const grayOverlay = document.querySelector('.fury-grayscale-overlay');
+                const grayOverlay = _furyGrayOverlay || document.querySelector('.fury-grayscale-overlay');
                 if (grayOverlay) {
                     grayOverlay.style.animation = 'fadeIn 0.3s ease-out reverse forwards';
                     setTimeout(() => grayOverlay.remove(), 300);
                 }
+                _furyGrayOverlay = null;
+                _furyDarknessEl = null;
+                _lastFuryMask = '';
                 const saturator = document.querySelector('.fury-saturator');
                 if (saturator) {
                     setTimeout(() => saturator.remove(), 300);
@@ -21857,6 +21875,7 @@
         (function() {
             // Cache the full pixel array once per src change — mousemove does a cheap array lookup
             let _hitData = null, _hitSrc = '', _hitW = 0, _hitH = 0;
+            let _imgRect = null; // cached bounding rect; invalidated on resize
             function sampleAlpha(img, clientX, clientY) {
                 try {
                     if (img.src !== _hitSrc) {
@@ -21865,21 +21884,24 @@
                         const h = img.naturalHeight || 220;
                         const cv = document.createElement('canvas');
                         cv.width = w; cv.height = h;
-                        cv.getContext('2d').drawImage(img, 0, 0, w, h);
-                        _hitData = cv.getContext('2d').getImageData(0, 0, w, h).data;
+                        cv.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, w, h);
+                        _hitData = cv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
                         _hitW = w; _hitH = h; _hitSrc = img.src;
+                        _imgRect = null; // invalidate rect when image changes
                     }
                     if (!_hitData) return 255;
-                    const rect = img.getBoundingClientRect();
+                    if (!_imgRect) _imgRect = img.getBoundingClientRect(); // O(1) cached lookup
+                    const rect = _imgRect;
                     const sx = Math.max(0, Math.min(_hitW - 1, Math.floor((clientX - rect.left) * (_hitW / rect.width))));
                     const sy = Math.max(0, Math.min(_hitH - 1, Math.floor((clientY - rect.top)  * (_hitH / rect.height))));
                     return _hitData[(sy * _hitW + sx) * 4 + 3]; // direct array lookup, no GPU sync
                 } catch (_) { return 255; }
             }
+            window.addEventListener('resize', () => { _imgRect = null; });
             const container = document.getElementById('menu-character-container');
+            const _menuCharImg = document.getElementById('menu-character-img');
             container.addEventListener('mousemove', (e) => {
-                const img = document.getElementById('menu-character-img');
-                const alpha = sampleAlpha(img, e.clientX, e.clientY);
+                const alpha = sampleAlpha(_menuCharImg, e.clientX, e.clientY);
                 container.style.cursor = alpha < 10 ? 'default' : 'pointer';
             });
             container.addEventListener('mouseleave', () => {
