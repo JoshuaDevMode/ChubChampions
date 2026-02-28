@@ -11982,36 +11982,9 @@
             if (overlay) overlay.style.display = 'none';
         }
 
-        // Opens Privy login in a popup; on success the popup sends postMessage and closes
+        // Redirect to Privy login; backend auto-opens modal and redirects back after auth
         function openLoginPopup() {
-            const url = 'https://fight-chub-backend.vercel.app/?force=1';
-            const w = 480, h = 620;
-            const left = Math.max(0, Math.round((screen.width  - w) / 2));
-            const top  = Math.max(0, Math.round((screen.height - h) / 2));
-            const popup = window.open(url, 'privy_login',
-                'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes');
-
-            if (!popup) {
-                // Popup blocked — fall back to full redirect
-                window.location.href = url;
-                return;
-            }
-
-            function onPrivyMsg(event) {
-                if (!event.data || event.data.type !== 'privy_session') return;
-                window.removeEventListener('message', onPrivyMsg);
-                const d = event.data;
-                const params = new URLSearchParams({
-                    playerId: d.playerId || '',
-                    wallet:   d.wallet   || '',
-                    name:     d.name     || 'Fighter',
-                    avatar:   d.avatar   || '',
-                    token:    d.token    || '',
-                });
-                // Reload page with session params — loadPlayerSession() handles the rest
-                window.location.href = window.location.pathname + '?' + params.toString();
-            }
-            window.addEventListener('message', onPrivyMsg);
+            window.location.href = 'https://fight-chub-backend.vercel.app/?force=1';
         }
 
         // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
