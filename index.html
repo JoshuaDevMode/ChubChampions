@@ -12009,6 +12009,12 @@
                     dailyClaimData.startDate   = data.dailyClaimStart;
                     dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
                 }
+                // Restore authoritative shop state (overrides stale localStorage)
+                if (data.shopPurchaseDate !== undefined) {
+                    shopPurchaseDate   = data.shopPurchaseDate   || '';
+                    shopDailyPurchases = data.shopDailyPurchases || 0;
+                    shopItemCooldowns  = data.shopItemCooldowns  || {};
+                }
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
