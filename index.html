@@ -19634,11 +19634,11 @@
             const CHAR_BOTTOM = GH - 10;
 
             // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
-            const BAG_PIVOT_X = 430;
+            const BAG_PIVOT_X = 490;
             const BAG_PIVOT_Y = 10;
-            const BAG_ROPE    = 155;
-            const BAG_W       = 230; // display width; height = BAG_W * naturalRatio
-            let   bagDrawH    = 430; // updated once image loads
+            const BAG_ROPE    = 75;
+            const BAG_W       = 400; // display width; height = BAG_W * naturalRatio (capped)
+            let   bagDrawH    = 415; // updated once image loads; capped so bag fits canvas
             let   bagAngle = 0, bagVel = 0, bagFlash = 0;
 
             // ── Sprite frames ─────────────────────────────────────────────────────
@@ -19684,8 +19684,10 @@
             // ── Bag asset (natural ratio) ──────────────────────────────────────────
             const bagImg = new Image();
             bagImg.onload = () => {
-                if (bagImg.naturalWidth > 0)
-                    bagDrawH = Math.round(BAG_W * bagImg.naturalHeight / bagImg.naturalWidth);
+                if (bagImg.naturalWidth > 0) {
+                    const maxH = GH - BAG_PIVOT_Y - BAG_ROPE - 15;
+                    bagDrawH = Math.min(Math.round(BAG_W * bagImg.naturalHeight / bagImg.naturalWidth), maxH);
+                }
             };
             bagImg.src = 'Assets/UI/Punching-Bag.png';
 
