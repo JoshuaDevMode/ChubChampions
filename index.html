@@ -19642,16 +19642,28 @@
             let   bagDrawH    = 435; // updated once image loads; capped so bag fits canvas
             let   bagAngle = 0, bagVel = 0, bagFlash = 0;
 
-            // ── Sprite frames ─────────────────────────────────────────────────────
-            function loadImgs(urls) {
+            // ── Sprite frames — pre-rendered to offscreen canvas at display size ─────
+            function loadAndPrerender(urls, w) {
                 if (!urls?.length) return null;
-                return urls.map(u => { const i = new Image(); i.src = u; return i; });
+                return urls.map(u => {
+                    const img = new Image();
+                    const oc = document.createElement('canvas');
+                    oc.width = 1; oc.height = 1; // placeholder until loaded
+                    img.onload = () => {
+                        if (!img.naturalWidth) return;
+                        const h = Math.round(w * img.naturalHeight / img.naturalWidth);
+                        oc.width = w; oc.height = h;
+                        oc.getContext('2d').drawImage(img, 0, 0, w, h);
+                    };
+                    img.src = u;
+                    return oc;
+                });
             }
             const FRAMES = [
-                loadImgs(punchFrameURLs),
-                loadImgs(kickFrameURLs),
-                loadImgs(uppercutFrameURLs),
-                loadImgs(headbuttFrameURLs),
+                loadAndPrerender(punchFrameURLs, CHAR_W),
+                loadAndPrerender(kickFrameURLs, CHAR_W),
+                loadAndPrerender(uppercutFrameURLs, CHAR_W),
+                loadAndPrerender(headbuttFrameURLs, CHAR_W),
             ];
             let animLane = -1, spriteIdx = 0, spriteTimer = 0;
             const FRAME_DT = 0.065;
@@ -19835,10 +19847,11 @@
                 ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 6, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 4;
                 ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 80); ctx.stroke();
-                ctx.save();
-                ctx.translate(bpx, bpy); ctx.rotate(bagAngle);
+                // setTransform avoids save/restore canvas state copy
+                const cos = Math.cos(bagAngle), sin = Math.sin(bagAngle);
+                ctx.setTransform(cos, sin, -sin, cos, bpx, bpy);
                 if (bagOffscreen) {
-                    ctx.drawImage(bagOffscreen, -BAG_W / 2, 0); // 1:1 blit, no scaling
+                    ctx.drawImage(bagOffscreen, -BAG_W / 2, 0);
                 } else if (bagImg.complete && bagImg.naturalWidth > 0) {
                     ctx.drawImage(bagImg, -BAG_W / 2, 0, BAG_W, bagDrawH);
                 } else {
@@ -19846,17 +19859,16 @@
                     g.addColorStop(0, '#b91c1c'); g.addColorStop(0.45, '#ef4444'); g.addColorStop(1, '#b91c1c');
                     ctx.fillStyle = g; _mgRoundRect(ctx, -BAG_W / 2, 0, BAG_W, bagDrawH, 12); ctx.fill();
                 }
-                ctx.restore();
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // reset to identity
 
-                // ── Character: natural aspect ratio ───────────────────────────────
+                // ── Character: 1:1 blit from pre-rendered offscreen canvas ──────────
                 const activeFr = animLane >= 0 ? FRAMES[animLane] : null;
                 const idleFr   = FRAMES[0] || FRAMES[1] || FRAMES[2] || FRAMES[3];
                 const drawFr   = activeFr || idleFr;
                 const drawIdx  = activeFr ? Math.min(spriteIdx, activeFr.length - 1) : 0;
-                const charImg  = drawFr?.[drawIdx];
-                if (charImg?.complete && charImg.naturalWidth > 0) {
-                    const charH = Math.round(CHAR_W * charImg.naturalHeight / charImg.naturalWidth);
-                    ctx.drawImage(charImg, CHAR_X, CHAR_BOTTOM - charH, CHAR_W, charH);
+                const charOc   = drawFr?.[drawIdx];
+                if (charOc && charOc.height > 1) {
+                    ctx.drawImage(charOc, CHAR_X, CHAR_BOTTOM - charOc.height);
                 }
                 // ── Floating texts ─────────────────────────────────────────────────
                 ctx.font = 'bold 13px monospace';
