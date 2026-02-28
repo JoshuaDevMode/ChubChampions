@@ -8349,7 +8349,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/FightChub/assets/index-BeWX66Fk.js"></script>
+  <script type="module" crossorigin src="/FightChub/assets/index-CrCzG_w-.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -11889,6 +11889,7 @@
         }
 
         // Called by React LoginGate after successful Privy authentication
+        // Called by React on fresh login (no existing session)
         window.__privyLogin = function(data) {
             playerSession = {
                 playerId: data.playerId,
@@ -11901,6 +11902,20 @@
             updatePlayerSessionUI();
             syncStateFromServer();
             initGameWithSession();
+        };
+
+        // Called by React on page reload when session already exists — only refreshes token
+        window.__privyUpdateToken = function(token) {
+            if (!playerSession) return;
+            playerSession.token = token;
+            try {
+                const s = localStorage.getItem('fightchub_session');
+                if (s) {
+                    const p = JSON.parse(s);
+                    p.token = token;
+                    localStorage.setItem('fightchub_session', JSON.stringify(p));
+                }
+            } catch(e) {}
         };
 
         function loadPlayerSession() {
