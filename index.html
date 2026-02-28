@@ -18936,7 +18936,12 @@
         }
 
         // Populate inventory panel with weapons
-        function getItemCooldownRemaining(_id) { return 0; }
+        const SHOP_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
+
+        function getItemCooldownRemaining(id) {
+            if (!shopItemCooldowns[id]) return 0;
+            return Math.max(0, SHOP_COOLDOWN - (Date.now() - shopItemCooldowns[id]));
+        }
 
         function formatShopCooldown(ms) {
             const h = Math.floor(ms / 3600000);
@@ -19012,11 +19017,9 @@
                     const item = document.createElement('div');
                     item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
                     const hotLabel = cons.hotTicks ? ' (HoT)' : '';
-                    const priceOrCooldown = onCooldown
-                        ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
-                        : limitReached
-                            ? '<div class="shop-item-cooldown">SOLD OUT</div>'
-                            : '<div class="shop-item-price">🪙 ' + price + '</div>';
+                    const priceOrCooldown = (onCooldown || limitReached)
+                        ? '<div class="shop-item-cooldown">SOLD OUT</div>'
+                        : '<div class="shop-item-price">🪙 ' + price + '</div>';
                     item.innerHTML = '<div class="shop-item-icon">' + cons.icon + '</div>' +
                         '<div class="shop-item-name">' + cons.name + '</div>' +
                         '<div class="shop-item-heal">+' + Math.round(cons.healPercent * 100) + '% HP' + hotLabel + '</div>' +
@@ -19036,11 +19039,9 @@
                     const canAfford = globalTokens >= price && !onCooldown && !limitReached;
                     const item = document.createElement('div');
                     item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
-                    const priceOrCooldown = onCooldown
-                        ? '<div class="shop-item-cooldown">⏳ ' + formatShopCooldown(cooldown) + '</div>'
-                        : limitReached
-                            ? '<div class="shop-item-cooldown">SOLD OUT</div>'
-                            : '<div class="shop-item-price">🪙 ' + price + '</div>';
+                    const priceOrCooldown = (onCooldown || limitReached)
+                        ? '<div class="shop-item-cooldown">SOLD OUT</div>'
+                        : '<div class="shop-item-price">🪙 ' + price + '</div>';
                     item.innerHTML = '<div class="shop-item-icon">' + wItem.icon + '</div>' +
                         '<div class="shop-item-name">' + wItem.name + '</div>' +
                         '<div class="shop-item-heal">+' + wItem.wellnessRestore + ' Wellness | +' + wItem.xpGrant + ' XP</div>' +
@@ -19073,6 +19074,7 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
             character.consumables.push(id);
             saveCharacters();
             saveProgression();
@@ -19094,6 +19096,7 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(id);
             saveCharacters();
@@ -19136,6 +19139,7 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveCharacters();
@@ -19163,6 +19167,7 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
+            shopItemCooldowns[itemId] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(itemId);
             saveCharacters();
@@ -19252,6 +19257,7 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
+            shopItemCooldowns[id] = Date.now();
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveProgression();
@@ -20069,9 +20075,7 @@
                         actionEl = '<div class="care-item-cd-text">FULL</div>';
                     } else if (owned) {
                         actionEl = '<div class="care-item-owned-badge">x' + count + ' ✓</div>';
-                    } else if (onCooldown) {
-                        actionEl = '<div class="care-item-cd-text">⏳ ' + formatShopCooldown(getItemCooldownRemaining(id)) + '</div>';
-                    } else if (shopFull) {
+                    } else if (onCooldown || shopFull) {
                         actionEl = '<div class="care-item-cd-text">LIMIT</div>';
                     } else {
                         actionEl = '<button class="care-item-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + wItem.price + '</button>';
@@ -20145,9 +20149,7 @@
 
                     const isInteractive = !!mItem.interactive;
                     let rightEl;
-                    if (onCooldown) {
-                        rightEl = '<span class="care-activity-cooldown-text">⏳ ' + formatShopCooldown(cooldown) + '</span>';
-                    } else if (atMax) {
+                    if (atMax) {
                         rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
                     } else if (shopFull) {
                         rightEl = '<span class="care-activity-cooldown-text">LIMIT 3/3</span>';
