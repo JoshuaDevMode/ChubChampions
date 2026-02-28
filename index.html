@@ -1475,8 +1475,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('/FightChub/assets/lobby-bg-sprite-5HS04c2j.png') 0 0 no-repeat;
-            background-size: 400% 300%;
+            background: url('/FightChub/assets/lobby-bg-B4ZUs6mX.png') center center no-repeat;
+            background-size: cover;
             z-index: 0;
             transform-origin: center center;
             transition: transform 0.5s ease, transform-origin 0.5s ease;
@@ -18401,29 +18401,6 @@
         const _docEl = document.documentElement;
         const _bodyStyle = document.body.style;
 
-        // Lobby background sprite animation (rAF-synced so DOM write lands at frame start)
-        (function initLobbyBg() {
-            const COLS = 4, ROWS = 3;
-            const TOTAL_FRAMES = 12; // 4x3 grid minus 1 blank
-            const FRAME_MS = 100;   // 10 fps
-            const bg = document.getElementById('lobby-bg');
-            if (!bg) return;
-            const _mgEl = document.getElementById('minigame-screen');
-            let frame = 0, lastTs = 0;
-            function tick(ts) {
-                if (!_mgEl || !_mgEl.classList.contains('active')) {
-                    if (ts - lastTs >= FRAME_MS) {
-                        lastTs = ts;
-                        const col = frame % COLS;
-                        const row = Math.floor(frame / COLS);
-                        bg.style.backgroundPosition = (col / (COLS - 1) * 100) + '% ' + (row / (ROWS - 1) * 100) + '%';
-                        frame = (frame + 1) % TOTAL_FRAMES;
-                    }
-                }
-                requestAnimationFrame(tick);
-            }
-            requestAnimationFrame(tick);
-        })();
 
         function scaleGame() {
             const baseWidth = 1280;
