@@ -19682,12 +19682,16 @@
             let hits = 0, misses = 0, combo = 0, maxCombo = 0;
             let hitTexts = [];
 
-            // ── Bag asset (natural ratio) ──────────────────────────────────────────
+            // ── Bag asset — pre-rendered to offscreen canvas for 1:1 blit ──────────
             const bagImg = new Image();
+            let bagOffscreen = null;
             bagImg.onload = () => {
                 if (bagImg.naturalWidth > 0) {
                     const maxH = GH - BAG_PIVOT_Y - BAG_ROPE - 10;
                     bagDrawH = Math.min(Math.round(BAG_W * bagImg.naturalHeight / bagImg.naturalWidth), maxH);
+                    bagOffscreen = document.createElement('canvas');
+                    bagOffscreen.width = BAG_W; bagOffscreen.height = bagDrawH;
+                    bagOffscreen.getContext('2d').drawImage(bagImg, 0, 0, BAG_W, bagDrawH);
                 }
             };
             bagImg.src = 'Assets/UI/Punching-Bag.png';
@@ -19777,8 +19781,11 @@
 
             // ── Main loop ─────────────────────────────────────────────────────────
             function loop(ts) {
-                if (!lt) lt = ts;
-                const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
+                animId = requestAnimationFrame(loop); // schedule next before any work
+                if (!lt) { lt = ts; return; }
+                const dt = Math.min((ts - lt) / 1000, 0.05);
+                if (dt < 0.014) return; // cap ~71fps — prevents 120Hz displays doubling load
+                lt = ts;
 
                 if (!gameOver) {
                     elapsed += dt;
@@ -19830,7 +19837,9 @@
                 ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 80); ctx.stroke();
                 ctx.save();
                 ctx.translate(bpx, bpy); ctx.rotate(bagAngle);
-                if (bagImg.complete && bagImg.naturalWidth > 0) {
+                if (bagOffscreen) {
+                    ctx.drawImage(bagOffscreen, -BAG_W / 2, 0); // 1:1 blit, no scaling
+                } else if (bagImg.complete && bagImg.naturalWidth > 0) {
                     ctx.drawImage(bagImg, -BAG_W / 2, 0, BAG_W, bagDrawH);
                 } else {
                     const g = ctx.createLinearGradient(-BAG_W / 2, 0, BAG_W / 2, 0);
@@ -19905,8 +19914,6 @@
                 }
                 ctx.globalAlpha = 1;
                 ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-
-                animId = requestAnimationFrame(loop);
             }
 
             animId = requestAnimationFrame(loop);
