@@ -19740,13 +19740,26 @@
             charEl.draggable = false;
             gameArea.appendChild(charEl);
 
-            // Notes canvas: only 108×410 (84% fewer pixels than full canvas)
-            const notesCanvas = document.createElement('canvas');
-            notesCanvas.width = COL_W; notesCanvas.height = GH;
-            notesCanvas.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;pointer-events:none;';
-            gameArea.appendChild(notesCanvas);
-            const nCtx = notesCanvas.getContext('2d');
-            nCtx.imageSmoothingEnabled = false;
+            // CSS keyframe: browser compositor moves notes on GPU, zero canvas cost
+            const noteStyle = document.createElement('style');
+            const noteFallDur = ((GH + NOTE_H * 2) / NOTE_SPEED).toFixed(3);
+            noteStyle.textContent = '@keyframes mg-notefall{from{transform:translateY(' + (-NOTE_H) + 'px)}to{transform:translateY(' + (GH + NOTE_H) + 'px)}}';
+            document.head.appendChild(noteStyle);
+
+            // Notes container (clips overflow so pre-delay notes are hidden)
+            const noteNX = (COL_W - NOTE_W) / 2;
+            const notesContainer = document.createElement('div');
+            notesContainer.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;overflow:hidden;pointer-events:none;';
+            gameArea.appendChild(notesContainer);
+
+            // Pre-build note divs (added to DOM atomically at game start to sync timing)
+            for (const n of notes) {
+                const col = LANE_COLORS[n.lane];
+                const el = document.createElement('div');
+                el.style.cssText = 'position:absolute;left:' + noteNX + 'px;top:0;width:' + NOTE_W + 'px;height:' + NOTE_H + 'px;line-height:' + NOTE_H + 'px;text-align:center;font:bold 16px monospace;color:#fff;background:' + col + '28;border:2px solid ' + col + ';box-sizing:border-box;animation:mg-notefall ' + noteFallDur + 's linear ' + n.spawnTime + 's both;';
+                el.textContent = LANE_LABELS[n.lane];
+                n.el = el;
+            }
 
             // Floating texts container (CSS-animated divs, no per-frame canvas cost)
             const ftEl = document.createElement('div');
@@ -19815,6 +19828,7 @@
                 }
                 if (!best) return;
                 best.hit = true;
+                if (best.el) best.el.style.display = 'none';
                 hits++; combo++;
                 maxCombo = Math.max(maxCombo, combo);
                 statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
@@ -19838,6 +19852,7 @@
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
                 window.removeEventListener('resize', applyScale);
+                noteStyle.remove();
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
                 const rating = acc >= 90 ? 'PERFECT!' : acc >= 70 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
@@ -19869,6 +19884,7 @@
                             n.miss = true; misses++; combo = 0;
                             statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
                             addFloatingText('MISS', COL_LEFT + COL_W / 2, HIT_CY, '#666');
+                            if (n.el) { n.el.style.background = '#252535'; n.el.style.borderColor = '#252535'; n.el.style.color = '#44445a'; n.el.style.opacity = '0.28'; }
                         }
                     }
 
@@ -19910,34 +19926,21 @@
                     comboEl.style.display = 'none';
                 }
 
-                // ── Notes canvas (108×410 only) ───────────────────────────────────
-                nCtx.clearRect(0, 0, COL_W, GH);
-                const noteNX = (COL_W - NOTE_W) / 2;
-                const noteCX = noteNX + NOTE_W / 2;
-                nCtx.font = 'bold 16px monospace';
-                nCtx.textAlign = 'center'; nCtx.textBaseline = 'middle';
-                for (const n of notes) {
-                    if (n.hit) continue;
-                    const ny = noteY(n);
-                    if (ny < -NOTE_H || ny > GH + NOTE_H) continue;
-                    const nTop = ny - NOTE_H / 2;
-                    const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
-                    nCtx.globalAlpha = n.miss ? 0.28 : 1;
-                    nCtx.fillStyle = n.miss ? col : col + '28';
-                    nCtx.fillRect(noteNX, nTop, NOTE_W, NOTE_H);
-                    nCtx.strokeStyle = col; nCtx.lineWidth = n.miss ? 1 : 2;
-                    nCtx.strokeRect(noteNX + 1, nTop + 1, NOTE_W - 2, NOTE_H - 2);
-                    nCtx.fillStyle = n.miss ? '#44445a' : '#fff';
-                    nCtx.fillText(LANE_LABELS[n.lane], noteCX, ny);
-                }
-                nCtx.globalAlpha = 1;
+                // No canvas work — CSS animations handle note movement on the GPU
             }
 
-            animId = requestAnimationFrame(loop);
+            // Add all notes to DOM atomically so their CSS animation clocks are synced
+            animId = requestAnimationFrame(function startFrame(ts) {
+                lt = ts;
+                for (const n of notes) notesContainer.appendChild(n.el);
+                animId = requestAnimationFrame(loop);
+            });
+
             return () => {
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
                 window.removeEventListener('resize', applyScale);
+                noteStyle.remove();
             };
         }
         // ───────────────────────────────────────────────────────
