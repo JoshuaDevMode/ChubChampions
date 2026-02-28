@@ -19623,18 +19623,18 @@
             const HIT_H      = 58;
             const HIT_WINDOW = 26;
 
-            const LANE_KEYS   = ['q','w','e','r'];
-            const LANE_LABELS = ['Q','W','E','R'];
-            const LANE_NAMES  = ['PUNCH','KICK','UPPER','HEAD'];
-            const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6','#ef4444'];
+            const LANE_KEYS   = ['q','w','e'];
+            const LANE_LABELS = ['Q','W','E'];
+            const LANE_NAMES  = ['PUNCH','KICK','UPPER'];
+            const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6'];
 
             // ── Character: rendered at natural aspect ratio, lobby-size (320px wide) ─
             const CHAR_W     = 320;
-            const CHAR_X     = 55;
+            const CHAR_X     = 100;
             const CHAR_BOTTOM = GH - 10;
 
             // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
-            const BAG_PIVOT_X = 490;
+            const BAG_PIVOT_X = 450;
             const BAG_PIVOT_Y = 10;
             const BAG_ROPE    = 75;
             const BAG_W       = 400; // display width; height = BAG_W * naturalRatio (capped)
@@ -19661,11 +19661,11 @@
                 const seq = [];
                 let t = 1.5;
                 while (t < DURATION - 0.5) {
-                    seq.push({ lane: Math.floor(Math.random() * 4), spawnTime: t, hit: false, miss: false });
+                    seq.push({ lane: Math.floor(Math.random() * 3), spawnTime: t, hit: false, miss: false });
                     if (Math.random() < 0.25) {
                         t += 0.3 + Math.random() * 0.14;
                         if (t < DURATION - 0.5) {
-                            let nl; do { nl = Math.floor(Math.random() * 4); } while (nl === seq[seq.length-1].lane);
+                            let nl; do { nl = Math.floor(Math.random() * 3); } while (nl === seq[seq.length-1].lane);
                             seq.push({ lane: nl, spawnTime: t, hit: false, miss: false });
                         }
                     }
@@ -19827,7 +19827,7 @@
                 ctx.fillStyle = '#2a2a3a'; ctx.fillRect(BAG_PIVOT_X - 14, 0, 28, BAG_PIVOT_Y + 8);
                 ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 6, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 28); ctx.stroke();
                 ctx.save();
                 ctx.translate(bpx, bpy); ctx.rotate(bagAngle);
                 if (bagFlash > 0) { ctx.shadowBlur = 32 * (bagFlash / 0.35); ctx.shadowColor = '#ef4444'; }
