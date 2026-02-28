@@ -43,8 +43,7 @@ export default function LoginGate() {
       }
 
       // Fresh login — build full session and init game
-      const privyId  = user.id;
-      const playerId = privyId.startsWith('did:privy:') ? privyId.slice(10) : privyId;
+      const playerId = user.id; // full DID e.g. "did:privy:abc123" — must match backend claims.userId
 
       const linkedWallet = user.linkedAccounts?.find(a => a.type === 'wallet');
       const wallet = linkedWallet?.address || user.wallet?.address || '';
