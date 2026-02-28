@@ -18375,22 +18375,25 @@
         const _docEl = document.documentElement;
         const _bodyStyle = document.body.style;
 
-        // Lobby background sprite animation
+        // Lobby background sprite animation (rAF-synced so DOM write lands at frame start)
         (function initLobbyBg() {
             const COLS = 4, ROWS = 3;
             const TOTAL_FRAMES = 12; // 4x3 grid minus 1 blank
-            const FPS = 10;
+            const FRAME_MS = 100;   // 10 fps
             const bg = document.getElementById('lobby-bg');
             if (!bg) return;
-            let frame = 0;
-            setInterval(() => {
-                const col = frame % COLS;
-                const row = Math.floor(frame / COLS);
-                const xPct = (col / (COLS - 1)) * 100;
-                const yPct = (row / (ROWS - 1)) * 100;
-                bg.style.backgroundPosition = xPct + '% ' + yPct + '%';
-                frame = (frame + 1) % TOTAL_FRAMES;
-            }, 1000 / FPS);
+            let frame = 0, lastTs = 0;
+            function tick(ts) {
+                if (ts - lastTs >= FRAME_MS) {
+                    lastTs = ts;
+                    const col = frame % COLS;
+                    const row = Math.floor(frame / COLS);
+                    bg.style.backgroundPosition = (col / (COLS - 1) * 100) + '% ' + (row / (ROWS - 1) * 100) + '%';
+                    frame = (frame + 1) % TOTAL_FRAMES;
+                }
+                requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
         })();
 
         function scaleGame() {
@@ -21853,20 +21856,25 @@
 
         // Pixel-perfect cursor — only show pointer over visible character pixels
         (function() {
-            let _hitCv = null, _hitSrc = '';
+            // Cache the full pixel array once per src change — mousemove does a cheap array lookup
+            let _hitData = null, _hitSrc = '', _hitW = 0, _hitH = 0;
             function sampleAlpha(img, clientX, clientY) {
                 try {
                     if (img.src !== _hitSrc) {
-                        _hitCv = document.createElement('canvas');
-                        _hitCv.width  = img.naturalWidth  || 220;
-                        _hitCv.height = img.naturalHeight || 220;
-                        _hitCv.getContext('2d').drawImage(img, 0, 0, _hitCv.width, _hitCv.height);
-                        _hitSrc = img.src;
+                        // Rebuild pixel cache only when the image changes, not every mousemove
+                        const w = img.naturalWidth || 220;
+                        const h = img.naturalHeight || 220;
+                        const cv = document.createElement('canvas');
+                        cv.width = w; cv.height = h;
+                        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+                        _hitData = cv.getContext('2d').getImageData(0, 0, w, h).data;
+                        _hitW = w; _hitH = h; _hitSrc = img.src;
                     }
+                    if (!_hitData) return 255;
                     const rect = img.getBoundingClientRect();
-                    const sx = Math.max(0, Math.floor((clientX - rect.left)  * (_hitCv.width  / rect.width)));
-                    const sy = Math.max(0, Math.floor((clientY - rect.top)   * (_hitCv.height / rect.height)));
-                    return _hitCv.getContext('2d').getImageData(sx, sy, 1, 1).data[3];
+                    const sx = Math.max(0, Math.min(_hitW - 1, Math.floor((clientX - rect.left) * (_hitW / rect.width))));
+                    const sy = Math.max(0, Math.min(_hitH - 1, Math.floor((clientY - rect.top)  * (_hitH / rect.height))));
+                    return _hitData[(sy * _hitW + sx) * 4 + 3]; // direct array lookup, no GPU sync
                 } catch (_) { return 255; }
             }
             const container = document.getElementById('menu-character-container');
