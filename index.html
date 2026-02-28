@@ -3386,65 +3386,7 @@
         }
         .mg-hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #444; }
 
-        /* ── Login gate (shown when no session) ─────────────────────────── */
-        #login-gate {
-            position: fixed; inset: 0; z-index: 9999;
-            background: radial-gradient(ellipse at center, #12102a 0%, #06050f 100%);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 16px;
-        }
-        #login-gate.hidden { display: none; }
-        .lg-logo {
-            font-family: 'Press Start 2P', monospace;
-            font-size: clamp(18px, 4vw, 32px);
-            color: #c4b5fd;
-            text-shadow: 0 0 30px rgba(167,139,250,0.6), 0 0 70px rgba(124,58,237,0.3);
-            letter-spacing: 4px; margin-bottom: 2px;
-        }
-        .lg-tagline {
-            font-family: 'Press Start 2P', monospace;
-            font-size: clamp(6px, 1.2vw, 9px);
-            color: #6b7280; letter-spacing: 1px;
-        }
-        /* Stone-frame used as the actual window */
-        .lg-frame-wrap {
-            position: relative;
-            width: clamp(280px, 65vmin, 420px);
-            height: clamp(280px, 65vmin, 420px);
-            filter: drop-shadow(0 0 28px rgba(124,58,237,0.55));
-        }
-        .lg-frame-img {
-            width: 100%; height: 100%; display: block;
-        }
-        /* Content sits inside the hollow stone border (~14% inset on each side) */
-        .lg-frame-content {
-            position: absolute;
-            inset: 14%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 16px;
-        }
-        .lg-title {
-            font-family: 'Press Start 2P', monospace;
-            font-size: clamp(7px, 1.6vmin, 12px); color: #e9d5ff;
-            text-align: center; line-height: 1.7;
-        }
-        .lg-sub {
-            font-family: 'Press Start 2P', monospace;
-            font-size: clamp(4px, 0.9vmin, 7px); color: #9ca3af;
-            text-align: center; line-height: 1.6;
-        }
-        .lg-btn {
-            display: block; width: 90%; padding: 10px 0;
-            background: linear-gradient(to bottom, #7c3aed, #5b21b6);
-            border: 2px solid #a78bfa; border-radius: 8px;
-            color: #fff; font-family: 'Press Start 2P', monospace;
-            font-size: clamp(6px, 1.3vmin, 10px); letter-spacing: 1px;
-            cursor: pointer; text-align: center; text-decoration: none;
-            box-shadow: 0 3px 0 #3b0764;
-            transition: filter 0.1s, transform 0.1s;
-        }
-        .lg-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
-        .lg-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #3b0764; }
+        /* Login gate is now handled by React (src/main.jsx + src/LoginGate.jsx) */
 
         /* Lobby pre-load overlay */
         #lobby-loading-overlay {
@@ -8412,19 +8354,7 @@
     <div class="lobby-wrapper" id="lobby-wrapper">
 
     <!-- Pre-load overlay: shown until sprites are ready, then fades out -->
-    <!-- Login gate — shown when not authenticated -->
-    <div id="login-gate" class="hidden">
-        <div class="lg-logo">FIGHTCHUB</div>
-        <div class="lg-tagline">THE ARENA AWAITS</div>
-        <div class="lg-frame-wrap">
-            <img class="lg-frame-img" src="Assets/UI/stone-frame.png" alt="">
-            <div class="lg-frame-content">
-                <div class="lg-title">CONNECT TO<br>ENTER<br>THE ARENA</div>
-                <button class="lg-btn" onclick="openLoginPopup()">LOGIN TO PLAY</button>
-                <div class="lg-sub">Login with X or<br>connect your wallet</div>
-            </div>
-        </div>
-    </div>
+    <!-- Login gate is rendered by React in #privy-root -->
 
     <div id="lobby-loading-overlay">
         <div class="llo-logo">FIGHTCHUB</div>
@@ -8477,7 +8407,7 @@
                     <button class="session-disconnect-btn" onclick="logoutPlayerSession()">⏻ DISCONNECT</button>
                     <button class="session-disconnect-btn" style="color:#f87171;border-color:#f87171;margin-top:4px;" onclick="deleteAccount()">🗑 DELETE ACCOUNT</button>
                 </div>
-                <button class="session-login-btn" id="session-login-btn" onclick="openLoginPopup()">🎮 LOGIN</button>
+                <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('fightchub:showlogin'))">🎮 LOGIN</button>
             </div>
         </div>
 
@@ -11945,10 +11875,35 @@
             return [shuffled[0], shuffled[1]];
         }
 
-        // ===== PLAYER SESSION (Privy login) =====
+        // ===== PLAYER SESSION (Privy login — handled by React LoginGate) =====
         let playerSession = null; // { playerId, wallet, name, avatar, token }
 
+        function initGameWithSession() {
+            loadCharacters();
+            applyWellnessDecayAll();
+            applyMoraleDecayAll();
+            loadPendingLevelUps();
+            loadProgression();
+            preloadLobbySprites();
+        }
+
+        // Called by React LoginGate after successful Privy authentication
+        window.__privyLogin = function(data) {
+            playerSession = {
+                playerId: data.playerId,
+                wallet:   data.wallet  || '',
+                name:     data.name    || 'Fighter',
+                avatar:   data.avatar  || '',
+                token:    data.token   || '',
+            };
+            localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
+            updatePlayerSessionUI();
+            syncStateFromServer();
+            initGameWithSession();
+        };
+
         function loadPlayerSession() {
+            // Legacy: support URL-param sessions from old redirect flow
             const params = new URLSearchParams(window.location.search);
             const playerId = params.get('playerId');
             if (playerId) {
@@ -11970,21 +11925,9 @@
             updatePlayerSessionUI();
             if (playerSession) {
                 syncStateFromServer();
-            } else {
-                showLoginGate();
+                initGameWithSession();
             }
-        }
-
-        function showLoginGate() {
-            document.getElementById('login-gate').classList.remove('hidden');
-            // Hide the loading overlay so it doesn't block behind the gate
-            const overlay = document.getElementById('lobby-loading-overlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        // Redirect to Privy login; backend auto-opens modal and redirects back after auth
-        function openLoginPopup() {
-            window.location.href = 'https://fight-chub-backend.vercel.app/?force=1';
+            // If no session, React LoginGate shows automatically via usePrivy()
         }
 
         // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
@@ -12077,7 +12020,9 @@
                 .filter(k => k.startsWith('fightchub_'))
                 .forEach(k => localStorage.removeItem(k));
             updatePlayerSessionUI();
-            showLoginGate();
+            // Trigger Privy logout and show React login gate
+            window.__privyLogout?.();
+            window.dispatchEvent(new CustomEvent('fightchub:showlogin'));
         }
 
         async function deleteAccount() {
@@ -22040,5 +21985,9 @@
         // Initialize lobby display
         updateLobbyCharacterDisplay();
     </script>
+
+    <!-- React login gate (Privy auth — no redirect) -->
+    <div id="privy-root"></div>
+    <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
