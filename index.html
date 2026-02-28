@@ -18888,22 +18888,20 @@
                 <div class="loading-title">LOADING</div>
                 <div class="loading-svg-wrap">
                     <svg id="loading-svg" viewBox="0 0 300 300" width="270" height="270">
-                        <defs>
-                            <linearGradient id="lfg" x1="0" y1="1" x2="0" y2="0">
-                                <stop offset="0%" stop-color="#44a08d"/>
-                                <stop offset="100%" stop-color="#4ecdc4"/>
-                            </linearGradient>
-                            <clipPath id="fighter-clip">
-                                <path clip-rule="nonzero" d="${SILHOUETTE_PATH}"/>
-                            </clipPath>
-                        </defs>
-                        <!-- Dark unfilled silhouette -->
-                        <path fill-rule="nonzero" d="${SILHOUETTE_PATH}" fill="#161630" stroke="#2a3a5a" stroke-width="1.5"/>
-                        <!-- Teal fill — grows bottom to top -->
-                        <rect id="loading-fill-rect" x="0" y="300" width="300" height="0" fill="url(#lfg)" clip-path="url(#fighter-clip)"/>
-                        <!-- Glow edge line at fill boundary -->
-                        <rect id="loading-glow-line" x="0" y="300" width="300" height="5" fill="#80fff8" opacity="0.85" clip-path="url(#fighter-clip)"/>
-                        <!-- Percentage counter -->
+                        <!-- Ghost outline: always visible so the shape shows even at 0% -->
+                        <path fill-rule="nonzero" d="${SILHOUETTE_PATH}"
+                              fill="rgba(255,255,255,0.04)" stroke="rgba(78,205,196,0.4)" stroke-width="2"/>
+                        <!--
+                            Teal fill using a NESTED SVG viewport — zero url() references needed.
+                            The nested <svg> clips its children to its own x/y/width/height box.
+                            By keeping viewBox="0 y 300 h" in sync with y/height we "reveal"
+                            only the bottom portion of the same path as progress increases.
+                        -->
+                        <svg id="loading-fill-svg" x="0" y="300" width="300" height="0"
+                             viewBox="0 300 300 1" overflow="hidden">
+                            <path fill-rule="nonzero" d="${SILHOUETTE_PATH}" fill="#4ecdc4"/>
+                        </svg>
+                        <!-- Percentage counter (always on top) -->
                         <text id="loading-pct-text" x="150" y="158" text-anchor="middle" dominant-baseline="middle"
                               font-family="'Press Start 2P',monospace" font-size="22" font-weight="bold"
                               fill="#fff" stroke="#000" stroke-width="4" paint-order="stroke">0%</text>
@@ -18915,18 +18913,18 @@
         }
 
         function updateLoadingProgress(percent, text) {
-            const fillRect = document.getElementById('loading-fill-rect');
-            const glowLine = document.getElementById('loading-glow-line');
-            const pctText  = document.getElementById('loading-pct-text');
-            const textEl   = document.getElementById('loading-text');
-            if (fillRect) {
-                const h = (percent / 100) * 300;
-                fillRect.setAttribute('y', String(300 - h));
-                fillRect.setAttribute('height', String(h));
-                if (glowLine) glowLine.setAttribute('y', String(Math.max(0, 300 - h - 2)));
+            const fillSvg = document.getElementById('loading-fill-svg');
+            const pctText = document.getElementById('loading-pct-text');
+            const textEl  = document.getElementById('loading-text');
+            if (fillSvg) {
+                const h = Math.max(1, (percent / 100) * 300);
+                const y = 300 - h;
+                fillSvg.setAttribute('y',       String(y));
+                fillSvg.setAttribute('height',  String(h));
+                fillSvg.setAttribute('viewBox', `0 ${y} 300 ${h}`);
             }
-            if (pctText)  pctText.textContent  = Math.round(percent) + '%';
-            if (textEl)   textEl.textContent    = text;
+            if (pctText) pctText.textContent = Math.round(percent) + '%';
+            if (textEl)  textEl.textContent  = text;
         }
 
         function hideLoadingScreen() {
