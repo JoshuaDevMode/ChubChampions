@@ -3370,9 +3370,11 @@
             border: 1px solid #2a2a2a; overflow: hidden;
         }
         .mg-timer-fill {
-            height: 100%;
+            height: 100%; width: 100%;
             background: linear-gradient(90deg, #f97316, #dc2626);
-            border-radius: 4px; transition: width 0.15s linear;
+            border-radius: 4px;
+            transform-origin: left center;
+            will-change: transform;
         }
         .mg-canvas {
             border: 2px solid #222; border-radius: 8px;
@@ -19487,7 +19489,8 @@
             const wrap = document.createElement('div'); wrap.className = 'mg-timer-wrap';
             const bar  = document.createElement('div'); bar.className = 'mg-timer-bar';
             const fill = document.createElement('div'); fill.className = 'mg-timer-fill';
-            fill.style.width = '100%';
+            // scaleX(1) = full; updated via transform each frame (GPU, no layout)
+            fill.style.transform = 'scaleX(1)';
             bar.appendChild(fill); wrap.appendChild(bar); parent.appendChild(wrap);
             return fill;
         }
@@ -19545,7 +19548,7 @@
                 const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
                 if (!gameOver) {
                     elapsed += dt;
-                    timerFill.style.width = Math.max(0, (1 - elapsed / DURATION) * 100) + '%';
+                    timerFill.style.transform = 'scaleX(' + Math.max(0, 1 - elapsed / DURATION).toFixed(4) + ')';
                     if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
                     if (!alive) {
                         deathTimer += dt;
@@ -19656,9 +19659,11 @@
 
             // ── Frame URL sets (used directly as img.src — browser caches them) ───
             const FRAME_URL_SETS = [punchFrameURLs, kickFrameURLs, uppercutFrameURLs];
+            const _idleUrls = FRAME_URL_SETS.find(s => s?.length) || null; // cached once
             let animLane = -1, spriteIdx = 0, spriteTimer = 0;
             const FRAME_DT = 0.065;
             let _charSrc = '';
+            let _lastCombo = -1; // cache to avoid redundant color writes
 
             // ── Notes ─────────────────────────────────────────────────────────────
             function noteY(n) { return -NOTE_H + NOTE_SPEED * (elapsed - n.spawnTime); }
@@ -19820,12 +19825,13 @@
             // ── Helpers ───────────────────────────────────────────────────────────
             function addFloatingText(text, x, y, col) {
                 const el = document.createElement('div');
-                el.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;color:' + col + ';white-space:nowrap;transform:translateX(-50%);pointer-events:none;';
+                // Use transform for movement — GPU composited, never triggers layout
+                el.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;color:' + col + ';white-space:nowrap;transform:translateX(-50%) translateY(0px);will-change:transform,opacity;pointer-events:none;';
                 el.textContent = text;
                 ftEl.appendChild(el);
                 requestAnimationFrame(() => {
-                    el.style.transition = 'top 0.45s linear,opacity 0.45s linear';
-                    el.style.top = (y - 50) + 'px';
+                    el.style.transition = 'transform 0.45s linear,opacity 0.45s linear';
+                    el.style.transform = 'translateX(-50%) translateY(-50px)';
                     el.style.opacity = '0';
                 });
                 setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
@@ -19895,7 +19901,7 @@
 
                 if (!gameOver) {
                     elapsed += dt;
-                    timerFill.style.width = Math.max(0, (1 - elapsed / DURATION) * 100) + '%';
+                    timerFill.style.transform = 'scaleX(' + Math.max(0, 1 - elapsed / DURATION).toFixed(4) + ')';
                     if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
 
                     for (const n of notes) {
@@ -19927,8 +19933,7 @@
 
                 // ── Character: update src only when frame changes ─────────────────
                 const activeUrls = animLane >= 0 ? FRAME_URL_SETS[animLane] : null;
-                const idleUrls   = FRAME_URL_SETS.find(s => s?.length);
-                const useUrls    = activeUrls || idleUrls;
+                const useUrls    = activeUrls || _idleUrls;
                 if (useUrls?.length) {
                     const useIdx = activeUrls ? Math.min(spriteIdx, useUrls.length - 1) : 0;
                     const newSrc = useUrls[useIdx];
@@ -19940,10 +19945,14 @@
                     const ccols = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
                     const ct = '×' + combo + ' COMBO!';
                     if (comboEl.textContent !== ct) comboEl.textContent = ct;
-                    comboEl.style.color = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
+                    if (combo !== _lastCombo) {
+                        comboEl.style.color = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
+                        _lastCombo = combo;
+                    }
                     if (comboEl.style.display !== 'block') comboEl.style.display = 'block';
                 } else if (comboEl.style.display !== 'none') {
                     comboEl.style.display = 'none';
+                    _lastCombo = -1;
                 }
 
                 // No canvas work — CSS animations handle note movement on the GPU
