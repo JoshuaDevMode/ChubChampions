@@ -5,10 +5,11 @@ export default function LoginGate() {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
   const [visible, setVisible] = useState(false);
 
-  // user is in deps so we re-run once it's populated after authenticated=true
+  // user is in deps so handleAuthenticated() re-runs once user is populated
   useEffect(() => {
-    if (!ready || !user) return;
+    if (!ready) return;
     if (authenticated) {
+      if (!user) return; // wait for user object to populate
       handleAuthenticated();
     } else {
       setVisible(true);
