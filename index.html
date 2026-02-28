@@ -19745,7 +19745,7 @@
                 maxCombo = Math.max(maxCombo, combo);
                 statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                 animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                bagVel += (lane >= 2 ? 2.8 : 2.2) + Math.min(combo - 1, 8) * 0.15;
+                bagVel -= (lane >= 2 ? 2.1 : 1.65) + Math.min(combo - 1, 8) * 0.11;
                 const qual = bestDist < 9 ? 'PERFECT!' : bestDist < 20 ? 'GREAT!' : 'GOOD';
                 const qcol = bestDist < 9 ? '#fbbf24' : bestDist < 20 ? '#22c55e' : '#60a5fa';
                 const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
@@ -19815,6 +19815,7 @@
                 // ── Draw ──────────────────────────────────────────────────────────
                 ctx.clearRect(0, 0, GW, GH);
                 ctx.fillStyle = '#07070f'; ctx.fillRect(0, 0, GW, GH);
+                ctx.imageSmoothingEnabled = false;
 
                 // Divider
                 ctx.strokeStyle = '#1a1a35'; ctx.lineWidth = 1;
@@ -19848,28 +19849,23 @@
                     const charH = Math.round(CHAR_W * charImg.naturalHeight / charImg.naturalWidth);
                     ctx.drawImage(charImg, CHAR_X, CHAR_BOTTOM - charH, CHAR_W, charH);
                 }
-                // Ground shadow
-                ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = '#000';
-                ctx.beginPath(); ctx.ellipse(CHAR_X + CHAR_W / 2, CHAR_BOTTOM, 70, 11, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
-
                 // ── Floating texts ─────────────────────────────────────────────────
+                ctx.font = 'bold 13px monospace';
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 for (const t of hitTexts) {
-                    ctx.save(); ctx.globalAlpha = t.alpha;
-                    ctx.fillStyle = t.col; ctx.font = 'bold 12px "Press Start 2P", monospace';
-                    ctx.fillText(t.text, t.x, t.y); ctx.restore();
+                    ctx.globalAlpha = t.alpha;
+                    ctx.fillStyle = t.col;
+                    ctx.fillText(t.text, t.x, t.y);
                 }
 
                 // Combo banner
                 if (combo >= 3) {
                     const ccols = ['#f97316','#ef4444','#8b5cf6','#ec4899'];
-                    ctx.save(); ctx.font = 'bold 14px "Press Start 2P", monospace';
-                    ctx.fillStyle = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
                     ctx.globalAlpha = 0.9;
+                    ctx.fillStyle = ccols[Math.min(Math.floor((combo - 3) / 2), 3)];
                     ctx.fillText('×' + combo + ' COMBO!', (COL_LEFT - 6) / 2, 24);
-                    ctx.restore();
                 }
+                ctx.globalAlpha = 1;
 
                 // ── Note column ───────────────────────────────────────────────────
                 ctx.fillStyle = '#0c0c20'; ctx.fillRect(COL_LEFT, 0, COL_W, GH);
@@ -19881,10 +19877,12 @@
                 ctx.strokeRect(COL_LEFT + 1, hzTop + 1, COL_W - 2, HIT_H - 2);
                 const ac = 13;
                 ctx.strokeStyle = '#c4b5fd'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(COL_LEFT, hzTop + ac); ctx.lineTo(COL_LEFT, hzTop); ctx.lineTo(COL_LEFT + ac, hzTop); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(COL_LEFT + COL_W - ac, hzTop); ctx.lineTo(COL_LEFT + COL_W, hzTop); ctx.lineTo(COL_LEFT + COL_W, hzTop + ac); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(COL_LEFT, hzTop + HIT_H - ac); ctx.lineTo(COL_LEFT, hzTop + HIT_H); ctx.lineTo(COL_LEFT + ac, hzTop + HIT_H); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(COL_LEFT + COL_W - ac, hzTop + HIT_H); ctx.lineTo(COL_LEFT + COL_W, hzTop + HIT_H); ctx.lineTo(COL_LEFT + COL_W, hzTop + HIT_H - ac); ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(COL_LEFT, hzTop+ac); ctx.lineTo(COL_LEFT, hzTop); ctx.lineTo(COL_LEFT+ac, hzTop);
+                ctx.moveTo(COL_LEFT+COL_W-ac, hzTop); ctx.lineTo(COL_LEFT+COL_W, hzTop); ctx.lineTo(COL_LEFT+COL_W, hzTop+ac);
+                ctx.moveTo(COL_LEFT, hzTop+HIT_H-ac); ctx.lineTo(COL_LEFT, hzTop+HIT_H); ctx.lineTo(COL_LEFT+ac, hzTop+HIT_H);
+                ctx.moveTo(COL_LEFT+COL_W-ac, hzTop+HIT_H); ctx.lineTo(COL_LEFT+COL_W, hzTop+HIT_H); ctx.lineTo(COL_LEFT+COL_W, hzTop+HIT_H-ac);
+                ctx.stroke();
 
                 // Notes — no clip(), font set once, no nested save/restore per note
                 const noteNX = COL_LEFT + (COL_W - NOTE_W) / 2;
