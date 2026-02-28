@@ -19611,7 +19611,7 @@
         function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs) {
             // ── Vertical column layout: large character+bag (left) + note column (right) ──
             const DURATION   = 30;
-            const GW = 520, GH = 430;
+            const GW = 520, GH = 490;
             const NOTE_SPEED = 210;   // px/sec, notes scroll top→bottom
 
             // ── Note column (right side) ──────────────────────────────────────────
@@ -19619,7 +19619,7 @@
             const COL_W     = 110;
             const NOTE_W    = 96;
             const NOTE_H    = 42;
-            const HIT_CY    = 340;   // center y of hit zone
+            const HIT_CY    = 390;   // center y of hit zone
             const HIT_H     = 50;
             const HIT_WINDOW = 24;
 
@@ -19629,14 +19629,14 @@
             const LANE_NAMES  = ['PUNCH','KICK','UPPER','HEAD'];
             const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6','#ef4444'];
 
-            // ── Character (bottom-left of main area) ──────────────────────────────
-            const CHAR_W = 140, CHAR_H = 185;
-            const CHAR_X = 18;
-            const CHAR_BOTTOM = GH - 18;
+            // ── Character (bottom-left, large) ────────────────────────────────────
+            const CHAR_W = 160, CHAR_H = 240;
+            const CHAR_X = 20;
+            const CHAR_BOTTOM = GH - 15;
 
-            // ── Bag (pendulum from top of main area) ──────────────────────────────
-            const BAG_PIVOT_X = 270, BAG_PIVOT_Y = 14;
-            const BAG_ROPE = 105, BAG_W = 62, BAG_H = 115;
+            // ── Bag: longer rope so bag hangs at punch height ─────────────────────
+            const BAG_PIVOT_X = 225, BAG_PIVOT_Y = 14;
+            const BAG_ROPE = 220, BAG_W = 76, BAG_H = 140;
             let bagAngle = 0, bagVel = 0;
 
             // ── Sprite frames ─────────────────────────────────────────────────────
@@ -19750,10 +19750,10 @@
                     const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
                     const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
                     hitTexts.push({ text: qual, x: bpx, y: bpy + BAG_H * 0.3, vy: -70, alpha: 1, col: qcol });
-                    for (let k = 0; k < 12; k++)
+                    for (let k = 0; k < 7; k++)
                         particles.push({ x: bpx, y: bpy + BAG_H * 0.5,
-                            vx: (Math.random() - 0.5) * 140, vy: (Math.random() - 0.5) * 90,
-                            life: 0.55, col: LANE_COLORS[lane] });
+                            vx: (Math.random() - 0.5) * 120, vy: (Math.random() - 0.5) * 80,
+                            life: 0.38, col: LANE_COLORS[lane] });
                 }
             }
 
@@ -19910,9 +19910,8 @@
                 // Hit zone
                 const hzTop = HIT_CY - HIT_H / 2;
                 ctx.fillStyle = '#ffffff08'; ctx.fillRect(COL_LEFT, hzTop, COL_W, HIT_H);
-                ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = '#c4b5fd';
-                ctx.strokeStyle = '#c4b5fd88'; ctx.lineWidth = 2;
-                ctx.strokeRect(COL_LEFT + 1, hzTop + 1, COL_W - 2, HIT_H - 2); ctx.restore();
+                ctx.strokeStyle = '#c4b5fdaa'; ctx.lineWidth = 2;
+                ctx.strokeRect(COL_LEFT + 1, hzTop + 1, COL_W - 2, HIT_H - 2);
                 // Corner accents
                 const ac = 10;
                 ctx.strokeStyle = '#c4b5fd'; ctx.lineWidth = 2.5;
@@ -19933,12 +19932,10 @@
                     const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
                     ctx.save();
                     if (n.miss) ctx.globalAlpha = 0.28;
-                    else { ctx.shadowBlur = 14; ctx.shadowColor = col; }
                     ctx.fillStyle = n.miss ? col : col + '28';
                     _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 7); ctx.fill();
-                    ctx.strokeStyle = col; ctx.lineWidth = 2;
+                    ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2.5;
                     _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 7); ctx.stroke();
-                    ctx.shadowBlur = 0;
                     ctx.fillStyle = n.miss ? '#44445a' : '#fff';
                     ctx.font = 'bold 18px "Press Start 2P", monospace';
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
