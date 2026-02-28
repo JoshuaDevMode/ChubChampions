@@ -11982,24 +11982,27 @@
             if (overlay) overlay.style.display = 'none';
         }
 
-        // Open Privy login in a popup; backend sends postMessage on success and closes
+        // Show Privy login in a fullscreen iframe overlay — no new window
         function openLoginPopup() {
-            const url = 'https://fight-chub-backend.vercel.app/?force=1';
-            const w = 480, h = 620;
-            const left = Math.max(0, Math.round((screen.width  - w) / 2));
-            const top  = Math.max(0, Math.round((screen.height - h) / 2));
-            const popup = window.open(url, 'privy_login',
-                'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes');
+            if (document.getElementById('privy-login-overlay')) return;
 
-            if (!popup) {
-                // Popup blocked — fall back to full redirect
-                window.location.href = url;
-                return;
-            }
+            const overlay = document.createElement('div');
+            overlay.id = 'privy-login-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;';
+
+            const iframe = document.createElement('iframe');
+            iframe.src = 'https://fight-chub-backend.vercel.app/?force=1';
+            iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+            iframe.allow = 'clipboard-write; clipboard-read';
+
+            overlay.appendChild(iframe);
+            document.body.appendChild(overlay);
 
             function onPrivyMsg(event) {
                 if (!event.data || event.data.type !== 'privy_session') return;
                 window.removeEventListener('message', onPrivyMsg);
+                const el = document.getElementById('privy-login-overlay');
+                if (el) el.remove();
                 const d = event.data;
                 const params = new URLSearchParams({
                     playerId: d.playerId || '',
