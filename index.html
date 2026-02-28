@@ -19745,8 +19745,7 @@
                 maxCombo = Math.max(maxCombo, combo);
                 statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                 animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                bagVel += (lane >= 2 ? 0.26 : 0.19) + Math.min(combo - 1, 8) * 0.014;
-                bagFlash = 0.35;
+                bagVel += (lane >= 2 ? 2.8 : 2.2) + Math.min(combo - 1, 8) * 0.15;
                 const qual = bestDist < 9 ? 'PERFECT!' : bestDist < 20 ? 'GREAT!' : 'GOOD';
                 const qcol = bestDist < 9 ? '#fbbf24' : bestDist < 20 ? '#22c55e' : '#60a5fa';
                 const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
@@ -19807,9 +19806,8 @@
                     }
 
                     bagVel -= Math.sin(bagAngle) * 7.5 * dt;
-                    bagVel *= 0.977;
+                    bagVel *= Math.exp(-1.2 * dt); // frame-rate independent damping
                     bagAngle += bagVel * dt;
-                    if (bagFlash > 0) bagFlash -= dt * 3;
 
                     hitTexts = hitTexts.filter(t => { t.y += t.vy * dt; t.alpha -= 2.4 * dt; return t.alpha > 0; });
                 }
@@ -19837,12 +19835,6 @@
                     const g = ctx.createLinearGradient(-BAG_W / 2, 0, BAG_W / 2, 0);
                     g.addColorStop(0, '#b91c1c'); g.addColorStop(0.45, '#ef4444'); g.addColorStop(1, '#b91c1c');
                     ctx.fillStyle = g; _mgRoundRect(ctx, -BAG_W / 2, 0, BAG_W, bagDrawH, 12); ctx.fill();
-                }
-                if (bagFlash > 0) {
-                    ctx.globalAlpha = bagFlash / 0.35 * 0.35;
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(-BAG_W / 2, 0, BAG_W, bagDrawH);
-                    ctx.globalAlpha = 1;
                 }
                 ctx.restore();
 
@@ -19906,10 +19898,10 @@
                     const nTop = ny - NOTE_H / 2;
                     const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
                     ctx.globalAlpha = n.miss ? 0.28 : 1;
-                    ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2.5;
                     ctx.fillStyle = n.miss ? col : col + '28';
-                    _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8);
-                    ctx.fill(); ctx.stroke(); // reuse same path — no second _mgRoundRect
+                    ctx.fillRect(noteNX, nTop, NOTE_W, NOTE_H);
+                    ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2;
+                    ctx.strokeRect(noteNX + 1, nTop + 1, NOTE_W - 2, NOTE_H - 2);
                     ctx.fillStyle = n.miss ? '#44445a' : '#fff';
                     ctx.fillText(LANE_LABELS[n.lane], noteCX, ny);
                 }
