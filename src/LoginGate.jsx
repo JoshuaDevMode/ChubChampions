@@ -22,11 +22,12 @@ export default function LoginGate() {
     return () => window.removeEventListener('fightchub:showlogin', show);
   }, []);
 
-  // Expose logout to vanilla JS
+  // Expose logout and token refresh to vanilla JS
   useEffect(() => {
     window.__privyLogout = logout;
-    return () => { window.__privyLogout = null; };
-  }, [logout]);
+    window.__getPrivyToken = getAccessToken;
+    return () => { window.__privyLogout = null; window.__getPrivyToken = null; };
+  }, [logout, getAccessToken]);
 
   async function handleAuthenticated() {
     if (!user) return;
