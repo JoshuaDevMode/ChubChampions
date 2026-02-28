@@ -19637,9 +19637,9 @@
             // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
             const BAG_PIVOT_X = 390;
             const BAG_PIVOT_Y = 10;
-            const BAG_ROPE    = 110;
+            const BAG_ROPE    = 60;
             const BAG_W       = 400; // display width; height = BAG_W * naturalRatio (capped)
-            let   bagDrawH    = 385; // updated once image loads; capped so bag fits canvas
+            let   bagDrawH    = 435; // updated once image loads; capped so bag fits canvas
             let   bagAngle = 0, bagVel = 0, bagFlash = 0;
 
             // ── Sprite frames ─────────────────────────────────────────────────────
@@ -19686,7 +19686,7 @@
             const bagImg = new Image();
             bagImg.onload = () => {
                 if (bagImg.naturalWidth > 0) {
-                    const maxH = GH - BAG_PIVOT_Y - BAG_ROPE - 15;
+                    const maxH = GH - BAG_PIVOT_Y - BAG_ROPE - 10;
                     bagDrawH = Math.min(Math.round(BAG_W * bagImg.naturalHeight / bagImg.naturalWidth), maxH);
                 }
             };
@@ -19831,7 +19831,6 @@
                 ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 80); ctx.stroke();
                 ctx.save();
                 ctx.translate(bpx, bpy); ctx.rotate(bagAngle);
-                if (bagFlash > 0) { ctx.shadowBlur = 32 * (bagFlash / 0.35); ctx.shadowColor = '#ef4444'; }
                 if (bagImg.complete && bagImg.naturalWidth > 0) {
                     ctx.drawImage(bagImg, -BAG_W / 2, 0, BAG_W, bagDrawH);
                 } else {
@@ -19839,8 +19838,13 @@
                     g.addColorStop(0, '#b91c1c'); g.addColorStop(0.45, '#ef4444'); g.addColorStop(1, '#b91c1c');
                     ctx.fillStyle = g; _mgRoundRect(ctx, -BAG_W / 2, 0, BAG_W, bagDrawH, 12); ctx.fill();
                 }
+                if (bagFlash > 0) {
+                    ctx.globalAlpha = bagFlash / 0.35 * 0.35;
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(-BAG_W / 2, 0, BAG_W, bagDrawH);
+                    ctx.globalAlpha = 1;
+                }
                 ctx.restore();
-                ctx.shadowBlur = 0; // prevent shadow bleeding into character/notes
 
                 // ── Character: natural aspect ratio ───────────────────────────────
                 const activeFr = animLane >= 0 ? FRAMES[animLane] : null;
@@ -19902,10 +19906,10 @@
                     const nTop = ny - NOTE_H / 2;
                     const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
                     ctx.globalAlpha = n.miss ? 0.28 : 1;
-                    ctx.fillStyle = n.miss ? col : col + '28';
-                    _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8); ctx.fill();
                     ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2.5;
-                    _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8); ctx.stroke();
+                    ctx.fillStyle = n.miss ? col : col + '28';
+                    _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8);
+                    ctx.fill(); ctx.stroke(); // reuse same path — no second _mgRoundRect
                     ctx.fillStyle = n.miss ? '#44445a' : '#fff';
                     ctx.fillText(LANE_LABELS[n.lane], noteCX, ny);
                 }
