@@ -19885,7 +19885,6 @@
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
                 window.removeEventListener('resize', applyScale);
-                noteStyle.remove();
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
                 const rating = acc >= 90 ? 'PERFECT!' : acc >= 70 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
