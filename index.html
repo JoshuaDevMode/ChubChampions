@@ -1011,29 +1011,19 @@
             letter-spacing: 4px;
         }
 
-        .loading-bar-container {
-            width: 400px;
-            height: 30px;
-            background: #222;
-            border: 3px solid #444;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.5);
+        .loading-svg-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .loading-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4ecdc4, #44a08d, #4ecdc4);
-            background-size: 200% 100%;
-            animation: loadingShimmer 1.5s ease-in-out infinite;
-            transition: width 0.3s ease;
-            border-radius: 12px;
+        #loading-svg {
+            animation: loadingGlowPulse 2s ease-in-out infinite;
         }
 
-        @keyframes loadingShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+        @keyframes loadingGlowPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(78,205,196,0.4)); }
+            50%       { filter: drop-shadow(0 0 28px rgba(78,205,196,0.9)); }
         }
 
         .loading-text {
@@ -1521,8 +1511,6 @@
             align-self: center;
             justify-self: center;
             transition: transform 0.5s ease;
-            padding-top: 40px;
-            padding-bottom: 20px;
         }
 
         .menu-character-wrapper {
@@ -1697,8 +1685,12 @@
         }
 
         .menu-character-info {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 340px;
             text-align: center;
-            margin-top: 10px;
         }
 
         .menu-character-name {
@@ -1707,8 +1699,12 @@
             color: #fff;
             text-shadow: 3px 3px 0 #000, 0 0 22px rgba(255,255,255,0.45), 0 0 50px rgba(78,205,196,0.18);
             letter-spacing: 4px;
-            margin-bottom: 10px;
             text-align: center;
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
         }
 
         /* Stats Panel — compact single-row */
@@ -2501,14 +2497,14 @@
         /* Buttons Layout - Spread across screen */
         .menu-buttons-left {
             grid-area: nav;
-            align-self: center;
+            align-self: start;
             justify-self: start;
             display: flex;
             flex-direction: column;
             gap: 12px;
             z-index: 5;
             width: 260px;
-            margin-bottom: 80px;
+            margin-top: 80px;
         }
 
         .menu-buttons-bottom {
@@ -14301,6 +14297,10 @@
 
                 nameEl.textContent = character.name.toUpperCase();
                 statsPanel.style.display = ''; // Show wooden panel
+                const charImg = document.getElementById('menu-character-img');
+                const charBg = document.querySelector('.menu-character-bg');
+                if (charImg) charImg.style.visibility = '';
+                if (charBg) charBg.style.visibility = '';
                 const played = character.gamesPlayed || 0;
                 const won = character.gamesWon || 0;
                 const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
@@ -14368,6 +14368,10 @@
             } else {
                 nameEl.textContent = 'NO FIGHTER';
                 statsPanel.style.display = 'none'; // Hide wooden panel
+                const charImg = document.getElementById('menu-character-img');
+                const charBg = document.querySelector('.menu-character-bg');
+                if (charImg) charImg.style.visibility = 'hidden';
+                if (charBg) charBg.style.visibility = 'hidden';
                 levelEl.textContent = '';
                 statsEl.innerHTML = '';
                 expContainer.style.display = 'none';
@@ -18879,10 +18883,31 @@
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'loading-overlay';
             loadingOverlay.id = 'loading-overlay';
+            const SILHOUETTE_PATH = "M142.59756,60.38218c0.71719,-0.03955 1.42939,-0.00498 2.12842,-0.03691c20.88633,-0.95215 41.08652,4.04048 57.51035,17.45874c13.53076,11.05488 21.13477,26.47661 25.3667,43.31235c0.84668,3.39785 1.57178,6.825 2.17236,10.27485c0.41309,2.44482 0.49805,4.4417 1.20264,6.86118c1.40625,1.02554 3.24609,2.74907 4.54395,3.929c4.48242,4.07622 9.43799,9.00513 13.13086,13.80103c4.13818,5.37158 8.49756,13.14697 7.56738,20.10498c-0.38379,2.87109 -1.37402,5.79785 -3.84668,7.49121c-3.70752,2.4873 -8.46387,2.60742 -12.64893,1.40332c-0.79248,-0.22852 -4.91016,-1.6377 -5.14014,-1.07959c-0.71777,1.74756 -0.99316,3.95654 -1.51172,5.83008c-0.26514,0.95654 -0.58447,1.89697 -0.95508,2.81689c-3.18164,8.02148 -7.40332,12.41162 -13.99072,17.51367c-0.31494,1.36084 -0.50977,3.06445 -0.74561,4.4458c-1.75195,10.31543 -4.20557,21.26367 -15.90234,24.1377c-7.55713,1.85596 -15.69434,1.2627 -22.61572,-2.5957c-5.42725,-3.02637 -7.1499,-8.53857 -8.58398,-14.22217c-1.87061,-0.11719 -3.50098,0.19922 -5.33057,0.21826c-2.84326,0.0293 -5.58838,0.38086 -8.43018,0.33545c-3.89795,0.00293 -7.94824,0.05713 -11.8311,-0.01904c-3.63413,-0.07031 -8.12021,-0.57861 -11.70967,-0.57129c-1.05015,3.65479 -1.86357,7.40771 -4.22197,10.49414c-3.32974,4.35938 -9.37793,6.71631 -14.71128,7.24658c-6.15996,0.6123 -14.55483,-0.26514 -19.53706,-4.27148c-5.50225,-4.42529 -7.22593,-12.11865 -8.49258,-18.7207c-0.37764,-1.96875 -0.92168,-4.4751 -1.1187,-6.44385c-7.20308,-5.30859 -11.88179,-10.54248 -14.67451,-19.24951c-0.83921,-2.61768 -1.14316,-4.9585 -1.67871,-7.61426c-2.64507,0.75732 -5.22246,1.93213 -7.9377,2.68799c-6.121,1.70508 -15.27187,0.36621 -16.48799,-7.2334c-2.61782,-16.36084 14.21514,-29.68652 24.30659,-40.14478c0.02769,-0.04556 0.05552,-0.09097 0.0832,-0.13638c0.03267,-2.57358 0.7207,-6.04365 1.22725,-8.64448c2.48496,-12.76216 6.53745,-24.96387 13.38267,-36.05771c9.94746,-16.12119 26.77207,-26.77485 44.97803,-31.15312c3.17739,-0.75542 6.43213,-1.22417 9.66196,-1.69541c1.60298,-0.23394 3.2543,-0.06592 4.84058,-0.47344zM70.47085,162.73096c0.37998,1.00488 0.47446,1.32715 0.66797,2.3833c1.37842,13.87793 -0.7771,26.45068 10.4729,37.28174c3.11572,3 8.42695,6.22998 10.58936,9.40137c-0.5146,-0.00732 -3.21577,-0.18604 -3.10444,0.75146c0.62446,5.49023 2.15581,12.67969 5.42549,17.18701c5.79653,7.99219 21.45088,7.89258 28.91221,2.47852c3.00366,-2.17969 5.08711,-7.06055 5.60317,-10.58203c-1.70815,-0.42773 -14.33643,-1.19385 -13.18037,-3.84229c2.4542,-1.16895 5.62559,-0.54492 8.29878,-0.33984c11.67188,0.89355 23.5355,1.68018 35.22056,1.14551l9.00586,-0.36035c4.10449,-0.18164 8.21191,-0.59766 12.30469,-0.87012c1.61279,-0.1084 6.79541,-0.69287 7.88232,0.13916c0.55225,2.97363 -12.03076,3.62109 -14.30713,4.0957c0.07324,2.78906 2.5166,7.93213 4.54541,9.71045c6.83789,5.97656 22.02393,6.43359 28.52344,-0.22998c3.55225,-3.6416 6.68115,-14.08154 6.53613,-19.26416c-0.90674,0.0293 -2.10791,0.21094 -2.77734,-0.36914c-0.16553,-1.08984 3.68408,-3.58887 4.74463,-4.40186c2.17676,-1.63916 4.2085,-3.46143 6.07324,-5.44775c7.42236,-7.80908 9.2373,-16.95557 9.53906,-27.35889c0.05566,-1.96729 -0.44824,-11.25293 0.81885,-12.17139l0.31348,0.12012c2.31006,2.6001 2.39648,13.65234 2.38037,17.11377c4.26563,1.5791 7.88379,3.479 12.62549,2.29688c5.23975,-1.30518 5.76416,-7.01074 4.45166,-11.36572c-2.59131,-8.60449 -9.2168,-15.89062 -15.52002,-22.06348c-1.41797,-1.39014 -3.87305,-3.94849 -5.56055,-4.89814c-0.42041,0.98203 -0.60059,1.32803 -1.17334,2.22861c-2.69238,-2.39004 -3.42041,-12.34819 -4.1499,-16.15679c-1.7959,-9.38555 -4.42676,-17.74775 -8.4917,-26.37598c-7.83252,-16.6248 -22.22314,-28.74243 -39.53174,-34.62158c-17.12842,-5.87168 -38.81689,-5.92573 -55.95806,-0.04277c-2.48921,0.85444 -5.29775,1.93403 -7.65674,3.07485c-21.88198,10.21831 -34.2356,30.51431 -39.43989,53.44937c-1.28613,5.66821 -2.06162,11.5147 -3.09419,17.22861c-0.07354,0.4062 -0.5354,1.33638 -0.95332,1.54468c-0.64731,-0.03296 -1.43408,-0.11162 -1.97139,0.27876c-1.34385,0.97676 -2.78027,2.61606 -4.0021,3.81577c-6.43418,6.3208 -13.46646,13.92773 -16.34619,22.61279c-0.79526,2.38037 -1.23589,7.06201 0.22397,9.24902c4.03594,6.04688 13.70479,2.46094 18.79775,-0.15527c0.3082,-0.1582 0.96738,-0.66797 1.00283,-1.01953c0.22998,-2.2793 -0.04307,-4.62598 0.06152,-6.92139c0.11309,-2.40381 0.50889,-4.33447 1.08735,-6.58447c0.38276,-0.83643 0.61494,-1.36963 1.10991,-2.14453z";
             loadingOverlay.innerHTML = `
                 <div class="loading-title">LOADING</div>
-                <div class="loading-bar-container">
-                    <div class="loading-bar" id="loading-bar"></div>
+                <div class="loading-svg-wrap">
+                    <svg id="loading-svg" viewBox="0 0 300 300" width="270" height="270">
+                        <defs>
+                            <linearGradient id="lfg" x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0%" stop-color="#44a08d"/>
+                                <stop offset="100%" stop-color="#4ecdc4"/>
+                            </linearGradient>
+                            <clipPath id="fighter-clip">
+                                <path clip-rule="nonzero" d="${SILHOUETTE_PATH}"/>
+                            </clipPath>
+                        </defs>
+                        <!-- Dark unfilled silhouette -->
+                        <path fill-rule="nonzero" d="${SILHOUETTE_PATH}" fill="#161630" stroke="#2a3a5a" stroke-width="1.5"/>
+                        <!-- Teal fill — grows bottom to top -->
+                        <rect id="loading-fill-rect" x="0" y="300" width="300" height="0" fill="url(#lfg)" clip-path="url(#fighter-clip)"/>
+                        <!-- Glow edge line at fill boundary -->
+                        <rect id="loading-glow-line" x="0" y="300" width="300" height="5" fill="#80fff8" opacity="0.85" clip-path="url(#fighter-clip)"/>
+                        <!-- Percentage counter -->
+                        <text id="loading-pct-text" x="150" y="158" text-anchor="middle" dominant-baseline="middle"
+                              font-family="'Press Start 2P',monospace" font-size="22" font-weight="bold"
+                              fill="#fff" stroke="#000" stroke-width="4" paint-order="stroke">0%</text>
+                    </svg>
                 </div>
                 <div class="loading-text" id="loading-text">Preparing fighters...</div>
             `;
@@ -18890,10 +18915,18 @@
         }
 
         function updateLoadingProgress(percent, text) {
-            const bar = document.getElementById('loading-bar');
-            const textEl = document.getElementById('loading-text');
-            if (bar) bar.style.width = percent + '%';
-            if (textEl) textEl.textContent = text;
+            const fillRect = document.getElementById('loading-fill-rect');
+            const glowLine = document.getElementById('loading-glow-line');
+            const pctText  = document.getElementById('loading-pct-text');
+            const textEl   = document.getElementById('loading-text');
+            if (fillRect) {
+                const h = (percent / 100) * 300;
+                fillRect.setAttribute('y', String(300 - h));
+                fillRect.setAttribute('height', String(h));
+                if (glowLine) glowLine.setAttribute('y', String(Math.max(0, 300 - h - 2)));
+            }
+            if (pctText)  pctText.textContent  = Math.round(percent) + '%';
+            if (textEl)   textEl.textContent    = text;
         }
 
         function hideLoadingScreen() {
