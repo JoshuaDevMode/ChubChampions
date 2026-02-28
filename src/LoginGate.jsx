@@ -5,43 +5,49 @@ export default function LoginGate() {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
   const [visible, setVisible] = useState(false);
 
-  // Show gate when no session; hide when authenticated
+  // user is in deps so we re-run once it's populated after authenticated=true
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !user) return;
     if (authenticated) {
       handleAuthenticated();
     } else {
       setVisible(true);
     }
-  }, [ready, authenticated]);
+  }, [ready, authenticated, user]);
 
-  // Listen for logout event dispatched by vanilla JS
+  // Show gate on JS-side logout event
   useEffect(() => {
     const show = () => setVisible(true);
     window.addEventListener('fightchub:showlogin', show);
     return () => window.removeEventListener('fightchub:showlogin', show);
   }, []);
 
-  // Expose logout and token refresh to vanilla JS
+  // Expose Privy functions to vanilla JS
   useEffect(() => {
-    window.__privyLogout = logout;
+    window.__privyLogout   = logout;
     window.__getPrivyToken = getAccessToken;
     return () => { window.__privyLogout = null; window.__getPrivyToken = null; };
   }, [logout, getAccessToken]);
 
   async function handleAuthenticated() {
-    if (!user) return;
     try {
       const token = await getAccessToken();
-      const privyId = user.id; // e.g. "did:privy:..."
-      // Derive playerId from privy DID (strip prefix for brevity)
+
+      // Returning user (session already in localStorage) — just refresh token, don't re-init game
+      const savedSession = localStorage.getItem('fightchub_session');
+      if (savedSession) {
+        if (token) window.__privyUpdateToken?.(token);
+        setVisible(false);
+        return;
+      }
+
+      // Fresh login — build full session and init game
+      const privyId  = user.id;
       const playerId = privyId.startsWith('did:privy:') ? privyId.slice(10) : privyId;
 
-      // Prefer linked wallet, fall back to embedded wallet
       const linkedWallet = user.linkedAccounts?.find(a => a.type === 'wallet');
       const wallet = linkedWallet?.address || user.wallet?.address || '';
 
-      // Display name: Twitter handle > email username > 'Fighter'
       const twitterAcc = user.linkedAccounts?.find(a => a.type === 'twitter_oauth');
       const emailAcc   = user.linkedAccounts?.find(a => a.type === 'email');
       const name = twitterAcc?.username
@@ -50,11 +56,7 @@ export default function LoginGate() {
 
       const avatar = twitterAcc?.profilePictureUrl || '';
 
-      const sessionData = { playerId, wallet, name, avatar, token };
-
-      if (typeof window.__privyLogin === 'function') {
-        window.__privyLogin(sessionData);
-      }
+      window.__privyLogin?.({ playerId, wallet, name, avatar, token });
       setVisible(false);
     } catch (err) {
       console.error('[LoginGate] handleAuthenticated error:', err);

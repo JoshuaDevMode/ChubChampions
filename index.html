@@ -11888,6 +11888,7 @@
         }
 
         // Called by React LoginGate after successful Privy authentication
+        // Called by React on fresh login (no existing session)
         window.__privyLogin = function(data) {
             playerSession = {
                 playerId: data.playerId,
@@ -11900,6 +11901,20 @@
             updatePlayerSessionUI();
             syncStateFromServer();
             initGameWithSession();
+        };
+
+        // Called by React on page reload when session already exists — only refreshes token
+        window.__privyUpdateToken = function(token) {
+            if (!playerSession) return;
+            playerSession.token = token;
+            try {
+                const s = localStorage.getItem('fightchub_session');
+                if (s) {
+                    const p = JSON.parse(s);
+                    p.token = token;
+                    localStorage.setItem('fightchub_session', JSON.stringify(p));
+                }
+            } catch(e) {}
         };
 
         function loadPlayerSession() {
