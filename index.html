@@ -19631,15 +19631,15 @@
 
             // ── Character: rendered at natural aspect ratio, lobby-size (320px wide) ─
             const CHAR_W     = 320;
-            const CHAR_X     = 100;
+            const CHAR_X     = 130;
             const CHAR_BOTTOM = GH - 10;
 
             // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
-            const BAG_PIVOT_X = 450;
+            const BAG_PIVOT_X = 390;
             const BAG_PIVOT_Y = 10;
-            const BAG_ROPE    = 75;
+            const BAG_ROPE    = 110;
             const BAG_W       = 400; // display width; height = BAG_W * naturalRatio (capped)
-            let   bagDrawH    = 415; // updated once image loads; capped so bag fits canvas
+            let   bagDrawH    = 385; // updated once image loads; capped so bag fits canvas
             let   bagAngle = 0, bagVel = 0, bagFlash = 0;
 
             // ── Sprite frames ─────────────────────────────────────────────────────
@@ -19828,7 +19828,7 @@
                 ctx.fillStyle = '#2a2a3a'; ctx.fillRect(BAG_PIVOT_X - 14, 0, 28, BAG_PIVOT_Y + 8);
                 ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 6, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 28); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 80); ctx.stroke();
                 ctx.save();
                 ctx.translate(bpx, bpy); ctx.rotate(bagAngle);
                 if (bagFlash > 0) { ctx.shadowBlur = 32 * (bagFlash / 0.35); ctx.shadowColor = '#ef4444'; }
@@ -19840,6 +19840,7 @@
                     ctx.fillStyle = g; _mgRoundRect(ctx, -BAG_W / 2, 0, BAG_W, bagDrawH, 12); ctx.fill();
                 }
                 ctx.restore();
+                ctx.shadowBlur = 0; // prevent shadow bleeding into character/notes
 
                 // ── Character: natural aspect ratio ───────────────────────────────
                 const activeFr = animLane >= 0 ? FRAMES[animLane] : null;
@@ -19889,28 +19890,26 @@
                 ctx.beginPath(); ctx.moveTo(COL_LEFT, hzTop + HIT_H - ac); ctx.lineTo(COL_LEFT, hzTop + HIT_H); ctx.lineTo(COL_LEFT + ac, hzTop + HIT_H); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(COL_LEFT + COL_W - ac, hzTop + HIT_H); ctx.lineTo(COL_LEFT + COL_W, hzTop + HIT_H); ctx.lineTo(COL_LEFT + COL_W, hzTop + HIT_H - ac); ctx.stroke();
 
-                ctx.save();
-                ctx.beginPath(); ctx.rect(COL_LEFT, 0, COL_W, GH); ctx.clip();
+                // Notes — no clip(), font set once, no nested save/restore per note
                 const noteNX = COL_LEFT + (COL_W - NOTE_W) / 2;
+                const noteCX = noteNX + NOTE_W / 2;
+                ctx.font = 'bold 20px monospace';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 for (const n of notes) {
                     if (n.hit) continue;
                     const ny = noteY(n);
-                    const nTop = ny - NOTE_H / 2;
                     if (ny < -NOTE_H || ny > GH + NOTE_H) continue;
+                    const nTop = ny - NOTE_H / 2;
                     const col = n.miss ? '#252535' : LANE_COLORS[n.lane];
-                    ctx.save();
-                    if (n.miss) ctx.globalAlpha = 0.28;
+                    ctx.globalAlpha = n.miss ? 0.28 : 1;
                     ctx.fillStyle = n.miss ? col : col + '28';
                     _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8); ctx.fill();
                     ctx.strokeStyle = col; ctx.lineWidth = n.miss ? 1 : 2.5;
                     _mgRoundRect(ctx, noteNX, nTop, NOTE_W, NOTE_H, 8); ctx.stroke();
                     ctx.fillStyle = n.miss ? '#44445a' : '#fff';
-                    ctx.font = 'bold 20px "Press Start 2P", monospace';
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(LANE_LABELS[n.lane], noteNX + NOTE_W / 2, nTop + NOTE_H / 2);
-                    ctx.restore();
+                    ctx.fillText(LANE_LABELS[n.lane], noteCX, ny);
                 }
-                ctx.restore();
+                ctx.globalAlpha = 1;
                 ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 
                 animId = requestAnimationFrame(loop);
