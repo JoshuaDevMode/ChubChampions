@@ -18935,12 +18935,7 @@
         }
 
         // Populate inventory panel with weapons
-        const SHOP_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
-
-        function getItemCooldownRemaining(id) {
-            if (!shopItemCooldowns[id]) return 0;
-            return Math.max(0, SHOP_COOLDOWN - (Date.now() - shopItemCooldowns[id]));
-        }
+        function getItemCooldownRemaining(_id) { return 0; }
 
         function formatShopCooldown(ms) {
             const h = Math.floor(ms / 3600000);
@@ -19077,7 +19072,6 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
             character.consumables.push(id);
             saveCharacters();
             saveProgression();
@@ -19099,7 +19093,6 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(id);
             saveCharacters();
@@ -19142,7 +19135,6 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveCharacters();
@@ -19170,7 +19162,6 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            shopItemCooldowns[itemId] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(itemId);
             saveCharacters();
@@ -19260,7 +19251,6 @@
             const today = new Date().toDateString();
             if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
             shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveProgression();
