@@ -3377,7 +3377,7 @@
         .mg-canvas {
             border: 2px solid #222; border-radius: 8px;
             display: block; cursor: pointer;
-            max-width: min(980px, 95vw);
+            width: 100%; max-width: min(980px, 95vw);
             height: auto;
         }
         .mg-score {
@@ -19612,17 +19612,17 @@
         function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs) {
             // ── Full-screen canvas: character+bag fill left ¾, column on right ─────
             const DURATION   = 30;
-            const GW = 860, GH = 520;
-            const NOTE_SPEED = 210;
+            const GW = 680, GH = 410;
+            const NOTE_SPEED = 166;
 
             // ── Note column ───────────────────────────────────────────────────────
-            const COL_LEFT   = 710;
-            const COL_W      = 135;
-            const NOTE_W     = 118;
-            const NOTE_H     = 50;
-            const HIT_CY     = 400;
-            const HIT_H      = 58;
-            const HIT_WINDOW = 26;
+            const COL_LEFT   = 560;
+            const COL_W      = 108;
+            const NOTE_W     = 93;
+            const NOTE_H     = 40;
+            const HIT_CY     = 316;
+            const HIT_H      = 46;
+            const HIT_WINDOW = 21;
 
             const LANE_KEYS   = ['q','w','e'];
             const LANE_LABELS = ['Q','W','E'];
@@ -19630,16 +19630,16 @@
             const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6'];
 
             // ── Character: rendered at natural aspect ratio, lobby-size (320px wide) ─
-            const CHAR_W     = 320;
-            const CHAR_X     = 130;
+            const CHAR_W     = 252;
+            const CHAR_X     = 103;
             const CHAR_BOTTOM = GH - 10;
 
             // ── Bag: drawn at image's natural aspect ratio ─────────────────────────
-            const BAG_PIVOT_X = 390;
-            const BAG_PIVOT_Y = 10;
-            const BAG_ROPE    = 60;
-            const BAG_W       = 400; // display width; height = BAG_W * naturalRatio (capped)
-            let   bagDrawH    = 435; // updated once image loads; capped so bag fits canvas
+            const BAG_PIVOT_X = 308;
+            const BAG_PIVOT_Y = 8;
+            const BAG_ROPE    = 47;
+            const BAG_W       = 316; // display width; height = BAG_W * naturalRatio (capped)
+            let   bagDrawH    = 344; // updated once image loads; capped so bag fits canvas
             let   bagAngle = 0, bagVel = 0, bagFlash = 0;
 
             // ── Sprite frames — pre-rendered to offscreen canvas at display size ─────
@@ -19843,10 +19843,10 @@
                 // ── Bag ───────────────────────────────────────────────────────────
                 const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
                 const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
-                ctx.fillStyle = '#2a2a3a'; ctx.fillRect(BAG_PIVOT_X - 14, 0, 28, BAG_PIVOT_Y + 8);
-                ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 6, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 80); ctx.stroke();
+                ctx.fillStyle = '#2a2a3a'; ctx.fillRect(BAG_PIVOT_X - 11, 0, 22, BAG_PIVOT_Y + 7);
+                ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(BAG_PIVOT_X, BAG_PIVOT_Y, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#4a4a5a'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(BAG_PIVOT_X, BAG_PIVOT_Y); ctx.lineTo(bpx, bpy + 63); ctx.stroke();
                 // setTransform avoids save/restore canvas state copy
                 const cos = Math.cos(bagAngle), sin = Math.sin(bagAngle);
                 ctx.setTransform(cos, sin, -sin, cos, bpx, bpy);
@@ -19871,7 +19871,7 @@
                     ctx.drawImage(charOc, CHAR_X, CHAR_BOTTOM - charOc.height);
                 }
                 // ── Floating texts ─────────────────────────────────────────────────
-                ctx.font = 'bold 13px monospace';
+                ctx.font = 'bold 11px monospace';
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 for (const t of hitTexts) {
                     ctx.globalAlpha = t.alpha;
@@ -19896,7 +19896,7 @@
                 ctx.fillStyle = '#ffffff07'; ctx.fillRect(COL_LEFT, hzTop, COL_W, HIT_H);
                 ctx.strokeStyle = '#c4b5fdbb'; ctx.lineWidth = 2;
                 ctx.strokeRect(COL_LEFT + 1, hzTop + 1, COL_W - 2, HIT_H - 2);
-                const ac = 13;
+                const ac = 10;
                 ctx.strokeStyle = '#c4b5fd'; ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.moveTo(COL_LEFT, hzTop+ac); ctx.lineTo(COL_LEFT, hzTop); ctx.lineTo(COL_LEFT+ac, hzTop);
@@ -19908,7 +19908,7 @@
                 // Notes — no clip(), font set once, no nested save/restore per note
                 const noteNX = COL_LEFT + (COL_W - NOTE_W) / 2;
                 const noteCX = noteNX + NOTE_W / 2;
-                ctx.font = 'bold 20px monospace';
+                ctx.font = 'bold 16px monospace';
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 for (const n of notes) {
                     if (n.hit) continue;
