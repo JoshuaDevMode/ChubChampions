@@ -19629,14 +19629,14 @@
             const LANE_NAMES  = ['PUNCH','KICK','UPPER','HEAD'];
             const LANE_COLORS = ['#f97316','#3b82f6','#8b5cf6','#ef4444'];
 
-            // ── Character (bottom-left, large) ────────────────────────────────────
-            const CHAR_W = 160, CHAR_H = 240;
+            // ── Character — height preserves sprite's natural ~1.25 aspect ratio ──
+            const CHAR_W = 160, CHAR_H = Math.round(CHAR_W * 1.25); // 200px
             const CHAR_X = 20;
             const CHAR_BOTTOM = GH - 15;
 
-            // ── Bag: longer rope so bag hangs at punch height ─────────────────────
-            const BAG_PIVOT_X = 225, BAG_PIVOT_Y = 14;
-            const BAG_ROPE = 220, BAG_W = 76, BAG_H = 140;
+            // ── Bag: large, rope length puts center at character's punch height ────
+            const BAG_PIVOT_X = 242, BAG_PIVOT_Y = 14;
+            const BAG_ROPE = 190, BAG_W = 112, BAG_H = 210;
             let bagAngle = 0, bagVel = 0;
 
             // ── Sprite frames ─────────────────────────────────────────────────────
