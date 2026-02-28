@@ -3325,7 +3325,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: rgba(4,4,10,0.98);
+            background: rgb(4,4,10);
             z-index: 500;
             flex-direction: column;
             align-items: center;
@@ -18402,14 +18402,17 @@
             const FRAME_MS = 100;   // 10 fps
             const bg = document.getElementById('lobby-bg');
             if (!bg) return;
+            const _mgEl = document.getElementById('minigame-screen');
             let frame = 0, lastTs = 0;
             function tick(ts) {
-                if (ts - lastTs >= FRAME_MS) {
-                    lastTs = ts;
-                    const col = frame % COLS;
-                    const row = Math.floor(frame / COLS);
-                    bg.style.backgroundPosition = (col / (COLS - 1) * 100) + '% ' + (row / (ROWS - 1) * 100) + '%';
-                    frame = (frame + 1) % TOTAL_FRAMES;
+                if (!_mgEl || !_mgEl.classList.contains('active')) {
+                    if (ts - lastTs >= FRAME_MS) {
+                        lastTs = ts;
+                        const col = frame % COLS;
+                        const row = Math.floor(frame / COLS);
+                        bg.style.backgroundPosition = (col / (COLS - 1) * 100) + '% ' + (row / (ROWS - 1) * 100) + '%';
+                        frame = (frame + 1) % TOTAL_FRAMES;
+                    }
                 }
                 requestAnimationFrame(tick);
             }
@@ -19780,10 +19783,19 @@
             nctx.textAlign = 'center';
             nctx.textBaseline = 'middle';
 
-            // Floating texts container (CSS-animated divs, no per-frame canvas cost)
+            // Floating texts container — pre-allocated pool, zero createElement during gameplay
             const ftEl = document.createElement('div');
             ftEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:visible;font:bold 11px monospace;';
             gameArea.appendChild(ftEl);
+            const FT_POOL_SIZE = 8;
+            const ftPool = [];
+            let ftPoolIdx = 0;
+            for (let _i = 0; _i < FT_POOL_SIZE; _i++) {
+                const _pe = document.createElement('div');
+                _pe.style.cssText = 'position:absolute;white-space:nowrap;pointer-events:none;opacity:0;will-change:transform,opacity;';
+                ftEl.appendChild(_pe);
+                ftPool.push(_pe);
+            }
 
             // Combo banner
             const comboEl = document.createElement('div');
@@ -19818,17 +19830,19 @@
 
             // ── Helpers ───────────────────────────────────────────────────────────
             function addFloatingText(text, x, y, col) {
-                const el = document.createElement('div');
-                // Use transform for movement — GPU composited, never triggers layout
-                el.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;color:' + col + ';white-space:nowrap;transform:translateX(-50%) translateY(0px);will-change:transform,opacity;pointer-events:none;';
+                const el = ftPool[ftPoolIdx++ % FT_POOL_SIZE];
+                el.style.transition = 'none';
+                el.style.color = col;
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                el.style.transform = 'translateX(-50%) translateY(0px)';
+                el.style.opacity = '1';
                 el.textContent = text;
-                ftEl.appendChild(el);
                 requestAnimationFrame(() => {
                     el.style.transition = 'transform 0.45s linear,opacity 0.45s linear';
                     el.style.transform = 'translateX(-50%) translateY(-50px)';
                     el.style.opacity = '0';
                 });
-                setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
             }
 
             function flashBtn(i) {
@@ -19970,6 +19984,16 @@
                     }
                 }
             }
+
+            // Pre-warm sprite blob URL decode — set every unique URL once before loop starts
+            // so first in-game src change never triggers a cold PNG decode stall
+            const _prewarmImg = new Image();
+            const _allUrls = [].concat(...FRAME_URL_SETS.filter(Boolean));
+            let _pwIdx = 0;
+            function _prewarm() {
+                if (_pwIdx < _allUrls.length) { _prewarmImg.src = _allUrls[_pwIdx++]; requestAnimationFrame(_prewarm); }
+            }
+            requestAnimationFrame(_prewarm);
 
             // Start loop — canvas draws notes each frame, no DOM manipulation needed
             animId = requestAnimationFrame(function startFrame(ts) {
