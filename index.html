@@ -19304,14 +19304,15 @@
             character.moraleItems.push(id);
             saveProgression();
 
-            // Step 2: Use immediately
+            // Step 2: For interactive items, defer reward to minigame completion
+            if (mItem.interactive) {
+                return { deferred: true }; // minigame will call boostMorale when done
+            }
+
+            // Step 2 (non-interactive): Use immediately
             const useResult = await boostMorale(character, id);
             if (!useResult) { showNotice('Bought but could not use item!'); return null; }
-
-            // Skip notice for interactive items — the minigame launching is the feedback
-            if (!mItem.interactive) {
-                showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale | +' + (mItem.xpGrant || 0) + ' XP');
-            }
+            showNotice(mItem.icon + ' +' + mItem.moraleRestore + ' Morale | +' + (mItem.xpGrant || 0) + ' XP');
             if (useResult.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
             return useResult;
         }
@@ -19580,7 +19581,7 @@
         // ─────────────────── MINI-GAME ENGINE ───────────────────
         let _activeMinigameCleanup = null;
 
-        function launchMinigame(itemId, itemIcon, itemName) {
+        function launchMinigame(itemId, itemIcon, itemName, character) {
             const mgScreen = document.getElementById('minigame-screen');
             const titleEl  = document.getElementById('minigame-title');
             const gameArea = document.getElementById('minigame-game-area');
@@ -19598,8 +19599,42 @@
             const uppercutFrames = (_fightImg?._uppercutFrames?.length ? _fightImg._uppercutFrames : null);
             const headbuttFrames = (_fightImg?._headbuttFrames?.length ? _fightImg._headbuttFrames : null);
             const staticSrc = _charImg?.src || null;
-            if (itemId === 'jump_training')    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc);
-            else if (itemId === 'punching_bag') _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames);
+
+            // Build reward callback — only when character is passed (real play, not test mode)
+            const mItem = character ? MORALE_ITEMS[itemId] : null;
+            const onResult = (mItem && character) ? async (scoreRatio) => {
+                const idx = (character.moraleItems || []).indexOf(itemId);
+                if (idx < 0) return;
+                if (scoreRatio <= 0) {
+                    // Failed minimum — item consumed, no morale reward
+                    character.moraleItems.splice(idx, 1);
+                    saveCharacters();
+                } else if (scoreRatio >= 1.0) {
+                    // Full reward — backend removes item and awards full moraleRestore + XP
+                    const result = await boostMorale(character, itemId);
+                    if (result?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                } else {
+                    // Partial reward — apply client-side then sync to Supabase
+                    const moraleGain = Math.round(mItem.moraleRestore * scoreRatio);
+                    const xpGain    = Math.round((mItem.xpGrant || 0) * scoreRatio);
+                    character.moraleItems.splice(idx, 1);
+                    character.morale = Math.min(MORALE_MAX, (character.morale ?? 0) + moraleGain);
+                    character.lastMoraleTimestamp = Date.now();
+                    saveCharacters();
+                    if (xpGain > 0) {
+                        const xpResult = addExpToCharacter(character.id, xpGain);
+                        if (xpResult?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                    }
+                    try { await syncCharacterToBackend(character); } catch(_) {}
+                }
+                updateMoraleDisplay(character);
+                updateLobbyCharacterDisplay();
+            } : null;
+
+            if (itemId === 'jump_training')
+                _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant);
+            else if (itemId === 'punching_bag')
+                _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant);
             mgScreen.classList.add('active');
         }
 
@@ -19627,15 +19662,61 @@
             return fill;
         }
 
-        function _mgLaunchJumpTraining(area, runFrames, staticSrc) {
-            const GW = 980, GH = 360;
-            const GROUND_Y = 295, PX = 110, PW = 80, PH = 100;
-            const GRAVITY = 1900, JUMP_VY = -700;
+        function _mgAudio() {
+            try {
+                const ac = new (window.AudioContext || window.webkitAudioContext)();
+                return {
+                    play(type) {
+                        try {
+                            if (ac.state === 'suspended') ac.resume();
+                            const g = ac.createGain(); g.connect(ac.destination);
+                            const t0 = ac.currentTime;
+                            if (type === 'jump') {
+                                const o = ac.createOscillator(); o.type = 'sine';
+                                o.frequency.setValueAtTime(190, t0);
+                                o.frequency.exponentialRampToValueAtTime(440, t0 + 0.13);
+                                g.gain.setValueAtTime(0.16, t0);
+                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+                                o.connect(g); o.start(t0); o.stop(t0 + 0.18);
+                            } else if (type === 'crash') {
+                                const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.25), ac.sampleRate);
+                                const d = buf.getChannelData(0);
+                                for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+                                const src = ac.createBufferSource(); src.buffer = buf;
+                                const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160; f.Q.value = 0.6;
+                                src.connect(f); f.connect(g);
+                                g.gain.setValueAtTime(0.5, t0);
+                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+                                src.start(t0);
+                            } else if (type === 'hit') {
+                                const o = ac.createOscillator(); o.type = 'sine';
+                                o.frequency.setValueAtTime(95, t0);
+                                o.frequency.exponentialRampToValueAtTime(38, t0 + 0.13);
+                                g.gain.setValueAtTime(0.32, t0);
+                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
+                                o.connect(g); o.start(t0); o.stop(t0 + 0.14);
+                            } else if (type === 'miss') {
+                                const o = ac.createOscillator(); o.type = 'square';
+                                o.frequency.setValueAtTime(155, t0);
+                                g.gain.setValueAtTime(0.08, t0);
+                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+                                o.connect(g); o.start(t0); o.stop(t0 + 0.09);
+                            }
+                        } catch(_) {}
+                    }
+                };
+            } catch(_) { return { play() {} }; }
+        }
+
+        function _mgLaunchJumpTraining(area, runFrames, staticSrc, onResult, maxMorale, maxXp) {
+            const GW = 980, GH = 430;
+            const GROUND_Y = 355, PX = 110, PW = 80, PH = 100;
+            const GRAVITY = 1900, JUMP_VY = -720;
             const SPRITE_FPS = 14;
             const CHAR_SINK = 22;
-            // Upper obstacle sits at this y-range: safe when grounded, hit when mid-jump
-            const UPPER_OBS_TOP = GROUND_Y - 165; // = 130 in canvas
+            const UPPER_OBS_TOP = GROUND_Y - 165;
             const UPPER_OBS_H   = 40;
+            const MIN_SCORE = 50, FULL_SCORE = 120;
 
             const canvas = document.createElement('canvas');
             canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
@@ -19643,14 +19724,15 @@
             const scoreEl = document.createElement('div'); scoreEl.className = 'mg-score'; scoreEl.textContent = 'SCORE: 0';
             area.appendChild(scoreEl);
             const hint = document.createElement('div'); hint.className = 'mg-hint';
-            hint.textContent = 'SPACE/CLICK TO JUMP  ·  JUMP OVER RED  ·  STAY DOWN FOR BLUE';
+            hint.textContent = 'SPACE/CLICK TO JUMP  ·  JUMP OVER RED  ·  STAY DOWN FOR BLUE' + (onResult ? '  ·  MIN ' + MIN_SCORE + ' pts for reward' : '  ·  TEST MODE');
             area.appendChild(hint);
 
+            const snd = _mgAudio();
             const ctx = canvas.getContext('2d');
             let elapsed = 0, lt = 0, score = 0, gameOver = false;
             let pY = 0, pVY = 0, grounded = true;
-            let obstacles = [], nextObs = 1.5, obsSpeed = 220;
-            let alive = true, deathTimer = 0;
+            let obstacles = [], nextObs = 1.4, obsSpeed = 260;
+            let alive = true, deathTimer = 0, crashSounded = false;
             let lastObsType = 'ground';
             let animId;
 
@@ -19662,7 +19744,10 @@
                 const img = new Image(); img.src = staticSrc; spriteFrames = [img];
             }
 
-            function jump() { if (!alive || gameOver) return; if (grounded) { pVY = JUMP_VY; grounded = false; } }
+            function jump() {
+                if (!alive || gameOver) return;
+                if (grounded) { pVY = JUMP_VY; grounded = false; snd.play('jump'); }
+            }
             canvas.addEventListener('click', jump);
             function onKey(e) { if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); jump(); } }
             document.addEventListener('keydown', onKey);
@@ -19672,11 +19757,27 @@
                 canvas.removeEventListener('click', jump);
                 document.removeEventListener('keydown', onKey);
                 area.innerHTML = '';
+                const scoreRatio = score >= FULL_SCORE ? 1.0 : score >= MIN_SCORE ? 0.5 : 0;
+                const titleColor = score < MIN_SCORE ? '#ef4444' : score >= FULL_SCORE ? '#4ade80' : '#fbbf24';
+                const titleText  = score < MIN_SCORE ? 'KEEP TRAINING!' : score >= FULL_SCORE ? 'EXCELLENT!' : 'TRAINING DONE!';
+                let rewardLine = '';
+                if (onResult) {
+                    if (scoreRatio <= 0) {
+                        rewardLine = '<div class="mg-result-score" style="color:#555">SCORE TOO LOW — no reward</div>' +
+                            '<div class="mg-hint">reach ' + MIN_SCORE + ' pts to earn morale</div>';
+                    } else {
+                        const mg = Math.round((maxMorale || 12) * scoreRatio);
+                        const xg = Math.round((maxXp || 6) * scoreRatio);
+                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + mg + ' MORALE · +' + xg + ' XP EARNED</div>';
+                    }
+                } else {
+                    rewardLine = '<div class="mg-hint">TEST MODE — no reward given</div>';
+                }
                 const r = document.createElement('div'); r.className = 'mg-result';
-                r.innerHTML = '<div class="mg-result-title">TRAINING COMPLETE!</div>' +
-                    '<div class="mg-result-score">OBSTACLES CLEARED: ' + score + '</div>' +
-                    '<div class="mg-hint">MORALE & XP ALREADY REWARDED</div>';
+                r.innerHTML = '<div class="mg-result-title" style="color:' + titleColor + '">' + titleText + '</div>' +
+                    '<div class="mg-result-score">OBSTACLES CLEARED: ' + score + '</div>' + rewardLine;
                 area.appendChild(r);
+                if (onResult) onResult(scoreRatio);
             }
 
             function loop(ts) {
@@ -19684,10 +19785,11 @@
                 const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
                 if (!gameOver) {
                     elapsed += dt;
-                    // Gentle speed ramp — 100 pts is achievable for a skilled player
-                    obsSpeed = 220 + Math.min(elapsed * 1.5, 90) + Math.min(score * 1.5, 90);
+                    // Aggressive speed ramp — feels clearly faster over time
+                    obsSpeed = 260 + Math.min(elapsed * 10, 220) + Math.min(score * 3.5, 160);
 
                     if (!alive) {
+                        if (!crashSounded) { crashSounded = true; snd.play('crash'); }
                         deathTimer += dt;
                         if (deathTimer > 0.7) { gameOver = true; endGame(); return; }
                     } else {
@@ -19695,23 +19797,23 @@
                             pVY += GRAVITY * dt; pY += pVY * dt;
                             if (pY >= 0) { pY = 0; pVY = 0; grounded = true; }
                         }
-                        // Only animate while grounded — freeze on first frame when airborne
                         if (grounded && spriteFrames.length > 1) {
                             spriteTimer += dt;
                             if (spriteTimer >= 1 / SPRITE_FPS) { spriteTimer = 0; spriteIdx = (spriteIdx + 1) % spriteFrames.length; }
                         }
                         nextObs -= dt;
                         if (nextObs <= 0) {
-                            // Upper obstacles appear after score 5, never two in a row
-                            const spawnUpper = score >= 5 && lastObsType !== 'upper' && Math.random() < 0.28;
+                            // Upper obstacles from score 3, higher probability, variable heights
+                            const spawnUpper = score >= 3 && lastObsType !== 'upper' && Math.random() < 0.40;
                             if (spawnUpper) {
                                 obstacles.push({ x: GW + 10, w: 22, upper: true });
                                 lastObsType = 'upper';
                             } else {
-                                obstacles.push({ x: GW + 10, w: 22, h: 38 + Math.random() * 32 });
+                                obstacles.push({ x: GW + 10, w: 22, h: 36 + Math.random() * 40 });
                                 lastObsType = 'ground';
                             }
-                            nextObs = Math.max(0.8, 1.3 + Math.random() * 0.5 - score * 0.005);
+                            // Gap shrinks aggressively with score
+                            nextObs = Math.max(0.38, 1.15 + Math.random() * 0.35 - score * 0.018);
                         }
                         const kept = [];
                         for (const o of obstacles) {
@@ -19753,15 +19855,12 @@
                 // Obstacles
                 for (const o of obstacles) {
                     if (o.upper) {
-                        // Pipe from top of screen down to obstacle
                         ctx.fillStyle = '#1e3a5f';
                         ctx.fillRect(o.x + o.w / 2 - 2, 0, 4, UPPER_OBS_TOP);
-                        // Body
                         const ug = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
                         ug.addColorStop(0, '#1d4ed8'); ug.addColorStop(0.5, '#3b82f6'); ug.addColorStop(1, '#1d4ed8');
                         ctx.fillStyle = ug;
                         _mgRoundRect(ctx, o.x, UPPER_OBS_TOP, o.w, UPPER_OBS_H, 4); ctx.fill();
-                        // Warning stripes at bottom edge
                         ctx.fillStyle = 'rgba(255,210,0,0.4)';
                         ctx.fillRect(o.x + 3, UPPER_OBS_TOP + UPPER_OBS_H - 8, o.w - 6, 4);
                     } else {
@@ -19797,11 +19896,12 @@
             return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', jump); document.removeEventListener('keydown', onKey); };
         }
 
-        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs) {
+        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs, onResult, maxMorale, maxXp) {
             // ── Constants ─────────────────────────────────────────────────────────
-            const DURATION   = 30;
+            const DURATION        = 30;
             const GW = 680, GH = 410;
-            const NOTE_SPEED = 166;
+            const NOTE_SPEED_BASE = 145;  // starts slower
+            const NOTE_SPEED_RAMP = 4.5;  // px/s per elapsed second → ~280 at end
             const COL_LEFT   = 560;
             const COL_W      = 108;
             const NOTE_W     = 93;
@@ -19823,26 +19923,29 @@
             let   bagDrawH    = 344;
             let   bagAngle = 0, bagVel = 0;
 
+            const snd = _mgAudio();
+
             // ── Frame URL sets (used directly as img.src — browser caches them) ───
             const FRAME_URL_SETS = [punchFrameURLs, kickFrameURLs, uppercutFrameURLs];
-            const _idleUrls = FRAME_URL_SETS.find(s => s?.length) || null; // cached once
+            const _idleUrls = FRAME_URL_SETS.find(s => s?.length) || null;
             let animLane = -1, spriteIdx = 0, spriteTimer = 0;
             const FRAME_DT = 0.065;
             let _charSrc = '';
-            let _lastCombo = -1; // cache to avoid redundant color writes
+            let _lastCombo = -1;
 
             // ── Notes ─────────────────────────────────────────────────────────────
-            function noteY(n) { return -NOTE_H + NOTE_SPEED * (elapsed - n.spawnTime); }
+            // canvasY: actual canvas pixel Y (undefined until spawned, then tracked per-frame)
+            // attempted: true = wasted early press, note can no longer be hit
             function genSequence() {
                 const seq = [];
                 let t = 1.5;
                 while (t < DURATION - 0.5) {
-                    seq.push({ lane: Math.floor(Math.random() * 3), spawnTime: t, hit: false, miss: false });
+                    seq.push({ lane: Math.floor(Math.random() * 3), spawnTime: t, hit: false, miss: false, attempted: false, canvasY: undefined });
                     if (Math.random() < 0.25) {
                         t += 0.3 + Math.random() * 0.14;
                         if (t < DURATION - 0.5) {
                             let nl; do { nl = Math.floor(Math.random() * 3); } while (nl === seq[seq.length-1].lane);
-                            seq.push({ lane: nl, spawnTime: t, hit: false, miss: false });
+                            seq.push({ lane: nl, spawnTime: t, hit: false, miss: false, attempted: false, canvasY: undefined });
                         }
                     }
                     t += 0.85 + Math.random() * 0.55;
@@ -19915,7 +20018,7 @@
 
             const bagEl = document.createElement('img');
             bagEl.src = 'Assets/UI/Punching-Bag.png';
-            bagEl.style.cssText = 'position:absolute;left:' + (-BAG_W/2) + 'px;top:' + BAG_ROPE + 'px;width:' + BAG_W + 'px;height:auto;image-rendering:auto;user-select:none;-webkit-user-drag:none;';
+            bagEl.style.cssText = 'position:absolute;left:' + (-BAG_W/2) + 'px;top:' + BAG_ROPE + 'px;width:' + BAG_W + 'px;height:auto;image-rendering:auto;user-select:none;-webkit-user-drag:none;transition:transform 0.18s ease-in-out;';
             bagEl.draggable = false;
             bagEl.onload = () => {
                 if (bagEl.naturalWidth > 0) {
@@ -19986,7 +20089,7 @@
 
             const hint = document.createElement('div');
             hint.className = 'mg-hint';
-            hint.textContent = 'PRESS Q / W / E WHEN THE LETTER IS INSIDE THE BOX';
+            hint.textContent = 'PRESS Q/W/E WHEN THE LETTER IS IN THE BOX — ONE PRESS PER NOTE' + (onResult ? '  ·  MIN 40% for reward' : '  ·  TEST MODE');
             area.appendChild(hint);
 
             // ── Helpers ───────────────────────────────────────────────────────────
@@ -20011,31 +20114,46 @@
                 setTimeout(() => { if (btnEls[i]) btnEls[i].style.background = LANE_COLORS[i] + '22'; }, 120);
             }
 
-            // ── Hit logic ─────────────────────────────────────────────────────────
+            function squishBag() {
+                bagEl.style.transition = 'transform 0.07s ease-out';
+                bagEl.style.transform = 'scaleY(0.84) scaleX(1.09)';
+                setTimeout(() => { bagEl.style.transition = 'transform 0.22s ease-in-out'; bagEl.style.transform = ''; }, 80);
+            }
+
+            // ── Hit logic — one attempt per note per key press ────────────────────
             function tryHit(lane) {
                 if (gameOver) return;
                 flashBtn(lane);
-                let best = null, bestDist = Infinity;
-                for (const n of notes) {
-                    if (n.hit || n.miss || n.lane !== lane) continue;
-                    const dist = Math.abs(noteY(n) + NOTE_H / 2 - HIT_CY);
-                    if (dist <= HIT_WINDOW && dist < bestDist) { best = n; bestDist = dist; }
+                // Find the first pending (non-done, non-attempted) note for this lane
+                const pending = notes.find(n => !n.hit && !n.miss && !n.attempted && n.lane === lane);
+                if (!pending) return;
+                const cy = pending.canvasY;
+                if (cy !== undefined && Math.abs(cy + NOTE_H / 2 - HIT_CY) <= HIT_WINDOW) {
+                    // In window → HIT
+                    pending.hit = true;
+                    hits++; combo++;
+                    maxCombo = Math.max(maxCombo, combo);
+                    statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
+                    animLane = lane; spriteIdx = 0; spriteTimer = 0;
+                    // Heavier impulse + squish for weight feel
+                    bagVel -= (lane >= 2 ? 2.2 : 1.7) + Math.min(combo - 1, 8) * 0.12;
+                    squishBag();
+                    snd.play('hit');
+                    const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
+                    const qual = dist < 9 ? 'PERFECT!' : dist < 20 ? 'GREAT!' : 'GOOD';
+                    const qcol = dist < 9 ? '#fbbf24' : dist < 20 ? '#22c55e' : '#60a5fa';
+                    const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
+                    const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
+                    addFloatingText(qual, bpx, bpy + Math.round(bagDrawH * 0.25), qcol);
+                } else if (cy === undefined || cy + NOTE_H / 2 < HIT_CY - HIT_WINDOW) {
+                    // Too early — wasted press, note can no longer be hit
+                    pending.attempted = true;
                 }
-                if (!best) return;
-                best.hit = true; // canvas will skip it next frame
-                hits++; combo++;
-                maxCombo = Math.max(maxCombo, combo);
-                statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
-                animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                bagVel -= (lane >= 2 ? 1.2 : 0.95) + Math.min(combo - 1, 8) * 0.07;
-                const qual = bestDist < 9 ? 'PERFECT!' : bestDist < 20 ? 'GREAT!' : 'GOOD';
-                const qcol = bestDist < 9 ? '#fbbf24' : bestDist < 20 ? '#22c55e' : '#60a5fa';
-                const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
-                const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
-                addFloatingText(qual, bpx, bpy + Math.round(bagDrawH * 0.25), qcol);
+                // If past window: note already auto-missed by the loop, ignore silently
             }
 
             function onKey(e) {
+                if (e.repeat) return; // block held-key spam
                 const i = LANE_KEYS.indexOf(e.key.toLowerCase());
                 if (i >= 0) { e.preventDefault(); tryHit(i); }
             }
@@ -20048,14 +20166,29 @@
                 window.removeEventListener('resize', applyScale);
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
-                const rating = acc >= 90 ? 'PERFECT!' : acc >= 70 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
+                const scoreRatio = acc >= 75 ? 1.0 : acc >= 40 ? 0.5 : 0;
+                const rating = acc >= 90 ? 'PERFECT!' : acc >= 75 ? 'GREAT!' : acc >= 40 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
+                let rewardLine = '';
+                if (onResult) {
+                    if (scoreRatio <= 0) {
+                        rewardLine = '<div class="mg-result-score" style="color:#555">ACCURACY TOO LOW — no reward</div>' +
+                            '<div class="mg-hint">reach 40% accuracy to earn morale</div>';
+                    } else {
+                        const mg = Math.round((maxMorale || 12) * scoreRatio);
+                        const xg = Math.round((maxXp || 6) * scoreRatio);
+                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + mg + ' MORALE · +' + xg + ' XP EARNED</div>';
+                    }
+                } else {
+                    rewardLine = '<div class="mg-hint">TEST MODE — no reward given</div>';
+                }
                 const r = document.createElement('div'); r.className = 'mg-result';
                 r.innerHTML = '<div class="mg-result-title">' + rating + '</div>' +
                     '<div class="mg-result-score">HITS: ' + hits + ' / ' + TOTAL_NOTES + '</div>' +
                     '<div class="mg-result-score">ACCURACY: ' + acc + '%</div>' +
                     '<div class="mg-result-score">BEST COMBO: ×' + maxCombo + '</div>' +
-                    '<div class="mg-hint">MORALE & XP ALREADY REWARDED</div>';
+                    rewardLine;
                 area.appendChild(r);
+                if (onResult) onResult(scoreRatio);
             }
 
             // ── Main loop (minimal canvas work: only 108×410 note column) ─────────
@@ -20071,12 +20204,21 @@
                     timerFill.style.transform = 'scaleX(' + Math.max(0, 1 - elapsed / DURATION).toFixed(4) + ')';
                     if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
 
+                    // Advance each note's canvas position at current speed
+                    const noteSpeedNow = NOTE_SPEED_BASE + elapsed * NOTE_SPEED_RAMP;
                     for (const n of notes) {
                         if (n.hit || n.miss) continue;
-                        if (noteY(n) + NOTE_H / 2 > HIT_CY + HIT_WINDOW) {
+                        if (elapsed >= n.spawnTime && n.canvasY === undefined) n.canvasY = -NOTE_H;
+                        if (n.canvasY !== undefined) n.canvasY += noteSpeedNow * dt;
+                    }
+
+                    for (const n of notes) {
+                        if (n.hit || n.miss || n.canvasY === undefined) continue;
+                        if (n.canvasY + NOTE_H / 2 > HIT_CY + HIT_WINDOW) {
                             n.miss = true; misses++; combo = 0;
                             statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
                             addFloatingText('MISS', COL_LEFT + COL_W / 2, HIT_CY, '#666');
+                            snd.play('miss');
                         }
                     }
 
@@ -20089,8 +20231,9 @@
                         }
                     }
 
-                    bagVel -= Math.sin(bagAngle) * 11 * dt;
-                    bagVel *= Math.exp(-2.2 * dt);
+                    // Heavier bag: less restoring force, less damping = slower but weightier swings
+                    bagVel -= Math.sin(bagAngle) * 8 * dt;
+                    bagVel *= Math.exp(-1.3 * dt);
                     bagAngle += bagVel * dt;
                 }
 
@@ -20123,17 +20266,18 @@
                 // ── Notes canvas: clear + draw only currently-visible notes ──────
                 nctx.clearRect(0, 0, COL_W, GH);
 
-                // Hit zone pulse when a note is approaching
+                // Hit zone pulse when a live (non-attempted) note is approaching
                 let _noteInZone = false;
                 for (const n of notes) {
-                    if (!n.hit && !n.miss && Math.abs(noteY(n) + NOTE_H / 2 - HIT_CY) < HIT_H) { _noteInZone = true; break; }
+                    if (!n.hit && !n.miss && !n.attempted && n.canvasY !== undefined &&
+                        Math.abs(n.canvasY + NOTE_H / 2 - HIT_CY) < HIT_H) { _noteInZone = true; break; }
                 }
                 hzEl.style.borderColor = _noteInZone ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
                 hzEl.style.boxShadow   = _noteInZone ? '0 0 12px rgba(255,220,60,0.4),inset 0 0 10px rgba(255,220,60,0.07)' : '';
 
                 for (const n of notes) {
-                    if (n.hit) continue;
-                    const ny = noteY(n);
+                    if (n.hit || n.canvasY === undefined) continue;
+                    const ny = n.canvasY;
                     if (ny < -NOTE_H || ny > GH) continue;
                     const col = LANE_COLORS[n.lane];
                     if (n.miss) {
@@ -20144,9 +20288,22 @@
                         nctx.strokeStyle = '#333350';
                         nctx.lineWidth = 2;
                         nctx.stroke();
+                    } else if (n.attempted) {
+                        // Wasted early press — show darkened with ✕ so player knows
+                        nctx.beginPath();
+                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
+                        nctx.fillStyle = '#1c0e0e';
+                        nctx.fill();
+                        nctx.strokeStyle = '#7f1d1d';
+                        nctx.lineWidth = 2;
+                        nctx.stroke();
+                        nctx.fillStyle = '#ef4444aa';
+                        nctx.font = 'bold 15px monospace';
+                        nctx.textAlign = 'center';
+                        nctx.textBaseline = 'middle';
+                        nctx.fillText('✕', COL_W / 2, ny + NOTE_H / 2);
                     } else {
                         const inZone = Math.abs(ny + NOTE_H / 2 - HIT_CY) < HIT_H / 2 + NOTE_H / 2;
-                        // Outer glow when in hit zone
                         if (inZone) {
                             nctx.save();
                             nctx.shadowColor = col;
@@ -20157,7 +20314,6 @@
                             nctx.fill();
                             nctx.restore();
                         }
-                        // Body gradient
                         const grad = nctx.createLinearGradient(0, ny, 0, ny + NOTE_H);
                         grad.addColorStop(0, col + 'ee');
                         grad.addColorStop(1, col + '44');
@@ -20165,16 +20321,13 @@
                         nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
                         nctx.fillStyle = grad;
                         nctx.fill();
-                        // Border
                         nctx.strokeStyle = inZone ? 'rgba(255,255,255,0.85)' : col;
                         nctx.lineWidth = inZone ? 2.5 : 2;
                         nctx.stroke();
-                        // Shine strip
                         nctx.fillStyle = 'rgba(255,255,255,0.22)';
                         nctx.beginPath();
                         nctx.roundRect(noteNX + 5, ny + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
                         nctx.fill();
-                        // Key letter
                         nctx.font = 'bold 17px monospace';
                         nctx.textAlign = 'center';
                         nctx.textBaseline = 'middle';
@@ -20187,21 +20340,19 @@
                 }
             }
 
-            // Pre-warm sprite blob URL decode — set every unique URL once before loop starts
-            // so first in-game src change never triggers a cold PNG decode stall
+            // Pre-warm: decode all sprite frames before starting the loop to prevent the
+            // initial FPS spike from simultaneous PNG decoding + layout paint.
             const _prewarmImg = new Image();
             const _allUrls = [].concat(...FRAME_URL_SETS.filter(Boolean));
             let _pwIdx = 0;
+            function _startLoop() {
+                animId = requestAnimationFrame(function startFrame(ts) { lt = ts; animId = requestAnimationFrame(loop); });
+            }
             function _prewarm() {
                 if (_pwIdx < _allUrls.length) { _prewarmImg.src = _allUrls[_pwIdx++]; requestAnimationFrame(_prewarm); }
+                else { _startLoop(); }
             }
-            requestAnimationFrame(_prewarm);
-
-            // Start loop — canvas draws notes each frame, no DOM manipulation needed
-            animId = requestAnimationFrame(function startFrame(ts) {
-                lt = ts;
-                animId = requestAnimationFrame(loop);
-            });
+            if (_allUrls.length > 0) { requestAnimationFrame(_prewarm); } else { _startLoop(); }
 
             return () => {
                 cancelAnimationFrame(animId);
@@ -20378,19 +20529,19 @@
                             if (!confirmed) return;
                             btn.disabled = true;
                             btn.textContent = '...';
-                            await buyAndBoostMorale(character, id);
+                            const _buyRes = await buyAndBoostMorale(character, id);
                             renderCarePanel();
                             updateMoraleDisplay(character);
                             updateLobbyCharacterDisplay();
-                            if (isInteractive) {
-                                launchMinigame(id, mItem.icon, mItem.name);
+                            if (isInteractive && _buyRes !== null) {
+                                launchMinigame(id, mItem.icon, mItem.name, character);
                             }
                         });
                     }
                     // TEST button always available for interactive items regardless of state
                     if (isInteractive) {
                         const testBtn = row.querySelector('.care-activity-test-btn');
-                        if (testBtn) testBtn.addEventListener('click', () => launchMinigame(id, mItem.icon, mItem.name));
+                        if (testBtn) testBtn.addEventListener('click', () => launchMinigame(id, mItem.icon, mItem.name)); // no character = test mode
                     }
                     list.appendChild(row);
                 });
