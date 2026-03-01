@@ -20173,10 +20173,16 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Heavy bag: minimal swing, weight felt via squish+damping
-                    bagVel -= (lane >= 2 ? 1.1 : 0.85) + Math.min(combo - 1, 8) * 0.07;
-                    squishBag();
                     snd.play('hit');
+                    // Delay bag impact to match when the fist actually reaches the bag:
+                    // uppercut takes longer (arm travels up), punch/kick are quicker
+                    const comboNow = combo;
+                    const impactDelay = lane === 2 ? 200 : 70;
+                    setTimeout(() => {
+                        if (gameOver) return;
+                        bagVel -= (lane >= 2 ? 1.1 : 0.85) + Math.min(comboNow - 1, 8) * 0.07;
+                        squishBag();
+                    }, impactDelay);
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
                     const qual = dist < 9 ? 'PERFECT!' : dist < 20 ? 'GREAT!' : 'GOOD';
                     const qcol = dist < 9 ? '#fbbf24' : dist < 20 ? '#22c55e' : '#60a5fa';
@@ -20374,12 +20380,18 @@
                 }
             }
 
-            // Pre-warm: decode each sprite frame fully (wait onload) before advancing.
-            // Batching all src assignments at once would fire simultaneous PNG decodes,
-            // causing the spike when the game loop first runs.
-            const _allUrls = [].concat(...FRAME_URL_SETS.filter(Boolean));
+            // Loading overlay — shown during prewarm so game starts with no FPS spike
+            const _loadEl = document.createElement('div');
+            _loadEl.style.cssText = 'position:absolute;inset:0;background:#07070f;display:flex;align-items:center;justify-content:center;font:bold 13px "Press Start 2P",monospace;color:#7c3aed;letter-spacing:2px;z-index:50;';
+            _loadEl.textContent = 'LOADING...';
+            gameArea.appendChild(_loadEl);
+
+            // Pre-warm: decode bag image + all sprite frames sequentially before starting.
+            // Includes Punching-Bag.png which is NOT a blob URL but still needs decode.
+            const _allUrls = ['Assets/UI/Punching-Bag.png', ...([].concat(...FRAME_URL_SETS.filter(Boolean)))];
             let _pwIdx = 0;
             function _startLoop() {
+                _loadEl.remove();
                 animId = requestAnimationFrame(function startFrame(ts) { lt = ts; animId = requestAnimationFrame(loop); });
             }
             function _prewarm() {
