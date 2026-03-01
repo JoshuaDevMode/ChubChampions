@@ -20161,8 +20161,8 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Very heavy bag: big impulse, extreme damping
-                    bagVel -= (lane >= 2 ? 5.0 : 4.0) + Math.min(combo - 1, 8) * 0.22;
+                    // Heavy bag: small swing (doesn't drift away), weight felt via squish+damping
+                    bagVel -= (lane >= 2 ? 1.6 : 1.2) + Math.min(combo - 1, 8) * 0.08;
                     squishBag();
                     snd.play('hit');
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
