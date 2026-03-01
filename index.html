@@ -9738,12 +9738,12 @@
         const MORALE_ITEMS = {
             music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 5,  icon: '🎵' },
             comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 6,  icon: '📖' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 3,  icon: '🥊', interactive: true },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
             energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, xpGrant: 8,  price: 10, icon: '⚡' },
             pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 13, icon: '📣' },
             movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 17, icon: '🎬' },
             champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 28, icon: '👑' },
-            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 12, xpGrant: 6,  price: 3,  icon: '🏃', interactive: true },
+            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🏃', interactive: true, maxStack: 3 },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -19603,31 +19603,28 @@
 
             // Build reward callback — only when character is passed (real play, not test mode)
             const mItem = character ? MORALE_ITEMS[itemId] : null;
-            const onResult = (mItem && character) ? async (scoreRatio) => {
+            const onResult = (mItem && character) ? async (rawValue) => {
                 const idx = (character.moraleItems || []).indexOf(itemId);
                 if (idx < 0) return;
-                if (scoreRatio <= 0) {
-                    // Failed minimum — item consumed, no morale reward
-                    character.moraleItems.splice(idx, 1);
-                    saveCharacters();
-                } else if (scoreRatio >= 1.0) {
-                    // Full reward — backend removes item and awards full moraleRestore + XP
-                    const result = await boostMorale(character, itemId);
-                    if (result?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                } else {
-                    // Partial reward — apply client-side then sync to Supabase
-                    const moraleGain = Math.round(mItem.moraleRestore * scoreRatio);
-                    const xpGain    = Math.round((mItem.xpGrant || 0) * scoreRatio);
-                    character.moraleItems.splice(idx, 1);
+                let moraleGain = 0, xpGain = 0;
+                if (itemId === 'jump_training') {
+                    const score = rawValue;
+                    if (score >= 50) { moraleGain = Math.min(10, 5 + Math.floor((score - 50) / 10)); xpGain = 5; }
+                } else if (itemId === 'punching_bag') {
+                    const acc = rawValue;
+                    if (acc >= 50) { moraleGain = Math.min(10, Math.max(5, Math.floor(acc / 10))); xpGain = 5; }
+                }
+                character.moraleItems.splice(idx, 1);
+                if (moraleGain > 0) {
                     character.morale = Math.min(MORALE_MAX, (character.morale ?? 0) + moraleGain);
                     character.lastMoraleTimestamp = Date.now();
-                    saveCharacters();
-                    if (xpGain > 0) {
-                        const xpResult = addExpToCharacter(character.id, xpGain);
-                        if (xpResult?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                    }
-                    try { await syncCharacterToBackend(character); } catch(_) {}
                 }
+                saveCharacters();
+                if (xpGain > 0) {
+                    const xpResult = addExpToCharacter(character.id, xpGain);
+                    if (xpResult?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                }
+                try { await syncCharacterToBackend(character); } catch(_) {}
                 updateMoraleDisplay(character);
                 updateLobbyCharacterDisplay();
             } : null;
@@ -19783,18 +19780,17 @@
                 canvas.removeEventListener('click', jump);
                 document.removeEventListener('keydown', onKey);
                 area.innerHTML = '';
-                const scoreRatio = score >= FULL_SCORE ? 1.0 : score >= MIN_SCORE ? 0.5 : 0;
-                const titleColor = score < MIN_SCORE ? '#ef4444' : score >= FULL_SCORE ? '#4ade80' : '#fbbf24';
-                const titleText  = score < MIN_SCORE ? 'KEEP TRAINING!' : score >= FULL_SCORE ? 'EXCELLENT!' : 'TRAINING DONE!';
+                const moraleGain = score < 50 ? 0 : Math.min(10, 5 + Math.floor((score - 50) / 10));
+                const xpGain = moraleGain > 0 ? 5 : 0;
+                const titleColor = moraleGain === 0 ? '#ef4444' : moraleGain >= 10 ? '#4ade80' : '#fbbf24';
+                const titleText  = moraleGain === 0 ? 'KEEP TRAINING!' : moraleGain >= 10 ? 'EXCELLENT!' : 'TRAINING DONE!';
                 let rewardLine = '';
                 if (onResult) {
-                    if (scoreRatio <= 0) {
+                    if (moraleGain <= 0) {
                         rewardLine = '<div class="mg-result-score" style="color:#555">SCORE TOO LOW — no reward</div>' +
-                            '<div class="mg-hint">reach ' + MIN_SCORE + ' pts to earn morale</div>';
+                            '<div class="mg-hint">reach 50 pts to earn morale</div>';
                     } else {
-                        const mg = Math.round((maxMorale || 12) * scoreRatio);
-                        const xg = Math.round((maxXp || 6) * scoreRatio);
-                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + mg + ' MORALE · +' + xg + ' XP EARNED</div>';
+                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + moraleGain + ' MORALE · +' + xpGain + ' XP EARNED</div>';
                     }
                 } else {
                     rewardLine = '<div class="mg-hint">TEST MODE — no reward given</div>';
@@ -19803,7 +19799,7 @@
                 r.innerHTML = '<div class="mg-result-title" style="color:' + titleColor + '">' + titleText + '</div>' +
                     '<div class="mg-result-score">OBSTACLES CLEARED: ' + score + '</div>' + rewardLine;
                 area.appendChild(r);
-                if (onResult) onResult(scoreRatio);
+                if (onResult) onResult(score);
             }
 
             function loop(ts) {
@@ -20212,17 +20208,16 @@
                 window.removeEventListener('resize', applyScale);
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
-                const scoreRatio = acc >= 75 ? 1.0 : acc >= 40 ? 0.5 : 0;
-                const rating = acc >= 90 ? 'PERFECT!' : acc >= 75 ? 'GREAT!' : acc >= 40 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
+                const moraleGain = acc < 50 ? 0 : Math.min(10, Math.max(5, Math.floor(acc / 10)));
+                const xpGain = moraleGain > 0 ? 5 : 0;
+                const rating = acc >= 90 ? 'PERFECT!' : acc >= 75 ? 'GREAT!' : acc >= 50 ? 'GOOD EFFORT!' : 'KEEP TRAINING!';
                 let rewardLine = '';
                 if (onResult) {
-                    if (scoreRatio <= 0) {
+                    if (moraleGain <= 0) {
                         rewardLine = '<div class="mg-result-score" style="color:#555">ACCURACY TOO LOW — no reward</div>' +
-                            '<div class="mg-hint">reach 40% accuracy to earn morale</div>';
+                            '<div class="mg-hint">reach 50% accuracy to earn morale</div>';
                     } else {
-                        const mg = Math.round((maxMorale || 12) * scoreRatio);
-                        const xg = Math.round((maxXp || 6) * scoreRatio);
-                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + mg + ' MORALE · +' + xg + ' XP EARNED</div>';
+                        rewardLine = '<div class="mg-result-score" style="color:#c4b5fd">+' + moraleGain + ' MORALE · +' + xpGain + ' XP EARNED</div>';
                     }
                 } else {
                     rewardLine = '<div class="mg-hint">TEST MODE — no reward given</div>';
@@ -20234,7 +20229,7 @@
                     '<div class="mg-result-score">BEST COMBO: ×' + maxCombo + '</div>' +
                     rewardLine;
                 area.appendChild(r);
-                if (onResult) onResult(scoreRatio);
+                if (onResult) onResult(acc);
             }
 
             // ── Main loop (minimal canvas work: only 108×410 note column) ─────────
@@ -20544,7 +20539,9 @@
                     const cooldown = getItemCooldownRemaining(id);
                     const onCooldown = cooldown > 0;
                     const canAfford = globalTokens >= mItem.price;
-                    const disabled = atMax || onCooldown || !canAfford || shopFull;
+                    const ownedCount = (character.moraleItems || []).filter(i => i === id).length;
+                    const atMaxStack = mItem.maxStack != null && ownedCount >= mItem.maxStack;
+                    const disabled = atMax || onCooldown || !canAfford || shopFull || atMaxStack;
 
                     const row = document.createElement('div');
                     row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
@@ -20553,6 +20550,8 @@
                     let rightEl;
                     if (atMax) {
                         rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
+                    } else if (atMaxStack) {
+                        rightEl = '<span class="care-activity-cooldown-text">' + ownedCount + '/' + mItem.maxStack + ' STACKED</span>';
                     } else if (shopFull) {
                         rightEl = '<span class="care-activity-cooldown-text">LIMIT 3/3</span>';
                     } else {
@@ -20561,11 +20560,14 @@
                     }
 
                     const testBtnHtml = isInteractive ? '<button class="care-activity-test-btn">🧪 TEST</button>' : '';
+                    const moraleStatText = mItem.maxStack != null
+                        ? '5-' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP'
+                        : '+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP';
                     row.innerHTML =
                         '<span class="care-activity-icon">' + mItem.icon + '</span>' +
                         '<div class="care-activity-info">' +
                             '<div class="care-activity-name">' + mItem.name + '</div>' +
-                            '<div class="care-activity-stats">+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP</div>' +
+                            '<div class="care-activity-stats">' + moraleStatText + '</div>' +
                         '</div>' +
                         rightEl + testBtnHtml;
 
