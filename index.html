@@ -19428,6 +19428,32 @@
         // ─────────── LOBBY SPRITE PRE-LOADER ───────────────────
         let _lobbySpritesLoaded = false;
 
+        // Fetches a URL while reporting real download progress [0..1] via onProgress.
+        // Returns an object URL pointing to the downloaded bytes.
+        // Falls back to the original URL if fetch or streaming fails.
+        async function _fetchWithProgress(url, onProgress) {
+            let response;
+            try { response = await fetch(url); } catch(e) { return url; }
+            if (!response.ok) return url;
+
+            const contentLength = +(response.headers.get('Content-Length') || 0);
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+
+            while (true) {
+                let done, value;
+                try { ({ done, value } = await reader.read()); } catch(e) { break; }
+                if (done) break;
+                chunks.push(value);
+                received += value.length;
+                if (contentLength > 0) onProgress(received / contentLength);
+            }
+
+            const blob = new Blob(chunks);
+            return URL.createObjectURL(blob);
+        }
+
         // Smooth lobby progress: animates 1% at a time toward target using setTimeout
         // (setTimeout continues when tab is hidden, unlike requestAnimationFrame)
         let _lloDisplayPct = 0;
@@ -19478,7 +19504,9 @@
                 _animDone = true;
                 _lloSetTarget(14, 'LOADING WEAPONS...');
 
-                // Phase 2 (14–96%): preload ALL weapons from WEAPON_TIERS.
+                // Phase 2 (14–96%): preload ALL weapons with real download progress.
+                // Each weapon occupies an equal slice of the bar.
+                // Within each slice: first half = Run sheet download, second half = Attack sheet.
                 const allWeapons = [];
                 Object.values(WEAPON_TIERS).forEach(tierList => {
                     tierList.forEach(w => {
@@ -19486,19 +19514,47 @@
                     });
                 });
 
-                const total = allWeapons.length;
+                const total   = allWeapons.length;
+                const perWeap = 82 / total; // bar % each weapon occupies
+
                 for (let i = 0; i < total; i++) {
-                    const weapon = allWeapons[i];
-                    const pct = 14 + ((i + 1) / total) * 82;
-                    _lloSetTarget(Math.round(pct), 'WEAPONS...');
-                    if (!_weaponRunFramesCache[weapon.id]) {
-                        try { _weaponRunFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
+                    const weapon  = allWeapons[i];
+                    const wStart  = 14 + i * perWeap;
+                    const wMid    = wStart + perWeap * 0.5;
+                    const wEnd    = wStart + perWeap;
+
+                    const runCached    = !!_weaponRunFramesCache[weapon.id];
+                    const attackCached = !!_weaponAttackFramesCache[weapon.id];
+
+                    if (runCached && attackCached) {
+                        // Already cached — jump straight to end of this weapon's slot
+                        _lloSetTarget(Math.round(wEnd), 'WEAPONS...');
+                        continue;
+                    }
+
+                    // ── Run sprite sheet ──────────────────────────────
+                    if (!runCached) {
+                        const runUrl = weapon.img.replace('.png', ' Run.png');
+                        const runBlob = await _fetchWithProgress(runUrl, p => {
+                            _lloSetTarget(Math.round(wStart + p * perWeap * 0.5), 'WEAPONS...');
+                        });
+                        try { _weaponRunFramesCache[weapon.id] = await extractFrames(runBlob, 5, 2); }
                         catch(e) { _weaponRunFramesCache[weapon.id] = []; }
+                        if (runBlob !== runUrl) URL.revokeObjectURL(runBlob);
                     }
-                    if (!_weaponAttackFramesCache[weapon.id]) {
-                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Attack.png'), 4, 2); }
+                    _lloSetTarget(Math.round(wMid), 'WEAPONS...');
+
+                    // ── Attack sprite sheet ───────────────────────────
+                    if (!attackCached) {
+                        const attackUrl = weapon.img.replace('.png', ' Attack.png');
+                        const attackBlob = await _fetchWithProgress(attackUrl, p => {
+                            _lloSetTarget(Math.round(wMid + p * perWeap * 0.5), 'WEAPONS...');
+                        });
+                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(attackBlob, 4, 2); }
                         catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
+                        if (attackBlob !== attackUrl) URL.revokeObjectURL(attackBlob);
                     }
+                    _lloSetTarget(Math.round(wEnd), 'WEAPONS...');
                 }
 
                 _lloSetTarget(100, 'READY!');
