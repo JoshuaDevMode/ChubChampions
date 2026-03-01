@@ -19432,37 +19432,57 @@
 
         async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
-            _lloProgress(10, 'LOADING FIGHTER DATA...');
+
+            // Phase 1 (0–58%): fighter sprite extraction.
+            // processAllFighterImages is opaque so we animate smoothly with easing
+            // while it runs — starts fast, decelerates toward the checkpoint.
+            let _animPct = 3;
+            let _animDone = false;
+            _lloProgress(3, 'LOADING FIGHTER DATA...');
+            const _animTick = () => {
+                if (_animDone) return;
+                _animPct += Math.max(0.04, (58 - _animPct) * 0.012);
+                _lloProgress(Math.min(58, _animPct), 'LOADING FIGHTER DATA...');
+                if (_animPct < 58) requestAnimationFrame(_animTick);
+            };
+            requestAnimationFrame(_animTick);
 
             try {
-                // Load only character sprite sheets (punch, kick, uppercut, headbutt,
-                // run, hurt, dodge, block, idle-blink, loser, win).
-                // Skips all weapon sprite preloading — that runs per-weapon below.
                 await processAllFighterImages(false, true);
-                _lloProgress(70, 'LOADING WEAPONS...');
+                _animDone = true;
+                _lloProgress(60, 'LOADING WEAPONS...');
 
-                // Preload weapon sprites for the equipped weapons of the selected character only.
-                const char = getSelectedCharacter();
-                const equippedWeapons = (char?.equippedWeapons || []).filter(id => WEAPONS[id]);
-                for (const weaponId of equippedWeapons) {
-                    const weaponImg = WEAPONS[weaponId]?.img;
-                    if (!weaponImg) continue;
-                    if (!_weaponRunFramesCache[weaponId]) {
-                        try { _weaponRunFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Run.png'), 5, 2); }
-                        catch(e) { _weaponRunFramesCache[weaponId] = []; }
+                // Phase 2 (60–96%): preload ALL weapons from WEAPON_TIERS.
+                const allWeapons = [];
+                Object.values(WEAPON_TIERS).forEach(tierList => {
+                    tierList.forEach(w => {
+                        if (!allWeapons.find(x => x.img === w.img)) allWeapons.push(w);
+                    });
+                });
+
+                const total = allWeapons.length;
+                for (let i = 0; i < total; i++) {
+                    const weapon = allWeapons[i];
+                    const pct = 60 + ((i + 1) / total) * 36;
+                    _lloProgress(Math.round(pct), weapon.name.toUpperCase() + '...');
+                    if (!_weaponRunFramesCache[weapon.id]) {
+                        try { _weaponRunFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
+                        catch(e) { _weaponRunFramesCache[weapon.id] = []; }
                     }
-                    if (!_weaponAttackFramesCache[weaponId]) {
-                        try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
-                        catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                    if (!_weaponAttackFramesCache[weapon.id]) {
+                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Attack.png'), 4, 2); }
+                        catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
                     }
                 }
+
                 _lloProgress(100, 'READY!');
                 _lobbySpritesLoaded = true;
             } catch(e) {
                 console.warn('[preload] sprite loading failed:', e);
+                _animDone = true;
             }
 
-            await new Promise(r => setTimeout(r, 260));
+            await new Promise(r => setTimeout(r, 400));
             if (overlay) {
                 overlay.classList.add('llo-hidden');
                 setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
