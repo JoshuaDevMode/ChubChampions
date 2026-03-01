@@ -8363,9 +8363,8 @@
     <!-- Login gate is rendered by React in #privy-root -->
 
     <div id="lobby-loading-overlay">
-        <div class="llo-logo">FIGHTCHUB</div>
         <div class="loading-svg-wrap">
-            <svg id="llo-svg" viewBox="0 0 1024 1024" width="270" height="270">
+            <svg id="llo-svg" viewBox="0 0 1024 1024" width="370" height="370">
                 <defs>
                     <linearGradient id="llo-grad" x1="0" y1="820" x2="0" y2="200" gradientUnits="userSpaceOnUse">
                         <stop offset="0%" stop-color="#7c3aed"/>
@@ -19483,7 +19482,7 @@
                 _animDone = true;
             }
 
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 120));
             if (overlay) {
                 overlay.classList.add('llo-hidden');
                 setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
