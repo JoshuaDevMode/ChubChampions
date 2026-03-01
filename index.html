@@ -19698,18 +19698,27 @@
                             g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
                             src.start(t0);
                         } else if (type === 'hit') {
-                            const o = ctx.createOscillator(); o.type = 'sine';
-                            o.frequency.setValueAtTime(95, t0);
-                            o.frequency.exponentialRampToValueAtTime(38, t0 + 0.13);
+                            // Two-note ascending chirp — sounds like a small achievement
+                            const g2 = ctx.createGain(); g2.connect(ctx.destination);
+                            const o1 = ctx.createOscillator(); o1.type = 'triangle';
+                            const o2 = ctx.createOscillator(); o2.type = 'triangle';
+                            o1.frequency.value = 660;
+                            o2.frequency.value = 1050;
                             g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
-                            o.connect(g); o.start(t0); o.stop(t0 + 0.14);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
+                            g2.gain.setValueAtTime(0.0, t0 + 0.07);
+                            g2.gain.linearRampToValueAtTime(0.75, t0 + 0.085);
+                            g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
+                            o1.connect(g);  o1.start(t0);        o1.stop(t0 + 0.1);
+                            o2.connect(g2); o2.start(t0 + 0.07); o2.stop(t0 + 0.2);
                         } else if (type === 'miss') {
-                            const o = ctx.createOscillator(); o.type = 'square';
-                            o.frequency.setValueAtTime(155, t0);
+                            // Descending sawtooth buzz — classic "wrong answer"
+                            const o = ctx.createOscillator(); o.type = 'sawtooth';
+                            o.frequency.setValueAtTime(320, t0);
+                            o.frequency.exponentialRampToValueAtTime(70, t0 + 0.18);
                             g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
-                            o.connect(g); o.start(t0); o.stop(t0 + 0.09);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+                            o.connect(g); o.start(t0); o.stop(t0 + 0.18);
                         }
                     } catch(_) {}
                 }
@@ -19794,7 +19803,7 @@
                 if (!gameOver) {
                     elapsed += dt;
                     // Aggressive speed ramp — feels clearly faster over time
-                    obsSpeed = 300 + Math.min(elapsed * 14, 280) + Math.min(score * 6, 240);
+                    obsSpeed = 320 + Math.min(elapsed * 20, 360) + Math.min(score * 10, 320);
 
                     if (!alive) {
                         if (!crashSounded) { crashSounded = true; snd.play('crash'); }
@@ -19823,7 +19832,7 @@
                             // Consecutive ground obstacles need at least 1.0s so the player
                             // can land from the first jump before the second arrives
                             const minGap = (!spawnUpper && lastObsType === 'ground') ? 1.0 : 0.55;
-                            nextObs = Math.max(minGap, 1.05 + Math.random() * 0.3 - score * 0.018);
+                            nextObs = Math.max(minGap, 0.95 + Math.random() * 0.25 - score * 0.022);
                         }
                         const kept = [];
                         for (const o of obstacles) {
@@ -20292,13 +20301,8 @@
                     if (ny < -NOTE_H || ny > GH) continue;
                     const col = LANE_COLORS[n.lane];
                     if (n.miss) {
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
-                        nctx.fillStyle = '#1a1a2e';
-                        nctx.fill();
-                        nctx.strokeStyle = '#333350';
-                        nctx.lineWidth = 2;
-                        nctx.stroke();
+                        // Missed notes just vanish — floating "MISS" text already gives feedback
+                        continue;
                     } else if (n.attempted) {
                         // Wasted early press — show darkened with ✕ so player knows
                         nctx.beginPath();
@@ -21793,6 +21797,7 @@
             document.getElementById('minigame-game-area').innerHTML = '';
             document.getElementById('minigame-screen').classList.remove('active');
             document.getElementById('lobby-wrapper').style.display = '';
+            openCarePanel();
         });
 
         // Inventory grid: drop equipped weapon here to unequip
