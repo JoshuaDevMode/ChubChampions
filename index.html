@@ -1510,7 +1510,7 @@
             z-index: 1;
             align-self: start;
             justify-self: center;
-            margin-top: 60px;
+            margin-top: 95px;
             transition: transform 0.5s ease;
         }
 
@@ -19432,26 +19432,26 @@
         async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
 
-            // Phase 1 (0–58%): fighter sprite extraction.
-            // processAllFighterImages is opaque so we animate smoothly with easing
-            // while it runs — starts fast, decelerates toward the checkpoint.
-            let _animPct = 3;
+            // Phase 1 (0–12%): fighter sprite extraction warm-up animation.
+            // processAllFighterImages is opaque — small animated bump while it runs.
+            let _animPct = 2;
             let _animDone = false;
-            _lloProgress(3, 'LOADING FIGHTER DATA...');
+            _lloProgress(2, 'LOADING FIGHTER DATA...');
             const _animTick = () => {
                 if (_animDone) return;
-                _animPct += Math.max(0.04, (58 - _animPct) * 0.012);
-                _lloProgress(Math.min(58, _animPct), 'LOADING FIGHTER DATA...');
-                if (_animPct < 58) requestAnimationFrame(_animTick);
+                _animPct += Math.max(0.03, (12 - _animPct) * 0.015);
+                _lloProgress(Math.min(12, _animPct), 'LOADING FIGHTER DATA...');
+                if (_animPct < 12) requestAnimationFrame(_animTick);
             };
             requestAnimationFrame(_animTick);
 
             try {
                 await processAllFighterImages(false, true);
                 _animDone = true;
-                _lloProgress(60, 'LOADING WEAPONS...');
+                _lloProgress(14, 'LOADING WEAPONS...');
 
-                // Phase 2 (60–96%): preload ALL weapons from WEAPON_TIERS.
+                // Phase 2 (14–96%): preload ALL weapons from WEAPON_TIERS.
+                // Weapons get the bulk of the visual range so fill matches text.
                 const allWeapons = [];
                 Object.values(WEAPON_TIERS).forEach(tierList => {
                     tierList.forEach(w => {
@@ -19462,7 +19462,7 @@
                 const total = allWeapons.length;
                 for (let i = 0; i < total; i++) {
                     const weapon = allWeapons[i];
-                    const pct = 60 + ((i + 1) / total) * 36;
+                    const pct = 14 + ((i + 1) / total) * 82;
                     _lloProgress(Math.round(pct), weapon.name.toUpperCase() + '...');
                     if (!_weaponRunFramesCache[weapon.id]) {
                         try { _weaponRunFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
