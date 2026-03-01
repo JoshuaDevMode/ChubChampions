@@ -19457,24 +19457,38 @@
 
         function _lloProgress(percent, text) { _lloSetTarget(percent, text); }
 
+        function _hideLoadingOverlay(overlay) {
+            _lloSetTarget(100, '');
+            if (overlay) {
+                overlay.classList.add('llo-hidden');
+                setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
+            }
+        }
+
         async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
             _lloDisplayPct = 0;
             _lloTargetPct  = 0;
+            _lloTicking    = false;
 
-            // Phase 1 (0–12%): fighter sprite extraction warm-up.
-            // Ticks slowly toward 12% via setTimeout while processAllFighterImages runs.
-            let _animDone = false;
-            _lloSetTarget(2, 'LOADING FIGHTER DATA...');
-            const _animTick = () => {
-                if (_animDone) return;
-                _lloTargetPct = Math.min(12, _lloTargetPct + 0.4);
-                _lloSetTarget(Math.round(_lloTargetPct), 'LOADING FIGHTER DATA...');
-                if (_lloTargetPct < 12) setTimeout(_animTick, 120);
-            };
-            setTimeout(_animTick, 120);
+            // Safety: if anything hangs, force-hide overlay after 30s
+            const safetyTimer = setTimeout(() => {
+                console.warn('[preload] safety timeout — hiding overlay');
+                _hideLoadingOverlay(overlay);
+            }, 30000);
 
             try {
+                // Phase 1 (0–12%): fighter sprite extraction warm-up.
+                let _animDone = false;
+                _lloSetTarget(2, 'LOADING FIGHTER DATA...');
+                const _animTick = () => {
+                    if (_animDone) return;
+                    _lloTargetPct = Math.min(12, _lloTargetPct + 0.4);
+                    _lloSetTarget(Math.round(_lloTargetPct), 'LOADING FIGHTER DATA...');
+                    if (_lloTargetPct < 12) setTimeout(_animTick, 120);
+                };
+                setTimeout(_animTick, 120);
+
                 await processAllFighterImages(false, true);
                 _animDone = true;
                 _lloSetTarget(14, 'LOADING WEAPONS...');
@@ -19506,20 +19520,19 @@
                 _lobbySpritesLoaded = true;
             } catch(e) {
                 console.warn('[preload] sprite loading failed:', e);
-                _animDone = true;
-                _lloSetTarget(100, ''); // ensure overlay always hides even on error
             }
 
-            // Wait for smooth counter to finish reaching 100% before hiding
+            clearTimeout(safetyTimer);
+
+            // Wait for smooth counter to reach 100 (max 3s), then hide
+            _lloSetTarget(100, '');
             await new Promise(r => {
-                const check = () => (_lloDisplayPct >= 100) ? r() : setTimeout(check, 30);
+                const deadline = Date.now() + 3000;
+                const check = () => (_lloDisplayPct >= 100 || Date.now() >= deadline) ? r() : setTimeout(check, 30);
                 check();
             });
             await new Promise(r => setTimeout(r, 120));
-            if (overlay) {
-                overlay.classList.add('llo-hidden');
-                setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
-            }
+            _hideLoadingOverlay(overlay);
         }
 
         // Called when the selected character changes in the lobby.
