@@ -19429,71 +19429,38 @@
         let _lobbySpritesLoaded = false;
 
 
-        // Smooth lobby progress: animates 1% at a time toward target using setTimeout
-        // (setTimeout continues when tab is hidden, unlike requestAnimationFrame)
-        let _lloDisplayPct = 0;
-        let _lloTargetPct  = 0;
-        let _lloTicking    = false;
-
-        function _lloSetTarget(pct, text) {
-            _lloTargetPct = Math.max(_lloTargetPct, Math.round(pct));
-            const subText = document.getElementById('llo-sub');
-            if (subText && text) subText.textContent = text;
-            if (!_lloTicking) _lloTickStep();
-        }
-
-        function _lloTickStep() {
-            if (_lloDisplayPct >= _lloTargetPct) { _lloTicking = false; return; }
-            _lloTicking = true;
-            _lloDisplayPct = Math.min(_lloTargetPct, _lloDisplayPct + 1);
+        function _lloProgress(percent, text) {
             const fillRect = document.getElementById('llo-fill-rect');
+            const subText  = document.getElementById('llo-sub');
             if (fillRect) {
-                const h = Math.max(1, (_lloDisplayPct / 100) * 1024);
+                const h = Math.max(1, (percent / 100) * 1024);
                 fillRect.setAttribute('y',      String(1024 - h));
                 fillRect.setAttribute('height', String(h));
             }
-            setTimeout(_lloTickStep, 14); // ~70fps, works even with tab hidden
-        }
-
-        function _lloProgress(percent, text) { _lloSetTarget(percent, text); }
-
-        function _hideLoadingOverlay(overlay) {
-            _lloSetTarget(100, '');
-            if (overlay) {
-                overlay.classList.add('llo-hidden');
-                setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
-            }
+            if (subText && text) subText.textContent = text;
         }
 
         async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
-            _lloDisplayPct = 0;
-            _lloTargetPct  = 0;
-            _lloTicking    = false;
 
-            // Safety: if anything hangs, force-hide overlay after 30s
-            const safetyTimer = setTimeout(() => {
-                console.warn('[preload] safety timeout — hiding overlay');
-                _hideLoadingOverlay(overlay);
-            }, 30000);
+            // Phase 1 (0–58%): animate while processAllFighterImages runs (opaque)
+            let _animPct  = 2;
+            let _animDone = false;
+            _lloProgress(2, 'LOADING FIGHTER DATA...');
+            const _animTick = () => {
+                if (_animDone) return;
+                _animPct += Math.max(0.04, (58 - _animPct) * 0.012);
+                _lloProgress(Math.min(58, _animPct), 'LOADING FIGHTER DATA...');
+                if (_animPct < 58) requestAnimationFrame(_animTick);
+            };
+            requestAnimationFrame(_animTick);
 
             try {
-                // Phase 1 (0–12%): fighter sprite extraction warm-up.
-                let _animDone = false;
-                _lloSetTarget(2, 'LOADING FIGHTER DATA...');
-                const _animTick = () => {
-                    if (_animDone) return;
-                    _lloTargetPct = Math.min(12, _lloTargetPct + 0.4);
-                    _lloSetTarget(Math.round(_lloTargetPct), 'LOADING FIGHTER DATA...');
-                    if (_lloTargetPct < 12) setTimeout(_animTick, 120);
-                };
-                setTimeout(_animTick, 120);
-
                 await processAllFighterImages(false, true);
                 _animDone = true;
-                _lloSetTarget(14, 'LOADING WEAPONS...');
+                _lloProgress(60, 'WEAPONS...');
 
-                // Phase 2 (14–96%): preload ALL weapons from WEAPON_TIERS.
+                // Phase 2 (60–96%): preload ALL weapons from WEAPON_TIERS.
                 const allWeapons = [];
                 Object.values(WEAPON_TIERS).forEach(tierList => {
                     tierList.forEach(w => {
@@ -19504,8 +19471,8 @@
                 const total = allWeapons.length;
                 for (let i = 0; i < total; i++) {
                     const weapon = allWeapons[i];
-                    const pct = 14 + ((i + 1) / total) * 82;
-                    _lloSetTarget(Math.round(pct), 'WEAPONS...');
+                    const pct = 60 + ((i + 1) / total) * 36;
+                    _lloProgress(Math.round(pct), 'WEAPONS...');
                     if (!_weaponRunFramesCache[weapon.id]) {
                         try { _weaponRunFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
                         catch(e) { _weaponRunFramesCache[weapon.id] = []; }
@@ -19516,23 +19483,18 @@
                     }
                 }
 
-                _lloSetTarget(100, 'READY!');
+                _lloProgress(100, 'READY!');
                 _lobbySpritesLoaded = true;
             } catch(e) {
                 console.warn('[preload] sprite loading failed:', e);
+                _animDone = true;
             }
 
-            clearTimeout(safetyTimer);
-
-            // Wait for smooth counter to reach 100 (max 3s), then hide
-            _lloSetTarget(100, '');
-            await new Promise(r => {
-                const deadline = Date.now() + 3000;
-                const check = () => (_lloDisplayPct >= 100 || Date.now() >= deadline) ? r() : setTimeout(check, 30);
-                check();
-            });
             await new Promise(r => setTimeout(r, 120));
-            _hideLoadingOverlay(overlay);
+            if (overlay) {
+                overlay.classList.add('llo-hidden');
+                setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
+            }
         }
 
         // Called when the selected character changes in the lobby.
