@@ -19624,11 +19624,14 @@
         }
 
         function _mgLaunchJumpTraining(area, runFrames, staticSrc) {
-            const DURATION = 30, GW = 980, GH = 360;
-            const GROUND_Y = 280, PX = 110, PW = 80, PH = 100;
+            const GW = 980, GH = 360;
+            const GROUND_Y = 295, PX = 110, PW = 80, PH = 100;
             const GRAVITY = 1900, JUMP_VY = -700;
+            const SPRITE_FPS = 18;  // +28% vs original 14
+            const CHAR_SINK = 22;   // px to sink draw below physics ground (aligns visual feet)
 
             const timerFill = _mgTimerBar(area);
+            timerFill.style.transform = 'scaleX(0)'; // starts empty — fills as speed builds
             const canvas = document.createElement('canvas');
             canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
             area.appendChild(canvas);
@@ -19644,10 +19647,8 @@
             let alive = true, deathTimer = 0;
             let animId;
 
-            // Load sprite frames as Image objects for canvas drawing
-            let spriteFrames = [];  // HTMLImageElement array
+            let spriteFrames = [];
             let spriteIdx = 0, spriteTimer = 0;
-            const SPRITE_FPS = 14;
             if (runFrames && runFrames.length) {
                 spriteFrames = runFrames.map(src => { const img = new Image(); img.src = src; return img; });
             } else if (staticSrc) {
@@ -19676,8 +19677,11 @@
                 const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
                 if (!gameOver) {
                     elapsed += dt;
-                    timerFill.style.transform = 'scaleX(' + Math.max(0, 1 - elapsed / DURATION).toFixed(4) + ')';
-                    if (elapsed >= DURATION) { gameOver = true; endGame(); return; }
+                    // Speed ramps with both time and score — no timer limit
+                    obsSpeed = 220 + elapsed * 6 + score * 18;
+                    const speedPct = Math.min(1, Math.max(0, (obsSpeed - 220) / 280));
+                    timerFill.style.transform = 'scaleX(' + speedPct.toFixed(4) + ')';
+
                     if (!alive) {
                         deathTimer += dt;
                         if (deathTimer > 0.7) { gameOver = true; endGame(); return; }
@@ -19686,25 +19690,24 @@
                             pVY += GRAVITY * dt; pY += pVY * dt;
                             if (pY >= 0) { pY = 0; pVY = 0; grounded = true; }
                         }
-                        // Advance sprite frame only when running on ground
-                        if (grounded && spriteFrames.length > 1) {
+                        // Animate always — even in the air
+                        if (spriteFrames.length > 1) {
                             spriteTimer += dt;
                             if (spriteTimer >= 1 / SPRITE_FPS) { spriteTimer = 0; spriteIdx = (spriteIdx + 1) % spriteFrames.length; }
                         }
                         nextObs -= dt;
                         if (nextObs <= 0) {
                             obstacles.push({ x: GW + 10, w: 22, h: 38 + Math.random() * 32 });
-                            nextObs = 1.0 + Math.random() * 0.85;
+                            nextObs = Math.max(0.55, 1.0 + Math.random() * 0.85 - score * 0.018);
                         }
-                        obsSpeed = 220 + elapsed * 5;
                         const kept = [];
                         for (const o of obstacles) {
                             o.x -= obsSpeed * dt;
                             if (o.x + o.w < 0) { score++; scoreEl.textContent = 'SCORE: ' + score; continue; }
                             const py2 = GROUND_Y + pY - PH, oy = GROUND_Y - o.h;
-                            // Tighter hitbox (80% of sprite size)
                             const hbInset = 10;
-                            if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x && py2 + hbInset < oy + o.h && py2 + PH > oy) alive = false;
+                            if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x &&
+                                py2 + hbInset < oy + o.h && py2 + PH - hbInset > oy) alive = false;
                             else kept.push(o);
                         }
                         obstacles = kept;
@@ -19713,12 +19716,10 @@
 
                 // ── Draw ──
                 ctx.clearRect(0, 0, GW, GH);
-                // Sky
                 const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-                skyGrad.addColorStop(0, '#06060f');
-                skyGrad.addColorStop(1, '#0e0e20');
+                skyGrad.addColorStop(0, '#06060f'); skyGrad.addColorStop(1, '#0e0e20');
                 ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, GW, GH);
-                // Scrolling stars
+                // Stars
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
                 for (let i = 0; i < 40; i++) {
                     const sx = ((i * 97 + elapsed * 30) % GW) | 0, sy = ((i * 41) % (GROUND_Y - 30)) | 0;
@@ -19729,10 +19730,9 @@
                 gGrad.addColorStop(0, '#1a1a30'); gGrad.addColorStop(1, '#0d0d18');
                 ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
                 ctx.fillStyle = '#f97316'; ctx.fillRect(0, GROUND_Y, GW, 3);
-                // Ground line details
                 ctx.fillStyle = 'rgba(249,115,22,0.2)'; ctx.fillRect(0, GROUND_Y + 6, GW, 2);
 
-                // Obstacles (cones/blocks)
+                // Obstacles
                 for (const o of obstacles) {
                     const oy = GROUND_Y - o.h;
                     const obsGrad = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
@@ -19741,13 +19741,18 @@
                     ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
                 }
 
-                // Player sprite
-                const drawY = GROUND_Y + pY - PH;
+                // Ground shadow under player — makes contact point with orange line clear
+                ctx.fillStyle = 'rgba(249,115,22,0.18)';
+                ctx.beginPath();
+                ctx.ellipse(PX + PW / 2, GROUND_Y, PW * 0.45, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Player sprite (CHAR_SINK aligns visual feet with physics ground)
+                const drawY = GROUND_Y + pY - PH + CHAR_SINK;
                 ctx.globalAlpha = alive ? 1 : 0.35;
                 if (spriteFrames.length && spriteFrames[spriteIdx]?.complete) {
                     ctx.drawImage(spriteFrames[spriteIdx], PX, drawY, PW, PH);
                 } else {
-                    // Fallback: draw simple fighter shape
                     ctx.fillStyle = '#c4b5fd'; _mgRoundRect(ctx, PX, drawY, PW, PH, 4); ctx.fill();
                     ctx.fillStyle = '#7c3aed'; ctx.fillRect(PX + 6, drawY + 18, PW - 12, 28);
                     ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 10, drawY + 2, 20, 16);
@@ -19990,7 +19995,7 @@
                 maxCombo = Math.max(maxCombo, combo);
                 statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                 animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                bagVel -= (lane >= 2 ? 2.1 : 1.65) + Math.min(combo - 1, 8) * 0.11;
+                bagVel -= (lane >= 2 ? 1.2 : 0.95) + Math.min(combo - 1, 8) * 0.07;
                 const qual = bestDist < 9 ? 'PERFECT!' : bestDist < 20 ? 'GREAT!' : 'GOOD';
                 const qcol = bestDist < 9 ? '#fbbf24' : bestDist < 20 ? '#22c55e' : '#60a5fa';
                 const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
@@ -20052,8 +20057,8 @@
                         }
                     }
 
-                    bagVel -= Math.sin(bagAngle) * 7.5 * dt;
-                    bagVel *= Math.exp(-1.2 * dt);
+                    bagVel -= Math.sin(bagAngle) * 11 * dt;
+                    bagVel *= Math.exp(-2.2 * dt);
                     bagAngle += bagVel * dt;
                 }
 
