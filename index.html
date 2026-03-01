@@ -19684,7 +19684,7 @@
                             const o = ctx.createOscillator(); o.type = 'sine';
                             o.frequency.setValueAtTime(190, t0);
                             o.frequency.exponentialRampToValueAtTime(440, t0 + 0.13);
-                            g.gain.setValueAtTime(0.38, t0);
+                            g.gain.setValueAtTime(0.75, t0);
                             g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
                             o.connect(g); o.start(t0); o.stop(t0 + 0.18);
                         } else if (type === 'crash') {
@@ -19701,13 +19701,13 @@
                             const o = ctx.createOscillator(); o.type = 'sine';
                             o.frequency.setValueAtTime(95, t0);
                             o.frequency.exponentialRampToValueAtTime(38, t0 + 0.13);
-                            g.gain.setValueAtTime(0.45, t0);
+                            g.gain.setValueAtTime(0.75, t0);
                             g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
                             o.connect(g); o.start(t0); o.stop(t0 + 0.14);
                         } else if (type === 'miss') {
                             const o = ctx.createOscillator(); o.type = 'square';
                             o.frequency.setValueAtTime(155, t0);
-                            g.gain.setValueAtTime(0.12, t0);
+                            g.gain.setValueAtTime(0.75, t0);
                             g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
                             o.connect(g); o.start(t0); o.stop(t0 + 0.09);
                         }
@@ -19794,7 +19794,7 @@
                 if (!gameOver) {
                     elapsed += dt;
                     // Aggressive speed ramp — feels clearly faster over time
-                    obsSpeed = 260 + Math.min(elapsed * 10, 220) + Math.min(score * 3.5, 160);
+                    obsSpeed = 300 + Math.min(elapsed * 14, 280) + Math.min(score * 6, 240);
 
                     if (!alive) {
                         if (!crashSounded) { crashSounded = true; snd.play('crash'); }
@@ -19823,7 +19823,7 @@
                             // Consecutive ground obstacles need at least 1.0s so the player
                             // can land from the first jump before the second arrives
                             const minGap = (!spawnUpper && lastObsType === 'ground') ? 1.0 : 0.55;
-                            nextObs = Math.max(minGap, 1.15 + Math.random() * 0.35 - score * 0.012);
+                            nextObs = Math.max(minGap, 1.05 + Math.random() * 0.3 - score * 0.018);
                         }
                         const kept = [];
                         for (const o of obstacles) {
