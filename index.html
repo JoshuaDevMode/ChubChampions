@@ -19442,43 +19442,97 @@
 
         async function preloadLobbySprites() {
             const overlay = document.getElementById('lobby-loading-overlay');
+            window._imgBlobCache = {};
 
-            // Phase 1 (0–58%): animate while processAllFighterImages runs (opaque)
+            // ── Phase 1 (0–12%): fighter sprites — canvas heavy, RAF animation ──
             let _animPct  = 2;
             let _animDone = false;
             _lloProgress(2, 'LOADING FIGHTER DATA...');
             const _animTick = () => {
                 if (_animDone) return;
-                _animPct += Math.max(0.04, (58 - _animPct) * 0.012);
-                _lloProgress(Math.min(58, _animPct), 'LOADING FIGHTER DATA...');
-                if (_animPct < 58) requestAnimationFrame(_animTick);
+                _animPct += Math.max(0.04, (12 - _animPct) * 0.015);
+                _lloProgress(Math.min(12, _animPct), 'LOADING FIGHTER DATA...');
+                if (_animPct < 12) requestAnimationFrame(_animTick);
             };
             requestAnimationFrame(_animTick);
 
             try {
                 await processAllFighterImages(false, true);
                 _animDone = true;
-                _lloProgress(60, 'WEAPONS...');
 
-                // Phase 2 (60–96%): preload ALL weapons from WEAPON_TIERS.
+                // ── Collect all weapon URLs ──
                 const allWeapons = [];
                 Object.values(WEAPON_TIERS).forEach(tierList => {
                     tierList.forEach(w => {
                         if (!allWeapons.find(x => x.img === w.img)) allWeapons.push(w);
                     });
                 });
+                const allUrls = [];
+                for (const w of allWeapons) {
+                    allUrls.push(w.img.replace('.png', ' Run.png'));
+                    allUrls.push(w.img.replace('.png', ' Attack.png'));
+                }
 
+                // ── Phase 2 (12–55%): parallel fetch — real byte progress ──
+                const PHASE2_START = 12, PHASE2_END = 55;
+                let urlsDone         = 0;
+                let knownTotalBytes  = 0;
+                let totalLoadedBytes = 0;
+
+                function updatePhase2() {
+                    const pct = knownTotalBytes > 0
+                        ? PHASE2_START + (totalLoadedBytes / knownTotalBytes) * (PHASE2_END - PHASE2_START)
+                        : PHASE2_START + (urlsDone / allUrls.length) * (PHASE2_END - PHASE2_START);
+                    _lloProgress(Math.min(PHASE2_END, Math.round(pct)), 'WEAPONS...');
+                }
+                updatePhase2();
+
+                await Promise.all(allUrls.map(async (url) => {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) { urlsDone++; updatePhase2(); return; }
+                        const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
+                        if (contentLength > 0) knownTotalBytes += contentLength;
+                        if (response.body) {
+                            const reader = response.body.getReader();
+                            const chunks = [];
+                            while (true) {
+                                const { done, value } = await reader.read();
+                                if (done) break;
+                                chunks.push(value);
+                                totalLoadedBytes += value.length;
+                                updatePhase2();
+                            }
+                            window._imgBlobCache[url] = URL.createObjectURL(new Blob(chunks));
+                        } else {
+                            const blob = await response.blob();
+                            if (contentLength > 0) totalLoadedBytes += contentLength;
+                            window._imgBlobCache[url] = URL.createObjectURL(blob);
+                        }
+                        urlsDone++;
+                        updatePhase2();
+                    } catch(e) {
+                        urlsDone++;
+                        updatePhase2();
+                    }
+                }));
+
+                _lloProgress(PHASE2_END, 'WEAPONS...');
+
+                // ── Phase 3 (55–96%): extract frames from cached blobs ──
                 const total = allWeapons.length;
                 for (let i = 0; i < total; i++) {
-                    const weapon = allWeapons[i];
-                    const pct = 60 + ((i + 1) / total) * 36;
+                    const weapon    = allWeapons[i];
+                    const runUrl    = weapon.img.replace('.png', ' Run.png');
+                    const attackUrl = weapon.img.replace('.png', ' Attack.png');
+                    const pct = PHASE2_END + ((i + 1) / total) * (96 - PHASE2_END);
                     _lloProgress(Math.round(pct), 'WEAPONS...');
                     if (!_weaponRunFramesCache[weapon.id]) {
-                        try { _weaponRunFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
+                        try { _weaponRunFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[runUrl] || runUrl, 5, 2); }
                         catch(e) { _weaponRunFramesCache[weapon.id] = []; }
                     }
                     if (!_weaponAttackFramesCache[weapon.id]) {
-                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(weapon.img.replace('.png', ' Attack.png'), 4, 2); }
+                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[attackUrl] || attackUrl, 4, 2); }
                         catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
                     }
                 }
@@ -19488,6 +19542,7 @@
             } catch(e) {
                 console.warn('[preload] sprite loading failed:', e);
                 _animDone = true;
+                _lobbySpritesLoaded = true;
             }
 
             await new Promise(r => setTimeout(r, 120));
@@ -19716,7 +19771,7 @@
             const NOTE_H     = 40;
             const HIT_CY     = 316;
             const HIT_H      = 46;
-            const HIT_WINDOW = 21;
+            const HIT_WINDOW = 30;
             const LANE_KEYS   = ['q','w','e'];
             const LANE_LABELS = ['Q','W','E'];
             const LANE_NAMES  = ['PUNCH','KICK','UPPER'];
@@ -19823,7 +19878,7 @@
 
             const bagEl = document.createElement('img');
             bagEl.src = 'Assets/UI/Punching-Bag.png';
-            bagEl.style.cssText = 'position:absolute;left:' + (-BAG_W/2) + 'px;top:' + BAG_ROPE + 'px;width:' + BAG_W + 'px;height:auto;image-rendering:pixelated;user-select:none;-webkit-user-drag:none;';
+            bagEl.style.cssText = 'position:absolute;left:' + (-BAG_W/2) + 'px;top:' + BAG_ROPE + 'px;width:' + BAG_W + 'px;height:auto;image-rendering:auto;user-select:none;-webkit-user-drag:none;';
             bagEl.draggable = false;
             bagEl.onload = () => {
                 if (bagEl.naturalWidth > 0) {
@@ -19835,7 +19890,7 @@
 
             // Character: CSS img — src updated only when animation frame changes
             const charEl = document.createElement('img');
-            charEl.style.cssText = 'position:absolute;left:' + CHAR_X + 'px;bottom:10px;width:' + CHAR_W + 'px;height:auto;image-rendering:pixelated;user-select:none;-webkit-user-drag:none;';
+            charEl.style.cssText = 'position:absolute;left:' + CHAR_X + 'px;bottom:10px;width:' + CHAR_W + 'px;height:auto;image-rendering:auto;user-select:none;-webkit-user-drag:none;';
             charEl.draggable = false;
             gameArea.appendChild(charEl);
 
@@ -19926,7 +19981,7 @@
                 let best = null, bestDist = Infinity;
                 for (const n of notes) {
                     if (n.hit || n.miss || n.lane !== lane) continue;
-                    const dist = Math.abs(noteY(n) - HIT_CY);
+                    const dist = Math.abs(noteY(n) + NOTE_H / 2 - HIT_CY);
                     if (dist <= HIT_WINDOW && dist < bestDist) { best = n; bestDist = dist; }
                 }
                 if (!best) return;
@@ -19981,7 +20036,7 @@
 
                     for (const n of notes) {
                         if (n.hit || n.miss) continue;
-                        if (noteY(n) > HIT_CY + HIT_WINDOW + NOTE_H) {
+                        if (noteY(n) + NOTE_H / 2 > HIT_CY + HIT_WINDOW) {
                             n.miss = true; misses++; combo = 0;
                             statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×0';
                             addFloatingText('MISS', COL_LEFT + COL_W / 2, HIT_CY, '#666');
@@ -20030,25 +20085,67 @@
 
                 // ── Notes canvas: clear + draw only currently-visible notes ──────
                 nctx.clearRect(0, 0, COL_W, GH);
+
+                // Hit zone pulse when a note is approaching
+                let _noteInZone = false;
+                for (const n of notes) {
+                    if (!n.hit && !n.miss && Math.abs(noteY(n) + NOTE_H / 2 - HIT_CY) < HIT_H) { _noteInZone = true; break; }
+                }
+                hzEl.style.borderColor = _noteInZone ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
+                hzEl.style.boxShadow   = _noteInZone ? '0 0 12px rgba(255,220,60,0.4),inset 0 0 10px rgba(255,220,60,0.07)' : '';
+
                 for (const n of notes) {
                     if (n.hit) continue;
                     const ny = noteY(n);
                     if (ny < -NOTE_H || ny > GH) continue;
                     const col = LANE_COLORS[n.lane];
                     if (n.miss) {
-                        nctx.fillStyle = '#252535';
-                        nctx.strokeStyle = '#333348';
-                        nctx.fillRect(noteNX, ny, NOTE_W, NOTE_H);
+                        nctx.beginPath();
+                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
+                        nctx.fillStyle = '#1a1a2e';
+                        nctx.fill();
+                        nctx.strokeStyle = '#333350';
                         nctx.lineWidth = 2;
-                        nctx.strokeRect(noteNX + 1, ny + 1, NOTE_W - 2, NOTE_H - 2);
+                        nctx.stroke();
                     } else {
-                        nctx.fillStyle = col + '28';
-                        nctx.strokeStyle = col;
-                        nctx.fillRect(noteNX, ny, NOTE_W, NOTE_H);
-                        nctx.lineWidth = 2;
-                        nctx.strokeRect(noteNX + 1, ny + 1, NOTE_W - 2, NOTE_H - 2);
+                        const inZone = Math.abs(ny + NOTE_H / 2 - HIT_CY) < HIT_H / 2 + NOTE_H / 2;
+                        // Outer glow when in hit zone
+                        if (inZone) {
+                            nctx.save();
+                            nctx.shadowColor = col;
+                            nctx.shadowBlur = 16;
+                            nctx.fillStyle = col + '14';
+                            nctx.beginPath();
+                            nctx.roundRect(noteNX - 4, ny - 4, NOTE_W + 8, NOTE_H + 8, 11);
+                            nctx.fill();
+                            nctx.restore();
+                        }
+                        // Body gradient
+                        const grad = nctx.createLinearGradient(0, ny, 0, ny + NOTE_H);
+                        grad.addColorStop(0, col + 'ee');
+                        grad.addColorStop(1, col + '44');
+                        nctx.beginPath();
+                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
+                        nctx.fillStyle = grad;
+                        nctx.fill();
+                        // Border
+                        nctx.strokeStyle = inZone ? 'rgba(255,255,255,0.85)' : col;
+                        nctx.lineWidth = inZone ? 2.5 : 2;
+                        nctx.stroke();
+                        // Shine strip
+                        nctx.fillStyle = 'rgba(255,255,255,0.22)';
+                        nctx.beginPath();
+                        nctx.roundRect(noteNX + 5, ny + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
+                        nctx.fill();
+                        // Key letter
+                        nctx.font = 'bold 17px monospace';
+                        nctx.textAlign = 'center';
+                        nctx.textBaseline = 'middle';
+                        nctx.shadowColor = 'rgba(0,0,0,0.8)';
+                        nctx.shadowBlur = 5;
                         nctx.fillStyle = '#ffffff';
                         nctx.fillText(LANE_LABELS[n.lane], COL_W / 2, ny + NOTE_H / 2);
+                        nctx.shadowBlur = 0;
                     }
                 }
             }
