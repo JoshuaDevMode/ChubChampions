@@ -20161,8 +20161,8 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Heavy bag: small swing (doesn't drift away), weight felt via squish+damping
-                    bagVel -= (lane >= 2 ? 1.6 : 1.2) + Math.min(combo - 1, 8) * 0.08;
+                    // Heavy bag: noticeable swing, weight felt via squish+damping
+                    bagVel -= (lane >= 2 ? 2.4 : 1.9) + Math.min(combo - 1, 8) * 0.12;
                     squishBag();
                     snd.play('hit');
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
@@ -20362,19 +20362,22 @@
                 }
             }
 
-            // Pre-warm: decode all sprite frames before starting the loop to prevent the
-            // initial FPS spike from simultaneous PNG decoding + layout paint.
-            const _prewarmImg = new Image();
+            // Pre-warm: decode each sprite frame fully (wait onload) before advancing.
+            // Batching all src assignments at once would fire simultaneous PNG decodes,
+            // causing the spike when the game loop first runs.
             const _allUrls = [].concat(...FRAME_URL_SETS.filter(Boolean));
             let _pwIdx = 0;
             function _startLoop() {
                 animId = requestAnimationFrame(function startFrame(ts) { lt = ts; animId = requestAnimationFrame(loop); });
             }
             function _prewarm() {
-                if (_pwIdx < _allUrls.length) { _prewarmImg.src = _allUrls[_pwIdx++]; requestAnimationFrame(_prewarm); }
-                else { _startLoop(); }
+                if (_pwIdx >= _allUrls.length) { _startLoop(); return; }
+                const img = new Image();
+                img.onload  = () => { _pwIdx++; _prewarm(); };
+                img.onerror = () => { _pwIdx++; _prewarm(); };
+                img.src = _allUrls[_pwIdx];
             }
-            if (_allUrls.length > 0) { requestAnimationFrame(_prewarm); } else { _startLoop(); }
+            if (_allUrls.length > 0) { _prewarm(); } else { _startLoop(); }
 
             return () => {
                 cancelAnimationFrame(animId);
