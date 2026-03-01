@@ -19435,10 +19435,11 @@
         async function _fetchWithProgress(url, onProgress) {
             let response;
             try { response = await fetch(url); } catch(e) { return url; }
-            if (!response.ok) return url;
+            if (!response.ok || !response.body) return url;
 
             const contentLength = +(response.headers.get('Content-Length') || 0);
-            const reader = response.body.getReader();
+            let reader;
+            try { reader = response.body.getReader(); } catch(e) { return url; }
             const chunks = [];
             let received = 0;
 
@@ -19563,6 +19564,7 @@
             } catch(e) {
                 console.warn('[preload] sprite loading failed:', e);
                 _animDone = true;
+                _lloSetTarget(100, ''); // ensure overlay always hides even on error
             }
 
             // Wait for smooth counter to finish reaching 100% before hiding
