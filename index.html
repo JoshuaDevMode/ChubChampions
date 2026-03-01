@@ -19727,17 +19727,25 @@
 
         function _mgLaunchJumpTraining(area, runFrames, staticSrc, onResult, maxMorale, maxXp) {
             const GW = 980, GH = 430;
-            const GROUND_Y = 355, PX = 110, PW = 80, PH = 100;
+            const GROUND_Y = 355, PX = 110, PW = 120, PH = 150;
             const GRAVITY = 1900, JUMP_VY = -720;
             const SPRITE_FPS = 14;
-            const CHAR_SINK = 22;
+            const CHAR_SINK = 32;
             const UPPER_OBS_TOP = GROUND_Y - 165;
             const UPPER_OBS_H   = 40;
             const MIN_SCORE = 50, FULL_SCORE = 120;
 
             const canvas = document.createElement('canvas');
-            canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
+            // Retina-aware canvas: render at device pixel density for crisp sprites
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            canvas.width = GW * dpr; canvas.height = GH * dpr;
+            canvas.className = 'mg-canvas';
+            canvas.style.height = 'auto';
             area.appendChild(canvas);
+            const ctx2d = canvas.getContext('2d');
+            ctx2d.scale(dpr, dpr);
+            ctx2d.imageSmoothingEnabled = true;
+            ctx2d.imageSmoothingQuality = 'high';
             const scoreEl = document.createElement('div'); scoreEl.className = 'mg-score'; scoreEl.textContent = 'SCORE: 0';
             area.appendChild(scoreEl);
             const hint = document.createElement('div'); hint.className = 'mg-hint';
@@ -19745,7 +19753,7 @@
             area.appendChild(hint);
 
             const snd = _mgAudio();
-            const ctx = canvas.getContext('2d');
+            const ctx = ctx2d;
             let elapsed = 0, lt = 0, score = 0, gameOver = false;
             let pY = 0, pVY = 0, grounded = true;
             let obstacles = [], nextObs = 1.4, obsSpeed = 260;
@@ -19917,10 +19925,10 @@
 
         function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs, onResult, maxMorale, maxXp) {
             // ── Constants ─────────────────────────────────────────────────────────
-            const DURATION        = 30;
+            const DURATION        = 50;
             const GW = 680, GH = 410;
-            const NOTE_SPEED_BASE = 145;  // starts slower
-            const NOTE_SPEED_RAMP = 4.5;  // px/s per elapsed second → ~280 at end
+            const NOTE_SPEED_BASE = 120;  // slightly slower start for longer game
+            const NOTE_SPEED_RAMP = 7.0;  // px/s per elapsed second → ~470 at end
             const COL_LEFT   = 560;
             const COL_W      = 108;
             const NOTE_W     = 93;
@@ -19960,14 +19968,18 @@
                 let t = 1.5;
                 while (t < DURATION - 0.5) {
                     seq.push({ lane: Math.floor(Math.random() * 3), spawnTime: t, hit: false, miss: false, attempted: false, canvasY: undefined });
-                    if (Math.random() < 0.25) {
-                        t += 0.3 + Math.random() * 0.14;
+                    const progress = t / DURATION;
+                    // Double note: 15% early → 55% near end
+                    if (Math.random() < 0.15 + progress * 0.40) {
+                        t += 0.26 + Math.random() * 0.14;
                         if (t < DURATION - 0.5) {
                             let nl; do { nl = Math.floor(Math.random() * 3); } while (nl === seq[seq.length-1].lane);
                             seq.push({ lane: nl, spawnTime: t, hit: false, miss: false, attempted: false, canvasY: undefined });
                         }
                     }
-                    t += 0.85 + Math.random() * 0.55;
+                    // Gap shrinks from 0.9s → 0.50s over the game
+                    const baseGap = Math.max(0.50, 0.90 - progress * 0.38);
+                    t += baseGap + Math.random() * Math.max(0.18, 0.45 - progress * 0.28);
                 }
                 return seq;
             }
@@ -20161,8 +20173,8 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Heavy bag: noticeable swing, weight felt via squish+damping
-                    bagVel -= (lane >= 2 ? 2.4 : 1.9) + Math.min(combo - 1, 8) * 0.12;
+                    // Heavy bag: subtle swing, weight felt via squish+damping
+                    bagVel -= (lane >= 2 ? 2.0 : 1.5) + Math.min(combo - 1, 8) * 0.10;
                     squishBag();
                     snd.play('hit');
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
