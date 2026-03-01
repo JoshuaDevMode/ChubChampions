@@ -3460,6 +3460,13 @@
             text-shadow: 0 0 20px rgba(74,222,128,0.45);
         }
         .mg-result-score { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #c4b5fd; }
+        .mg-retry-btn {
+            font-family: 'Press Start 2P', monospace; font-size: 9px;
+            background: #1a1a2e; color: #f97316; border: 2px solid #f97316;
+            padding: 10px 20px; cursor: pointer; border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .mg-retry-btn:hover { background: #f97316; color: #000; }
         @keyframes mg-fade-in {
             from { opacity: 0; transform: translateY(10px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -19629,10 +19636,15 @@
                 updateLobbyCharacterDisplay();
             } : null;
 
-            if (itemId === 'jump_training')
-                _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant);
-            else if (itemId === 'punching_bag')
-                _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant);
+            function doLaunch() {
+                gameArea.innerHTML = '';
+                if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
+                if (itemId === 'jump_training')
+                    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant, doLaunch);
+                else if (itemId === 'punching_bag')
+                    _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant, doLaunch);
+            }
+            doLaunch();
             mgScreen.classList.add('active');
         }
 
@@ -19723,7 +19735,7 @@
             };
         }
 
-        function _mgLaunchJumpTraining(area, runFrames, staticSrc, onResult, maxMorale, maxXp) {
+        function _mgLaunchJumpTraining(area, runFrames, staticSrc, onResult, maxMorale, maxXp, onRetry) {
             const GW = 980, GH = 430;
             const GROUND_Y = 355, PX = 110, PW = 80, PH = 100;
             const GRAVITY = 1900, JUMP_VY = -720;
@@ -19799,7 +19811,15 @@
                 r.innerHTML = '<div class="mg-result-title" style="color:' + titleColor + '">' + titleText + '</div>' +
                     '<div class="mg-result-score">OBSTACLES CLEARED: ' + score + '</div>' + rewardLine;
                 area.appendChild(r);
-                if (onResult) onResult(score);
+                if (onResult && moraleGain > 0) {
+                    onResult(score);
+                } else if (onResult && onRetry) {
+                    const retryBtn = document.createElement('button');
+                    retryBtn.className = 'mg-retry-btn';
+                    retryBtn.textContent = '🔄 TRY AGAIN';
+                    retryBtn.addEventListener('click', onRetry);
+                    r.appendChild(retryBtn);
+                }
             }
 
             function loop(ts) {
@@ -19920,7 +19940,7 @@
             return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', jump); document.removeEventListener('keydown', onKey); };
         }
 
-        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs, onResult, maxMorale, maxXp) {
+        function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs, onResult, maxMorale, maxXp, onRetry) {
             // ── Constants ─────────────────────────────────────────────────────────
             const DURATION        = 50;
             const GW = 680, GH = 410;
@@ -20229,7 +20249,15 @@
                     '<div class="mg-result-score">BEST COMBO: ×' + maxCombo + '</div>' +
                     rewardLine;
                 area.appendChild(r);
-                if (onResult) onResult(acc);
+                if (onResult && moraleGain > 0) {
+                    onResult(acc);
+                } else if (onResult && onRetry) {
+                    const retryBtn = document.createElement('button');
+                    retryBtn.className = 'mg-retry-btn';
+                    retryBtn.textContent = '🔄 TRY AGAIN';
+                    retryBtn.addEventListener('click', onRetry);
+                    r.appendChild(retryBtn);
+                }
             }
 
             // ── Main loop (minimal canvas work: only 108×410 note column) ─────────
