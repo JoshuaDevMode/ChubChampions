@@ -20141,9 +20141,9 @@
             }
 
             function squishBag() {
-                bagEl.style.transition = 'transform 0.07s ease-out';
-                bagEl.style.transform = 'scaleY(0.84) scaleX(1.09)';
-                setTimeout(() => { bagEl.style.transition = 'transform 0.22s ease-in-out'; bagEl.style.transform = ''; }, 80);
+                bagEl.style.transition = 'transform 0.06s ease-out';
+                bagEl.style.transform = 'scaleY(0.76) scaleX(1.16)';
+                setTimeout(() => { bagEl.style.transition = 'transform 0.32s cubic-bezier(0.25,0.8,0.25,1)'; bagEl.style.transform = ''; }, 70);
             }
 
             // ── Hit logic — one attempt per note per key press ────────────────────
@@ -20161,8 +20161,8 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Heavy sack — big impulse, slow swing back
-                    bagVel -= (lane >= 2 ? 3.8 : 3.0) + Math.min(combo - 1, 8) * 0.18;
+                    // Heavy bag: solid impulse, high damping absorbs energy fast
+                    bagVel -= (lane >= 2 ? 3.2 : 2.5) + Math.min(combo - 1, 8) * 0.15;
                     squishBag();
                     snd.play('hit');
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
@@ -20258,9 +20258,9 @@
                         }
                     }
 
-                    // Heavy bag: low restoring force + low damping = slow weighty pendulum
-                    bagVel -= Math.sin(bagAngle) * 4.5 * dt;
-                    bagVel *= Math.exp(-0.65 * dt);
+                    // Heavy bag: firm restoring force + high damping = settles in 1 swing
+                    bagVel -= Math.sin(bagAngle) * 9 * dt;
+                    bagVel *= Math.exp(-3.2 * dt);
                     bagAngle += bagVel * dt;
                 }
 
