@@ -19588,16 +19588,16 @@
         // ─────────────────── MINI-GAME ENGINE ───────────────────
         let _activeMinigameCleanup = null;
 
-        function launchMinigame(itemId, itemIcon, itemName, character) {
+        async function launchMinigame(itemId, itemIcon, itemName, character) {
             const mgScreen = document.getElementById('minigame-screen');
             const titleEl  = document.getElementById('minigame-title');
             const gameArea = document.getElementById('minigame-game-area');
             if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
             gameArea.innerHTML = '';
             titleEl.textContent = itemIcon + ' ' + itemName.toUpperCase();
-            // Close care panel so it doesn't show beneath the mini-game
             closeCarePanel();
-            // Gather character sprite frames from battle player element if available
+            mgScreen.classList.add('active');
+
             const _charImg  = document.getElementById('menu-character-img');
             const _fightImg = document.getElementById('player')?.querySelector('img');
             const runFrames      = (_fightImg?._runFrames?.length      ? _fightImg._runFrames      : null);
@@ -19607,27 +19607,58 @@
             const headbuttFrames = (_fightImg?._headbuttFrames?.length ? _fightImg._headbuttFrames : null);
             const staticSrc = _charImg?.src || null;
 
-            // Build reward callback — only when character is passed (real play, not test mode)
             const mItem = character ? MORALE_ITEMS[itemId] : null;
+
+            // Fetch session token from server (real play only, not test mode)
+            let currentSessionToken = null;
+            if (character && mItem && playerSession) {
+                gameArea.innerHTML = '<div style="color:#555;font-family:\'Press Start 2P\',monospace;font-size:9px;text-align:center;padding:60px 20px">PREPARING...</div>';
+                try {
+                    const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
+                        method: 'POST',
+                        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId })
+                    });
+                    const data = await resp.json();
+                    if (data.sessionToken) currentSessionToken = data.sessionToken;
+                } catch(e) { console.warn('[minigame] /start failed, proceeding without token', e); }
+            }
+
+            // Reward callback — server-authoritative when token available, client fallback otherwise
             const onResult = (mItem && character) ? async (rawValue) => {
                 const idx = (character.moraleItems || []).indexOf(itemId);
                 if (idx < 0) return;
-                let moraleGain = 0, xpGain = 0;
-                if (itemId === 'jump_training') {
-                    const score = rawValue;
-                    if (score >= 50) { moraleGain = Math.min(10, 5 + Math.floor((score - 50) / 10)); xpGain = 5; }
-                } else if (itemId === 'punching_bag') {
-                    const acc = rawValue;
-                    if (acc >= 50) { moraleGain = Math.min(10, Math.max(5, Math.floor(acc / 10))); xpGain = 5; }
+                let moraleGain = 0, newMorale = character.morale ?? 0;
+
+                if (currentSessionToken && playerSession) {
+                    try {
+                        const resp = await fetch(BACKEND_URL + '/api/minigame/complete', {
+                            method: 'POST',
+                            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ playerId: playerSession.playerId, sessionToken: currentSessionToken, score: rawValue })
+                        });
+                        const result = await resp.json();
+                        if (result.ok) { moraleGain = result.moraleGain ?? 0; newMorale = result.newMorale ?? newMorale; }
+                    } catch(e) {
+                        console.warn('[minigame] /complete failed, applying client-side fallback', e);
+                        if (itemId === 'jump_training') { if (rawValue >= 50) moraleGain = Math.min(10, 5 + Math.floor((rawValue - 50) / 10)); }
+                        else if (itemId === 'punching_bag') { if (rawValue >= 50) moraleGain = Math.min(10, Math.max(5, Math.floor(rawValue / 10))); }
+                        newMorale = Math.min(MORALE_MAX, (character.morale ?? 0) + moraleGain);
+                    }
+                } else {
+                    if (itemId === 'jump_training') { if (rawValue >= 50) moraleGain = Math.min(10, 5 + Math.floor((rawValue - 50) / 10)); }
+                    else if (itemId === 'punching_bag') { if (rawValue >= 50) moraleGain = Math.min(10, Math.max(5, Math.floor(rawValue / 10))); }
+                    newMorale = Math.min(MORALE_MAX, (character.morale ?? 0) + moraleGain);
                 }
+
                 character.moraleItems.splice(idx, 1);
                 if (moraleGain > 0) {
-                    character.morale = Math.min(MORALE_MAX, (character.morale ?? 0) + moraleGain);
+                    character.morale = newMorale;
                     character.lastMoraleTimestamp = Date.now();
                 }
                 saveCharacters();
-                if (xpGain > 0) {
-                    const xpResult = addExpToCharacter(character.id, xpGain);
+                if (moraleGain > 0) {
+                    const xpResult = addExpToCharacter(character.id, 5);
                     if (xpResult?.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                 }
                 try { await syncCharacterToBackend(character); } catch(_) {}
@@ -19640,14 +19671,28 @@
                 gameArea.innerHTML = '';
                 if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
                 // Only allow 1 retry — null after that so endGame shows "no more retries"
-                const retryHandler = (onResult && retryCount < 1) ? () => { retryCount++; doLaunch(); } : null;
+                const retryHandler = (onResult && retryCount < 1) ? async () => {
+                    retryCount++;
+                    // Get retry session token from server
+                    if (character && currentSessionToken && playerSession) {
+                        try {
+                            const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
+                                method: 'POST',
+                                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId, parentToken: currentSessionToken })
+                            });
+                            const data = await resp.json();
+                            if (data.sessionToken) currentSessionToken = data.sessionToken;
+                        } catch(e) { console.warn('[minigame] retry /start failed', e); }
+                    }
+                    doLaunch();
+                } : null;
                 if (itemId === 'jump_training')
                     _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant, retryHandler);
                 else if (itemId === 'punching_bag')
                     _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant, retryHandler);
             }
             doLaunch();
-            mgScreen.classList.add('active');
         }
 
         function _mgRoundRect(ctx, x, y, w, h, r) {
