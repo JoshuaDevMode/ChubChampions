@@ -19803,7 +19803,7 @@
                 if (!gameOver) {
                     elapsed += dt;
                     // Aggressive speed ramp — feels clearly faster over time
-                    obsSpeed = 320 + Math.min(elapsed * 20, 360) + Math.min(score * 10, 320);
+                    obsSpeed = 420 + Math.min(elapsed * 28, 400) + Math.min(score * score * 2, 500);
 
                     if (!alive) {
                         if (!crashSounded) { crashSounded = true; snd.play('crash'); }
@@ -19832,7 +19832,7 @@
                             // Consecutive ground obstacles need at least 1.0s so the player
                             // can land from the first jump before the second arrives
                             const minGap = (!spawnUpper && lastObsType === 'ground') ? 1.0 : 0.55;
-                            nextObs = Math.max(minGap, 0.95 + Math.random() * 0.25 - score * 0.022);
+                            nextObs = Math.max(minGap, 0.88 + Math.random() * 0.22 - score * 0.026);
                         }
                         const kept = [];
                         for (const o of obstacles) {
@@ -20097,9 +20097,10 @@
                 const btn = document.createElement('button');
                 btn.innerHTML = '<span style="font-size:10px;display:block">' + key.toUpperCase() + '</span>' +
                     '<span style="font-size:6px;opacity:0.7;display:block">' + LANE_NAMES[i] + '</span>';
-                btn.style.cssText = 'font-family:"Press Start 2P",monospace;width:68px;height:44px;' +
-                    'background:' + LANE_COLORS[i] + '22;border:2px solid ' + LANE_COLORS[i] + ';' +
-                    'color:' + LANE_COLORS[i] + ';cursor:pointer;border-radius:6px;transition:background 0.08s;line-height:1.4;';
+                btn.style.cssText = 'font-family:"Press Start 2P",monospace;width:80px;height:50px;' +
+                    'background:transparent;border:2.5px solid ' + LANE_COLORS[i] + ';' +
+                    'box-shadow:0 0 8px ' + LANE_COLORS[i] + '55,inset 0 0 8px ' + LANE_COLORS[i] + '18;' +
+                    'color:' + LANE_COLORS[i] + ';cursor:pointer;border-radius:7px;transition:background 0.08s,box-shadow 0.08s;line-height:1.4;';
                 btn.addEventListener('mousedown', () => tryHit(i));
                 btnRow.appendChild(btn);
                 return btn;
@@ -20129,8 +20130,14 @@
             }
 
             function flashBtn(i) {
-                btnEls[i].style.background = LANE_COLORS[i] + 'aa';
-                setTimeout(() => { if (btnEls[i]) btnEls[i].style.background = LANE_COLORS[i] + '22'; }, 120);
+                const c = LANE_COLORS[i];
+                btnEls[i].style.background = c + '55';
+                btnEls[i].style.boxShadow = '0 0 18px ' + c + 'cc,inset 0 0 14px ' + c + '44';
+                setTimeout(() => {
+                    if (!btnEls[i]) return;
+                    btnEls[i].style.background = 'transparent';
+                    btnEls[i].style.boxShadow = '0 0 8px ' + c + '55,inset 0 0 8px ' + c + '18';
+                }, 120);
             }
 
             function squishBag() {
@@ -20154,8 +20161,8 @@
                     maxCombo = Math.max(maxCombo, combo);
                     statsEl.textContent = 'HITS: ' + hits + ' / ' + TOTAL_NOTES + '   COMBO: ×' + combo;
                     animLane = lane; spriteIdx = 0; spriteTimer = 0;
-                    // Heavier impulse + squish for weight feel
-                    bagVel -= (lane >= 2 ? 2.2 : 1.7) + Math.min(combo - 1, 8) * 0.12;
+                    // Heavy sack — big impulse, slow swing back
+                    bagVel -= (lane >= 2 ? 3.8 : 3.0) + Math.min(combo - 1, 8) * 0.18;
                     squishBag();
                     snd.play('hit');
                     const dist = Math.abs(cy + NOTE_H / 2 - HIT_CY);
@@ -20251,9 +20258,9 @@
                         }
                     }
 
-                    // Heavier bag: less restoring force, less damping = slower but weightier swings
-                    bagVel -= Math.sin(bagAngle) * 8 * dt;
-                    bagVel *= Math.exp(-1.3 * dt);
+                    // Heavy bag: low restoring force + low damping = slow weighty pendulum
+                    bagVel -= Math.sin(bagAngle) * 4.5 * dt;
+                    bagVel *= Math.exp(-0.65 * dt);
                     bagAngle += bagVel * dt;
                 }
 
