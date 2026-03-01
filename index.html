@@ -19627,17 +19627,19 @@
             const GW = 980, GH = 360;
             const GROUND_Y = 295, PX = 110, PW = 80, PH = 100;
             const GRAVITY = 1900, JUMP_VY = -700;
-            const SPRITE_FPS = 18;  // +28% vs original 14
-            const CHAR_SINK = 22;   // px to sink draw below physics ground (aligns visual feet)
+            const SPRITE_FPS = 14;
+            const CHAR_SINK = 22;
+            // Upper obstacle sits at this y-range: safe when grounded, hit when mid-jump
+            const UPPER_OBS_TOP = GROUND_Y - 165; // = 130 in canvas
+            const UPPER_OBS_H   = 40;
 
-            const timerFill = _mgTimerBar(area);
-            timerFill.style.transform = 'scaleX(0)'; // starts empty — fills as speed builds
             const canvas = document.createElement('canvas');
             canvas.width = GW; canvas.height = GH; canvas.className = 'mg-canvas';
             area.appendChild(canvas);
             const scoreEl = document.createElement('div'); scoreEl.className = 'mg-score'; scoreEl.textContent = 'SCORE: 0';
             area.appendChild(scoreEl);
-            const hint = document.createElement('div'); hint.className = 'mg-hint'; hint.textContent = 'CLICK OR PRESS SPACE TO JUMP';
+            const hint = document.createElement('div'); hint.className = 'mg-hint';
+            hint.textContent = 'SPACE/CLICK TO JUMP  ·  JUMP OVER RED  ·  STAY DOWN FOR BLUE';
             area.appendChild(hint);
 
             const ctx = canvas.getContext('2d');
@@ -19645,6 +19647,7 @@
             let pY = 0, pVY = 0, grounded = true;
             let obstacles = [], nextObs = 1.5, obsSpeed = 220;
             let alive = true, deathTimer = 0;
+            let lastObsType = 'ground';
             let animId;
 
             let spriteFrames = [];
@@ -19677,10 +19680,8 @@
                 const dt = Math.min((ts - lt) / 1000, 0.05); lt = ts;
                 if (!gameOver) {
                     elapsed += dt;
-                    // Speed ramps with both time and score — no timer limit
-                    obsSpeed = 220 + elapsed * 6 + score * 18;
-                    const speedPct = Math.min(1, Math.max(0, (obsSpeed - 220) / 280));
-                    timerFill.style.transform = 'scaleX(' + speedPct.toFixed(4) + ')';
+                    // Gentle speed ramp — 100 pts is achievable for a skilled player
+                    obsSpeed = 220 + Math.min(elapsed * 1.5, 90) + Math.min(score * 1.5, 90);
 
                     if (!alive) {
                         deathTimer += dt;
@@ -19690,25 +19691,40 @@
                             pVY += GRAVITY * dt; pY += pVY * dt;
                             if (pY >= 0) { pY = 0; pVY = 0; grounded = true; }
                         }
-                        // Animate always — even in the air
-                        if (spriteFrames.length > 1) {
+                        // Only animate while grounded — freeze on first frame when airborne
+                        if (grounded && spriteFrames.length > 1) {
                             spriteTimer += dt;
                             if (spriteTimer >= 1 / SPRITE_FPS) { spriteTimer = 0; spriteIdx = (spriteIdx + 1) % spriteFrames.length; }
                         }
                         nextObs -= dt;
                         if (nextObs <= 0) {
-                            obstacles.push({ x: GW + 10, w: 22, h: 38 + Math.random() * 32 });
-                            nextObs = Math.max(0.55, 1.0 + Math.random() * 0.85 - score * 0.018);
+                            // Upper obstacles appear after score 5, never two in a row
+                            const spawnUpper = score >= 5 && lastObsType !== 'upper' && Math.random() < 0.28;
+                            if (spawnUpper) {
+                                obstacles.push({ x: GW + 10, w: 22, upper: true });
+                                lastObsType = 'upper';
+                            } else {
+                                obstacles.push({ x: GW + 10, w: 22, h: 38 + Math.random() * 32 });
+                                lastObsType = 'ground';
+                            }
+                            nextObs = Math.max(0.8, 1.3 + Math.random() * 0.5 - score * 0.005);
                         }
                         const kept = [];
                         for (const o of obstacles) {
                             o.x -= obsSpeed * dt;
                             if (o.x + o.w < 0) { score++; scoreEl.textContent = 'SCORE: ' + score; continue; }
-                            const py2 = GROUND_Y + pY - PH, oy = GROUND_Y - o.h;
+                            const py2 = GROUND_Y + pY - PH;
                             const hbInset = 10;
-                            if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x &&
-                                py2 + hbInset < oy + o.h && py2 + PH - hbInset > oy) alive = false;
-                            else kept.push(o);
+                            let hit = false;
+                            if (o.upper) {
+                                if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x &&
+                                    py2 + hbInset < UPPER_OBS_TOP + UPPER_OBS_H && py2 + PH - hbInset > UPPER_OBS_TOP) hit = true;
+                            } else {
+                                const oy = GROUND_Y - o.h;
+                                if (PX + hbInset < o.x + o.w && PX + PW - hbInset > o.x &&
+                                    py2 + hbInset < oy + o.h && py2 + PH - hbInset > oy) hit = true;
+                            }
+                            if (hit) alive = false; else kept.push(o);
                         }
                         obstacles = kept;
                     }
@@ -19719,13 +19735,11 @@
                 const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
                 skyGrad.addColorStop(0, '#06060f'); skyGrad.addColorStop(1, '#0e0e20');
                 ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, GW, GH);
-                // Stars
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
                 for (let i = 0; i < 40; i++) {
                     const sx = ((i * 97 + elapsed * 30) % GW) | 0, sy = ((i * 41) % (GROUND_Y - 30)) | 0;
                     ctx.fillRect(sx, sy, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
                 }
-                // Ground
                 const gGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
                 gGrad.addColorStop(0, '#1a1a30'); gGrad.addColorStop(1, '#0d0d18');
                 ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
@@ -19734,20 +19748,34 @@
 
                 // Obstacles
                 for (const o of obstacles) {
-                    const oy = GROUND_Y - o.h;
-                    const obsGrad = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
-                    obsGrad.addColorStop(0, '#b91c1c'); obsGrad.addColorStop(0.5, '#ef4444'); obsGrad.addColorStop(1, '#b91c1c');
-                    ctx.fillStyle = obsGrad; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 4); ctx.fill();
-                    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
+                    if (o.upper) {
+                        // Pipe from top of screen down to obstacle
+                        ctx.fillStyle = '#1e3a5f';
+                        ctx.fillRect(o.x + o.w / 2 - 2, 0, 4, UPPER_OBS_TOP);
+                        // Body
+                        const ug = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+                        ug.addColorStop(0, '#1d4ed8'); ug.addColorStop(0.5, '#3b82f6'); ug.addColorStop(1, '#1d4ed8');
+                        ctx.fillStyle = ug;
+                        _mgRoundRect(ctx, o.x, UPPER_OBS_TOP, o.w, UPPER_OBS_H, 4); ctx.fill();
+                        // Warning stripes at bottom edge
+                        ctx.fillStyle = 'rgba(255,210,0,0.4)';
+                        ctx.fillRect(o.x + 3, UPPER_OBS_TOP + UPPER_OBS_H - 8, o.w - 6, 4);
+                    } else {
+                        const oy = GROUND_Y - o.h;
+                        const og = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+                        og.addColorStop(0, '#b91c1c'); og.addColorStop(0.5, '#ef4444'); og.addColorStop(1, '#b91c1c');
+                        ctx.fillStyle = og; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 4); ctx.fill();
+                        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
+                    }
                 }
 
-                // Ground shadow under player — makes contact point with orange line clear
+                // Ground shadow
                 ctx.fillStyle = 'rgba(249,115,22,0.18)';
                 ctx.beginPath();
                 ctx.ellipse(PX + PW / 2, GROUND_Y, PW * 0.45, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Player sprite (CHAR_SINK aligns visual feet with physics ground)
+                // Player sprite
                 const drawY = GROUND_Y + pY - PH + CHAR_SINK;
                 ctx.globalAlpha = alive ? 1 : 0.35;
                 if (spriteFrames.length && spriteFrames[spriteIdx]?.complete) {
