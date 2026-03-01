@@ -19662,49 +19662,57 @@
         }
 
         function _mgAudio() {
-            try {
-                const ac = new (window.AudioContext || window.webkitAudioContext)();
-                return {
-                    play(type) {
-                        try {
-                            if (ac.state === 'suspended') ac.resume();
-                            const g = ac.createGain(); g.connect(ac.destination);
-                            const t0 = ac.currentTime;
-                            if (type === 'jump') {
-                                const o = ac.createOscillator(); o.type = 'sine';
-                                o.frequency.setValueAtTime(190, t0);
-                                o.frequency.exponentialRampToValueAtTime(440, t0 + 0.13);
-                                g.gain.setValueAtTime(0.16, t0);
-                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
-                                o.connect(g); o.start(t0); o.stop(t0 + 0.18);
-                            } else if (type === 'crash') {
-                                const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.25), ac.sampleRate);
-                                const d = buf.getChannelData(0);
-                                for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
-                                const src = ac.createBufferSource(); src.buffer = buf;
-                                const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160; f.Q.value = 0.6;
-                                src.connect(f); f.connect(g);
-                                g.gain.setValueAtTime(0.5, t0);
-                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
-                                src.start(t0);
-                            } else if (type === 'hit') {
-                                const o = ac.createOscillator(); o.type = 'sine';
-                                o.frequency.setValueAtTime(95, t0);
-                                o.frequency.exponentialRampToValueAtTime(38, t0 + 0.13);
-                                g.gain.setValueAtTime(0.32, t0);
-                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
-                                o.connect(g); o.start(t0); o.stop(t0 + 0.14);
-                            } else if (type === 'miss') {
-                                const o = ac.createOscillator(); o.type = 'square';
-                                o.frequency.setValueAtTime(155, t0);
-                                g.gain.setValueAtTime(0.08, t0);
-                                g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
-                                o.connect(g); o.start(t0); o.stop(t0 + 0.09);
-                            }
-                        } catch(_) {}
-                    }
-                };
-            } catch(_) { return { play() {} }; }
+            // AudioContext created lazily on first play() so it's always after a user gesture
+            let ac = null;
+            function getAC() {
+                if (!ac) {
+                    try { ac = new (window.AudioContext || window.webkitAudioContext)(); }
+                    catch(_) {}
+                }
+                return ac;
+            }
+            return {
+                play(type) {
+                    try {
+                        const ctx = getAC();
+                        if (!ctx) return;
+                        if (ctx.state === 'suspended') ctx.resume();
+                        const g = ctx.createGain(); g.connect(ctx.destination);
+                        const t0 = ctx.currentTime;
+                        if (type === 'jump') {
+                            const o = ctx.createOscillator(); o.type = 'sine';
+                            o.frequency.setValueAtTime(190, t0);
+                            o.frequency.exponentialRampToValueAtTime(440, t0 + 0.13);
+                            g.gain.setValueAtTime(0.38, t0);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+                            o.connect(g); o.start(t0); o.stop(t0 + 0.18);
+                        } else if (type === 'crash') {
+                            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.25), ctx.sampleRate);
+                            const d = buf.getChannelData(0);
+                            for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+                            const src = ctx.createBufferSource(); src.buffer = buf;
+                            const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160; f.Q.value = 0.6;
+                            src.connect(f); f.connect(g);
+                            g.gain.setValueAtTime(0.75, t0);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+                            src.start(t0);
+                        } else if (type === 'hit') {
+                            const o = ctx.createOscillator(); o.type = 'sine';
+                            o.frequency.setValueAtTime(95, t0);
+                            o.frequency.exponentialRampToValueAtTime(38, t0 + 0.13);
+                            g.gain.setValueAtTime(0.45, t0);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
+                            o.connect(g); o.start(t0); o.stop(t0 + 0.14);
+                        } else if (type === 'miss') {
+                            const o = ctx.createOscillator(); o.type = 'square';
+                            o.frequency.setValueAtTime(155, t0);
+                            g.gain.setValueAtTime(0.12, t0);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+                            o.connect(g); o.start(t0); o.stop(t0 + 0.09);
+                        }
+                    } catch(_) {}
+                }
+            };
         }
 
         function _mgLaunchJumpTraining(area, runFrames, staticSrc, onResult, maxMorale, maxXp) {
@@ -19811,8 +19819,10 @@
                                 obstacles.push({ x: GW + 10, w: 22, h: 36 + Math.random() * 40 });
                                 lastObsType = 'ground';
                             }
-                            // Gap shrinks aggressively with score
-                            nextObs = Math.max(0.38, 1.15 + Math.random() * 0.35 - score * 0.018);
+                            // Consecutive ground obstacles need at least 1.0s so the player
+                            // can land from the first jump before the second arrives
+                            const minGap = (!spawnUpper && lastObsType === 'ground') ? 1.0 : 0.55;
+                            nextObs = Math.max(minGap, 1.15 + Math.random() * 0.35 - score * 0.012);
                         }
                         const kept = [];
                         for (const o of obstacles) {
@@ -20144,11 +20154,12 @@
                     const bpx = BAG_PIVOT_X + Math.sin(bagAngle) * BAG_ROPE;
                     const bpy = BAG_PIVOT_Y + Math.cos(bagAngle) * BAG_ROPE;
                     addFloatingText(qual, bpx, bpy + Math.round(bagDrawH * 0.25), qcol);
-                } else if (cy === undefined || cy + NOTE_H / 2 < HIT_CY - HIT_WINDOW) {
-                    // Too early — wasted press, note can no longer be hit
+                } else if (cy !== undefined && cy + NOTE_H / 2 < HIT_CY - HIT_WINDOW) {
+                    // Note is visible on screen but above the hit zone — early press wasted
                     pending.attempted = true;
                 }
-                // If past window: note already auto-missed by the loop, ignore silently
+                // cy === undefined (not yet on screen): harmless press, do nothing
+                // cy past window: already auto-missed, ignore silently
             }
 
             function onKey(e) {
