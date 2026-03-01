@@ -19636,13 +19636,16 @@
                 updateLobbyCharacterDisplay();
             } : null;
 
+            let retryCount = 0;
             function doLaunch() {
                 gameArea.innerHTML = '';
                 if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
+                // Only allow 1 retry — null after that so endGame shows "no more retries"
+                const retryHandler = (onResult && retryCount < 1) ? () => { retryCount++; doLaunch(); } : null;
                 if (itemId === 'jump_training')
-                    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant, doLaunch);
+                    _activeMinigameCleanup = _mgLaunchJumpTraining(gameArea, runFrames, staticSrc, onResult, mItem?.moraleRestore, mItem?.xpGrant, retryHandler);
                 else if (itemId === 'punching_bag')
-                    _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant, doLaunch);
+                    _activeMinigameCleanup = _mgLaunchPunchingBag(gameArea, punchFrames, kickFrames, uppercutFrames, headbuttFrames, onResult, mItem?.moraleRestore, mItem?.xpGrant, retryHandler);
             }
             doLaunch();
             mgScreen.classList.add('active');
@@ -19819,6 +19822,19 @@
                     retryBtn.textContent = '🔄 TRY AGAIN';
                     retryBtn.addEventListener('click', onRetry);
                     r.appendChild(retryBtn);
+                } else if (onResult) {
+                    // Retries exhausted — consume item, no reward
+                    const msg = document.createElement('div');
+                    msg.className = 'mg-result-score';
+                    msg.style.color = '#6b7280';
+                    msg.textContent = 'NO MORE RETRIES — item consumed';
+                    r.appendChild(msg);
+                    const doneBtn = document.createElement('button');
+                    doneBtn.className = 'mg-retry-btn';
+                    doneBtn.style.cssText = 'border-color:#6b7280;color:#6b7280';
+                    doneBtn.textContent = '✖ CLOSE';
+                    doneBtn.addEventListener('click', () => onResult(0));
+                    r.appendChild(doneBtn);
                 }
             }
 
@@ -20257,6 +20273,19 @@
                     retryBtn.textContent = '🔄 TRY AGAIN';
                     retryBtn.addEventListener('click', onRetry);
                     r.appendChild(retryBtn);
+                } else if (onResult) {
+                    // Retries exhausted — consume item, no reward
+                    const msg = document.createElement('div');
+                    msg.className = 'mg-result-score';
+                    msg.style.color = '#6b7280';
+                    msg.textContent = 'NO MORE RETRIES — item consumed';
+                    r.appendChild(msg);
+                    const doneBtn = document.createElement('button');
+                    doneBtn.className = 'mg-retry-btn';
+                    doneBtn.style.cssText = 'border-color:#6b7280;color:#6b7280';
+                    doneBtn.textContent = '✖ CLOSE';
+                    doneBtn.addEventListener('click', () => onResult(0));
+                    r.appendChild(doneBtn);
                 }
             }
 
