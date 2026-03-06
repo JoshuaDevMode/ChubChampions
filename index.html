@@ -1722,12 +1722,6 @@
             object-fit: contain;
             filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
             z-index: 1;
-            animation: characterFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes characterFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
         }
 
         .menu-character-info {
@@ -8320,6 +8314,16 @@
         @keyframes brokenPulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+
+        @keyframes weaponEquipFlash {
+            0%   { filter: brightness(20) saturate(0) drop-shadow(0 0 18px #fff) drop-shadow(0 0 36px #fff); opacity: 0.85; }
+            25%  { filter: brightness(4)  saturate(0.3) drop-shadow(0 0 12px #fffde7) drop-shadow(0 0 24px rgba(255,245,180,0.6)); opacity: 1; }
+            65%  { filter: brightness(1.3) saturate(0.85) drop-shadow(0 0 6px rgba(255,245,180,0.4)); }
+            100% { filter: brightness(1)  saturate(1)   drop-shadow(0 0 0px transparent); }
+        }
+        .weapon-equip-flash {
+            animation: weaponEquipFlash 0.9s ease-out forwards;
         }
 
         /* Repair button */
@@ -16570,8 +16574,18 @@
             if (isArmed) {
                 const poseFrames = _weaponIdlePoseCache[equippedId];
                 if (poseFrames && poseFrames.length > 0) {
+                    const wasHidden = overlay.style.display === 'none';
                     overlay.src = poseFrames[0];
                     overlay.style.display = 'block';
+                    // Flash white → normal on equip (only when newly shown)
+                    if (wasHidden) {
+                        overlay.classList.remove('weapon-equip-flash');
+                        void overlay.offsetWidth; // force reflow to restart animation
+                        overlay.classList.add('weapon-equip-flash');
+                        overlay.addEventListener('animationend', () => {
+                            overlay.classList.remove('weapon-equip-flash');
+                        }, { once: true });
+                    }
                 } else {
                     overlay.style.display = 'none';
                 }
