@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
     <title>FightChub</title>
     <link rel="icon" type="image/png" href="Assets/UI/Chests/Golden.png">
@@ -173,6 +173,34 @@
             transition: width 0.3s ease;
             box-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
         }
+
+        /* Stamina bar */
+        .stamina-bar-container {
+            width: 100%;
+            height: 9px;
+            background: #1a1a1a;
+            border: 1px solid #000;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 3px;
+            position: relative;
+        }
+        .stamina-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ca8a04, #eab308, #fde047);
+            transition: width 0.25s ease;
+        }
+        .stamina-bar.exhausted {
+            background: #4b4b4b;
+        }
+        .stamina-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            color: #d4a017;
+            margin-top: 2px;
+            text-align: left;
+        }
+        #cpu-hud-info .stamina-text { text-align: right; }
 
         .fury-text {
             position: absolute;
@@ -3345,6 +3373,37 @@
             height: 100%;
             border-radius: 3px;
             transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        /* Battle Instinct (Q-learning) bar in lobby */
+        .instinct-bar-container {
+            width: 100%;
+            margin-top: 4px;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+        .instinct-bar-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5.5px;
+            color: #ccc;
+            margin-bottom: 3px;
+        }
+        .instinct-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .instinct-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+            transition: width 0.6s ease;
         }
 
         /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
@@ -8557,6 +8616,15 @@
                                         <div class="morale-bar-fill" id="morale-bar-fill" style="width:100%;background:#f97316;"></div>
                                     </div>
                                 </div>
+                                <div class="instinct-bar-container" id="instinct-bar-container" style="display:none;">
+                                    <div class="instinct-bar-label">
+                                        <span class="instinct-status-text" id="instinct-status-text">🧠 INSTINCT</span>
+                                        <span id="instinct-value-text">0/100</span>
+                                    </div>
+                                    <div class="instinct-bar-track">
+                                        <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
+                                    </div>
+                                </div>
                             </div>
                             <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                         </div>
@@ -9195,6 +9263,10 @@
                     <div class="fury-text">FURY: <span id="player-fury-text">0/10</span></div>
                     <div class="fury-bar" id="player-fury" style="width: 0%;"></div>
                 </div>
+                <div class="stamina-bar-container">
+                    <div class="stamina-bar" id="player-stamina" style="width:100%;"></div>
+                </div>
+                <div class="stamina-text" id="player-stamina-text">ST 100</div>
                 <div class="player-stats-combat" id="player-stats-combat">
                     <span>ATK: <span id="player-atk-display">35</span></span>
                     <span>DEF: <span id="player-def-display">35</span></span>
@@ -9217,6 +9289,10 @@
                     <div class="fury-text">FURY: <span id="cpu-fury-text">0/10</span></div>
                     <div class="fury-bar" id="cpu-fury" style="width: 0%;"></div>
                 </div>
+                <div class="stamina-bar-container">
+                    <div class="stamina-bar" id="cpu-stamina" style="width:100%;"></div>
+                </div>
+                <div class="stamina-text" id="cpu-stamina-text">ST 100</div>
                 <div class="player-stats-combat" id="cpu-stats-combat">
                     <span>ATK: <span id="cpu-atk-display">35</span></span>
                     <span>DEF: <span id="cpu-def-display">35</span></span>
@@ -9283,13 +9359,17 @@
             </div>
             <div class="fighter" id="player">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="Player">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="Player">
+                    <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;">
+                    <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;">
                 </div>
             </div>
 
             <div class="fighter" id="cpu">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="CPU">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="CPU">
+                    <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;">
+                    <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;">
                 </div>
             </div>
         </div>
@@ -9706,14 +9786,15 @@
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
         const CONSUMABLE_TRIGGER_HP = 0.25;
         const BATTLE_CONSUMABLES = {
-            small_potion: { name: 'Small Potion', category: 'potion', healPercent: 0.22, icon: '🧪', price: 12 },
-            big_potion:   { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6, icon: '⚗️', price: 16 },
+            small_potion:   { name: 'Small Potion', category: 'potion', healPercent: 0.22,               icon: '🧪', price: 12 },
+            big_potion:     { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6,  icon: '⚗️', price: 16 },
+            stamina_potion: { name: 'Energy Drink', category: 'potion', staminaRestore: 0.50,            icon: '⚡', price: 14 },
         };
         // Legacy alias — battle engine still references CONSUMABLES for heal logic
         const CONSUMABLES = BATTLE_CONSUMABLES;
         const CONSUMABLE_MIN_LEVEL = 5;
         const CONSUMABLE_SHOP_PRICES = {
-            small_potion: 12, big_potion: 16,
+            small_potion: 12, big_potion: 16, stamina_potion: 14,
         };
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
@@ -9784,9 +9865,9 @@
         const CONSUMABLE_DROP_TABLES = {
             bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
             silver:    { chance: 0.20, pool: ['apple', 'banana', 'rice_bowl', 'chicken'], dropType: 'wellness' },
-            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'big_potion'], dropType: 'mixed' },
-            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'ice_pack', 'bandage'], dropType: 'mixed' },
-            legendary: { chance: 1.00, pool: ['big_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
+            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
+            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'stamina_potion', 'ice_pack', 'bandage'], dropType: 'mixed' },
+            legendary: { chance: 1.00, pool: ['big_potion', 'stamina_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
         };
 
         // ===== SKILL TREE SYSTEM =====
@@ -10052,12 +10133,12 @@
 
         // Weapon definitions
         const WEAPONS = {
-            bat:   { name: 'Bat',   img: 'Assets/Weapons/Bat.png',   damage: 70,  critBonus: 0.08, longReach: true },
-            knife: { name: 'Knife', img: 'Assets/Weapons/Knife.png', damage: 90,  critBonus: 0.15 },
-            mace:  { name: 'Mace',  img: 'Assets/Weapons/Mace.png',  damage: 110, critBonus: 0.08 },
-            sword: { name: 'Sword', img: 'Assets/Weapons/Sword.png', damage: 140, critBonus: 0.10 },
-            axe:   { name: 'Axe',   img: 'Assets/Weapons/Axe.png',   damage: 170, critBonus: 0.06 }
         };
+
+        /** Returns "MIN – MAX" damage range string from weapon's own dmgMin/dmgMax. */
+        function weaponDmgRange(weapon) {
+            return weapon.dmgMin + ' – ' + weapon.dmgMax;
+        }
 
         function weaponIconHTML(weapon, size) {
             size = size || 32;
@@ -10074,6 +10155,23 @@
         const _weaponRunFramesCache = {};
         // Weapon attack animation frames cache: { weaponId: frames[] }
         const _weaponAttackFramesCache = {};
+        // Weapon idle pose overlay frames cache: { weaponId: frames[] }
+        const _weaponIdlePoseCache = {};
+        const WEAPON_POSE_MAP = {
+            tier_bat:           'Assets/Weapons/Poses/Bat Pose.png',
+            tier_knife:         'Assets/Weapons/Poses/Knife Pose.png',
+            tier_mace:          'Assets/Weapons/Poses/Mace Pose.png',
+            tier_shield:        'Assets/Weapons/Poses/Shield Pose.png',
+            tier_sword:         'Assets/Weapons/Poses/Sword Pose.png',
+            tier_spear:         'Assets/Weapons/Poses/Spear Pose.png',
+            tier_axe:           'Assets/Weapons/Poses/Axe Pose.png',
+            tier_morning_star:  'Assets/Weapons/Poses/Morning Star Pose.png',
+            tier_katana:        'Assets/Weapons/Poses/Katana Pose.png',
+            tier_sledgehammer:  'Assets/Weapons/Poses/Sledgehammer Pose.png',
+            tier_labrys:        'Assets/Weapons/Poses/Labrys Pose.png',
+            tier_imperial_mace: 'Assets/Weapons/Poses/Imperial Mace Pose.png',
+            tier_gun:           'Assets/Weapons/Poses/Gun Pose.png',
+        };
 
         // Weapon state for each player
         const weaponState = {
@@ -10102,19 +10200,19 @@
         // Weapon tiers organized by chest level (13 tiers)
         // Each tier contains one weapon, unlocked randomly from that tier
         const WEAPON_TIERS = {
-            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            damage: 75,  critBonus: 0.08, longReach: true }],
-            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          damage: 95,  critBonus: 0.15 }],
-            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           damage: 115, critBonus: 0.08 },
-                  { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         damage: 40,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
-            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          damage: 140, critBonus: 0.10 }],
-            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          damage: 165, critBonus: 0.12, longReach: true }],
-            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            damage: 190, critBonus: 0.06 }],
-            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   damage: 220, critBonus: 0.09 }],
-            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         damage: 260, critBonus: 0.16 }],
-            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   damage: 310, critBonus: 0.06 }],
-            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         damage: 360, critBonus: 0.10 }],
-            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  damage: 410, critBonus: 0.08 }],
-            100: [{ id: 'tier_gun',            name: 'Gun',            img: 'Assets/Weapons/Gun.png',            damage: 500, critBonus: 0.12 }]
+            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi' }],
+            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi' }],
+            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08 },
+                  { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
+            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10 }],
+            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true }],
+            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06 }],
+            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09 }],
+            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
+            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06 }],
+            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi' }],
+            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08 }],
+            100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
         };
 
         // Which weapons have been unlocked globally
@@ -10144,10 +10242,14 @@
         };
         let globalCharactersCreated = 0;
         let winStreak = 0;
-        let shopItemCooldowns = {}; // { itemId: timestamp }
-        let shopDailyPurchases = 0;
-        let shopPurchaseDate = '';
-        const SHOP_DAILY_LIMIT = 3;
+        let shopItemCooldowns = {}; // { itemId: timestamp } — 24h cooldown per item
+        const MINIGAME_ITEM_IDS = ['punching_bag', 'jump_training'];
+        const MINIGAME_DAILY_LIMIT = 3;   // combined across both minigame items
+        const ITEM_DAILY_LIMIT     = 2;   // per individual item for all other purchasable items
+        let minigamePurchaseDate   = '';
+        let minigameDailyPurchases = 0;
+        let itemPurchaseDate       = '';
+        let itemDailyPurchases     = {}; // { itemId: count }
         let shopFragmentDate = '';
         let shopFragmentBoughtToday = false;
         const FRAGMENT_SHOP_PRICE = 5;
@@ -10243,9 +10345,11 @@
                     // pendingVictoryChests: NOT loaded from localStorage — server is the only source of truth
                     globalCharactersCreated = data.globalCharactersCreated || 0;
                     winStreak = data.winStreak || 0;
-                    shopItemCooldowns = data.shopItemCooldowns || {};
-                    shopDailyPurchases = data.shopDailyPurchases || 0;
-                    shopPurchaseDate = data.shopPurchaseDate || '';
+                    shopItemCooldowns     = data.shopItemCooldowns     || {};
+                    minigameDailyPurchases = data.minigameDailyPurchases || 0;
+                    minigamePurchaseDate   = data.minigamePurchaseDate   || '';
+                    itemDailyPurchases     = data.itemDailyPurchases     || {};
+                    itemPurchaseDate       = data.itemPurchaseDate       || '';
                     shopFragmentDate = data.shopFragmentDate || '';
                     shopFragmentBoughtToday = data.shopFragmentBoughtToday || false;
                     lastLoginTimestamp = data.lastLoginTimestamp || null;
@@ -10316,9 +10420,11 @@
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
                     globalCharactersCreated: globalCharactersCreated,
                     winStreak: winStreak,
-                    shopItemCooldowns: shopItemCooldowns,
-                    shopDailyPurchases: shopDailyPurchases,
-                    shopPurchaseDate: shopPurchaseDate,
+                    shopItemCooldowns:     shopItemCooldowns,
+                    minigameDailyPurchases: minigameDailyPurchases,
+                    minigamePurchaseDate:   minigamePurchaseDate,
+                    itemDailyPurchases:     itemDailyPurchases,
+                    itemPurchaseDate:       itemPurchaseDate,
                     xpBoostMultiplier: xpBoostMultiplier,
                     xpBoostBattlesLeft: xpBoostBattlesLeft,
                     pendingXpBoosts: pendingXpBoosts,
@@ -11575,27 +11681,18 @@
             }
         }
 
-        // Level up options - 24 stat points + variable HP per level
-        const LEVEL_UP_OPTIONS = [
-            { name: 'Berserker',  description: '+8 ATK, +8 STR, +4 AGI, +4 DEF, +50 HP', atk:8, str:8, agi:4, def:4, hp:50 },
-            { name: 'Assassin',   description: '+7 ATK, +4 STR, +8 AGI, +5 DEF, +56 HP', atk:7, str:4, agi:8, def:5, hp:56 },
-            { name: 'Balanced',   description: '+7 ATK, +5 STR, +5 AGI, +7 DEF, +60 HP', atk:7, str:5, agi:5, def:7, hp:60 },
-            { name: 'Guardian',   description: '+5 ATK, +5 STR, +5 AGI, +9 DEF, +66 HP', atk:5, str:5, agi:5, def:9, hp:66 },
-            { name: 'Striker',    description: '+10 ATK, +4 STR, +6 AGI, +4 DEF, +52 HP', atk:10, str:4, agi:6, def:4, hp:52 }
-        ];
-
         const STAT_TOTAL = 150; // ATK + STR + AGI + DEF = 150 always
         const BASE_HP = 1000; // Base HP
         const HP_STAT_FACTOR = 2.5; // HP change per point of (DEF + STR - ATK - AGI) — only at creation
 
-        // Auto-derived from LEVEL_UP_OPTIONS — no need to update manually
-        const AVG_STAT_PER_LEVEL = LEVEL_UP_OPTIONS.reduce((s, o) => s + o.atk + (o.str||0) + (o.agi||0) + o.def, 0) / (LEVEL_UP_OPTIONS.length * 4);
-        const AVG_HP_PER_LEVEL = Math.floor(LEVEL_UP_OPTIONS.reduce((s, o) => s + (o.hp||0), 0) / LEVEL_UP_OPTIONS.length);
+        // Derived from backend pool average (12 options, ~21.7 stat pts avg / 4 stats, ~70 HP avg)
+        const AVG_STAT_PER_LEVEL = 5.5;
+        const AVG_HP_PER_LEVEL   = 70;
 
-        const STAT_MIN = 22;
-        const STAT_MAX = 54;
-        const ATK_DEF_CAP = 80; // ATK + DEF cannot exceed this
-        const ATK_STR_CAP = 80; // ATK + STR cannot exceed this
+        const STAT_MIN = 15;
+        const STAT_MAX = 68;
+        const ATK_DEF_CAP = 95; // ATK + DEF cannot exceed this
+        const ATK_STR_CAP = 95; // ATK + STR cannot exceed this
 
         function generateBalancedStats() {
             // Sequential random generation for maximum variety
@@ -11937,9 +12034,29 @@
             syncCharacterToBackend(character);
         }
 
-        function getRandomLevelUpOptions() {
-            const shuffled = [...LEVEL_UP_OPTIONS].sort(() => Math.random() - 0.5);
-            return [shuffled[0], shuffled[1]];
+        async function fetchAndQueueLevelUp(character) {
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify({ action: 'get_options', characterId: character.id })
+                });
+                const data = await resp.json();
+                if (data.ok && Array.isArray(data.options)) {
+                    pendingLevelUps.push({ character, options: data.options });
+                    savePendingLevelUps();
+                    return;
+                }
+            } catch(e) {
+                console.warn('[levelup] could not fetch options from server:', e);
+            }
+            // Fallback: 3 balanced options if backend unreachable
+            pendingLevelUps.push({ character, options: [
+                { name: 'Balanced',    atk:5,  str:5,  agi:5,  def:5,  hp:80,  description:'+5 ATK, +5 STR, +5 AGI, +5 DEF, +80 HP'  },
+                { name: 'Brawler',     atk:12, str:6,  agi:4,  def:2,  hp:56,  description:'+12 ATK, +6 STR, +4 AGI, +2 DEF, +56 HP'  },
+                { name: 'Meat Shield', atk:2,  str:6,  agi:2,  def:6,  hp:107, description:'+2 ATK, +6 STR, +2 AGI, +6 DEF, +107 HP'  },
+            ]});
+            savePendingLevelUps();
         }
 
         // ===== PLAYER SESSION (Privy login — handled by React LoginGate) =====
@@ -11947,6 +12064,14 @@
 
         function initGameWithSession() {
             loadCharacters();
+            fetchCharactersFromServer(); // async: merges server chars not in localStorage
+            // One-time migration: push all local chars to server so player_id is set in DB.
+            // Only runs once per player (flagged in localStorage to avoid spamming on every login).
+            const syncFlag = 'fightchub_chars_player_id_synced';
+            if (!localStorage.getItem(syncFlag) && characters.length > 0) {
+                characters.forEach(c => syncCharacterToBackend(c));
+                localStorage.setItem(syncFlag, '1');
+            }
             applyWellnessDecayAll();
             applyMoraleDecayAll();
             loadPendingLevelUps();
@@ -12074,11 +12199,12 @@
                     dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
                 }
                 // Restore authoritative shop state (overrides stale localStorage)
-                if (data.shopPurchaseDate !== undefined) {
-                    shopPurchaseDate   = data.shopPurchaseDate   || '';
-                    shopDailyPurchases = data.shopDailyPurchases || 0;
-                    shopItemCooldowns  = data.shopItemCooldowns  || {};
-                }
+                shopItemCooldowns      = data.shopItemCooldowns      || {};
+                minigamePurchaseDate   = data.minigamePurchaseDate   || '';
+                minigameDailyPurchases = data.minigameDailyPurchases || 0;
+                itemPurchaseDate       = data.itemPurchaseDate       || '';
+                itemDailyPurchases     = data.itemDailyPurchases     || {};
+                shopFragmentDate       = data.shopFragmentDate       || '';
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
@@ -12633,6 +12759,7 @@
                 },
                 body: JSON.stringify({
                     id:           character.id,
+                    player_id:    playerSession?.playerId ?? null,
                     mint:         character.mint         ?? null,
                     owner_wallet: character.ownerWallet  ?? null,
                     chain:        character.chain        ?? null,
@@ -12673,6 +12800,44 @@
                 if (r.ok) console.log('[sync] character synced ok:', character.name);
                 else r.json().then(b => console.warn('[sync] character sync failed:', r.status, JSON.stringify(b))).catch(() => console.warn('[sync] character sync failed:', r.status));
             }).catch(e => console.warn('[sync] character sync error:', e));
+        }
+
+        // Fetches characters from server and merges any missing ones into localStorage.
+        // Called on login so characters appear on all browsers/devices.
+        async function fetchCharactersFromServer() {
+            if (!playerSession || !BACKEND_URL || !SYNC_SECRET) return;
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/character/list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ playerId: playerSession.playerId }),
+                });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                const serverChars = data.characters ?? [];
+                if (!serverChars.length) return;
+
+                const localIds = new Set(characters.map(c => c.id));
+                let added = 0;
+                for (const sc of serverChars) {
+                    if (!localIds.has(sc.id)) {
+                        characters.push(sc);
+                        added++;
+                    }
+                }
+                if (added > 0) {
+                    applyWellnessDecayAll();
+                    applyMoraleDecayAll();
+                    if (!selectedCharacterId || !characters.find(c => c.id === selectedCharacterId)) {
+                        selectedCharacterId = characters[0]?.id ?? null;
+                        localStorage.setItem('fightchub_selected_character', String(selectedCharacterId));
+                    }
+                    saveCharacters();
+                    updateLobbyCharacterDisplay();
+                }
+            } catch (e) {
+                console.error('[fetchChars]', e);
+            }
         }
 
         // Deduct tokens/fragments on the server, returns { ok, newTokens, newFragments, error? }
@@ -12809,6 +12974,8 @@
                 skills:              character.skills             || {},
                 equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
                 equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
+                adaptability:        character.adaptability || 0,
+                qTable:              character.qTable       || {},
             };
 
             const cpuData = {
@@ -13057,7 +13224,17 @@
                         updateHealth('player');
                         updateHealth('cpu');
                         if (event.healAmount > 0) showHealText(event.fighter, event.healAmount);
+                        if (event.staminaAmount > 0) {
+                            // Stamina potion — update the bar visually
+                            const cons = BATTLE_CONSUMABLES[event.consumableId];
+                            if (cons) updateStaminaBar(event.fighter, Math.min(100, (game[event.fighter]?.stamina || 0) + event.staminaAmount), 100);
+                        }
                         await sleep(280);
+                        break;
+                    }
+
+                    case 'stamina': {
+                        updateStaminaBar(event.fighter, event.stamina, event.maxStamina);
                         break;
                     }
 
@@ -13086,6 +13263,7 @@
                                 weaponState[event.fighter].inventory.push(event.weaponId);
                             }
                             updateWeaponDisplay(event.fighter);
+                            syncArmedIdle(event.fighter);
                         }
                         await sleep(80);
                         break;
@@ -13097,6 +13275,13 @@
                         updateHealth('cpu');
                         const throwTarget = event.fighter === 'player' ? 'cpu' : 'player';
                         if (event.damage > 0) showDamage(throwTarget, event.damage, false);
+                        // Clear equipped weapon and update display/idle
+                        if (weaponState[event.fighter]) {
+                            weaponState[event.fighter].usedWeapons.push(event.weaponId);
+                            weaponState[event.fighter].equippedWeapon = null;
+                            updateWeaponDisplay(event.fighter);
+                            syncArmedIdle(event.fighter);
+                        }
                         await sleep(220);
                         break;
                     }
@@ -13156,6 +13341,10 @@
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
 
+            // Hide weapon idle overlays during attack animation
+            hideWeaponIdleOverlay(attacker);
+            hideWeaponIdleOverlay(defender);
+
             // Midpoint position: ~44% from the attacker's side
             const midPos = '44%';
 
@@ -13205,14 +13394,31 @@
                 }
                 await sleep(150);
             } else if (defense === 'block') {
-                if (defImg && defImg._blockFrames && defImg._blockFrames.length > 0) {
+                const defWeaponState = weaponState[defender];
+                const defWeaponData  = defWeaponState?.equippedWeapon ? WEAPONS[defWeaponState.equippedWeapon] : null;
+                const isShieldBlock  = !!(defWeaponData?.isShield && defImg?._shieldBlockFrames?.length > 0);
+                const shieldOverlay  = fighterBody.querySelector('.shield-block-overlay');
+                if (defImg) {
                     defImg._preDefenseSrc = defImg.src;
-                    const blockFrames = defImg._blockFrames;
-                    let fi = 0;
-                    if (defImg._blockAnim) clearInterval(defImg._blockAnim);
-                    defImg._blockAnim = setInterval(() => {
-                        if (fi < blockFrames.length) { defImg.src = blockFrames[fi++]; }
-                        else { clearInterval(defImg._blockAnim); defImg._blockAnim = null; }
+                    const blockFrames = isShieldBlock ? defImg._shieldBlockFrames : defImg._blockFrames;
+                    if (blockFrames && blockFrames.length > 0) {
+                        let fi = 0;
+                        if (defImg._blockAnim) clearInterval(defImg._blockAnim);
+                        defImg._blockAnim = setInterval(() => {
+                            if (fi < blockFrames.length) { defImg.src = blockFrames[fi++]; }
+                            else { clearInterval(defImg._blockAnim); defImg._blockAnim = null; }
+                        }, 50);
+                    }
+                }
+                if (isShieldBlock && shieldOverlay && defImg._shieldDefenseFrames?.length > 0) {
+                    shieldOverlay.src     = defImg._shieldDefenseFrames[0];
+                    shieldOverlay.style.display = 'block';
+                    let si = 0;
+                    const shieldFrames = defImg._shieldDefenseFrames;
+                    if (defImg._shieldOverlayAnim) clearInterval(defImg._shieldOverlayAnim);
+                    defImg._shieldOverlayAnim = setInterval(() => {
+                        if (si < shieldFrames.length) { shieldOverlay.src = shieldFrames[si++]; }
+                        else { clearInterval(defImg._shieldOverlayAnim); defImg._shieldOverlayAnim = null; }
                     }, 50);
                 }
                 fighterBody.classList.add('blocking');
@@ -13274,6 +13480,8 @@
                 await sleep(200);
                 fighterBody.classList.remove('blocking');
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
+                const _shieldOverlay = fighterBody.querySelector('.shield-block-overlay');
+                if (_shieldOverlay) { _shieldOverlay.style.display = 'none'; _shieldOverlay.src = ''; }
             }
 
             // Return phase
@@ -13619,7 +13827,7 @@
             function simThrowWeapon(fighter, defender) {
                 const state = ws[fighter];
                 const weapon = WEAPONS[state.equippedWeapon];
-                const throwDmg = Math.round(weapon.damage * 0.20);
+                const throwDmg = Math.round(((weapon.dmgMin + weapon.dmgMax) / 2) * 0.20);
                 g[defender].health = Math.max(0, g[defender].health - throwDmg);
                 st[fighter].weaponsThrown++;
                 state.usedWeapons.push(state.equippedWeapon);
@@ -14223,7 +14431,7 @@
         let rerollsUsed = 0; // Track how many rerolls used
         let rerollsMax = 3; // Max rerolls allowed
 
-        function openCharacterCreation() {
+        async function openCharacterCreation() {
             const creationCost = globalCharactersCreated === 0 ? 0 : Math.floor(60 * Math.pow(1.1, globalCharactersCreated));
             if (creationCost > 0 && globalTokens < creationCost) {
                 showNotice('Not enough tokens! You need 🪙 ' + creationCost + ' but only have 🪙 ' + globalTokens);
@@ -14236,6 +14444,16 @@
                 rerollsUsed = 0;
                 rerollsMax = 3;
                 document.getElementById('character-name-input').value = '';
+                // Fetch initial stats from server (hidden bias archetypes)
+                const result = await spendOnServer('generate_stats');
+                if (result.ok && result.stats) {
+                    const srv = result.stats;
+                    tempNewCharacter.stats.attack   = srv.atk;
+                    tempNewCharacter.stats.strength = srv.str;
+                    tempNewCharacter.stats.agility  = srv.agi;
+                    tempNewCharacter.stats.defense  = srv.def;
+                    tempNewCharacter.maxHp          = srv.hp;
+                }
             }
             // Show stats
             const hp = getCharacterMaxHp(tempNewCharacter);
@@ -14297,8 +14515,11 @@
             const result = await spendOnServer('reroll', { rerollIndex: idx, isFirstCharacter: characters.length === 0 });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             saveProgression();
-            // 4 stats: ATK + STR + AGI + DEF = STAT_TOTAL (150), each 20-50
-            const newStats = generateBalancedStats();
+            // Use server-generated stats (hidden bias archetypes for variety)
+            const srv = result.stats;
+            const newStats = srv
+                ? { attack: srv.atk, strength: srv.str, agility: srv.agi, defense: srv.def, hp: srv.hp }
+                : generateBalancedStats(); // fallback if server didn't return stats
             tempNewCharacter.stats.attack = newStats.attack;
             tempNewCharacter.stats.strength = newStats.strength;
             tempNewCharacter.stats.agility = newStats.agility;
@@ -14306,7 +14527,7 @@
 
             // Recalculate HP based on new stats
             const statDiff = (newStats.defense + newStats.strength) - (newStats.attack + newStats.agility);
-            tempNewCharacter.maxHp = Math.round(BASE_HP + (statDiff * HP_STAT_FACTOR));
+            tempNewCharacter.maxHp = srv ? srv.hp : Math.round(BASE_HP + (statDiff * HP_STAT_FACTOR));
             document.getElementById('preview-hp').textContent = tempNewCharacter.maxHp;
             document.getElementById('preview-atk').textContent = newStats.attack;
             document.getElementById('preview-str').textContent = newStats.strength;
@@ -14329,6 +14550,16 @@
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             globalCharactersCreated++;
             saveProgression();
+
+            // Apply server-generated stats (final authoritative roll)
+            if (result.stats) {
+                const srv = result.stats;
+                tempNewCharacter.stats.attack   = srv.atk;
+                tempNewCharacter.stats.strength = srv.str;
+                tempNewCharacter.stats.agility  = srv.agi;
+                tempNewCharacter.stats.defense  = srv.def;
+                tempNewCharacter.maxHp          = srv.hp;
+            }
 
             const name = sanitizeName(document.getElementById('character-name-input').value) || 'Fighter';
             tempNewCharacter.name = name;
@@ -14407,9 +14638,10 @@
                     expContainer.style.display = 'none';
                 }
 
-                // Wellness + Morale bar update
+                // Wellness + Morale + Instinct bar update
                 updateWellnessDisplay(character);
                 updateMoraleDisplay(character);
+                updateInstinctDisplay(character);
 
                 const isDepressed = (character.morale ?? 100) < 20;
                 playBtn.disabled = !canFight(character) || isDepressed;
@@ -14487,6 +14719,7 @@
         }
 
         let selectedLevelUpOption = null;
+        let selectedLevelUpOptionIndex = -1;
         let currentLevelUpCharacter = null;
         let currentLevelUpOptions = null;
 
@@ -14554,6 +14787,7 @@
 
         function selectLevelUpOption(index, options, character) {
             selectedLevelUpOption = options[index];
+            selectedLevelUpOptionIndex = index;
 
             // Calculate preview stats
             const currentAtk = character.stats.attack;
@@ -14611,18 +14845,9 @@
 
         function showLevelUpConfirmation() {
             if (!selectedLevelUpOption || !currentLevelUpCharacter) return;
-
             const opt = selectedLevelUpOption;
-            const confirmMessages = {
-                'Berserker': `Embrace the path of the Berserker! Devastating attacks (+${opt.atk} ATK, +${opt.str} STR) with agility (+${opt.agi} AGI), defense (+${opt.def} DEF) and vitality (+${opt.hp} HP).`,
-                'Assassin': `Walk the path of the Assassin! Swift and deadly (+${opt.atk} ATK, +${opt.agi} AGI) with strength (+${opt.str} STR), defense (+${opt.def} DEF) and health (+${opt.hp} HP).`,
-                'Balanced': `Choose perfect Balance! Equal growth across all stats (+${opt.atk} ATK, +${opt.str} STR, +${opt.agi} AGI, +${opt.def} DEF) with solid health (+${opt.hp} HP).`,
-                'Guardian': `Become a Guardian! Strong defense (+${opt.def} DEF) and strength (+${opt.str} STR) with steady attack (+${opt.atk} ATK), agility (+${opt.agi} AGI) and great vitality (+${opt.hp} HP).`,
-                'Striker': `Strike fast and hard! Great attack (+${opt.atk} ATK) and agility (+${opt.agi} AGI) with strength (+${opt.str} STR), defense (+${opt.def} DEF) and health (+${opt.hp} HP).`
-            };
-
             document.getElementById('levelup-confirm-title').textContent = `Apply ${opt.name}?`;
-            document.getElementById('levelup-confirm-message').textContent = confirmMessages[opt.name] || `Apply ${opt.name} upgrade?`;
+            document.getElementById('levelup-confirm-message').textContent = opt.description || `Apply ${opt.name} upgrade?`;
             document.getElementById('levelup-confirm-modal').classList.add('active');
         }
 
@@ -14630,32 +14855,60 @@
             document.getElementById('levelup-confirm-modal').classList.remove('active');
         }
 
-        function confirmLevelUpApply() {
+        async function confirmLevelUpApply() {
             if (!selectedLevelUpOption || !currentLevelUpCharacter) return;
 
-            applyLevelUpChoice(currentLevelUpCharacter.id, selectedLevelUpOption);
+            const character = currentLevelUpCharacter;
+            const optIndex  = selectedLevelUpOptionIndex;
+
             closeLevelUpConfirmation();
             closeLevelUpModal();
 
-            // Remove the applied level up from the stack
-            const index = pendingLevelUps.findIndex(p => p.character && p.character.id === currentLevelUpCharacter.id);
-            if (index !== -1) {
-                pendingLevelUps.splice(index, 1);
+            // Remove from pending stack immediately (optimistic)
+            const pendingIdx = pendingLevelUps.findIndex(p => p.character && p.character.id === character.id);
+            if (pendingIdx !== -1) {
+                pendingLevelUps.splice(pendingIdx, 1);
                 savePendingLevelUps();
             }
 
             selectedLevelUpOption = null;
-            const appliedCharacterId = currentLevelUpCharacter.id;
+            selectedLevelUpOptionIndex = -1;
             currentLevelUpCharacter = null;
             currentLevelUpOptions = null;
+
+            // Apply on server (server reads pending_levelup from DB, validates, writes new stats)
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify({ action: 'apply', characterId: character.id, optionIndex: optIndex })
+                });
+                const data = await resp.json();
+                if (data.ok && data.newStats) {
+                    // Update local character from server response
+                    character.stats.attack   = data.newStats.atk;
+                    character.stats.strength = data.newStats.str;
+                    character.stats.agility  = data.newStats.agi;
+                    character.stats.defense  = data.newStats.def;
+                    character.maxHp          = data.newStats.hp;
+                    // Award skill point
+                    character.skillPoints = (character.skillPoints || 0) + 1;
+                    saveCharacters();
+                } else {
+                    console.warn('[levelup] server apply failed, applying locally as fallback');
+                    applyLevelUpChoice(character.id, selectedLevelUpOption || currentLevelUpOptions?.[optIndex]);
+                }
+            } catch(e) {
+                console.warn('[levelup] network error, applying locally as fallback:', e);
+                applyLevelUpChoice(character.id, currentLevelUpOptions?.[optIndex]);
+            }
+
             updateLobbyCharacterDisplay();
 
-            // If there are more pending level ups for this character, show the next one
-            const nextLevelUp = pendingLevelUps.find(p => p.character && p.character.id === appliedCharacterId);
+            // Show next pending level-up for this character if any
+            const nextLevelUp = pendingLevelUps.find(p => p.character && p.character.id === character.id);
             if (nextLevelUp) {
-                setTimeout(() => {
-                    showLevelUpModal(nextLevelUp.character, nextLevelUp.options);
-                }, 300);
+                setTimeout(() => showLevelUpModal(nextLevelUp.character, nextLevelUp.options), 300);
             }
         }
 
@@ -14723,6 +14976,9 @@
             game.gameOver = false;
             game.gameOverHandled = false;
             game.inProgress = false;
+            // Reset stamina bars to full
+            updateStaminaBar('player', 100, 100);
+            updateStaminaBar('cpu',    100, 100);
 
             // Reset stats
             stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
@@ -15974,6 +16230,16 @@
             hudEl[fighter + 'FuryText'].textContent = `${Math.floor(f.fury)}/${f.maxFury}`;
         }
 
+        function updateStaminaBar(fighter, stamina, maxStamina) {
+            const bar  = document.getElementById(fighter + '-stamina');
+            const text = document.getElementById(fighter + '-stamina-text');
+            if (!bar || !text) return;
+            const pct = Math.max(0, Math.min(100, (stamina / maxStamina) * 100));
+            bar.style.width = pct + '%';
+            bar.classList.toggle('exhausted', stamina <= 0);
+            text.textContent = 'ST ' + Math.round(stamina);
+        }
+
         function showEffect(x, y, emoji) {
             const effect = document.createElement('div');
             effect.className = 'punch-effect';
@@ -16270,6 +16536,8 @@
             img._idleBlinkStopped = false;
             // Start first blink after a random delay to desync fighters
             img._blinkTimeout = setTimeout(doBlink, 300 + Math.random() * 800);
+            // Re-show weapon idle overlay now that we're back in idle
+            if (fighterEl.id) syncArmedIdle(fighterEl.id);
         }
         function stopIdleBlink(fighterEl) {
             const img = fighterEl.querySelector('img');
@@ -16278,7 +16546,50 @@
                 if (img._blinkTimeout) { clearTimeout(img._blinkTimeout); img._blinkTimeout = null; }
             }
             stopSpriteAnimation(fighterEl);
-        }function showComboHit(count) {
+        }
+
+        // Swaps the idle pose to the armed version when a weapon is equipped, or back when unequipped.
+        // Also shows/hides the weapon idle pose overlay.
+        function syncArmedIdle(fighter) {
+            const el = game[fighter]?.element;
+            if (!el) return;
+            const img = el.querySelector('img.character-png');
+            if (!img) return;
+            const equippedId = weaponState[fighter]?.equippedWeapon;
+            const isArmed = !!equippedId;
+            const newIdle = isArmed && img._armedIdleFrames?.length > 0
+                ? img._armedIdleFrames[0]
+                : (img._unarmedIdleSrc || img._originalFrames?.idle || img.dataset.idle);
+            if (newIdle && img._idleSrc !== newIdle) {
+                img._idleSrc = newIdle;
+                if (!img._currentAnim && !img._blockAnim && !img._loserAnim) img.src = newIdle;
+            }
+            // Show/hide weapon pose overlay
+            const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
+            if (!overlay) return;
+            if (isArmed) {
+                const poseFrames = _weaponIdlePoseCache[equippedId];
+                if (poseFrames && poseFrames.length > 0) {
+                    overlay.src = poseFrames[0];
+                    overlay.style.display = 'block';
+                } else {
+                    overlay.style.display = 'none';
+                }
+            } else {
+                overlay.style.display = 'none';
+                overlay.src = '';
+            }
+        }
+
+        // Hides the weapon idle overlay during animations (re-shown by startIdleBlink / syncArmedIdle).
+        function hideWeaponIdleOverlay(fighter) {
+            const el = game[fighter]?.element;
+            if (!el) return;
+            const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function showComboHit(count) {
             document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
             const colors = ['#fbbf24', '#f97316', '#ef4444', '#8b5cf6', '#ec4899'];
             const color  = colors[Math.min(count - 2, colors.length - 1)];
@@ -16546,12 +16857,8 @@
                         log(`+${lastExpGained} EXP gained!${hadBoost ? ' ⚡ BOOSTED' : ''}`, 'log-fury');
 
                         if (result.leveledUp) {
-                            pendingLevelUps.push({
-                                character: character,
-                                options: getRandomLevelUpOptions()
-                            });
-                            savePendingLevelUps();
                             addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            fetchAndQueueLevelUp(character);
                         }
                     }
                 } else {
@@ -16567,12 +16874,8 @@
                         log(`+${lastExpGained} EXP gained (defeat)${hadBoost ? ' ⚡ BOOSTED' : ''}`, 'log-info');
 
                         if (result.leveledUp) {
-                            pendingLevelUps.push({
-                                character: character,
-                                options: getRandomLevelUpOptions()
-                            });
-                            savePendingLevelUps();
                             addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            fetchAndQueueLevelUp(character);
                         }
                     }
                 }
@@ -16628,6 +16931,21 @@
                         showNotice('🔥 3 WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙');
                     } else {
                         showNotice('+' + lastBattleRewards.tokensEarned + ' 🪙');
+                    }
+                }
+                // Q-learning: apply Battle Instinct updates to character
+                if (lastBattleRewards.playerQTable !== undefined) {
+                    const qlChar = getSelectedCharacter();
+                    if (qlChar) {
+                        const oldAdapt = Math.round(qlChar.adaptability || 0);
+                        qlChar.qTable       = lastBattleRewards.playerQTable;
+                        qlChar.adaptability = lastBattleRewards.newAdaptability ?? qlChar.adaptability;
+                        const newAdapt = Math.round(qlChar.adaptability || 0);
+                        if (newAdapt > oldAdapt) {
+                            log('🧠 Battle Instinct ↑ ' + newAdapt + ' BP', 'log-buff');
+                        }
+                        saveCharacters();
+                        updateInstinctDisplay(qlChar);
                     }
                 }
                 lastBattleRewards = null;
@@ -17803,11 +18121,8 @@
                     }
                     const result = addExpToCharacter(character.id, lastAonExp);
                     if (result.leveledUp) {
-                        pendingLevelUps.push({
-                            character: character,
-                            options: getRandomLevelUpOptions()
-                        });
-                        savePendingLevelUps();
+                        addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                        fetchAndQueueLevelUp(character);
                     }
                 }
             }
@@ -17968,6 +18283,7 @@
             state.shieldHP = 0;
             state.shieldMaxHP = 0;
             updateWeaponDisplay(defender);
+            syncArmedIdle(defender);
         }
 
 
@@ -18265,12 +18581,14 @@
                             img._hurtFrames = [...img._originalFrames.hurt];
                             img._dodgeFrames = [...img._originalFrames.dodge];
                             img._blockFrames = [...img._originalFrames.block];
+                            if (img._originalFrames.armedIdle) img._armedIdleFrames = [...img._originalFrames.armedIdle];
                             img._idleBlinkFrames = [...img._originalFrames.idleBlink];
                             img._loserFrames = [...img._originalFrames.loser];
                             img.dataset.lose = img._loserFrames[0];
                             img.dataset.win = img._originalFrames.win;
                             img.src = img._originalFrames.idle;
                             img._idleSrc = img.src;
+                            img._unarmedIdleSrc = img._idleSrc;
                         }
                     }
                     continue;
@@ -18321,6 +18639,19 @@
                 // Process block sprite sheet
                 img._blockFrames = await exf(img.dataset.block, 'block');
 
+                // Process shield-specific block animation (character body + shield overlay)
+                if (img.dataset.shieldBlock) {
+                    try { img._shieldBlockFrames = await extractFrames(img.dataset.shieldBlock, 3, 1); } catch(e) { img._shieldBlockFrames = []; }
+                }
+                if (img.dataset.shieldDefense) {
+                    try { img._shieldDefenseFrames = await extractFrames(img.dataset.shieldDefense, 3, 1); } catch(e) { img._shieldDefenseFrames = []; }
+                }
+
+                // Process armed-idle sprite sheet (4 frames, used when a weapon is equipped)
+                if (img.dataset.armedIdle) {
+                    try { img._armedIdleFrames = await exf(img.dataset.armedIdle, 'idle', 4, 1); } catch(e) { img._armedIdleFrames = []; }
+                }
+
                 // Process idle blink sprite sheet
                 img._idleBlinkFrames = await exf(img.dataset.idleBlink, 'idleBlink');
 
@@ -18336,6 +18667,7 @@
                 const idleFrames = await exf(originalIdleSrc, 'idle');
                 img.src = idleFrames[0];
                 img._idleSrc = img.src;
+                img._unarmedIdleSrc = img._idleSrc; // saved for restoring when weapon is unequipped
 
                 // Store original frames for CPU (before hue shift)
                 if (isCpu) {
@@ -18350,6 +18682,8 @@
                         hurt: [...img._hurtFrames],
                         dodge: [...img._dodgeFrames],
                         block: [...img._blockFrames],
+                        shieldBlock: img._shieldBlockFrames ? [...img._shieldBlockFrames] : [],
+                        armedIdle: img._armedIdleFrames ? [...img._armedIdleFrames] : [],
                         idleBlink: [...img._idleBlinkFrames],
                         loser: [...img._loserFrames],
                         win: img.dataset.win,
@@ -18388,6 +18722,11 @@
                         try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2); }
                         catch(e) { _weaponAttackFramesCache[entry.id] = []; }
                     }
+                    // Preload idle weapon pose overlay
+                    if (!_weaponIdlePoseCache[entry.id] && WEAPON_POSE_MAP[entry.id]) {
+                        try { _weaponIdlePoseCache[entry.id] = await extractFrames(WEAPON_POSE_MAP[entry.id], 4, 1); }
+                        catch(e) { _weaponIdlePoseCache[entry.id] = []; }
+                    }
                 }
             }
             console.log('Fighter sprite sheets processed (skipWeapons=' + skipWeapons + '). Active blob URLs: ' + _activeBlobURLs.size);
@@ -18410,6 +18749,9 @@
             img._hurtFrames = await applyHueShiftToFrames(img._originalFrames.hurt, hue, img._hurtFrames);
             img._dodgeFrames = await applyHueShiftToFrames(img._originalFrames.dodge, hue, img._dodgeFrames);
             img._blockFrames = await applyHueShiftToFrames(img._originalFrames.block, hue, img._blockFrames);
+            if (img._originalFrames.armedIdle && img._originalFrames.armedIdle.length > 0) {
+                img._armedIdleFrames = await applyHueShiftToFrames(img._originalFrames.armedIdle, hue, img._armedIdleFrames);
+            }
             img._idleBlinkFrames = await applyHueShiftToFrames(img._originalFrames.idleBlink, hue, img._idleBlinkFrames);
             img._loserFrames = await applyHueShiftToFrames(img._originalFrames.loser, hue, img._loserFrames);
             img.dataset.lose = img._loserFrames[0];
@@ -18419,6 +18761,7 @@
             if (img._idleSrc !== img._originalFrames.idle) revokeBlobURLs(img._idleSrc);
             img.src = await applyHueShiftPreservingBlacks(img._originalFrames.idle, hue);
             img._idleSrc = img.src;
+            img._unarmedIdleSrc = img._idleSrc; // update after hue-shifted idle is set
 
             // Apply hue shift to CPU fury orb frames
             if (FURY_ORB_FRAMES.length > 0) {
@@ -18451,12 +18794,14 @@
                     cpuImg._hurtFrames = [...cpuImg._originalFrames.hurt];
                     cpuImg._dodgeFrames = [...cpuImg._originalFrames.dodge];
                     cpuImg._blockFrames = [...cpuImg._originalFrames.block];
+                    if (cpuImg._originalFrames.armedIdle) cpuImg._armedIdleFrames = [...cpuImg._originalFrames.armedIdle];
                     cpuImg._idleBlinkFrames = [...cpuImg._originalFrames.idleBlink];
                     cpuImg._loserFrames = [...cpuImg._originalFrames.loser];
                     cpuImg.dataset.lose = cpuImg._loserFrames[0];
                     cpuImg.dataset.win = cpuImg._originalFrames.win;
                     cpuImg.src = cpuImg._originalFrames.idle;
                     cpuImg._idleSrc = cpuImg.src;
+                    cpuImg._unarmedIdleSrc = cpuImg._idleSrc;
 
                     // Reset CPU fury frames to original
                     FURY_ORB_FRAMES_CPU = [...FURY_ORB_FRAMES];
@@ -18560,12 +18905,30 @@
             });
         }
 
+        function onFullscreenChange() {
+            updateFullscreenIcon();
+            // Recalculate zoom after fullscreen transition — browser chrome appears/disappears
+            // changing window.innerHeight. Two passes catch slow transitions.
+            setTimeout(scaleGame, 50);
+            setTimeout(scaleGame, 350);
+        }
+
         if (IS_MOBILE) {
             document.querySelectorAll('#fullscreen-btn, #fullscreen-btn-lobby').forEach(btn => {
                 btn.style.display = 'flex';
             });
-            document.addEventListener('fullscreenchange', updateFullscreenIcon);
-            document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+            // iOS Safari doesn't support document.requestFullscreen but does change
+            // visualViewport.height when the URL bar shows/hides — use it as fallback.
+            if (window.visualViewport) {
+                let _vpTimer;
+                window.visualViewport.addEventListener('resize', () => {
+                    clearTimeout(_vpTimer);
+                    _vpTimer = setTimeout(scaleGame, 100);
+                });
+            }
         }
 
         let _resizeTimer;
@@ -19003,12 +19366,9 @@
         function renderShop() {
             const grid = document.getElementById('shop-grid');
             if (!grid) return;
-            const remaining = getShopPurchasesRemaining();
-            const used = SHOP_DAILY_LIMIT - remaining;
-            document.getElementById('shop-tokens').innerHTML = '🪙 ' + globalTokens + '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Purchases: ' + used + '/' + SHOP_DAILY_LIMIT;
+            document.getElementById('shop-tokens').innerHTML = '🪙 ' + globalTokens;
             grid.innerHTML = '';
             const character = getSelectedCharacter();
-            const limitReached = remaining <= 0;
 
             // Update tab styles
             document.getElementById('shop-tab-potions').classList.toggle('active', shopActiveTab === 'potions');
@@ -19062,16 +19422,20 @@
                     const price = CONSUMABLE_SHOP_PRICES[id];
                     const cooldown = getItemCooldownRemaining(id);
                     const onCooldown = cooldown > 0;
-                    const canAfford = globalTokens >= price && !onCooldown && !limitReached;
+                    const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
+                    const canAfford = globalTokens >= price && !onCooldown && !atDailyLimit;
                     const item = document.createElement('div');
                     item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
                     const hotLabel = cons.hotTicks ? ' (HoT)' : '';
-                    const priceOrCooldown = (onCooldown || limitReached)
+                    const priceOrCooldown = (onCooldown || atDailyLimit)
                         ? '<div class="shop-item-cooldown">SOLD OUT</div>'
                         : '<div class="shop-item-price">🪙 ' + price + '</div>';
+                    const statLabel = cons.staminaRestore
+                        ? '+' + Math.round(cons.staminaRestore * 100) + '% ST'
+                        : '+' + Math.round((cons.healPercent || 0) * 100) + '% HP' + hotLabel;
                     item.innerHTML = '<div class="shop-item-icon">' + cons.icon + '</div>' +
                         '<div class="shop-item-name">' + cons.name + '</div>' +
-                        '<div class="shop-item-heal">+' + Math.round(cons.healPercent * 100) + '% HP' + hotLabel + '</div>' +
+                        '<div class="shop-item-heal">' + statLabel + '</div>' +
                         priceOrCooldown;
                     if (canAfford && character) {
                         item.addEventListener('click', () => buyConsumable(id));
@@ -19085,10 +19449,11 @@
                     const price = wItem.price;
                     const cooldown = getItemCooldownRemaining(id);
                     const onCooldown = cooldown > 0;
-                    const canAfford = globalTokens >= price && !onCooldown && !limitReached;
+                    const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
+                    const canAfford = globalTokens >= price && !onCooldown && !atDailyLimit;
                     const item = document.createElement('div');
                     item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
-                    const priceOrCooldown = (onCooldown || limitReached)
+                    const priceOrCooldown = (onCooldown || atDailyLimit)
                         ? '<div class="shop-item-cooldown">SOLD OUT</div>'
                         : '<div class="shop-item-price">🪙 ' + price + '</div>';
                     item.innerHTML = '<div class="shop-item-icon">' + wItem.icon + '</div>' +
@@ -19103,16 +19468,22 @@
             }
         }
 
-        function getShopPurchasesRemaining() {
+        function getMinigamePurchasesRemaining() {
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) return SHOP_DAILY_LIMIT;
-            return Math.max(0, SHOP_DAILY_LIMIT - shopDailyPurchases);
+            if (minigamePurchaseDate !== today) return MINIGAME_DAILY_LIMIT;
+            return Math.max(0, MINIGAME_DAILY_LIMIT - minigameDailyPurchases);
+        }
+
+        function getItemPurchasesRemaining(id) {
+            const today = new Date().toDateString();
+            if (itemPurchaseDate !== today) return ITEM_DAILY_LIMIT;
+            return Math.max(0, ITEM_DAILY_LIMIT - (itemDailyPurchases[id] || 0));
         }
 
         async function buyConsumable(id) {
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character first!'); return; }
-            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily purchase limit reached! (3/3)'); return; }
+            if (getItemPurchasesRemaining(id) <= 0) { showNotice('Daily limit reached for this item! (2/day)'); return; }
             if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             if (globalTokens < CONSUMABLE_SHOP_PRICES[id]) { showNotice('Not enough tokens!'); return; }
 
@@ -19121,20 +19492,20 @@
 
             const cons = CONSUMABLES[id];
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
-            shopDailyPurchases++;
+            if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
+            itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
             shopItemCooldowns[id] = Date.now();
             character.consumables.push(id);
             saveCharacters();
             saveProgression();
             renderShop();
-            showNotice('Bought ' + cons.icon + ' ' + cons.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
+            showNotice('Bought ' + cons.icon + ' ' + cons.name + '! (' + itemDailyPurchases[id] + '/' + ITEM_DAILY_LIMIT + ' today)');
         }
 
         async function buyWellnessItem(id) {
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character first!'); return; }
-            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily purchase limit reached!'); return; }
+            if (getItemPurchasesRemaining(id) <= 0) { showNotice('Daily limit reached for this item! (2/day)'); return; }
             if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             const wItem = WELLNESS_ITEMS[id];
             if (!wItem || globalTokens < wItem.price) { showNotice('Not enough tokens!'); return; }
@@ -19143,15 +19514,15 @@
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
 
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
-            shopDailyPurchases++;
+            if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
+            itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
             shopItemCooldowns[id] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(id);
             saveCharacters();
             saveProgression();
             renderShop();
-            showNotice('Bought ' + wItem.icon + ' ' + wItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
+            showNotice('Bought ' + wItem.icon + ' ' + wItem.name + '! (' + itemDailyPurchases[id] + '/' + ITEM_DAILY_LIMIT + ' today)');
         }
 
         async function buyHappyPill() {
@@ -19177,7 +19548,11 @@
         async function buyMoraleItem(id) {
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character first!'); return; }
-            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily purchase limit reached!'); return; }
+            const isMinigameItem = MINIGAME_ITEM_IDS.includes(id);
+            if (isMinigameItem ? getMinigamePurchasesRemaining() <= 0 : getItemPurchasesRemaining(id) <= 0) {
+                showNotice(isMinigameItem ? 'Daily minigame limit reached! (3/day)' : 'Daily limit reached for this item! (2/day)');
+                return;
+            }
             if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             const mItem = MORALE_ITEMS[id];
             if (!mItem || globalTokens < mItem.price) { showNotice('Not enough tokens!'); return; }
@@ -19186,15 +19561,22 @@
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
 
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
-            shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
+            if (isMinigameItem) {
+                if (minigamePurchaseDate !== today) { minigamePurchaseDate = today; minigameDailyPurchases = 0; }
+                minigameDailyPurchases++;
+            } else {
+                if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
+                itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
+                shopItemCooldowns[id] = Date.now();
+            }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveCharacters();
             saveProgression();
             renderShop();
-            showNotice('Bought ' + mItem.icon + ' ' + mItem.name + '! (' + shopDailyPurchases + '/' + SHOP_DAILY_LIMIT + ')');
+            const countToday = isMinigameItem ? minigameDailyPurchases : itemDailyPurchases[id];
+            const limitToday  = isMinigameItem ? MINIGAME_DAILY_LIMIT  : ITEM_DAILY_LIMIT;
+            showNotice('Bought ' + mItem.icon + ' ' + mItem.name + '! (' + countToday + '/' + limitToday + ' today)');
         }
 
         // Buy a wellness item from the shop then immediately use it — used by care panel click/drag
@@ -19202,7 +19584,7 @@
             const item = WELLNESS_ITEMS[itemId];
             if (!item) { showNotice('Unknown item!'); return null; }
             if ((character.wellness ?? 100) >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
-            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily shop limit reached!'); return null; }
+            if (getItemPurchasesRemaining(itemId) <= 0) { showNotice('Daily limit reached for this item! (2/day)'); return null; }
             if (getItemCooldownRemaining(itemId) > 0) { showNotice('This item is on cooldown!'); return null; }
             if (globalTokens < item.price) { showNotice('Not enough tokens!'); return null; }
 
@@ -19214,8 +19596,8 @@
             if (!buyResult.ok) { showNotice(buyResult.error || 'Not enough tokens!'); return null; }
 
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
-            shopDailyPurchases++;
+            if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
+            itemDailyPurchases[itemId] = (itemDailyPurchases[itemId] || 0) + 1;
             shopItemCooldowns[itemId] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(itemId);
@@ -19292,8 +19674,12 @@
             const mItem = MORALE_ITEMS[id];
             if (!mItem) { showNotice('Unknown activity!'); return null; }
             if ((character.morale ?? 100) >= MORALE_MAX) { showNotice('Fighter is already at max morale!'); return null; }
-            if (getShopPurchasesRemaining() <= 0) { showNotice('Daily shop limit reached!'); return null; }
-            if (getItemCooldownRemaining(id) > 0) { showNotice('This activity is on cooldown!'); return null; }
+            const isMinigame = MINIGAME_ITEM_IDS.includes(id);
+            if (isMinigame ? getMinigamePurchasesRemaining() <= 0 : getItemPurchasesRemaining(id) <= 0) {
+                showNotice(isMinigame ? 'Daily minigame limit reached! (3/day)' : 'Daily limit reached for this item! (2/day)');
+                return null;
+            }
+            if (!isMinigame && getItemCooldownRemaining(id) > 0) { showNotice('This activity is on cooldown!'); return null; }
             if (globalTokens < mItem.price) { showNotice('Not enough tokens!'); return null; }
 
             // Ensure character exists in Supabase BEFORE spend
@@ -19304,9 +19690,14 @@
             if (!buyResult.ok) { showNotice(buyResult.error || 'Not enough tokens!'); return null; }
 
             const today = new Date().toDateString();
-            if (shopPurchaseDate !== today) { shopPurchaseDate = today; shopDailyPurchases = 0; }
-            shopDailyPurchases++;
-            shopItemCooldowns[id] = Date.now();
+            if (isMinigame) {
+                if (minigamePurchaseDate !== today) { minigamePurchaseDate = today; minigameDailyPurchases = 0; }
+                minigameDailyPurchases++;
+            } else {
+                if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
+                itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
+                shopItemCooldowns[id] = Date.now();
+            }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
             saveProgression();
@@ -19358,6 +19749,37 @@
 
         function closeShop() {
             document.getElementById('shop-panel').classList.remove('active');
+        }
+
+        // ===== INSTINCT (Q-LEARNING) DISPLAY =====
+
+        function updateInstinctDisplay(character) {
+            const container = document.getElementById('instinct-bar-container');
+            if (!container) return;
+            if (!character) { container.style.display = 'none'; return; }
+
+            const adapt   = character.adaptability || 0;
+            // Epsilon mirrors backend formula: max(0.02, 1 / (1 + adapt * 0.08))
+            const epsilon = Math.max(0.02, 1 / (1 + adapt * 0.08));
+            // Bar shows how "instinctive" the character is (0% = random, ~98% = near-perfect)
+            const pct     = Math.round((1 - epsilon) * 100);
+
+            // Tier label based on raw adaptability
+            const tierLabel = adapt < 25  ? 'Rookie'
+                            : adapt < 75  ? 'Learning'
+                            : adapt < 150 ? 'Seasoned'
+                            : adapt < 300 ? 'Veteran'
+                            :               'Master';
+
+            const label = document.getElementById('instinct-status-text');
+            const valEl = document.getElementById('instinct-value-text');
+            const fill  = document.getElementById('instinct-bar-fill');
+
+            if (label) label.textContent = '🧠 ' + tierLabel;
+            if (valEl) valEl.textContent = Math.round(adapt) + ' BP';  // Battle Points
+            if (fill)  fill.style.width  = pct + '%';
+
+            container.style.display = '';
         }
 
         // ===== WELLNESS DISPLAY FUNCTIONS =====
@@ -20550,11 +20972,11 @@
                     careActiveTab === 'food' ? (w.category === 'food' || w.category === 'special') : w.category === careActiveTab
                 );
                 const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
-                const shopFull = getShopPurchasesRemaining() <= 0;
                 tabItems.forEach(([id, wItem]) => {
                     const count = counts[id] || 0;
                     const owned = count > 0;
                     const onCooldown = getItemCooldownRemaining(id) > 0;
+                    const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
                     const canAfford = globalTokens >= wItem.price;
 
                     const card = document.createElement('div');
@@ -20573,7 +20995,7 @@
                         actionEl = '<div class="care-item-cd-text">FULL</div>';
                     } else if (owned) {
                         actionEl = '<div class="care-item-owned-badge">x' + count + ' ✓</div>';
-                    } else if (onCooldown || shopFull) {
+                    } else if (onCooldown || atDailyLimit) {
                         actionEl = '<div class="care-item-cd-text">LIMIT</div>';
                     } else {
                         actionEl = '<button class="care-item-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + wItem.price + '</button>';
@@ -20586,7 +21008,7 @@
                         (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
                         actionEl;
 
-                    const actionable = !atMax && (owned || (!onCooldown && canAfford && !shopFull));
+                    const actionable = !atMax && (owned || (!onCooldown && canAfford && !atDailyLimit));
                     if (actionable) {
                         card.addEventListener('click', async () => {
                             const confirmed = await careBuyConfirm(wItem, owned);
@@ -20634,15 +21056,16 @@
                 list.appendChild(freeRow);
 
                 const atMax = (character.morale ?? 100) >= MORALE_MAX;
-                const shopFull = getShopPurchasesRemaining() <= 0;
                 Object.keys(MORALE_ITEMS).forEach(id => {
                     const mItem = MORALE_ITEMS[id];
-                    const cooldown = getItemCooldownRemaining(id);
+                    const isMinigame = MINIGAME_ITEM_IDS.includes(id);
+                    const cooldown = isMinigame ? 0 : getItemCooldownRemaining(id);
                     const onCooldown = cooldown > 0;
                     const canAfford = globalTokens >= mItem.price;
                     const ownedCount = (character.moraleItems || []).filter(i => i === id).length;
                     const atMaxStack = mItem.maxStack != null && ownedCount >= mItem.maxStack;
-                    const disabled = atMax || onCooldown || !canAfford || shopFull || atMaxStack;
+                    const atDailyLimit = isMinigame ? getMinigamePurchasesRemaining() <= 0 : getItemPurchasesRemaining(id) <= 0;
+                    const disabled = atMax || onCooldown || !canAfford || atDailyLimit || atMaxStack;
 
                     const row = document.createElement('div');
                     row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
@@ -20653,8 +21076,11 @@
                         rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
                     } else if (atMaxStack) {
                         rightEl = '<span class="care-activity-cooldown-text">' + ownedCount + '/' + mItem.maxStack + ' STACKED</span>';
-                    } else if (shopFull) {
-                        rightEl = '<span class="care-activity-cooldown-text">LIMIT 3/3</span>';
+                    } else if (atDailyLimit) {
+                        const limitLabel = isMinigame
+                            ? 'LIMIT ' + minigameDailyPurchases + '/' + MINIGAME_DAILY_LIMIT
+                            : 'LIMIT ' + (itemDailyPurchases[id] || 0) + '/' + ITEM_DAILY_LIMIT;
+                        rightEl = '<span class="care-activity-cooldown-text">' + limitLabel + '</span>';
                     } else {
                         const btnLabel = isInteractive ? '🎮 PLAY (' + mItem.price + '🪙)' : '🪙 ' + mItem.price;
                         rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>' + btnLabel + '</button>';
@@ -20764,13 +21190,15 @@
                     <div class="inventory-weapon-icon">${weaponIconHTML(weapon, 48)}</div>
                     <div class="inventory-weapon-name">${weapon.name}</div>
                     <div class="inventory-weapon-stats">
-                        <div class="inventory-weapon-damage">DMG: ${weapon.damage}</div>
+                        <div class="inventory-weapon-damage">DMG: ${weaponDmgRange(weapon)}</div>
                         <div class="inventory-weapon-crit">CRIT: +${Math.round(weapon.critBonus * 100)}%</div>
+                        <div style="font-size:0.6em;color:${weapon.statScale === 'agi' ? '#38bdf8' : '#fb923c'};">${weapon.statScale === 'agi' ? 'AGI' : 'STR'}</div>
                     </div>
                     <div class="durability-bar-container">
                         <div class="durability-bar-fill ${durColor}" style="width:${durability}%"></div>
                     </div>
                     <div class="durability-text">DUR: ${durability}%</div>
+                    ${weapon.longReach || weapon.jumpable ? '<div style="color:#a78bfa;font-size:0.6em;margin-top:3px;letter-spacing:0.05em;">LONG REACH</div>' : ''}
                     ${isBroken ? '<div class="broken-badge">BROKEN</div>' : ''}
                     ${isEquipped && !isBroken ? '<div style="color:#22c55e;font-size:0.6em;margin-top:5px;">✓ EQUIPPED</div>' : ''}
                     ${character && isEquipped && !isBroken ? '<button class="inv-equip-btn inv-equip-btn-unequip">UNEQUIP</button>' : ''}
@@ -22129,7 +22557,7 @@
             currentWeaponAction = weaponId;
             document.getElementById('weapon-action-icon').innerHTML = weaponIconHTML(weapon, 64);
             document.getElementById('weapon-action-name').textContent = weapon.name;
-            document.getElementById('weapon-action-stats').textContent = `DMG: ${weapon.damage} | CRIT: +${Math.round(weapon.critBonus * 100)}%`;
+            document.getElementById('weapon-action-stats').textContent = `DMG: ${weaponDmgRange(weapon)} | CRIT: +${Math.round(weapon.critBonus * 100)}%`;
 
             const buttonsContainer = document.getElementById('weapon-action-buttons');
             if (isEquipped) {
