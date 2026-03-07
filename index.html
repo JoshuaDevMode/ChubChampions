@@ -12894,8 +12894,8 @@
 
         // Minimal ABI for AoNEscrow (only the functions/events we call)
         const AON_ESCROW_ABI = [
-            'function createRoom(uint256 entryFee, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig) external returns (uint256)',
-            'function joinRoom(uint256 roomId, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig, bytes32 userSeedHash) external payable',
+            'function createRoom(uint256 entryFee, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, uint8 element, uint16 adaptability, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig) external returns (uint256)',
+            'function joinRoom(uint256 roomId, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, uint8 element, uint16 adaptability, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig, bytes32 userSeedHash) external payable',
             'function getEntropyFee() external view returns (uint256)',
             'function getRoom(uint256 roomId) external view returns (address p1, address p2, uint256 entryFee, uint8 state, uint64 createdAt, uint64 p2JoinedAt)',
             'event RoomCreated(uint256 indexed roomId, address indexed p1, uint256 entryFee)',
@@ -13154,8 +13154,9 @@
                         durability: character.weaponDurability || {},
                         unlocked:   globalUnlockedWeapons      || [],
                     },
-                    element:     character.element     ?? null,
-                    consumables: character.consumables || [],
+                    element:      character.element      ?? null,
+                    adaptability: character.adaptability ?? 0,
+                    consumables:  character.consumables  || [],
                     wellnessItems: character.wellnessItems || [],
                     wellness_data: {
                         wellness: character.wellness ?? 100,
@@ -17933,18 +17934,20 @@
         function _canonicalCharBytesForSolana(pubkeyBytes, cd, expiryBigInt) {
             const hexStr    = (cd.skillsPacked || '').replace(/^0x/, '');
             const skillsB   = hexStr ? _hexToBytes(hexStr) : new Uint8Array(0);
-            const cap = 32 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + skillsB.length + 2 + 5 + 8;
+            const cap = 32 + 4 + 4 + 4 + 4 + 4 + 4 + 1 + 2 + 4 + skillsB.length + 2 + 5 + 8;
             const buf = new Uint8Array(cap);
             const dv  = new DataView(buf.buffer);
             let o = 0;
             buf.set(pubkeyBytes, o); o += 32;
-            dv.setUint32(o, cd.level,    true); o += 4;
-            dv.setUint32(o, cd.maxHp,    true); o += 4;
-            dv.setUint32(o, cd.attack,   true); o += 4;
-            dv.setUint32(o, cd.strength, true); o += 4;
-            dv.setUint32(o, cd.agility,  true); o += 4;
-            dv.setUint32(o, cd.defense,  true); o += 4;
-            dv.setUint32(o, skillsB.length, true); o += 4;
+            dv.setUint32(o, cd.level,        true); o += 4;
+            dv.setUint32(o, cd.maxHp,        true); o += 4;
+            dv.setUint32(o, cd.attack,       true); o += 4;
+            dv.setUint32(o, cd.strength,     true); o += 4;
+            dv.setUint32(o, cd.agility,      true); o += 4;
+            dv.setUint32(o, cd.defense,      true); o += 4;
+            dv.setUint8(o,  cd.element  || 0);      o += 1;
+            dv.setUint16(o, cd.adaptability || 0, true); o += 2;
+            dv.setUint32(o, skillsB.length,  true); o += 4;
             buf.set(skillsB, o); o += skillsB.length;
             buf[o++] = cd.consumables[0];
             buf[o++] = cd.consumables[1];
@@ -17966,16 +17969,18 @@
         function _borshEncodeCharData(cd) {
             const hexStr  = (cd.skillsPacked || '').replace(/^0x/, '');
             const skillsB = hexStr ? _hexToBytes(hexStr) : new Uint8Array(0);
-            const buf = new Uint8Array(4 + 4 + 4 + 4 + 4 + 4 + 4 + skillsB.length + 2 + 5);
+            const buf = new Uint8Array(4 + 4 + 4 + 4 + 4 + 4 + 1 + 2 + 4 + skillsB.length + 2 + 5);
             const dv  = new DataView(buf.buffer);
             let o = 0;
-            dv.setUint32(o, cd.level,    true); o += 4;
-            dv.setUint32(o, cd.maxHp,    true); o += 4;
-            dv.setUint32(o, cd.attack,   true); o += 4;
-            dv.setUint32(o, cd.strength, true); o += 4;
-            dv.setUint32(o, cd.agility,  true); o += 4;
-            dv.setUint32(o, cd.defense,  true); o += 4;
-            dv.setUint32(o, skillsB.length, true); o += 4;
+            dv.setUint32(o, cd.level,        true); o += 4;
+            dv.setUint32(o, cd.maxHp,        true); o += 4;
+            dv.setUint32(o, cd.attack,       true); o += 4;
+            dv.setUint32(o, cd.strength,     true); o += 4;
+            dv.setUint32(o, cd.agility,      true); o += 4;
+            dv.setUint32(o, cd.defense,      true); o += 4;
+            dv.setUint8(o,  cd.element  || 0);      o += 1;
+            dv.setUint16(o, cd.adaptability || 0, true); o += 2;
+            dv.setUint32(o, skillsB.length,  true); o += 4;
             buf.set(skillsB, o); o += skillsB.length;
             buf[o++] = cd.consumables[0]; buf[o++] = cd.consumables[1];
             for (let i = 0; i < 5; i++) buf[o++] = cd.weapons[i];
