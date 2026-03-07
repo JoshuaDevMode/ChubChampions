@@ -1504,6 +1504,7 @@
             z-index: 1;
             padding: 0;
             overflow: hidden;
+            font-size: 18px;
         }
 
         .lobby-bg {
@@ -1728,7 +1729,7 @@
 
         .menu-character-info {
             position: absolute;
-            top: calc(100% + 10px);
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             width: 340px;
@@ -2107,32 +2108,62 @@
             padding: 12px 20px;
             font-family: 'Fredoka', sans-serif;
             font-size: 0.65em;
-            background: linear-gradient(to bottom, #22c55e, #16a34a);
-            border: 3px solid #15803d;
-            border-radius: 8px;
-            color: #fff;
+            font-weight: 700;
+            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
+            border: 4px solid #100800;
+            border-radius: 6px;
+            color: #1c0a00;
             cursor: pointer;
             transition: all 0.2s;
-            text-shadow: 1px 1px 0 #000;
-            box-shadow: 0 4px 0 #166534, 0 0 20px rgba(34,197,94,0.4);
+            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 5px 12px rgba(0,0,0,0.65),
+                0 2px 0 #100800;
             margin-top: 10px;
             animation: upgradeButtonPulse 1.5s ease-in-out infinite;
         }
 
         .menu-upgrade-stats:hover {
-            background: linear-gradient(to bottom, #4ade80, #22c55e);
+            filter: brightness(1.08);
             transform: translateY(-2px);
-            box-shadow: 0 6px 0 #166534, 0 0 30px rgba(34,197,94,0.6);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 8px 18px rgba(0,0,0,0.7),
+                0 2px 0 #100800;
         }
 
         .menu-upgrade-stats:active {
             transform: translateY(2px);
-            box-shadow: 0 2px 0 #166534;
+            filter: brightness(0.88);
+            box-shadow:
+                inset 0 0 0 2px rgba(180,110,0,0.6),
+                inset 0 4px 8px rgba(0,0,0,0.4),
+                0 1px 0 #100800;
         }
 
         @keyframes upgradeButtonPulse {
-            0%, 100% { box-shadow: 0 4px 0 #166534, 0 0 20px rgba(34,197,94,0.4); }
-            50% { box-shadow: 0 4px 0 #166534, 0 0 35px rgba(34,197,94,0.7); }
+            0%, 100% {
+                box-shadow:
+                    inset 0 0 0 2px rgba(220,150,10,0.7),
+                    inset 0 4px 0 rgba(255,255,180,0.45),
+                    inset 0 -3px 0 rgba(0,0,0,0.35),
+                    0 5px 12px rgba(0,0,0,0.65),
+                    0 2px 0 #100800;
+            }
+            50% {
+                box-shadow:
+                    inset 0 0 0 2px rgba(220,150,10,0.7),
+                    inset 0 4px 0 rgba(255,255,180,0.45),
+                    inset 0 -3px 0 rgba(0,0,0,0.35),
+                    0 0 22px rgba(255,200,0,0.8),
+                    0 5px 12px rgba(0,0,0,0.65),
+                    0 2px 0 #100800;
+            }
         }
 
         /* Equipment Panel in Lobby */
@@ -2799,20 +2830,26 @@
         .menu-stats-with-skill .menu-character-stats { flex: 1; }
 
         .skills-icon-btn {
-            background: linear-gradient(180deg, #2a1600 0%, #150b00 100%);
-            border: 2px solid #c8860a;
-            border-radius: 8px;
-            color: #ffd700;
+            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
+            border: 4px solid #100800;
+            border-radius: 6px;
+            color: #1c0a00;
             font-family: 'Fredoka', sans-serif;
             font-size: 6px;
+            font-weight: 700;
             padding: 7px 10px;
             cursor: pointer;
             flex-shrink: 0;
             white-space: nowrap;
             text-align: center;
             letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(255,200,0,0.7);
-            box-shadow: 0 0 8px rgba(200,134,10,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 5px 12px rgba(0,0,0,0.65),
+                0 2px 0 #100800;
             transition: all 0.15s ease;
         }
 
@@ -2822,15 +2859,23 @@
         }
 
         .skills-icon-btn:hover {
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255,215,0,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
+            filter: brightness(1.08);
             transform: translateY(-2px);
-            filter: brightness(1.15);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 8px 18px rgba(0,0,0,0.7),
+                0 2px 0 #100800;
         }
 
         .skills-icon-btn:active {
-            transform: translateY(1px);
-            filter: brightness(0.85);
+            transform: translateY(2px);
+            filter: brightness(0.88);
+            box-shadow:
+                inset 0 0 0 2px rgba(180,110,0,0.6),
+                inset 0 4px 8px rgba(0,0,0,0.4),
+                0 1px 0 #100800;
         }
 
         /* Wrapper: wellness+morale bars on the left, CARE button on the right */
@@ -2849,32 +2894,46 @@
 
         /* CARE button — right of bars, same width as SKILLS */
         .care-icon-btn {
-            background: linear-gradient(180deg, #001a2a 0%, #000b15 100%);
-            border: 2px solid #0a86c8;
-            border-radius: 8px;
-            color: #7dd3fc;
+            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
+            border: 4px solid #100800;
+            border-radius: 6px;
+            color: #1c0a00;
             font-family: 'Fredoka', sans-serif;
             font-size: 6px;
+            font-weight: 700;
             padding: 7px 10px;
             cursor: pointer;
             text-align: center;
             letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(125,211,252,0.7);
-            box-shadow: 0 0 8px rgba(10,134,200,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 5px 12px rgba(0,0,0,0.65),
+                0 2px 0 #100800;
             transition: all 0.15s ease;
             flex-shrink: 0;
             white-space: nowrap;
             align-self: center;
         }
         .care-icon-btn:hover {
-            border-color: #7dd3fc;
-            box-shadow: 0 0 20px rgba(125,211,252,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
+            filter: brightness(1.08);
             transform: translateY(-2px);
-            filter: brightness(1.15);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 8px 18px rgba(0,0,0,0.7),
+                0 2px 0 #100800;
         }
         .care-icon-btn:active {
-            transform: translateY(1px);
-            filter: brightness(0.85);
+            transform: translateY(2px);
+            filter: brightness(0.88);
+            box-shadow:
+                inset 0 0 0 2px rgba(180,110,0,0.6),
+                inset 0 4px 8px rgba(0,0,0,0.4),
+                0 1px 0 #100800;
         }
 
         /* Wellness bar in lobby */
@@ -2916,7 +2975,12 @@
         .main-menu.care-mode .lobby-currency-bar {
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s;
+            height: 0;
+            overflow: hidden;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+            transition: opacity 0.3s, height 0.3s, padding 0.3s, border-width 0.3s;
         }
         .main-menu.care-mode .menu-character-section {
             transform: translateX(250px) scale(1.15);
@@ -2933,7 +2997,8 @@
         .main-menu.care-mode .menu-upgrade-stats,
         .main-menu.care-mode .menu-create-btn-plus,
         .main-menu.care-mode .menu-arrow-container,
-        .main-menu.care-mode .menu-char-left-col {
+        .main-menu.care-mode .menu-char-left-col,
+        .main-menu.care-mode #menu-element-badge {
             display: none;
         }
 
@@ -4248,7 +4313,12 @@
         .main-menu.inventory-mode .lobby-currency-bar {
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s;
+            height: 0;
+            overflow: hidden;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+            transition: opacity 0.3s, height 0.3s, padding 0.3s, border-width 0.3s;
         }
 
         .main-menu.inventory-mode .menu-character-section {
@@ -4267,7 +4337,8 @@
         .main-menu.inventory-mode .menu-upgrade-stats,
         .main-menu.inventory-mode .menu-create-btn-plus,
         .main-menu.inventory-mode .menu-arrow-container,
-        .main-menu.inventory-mode .menu-char-left-col {
+        .main-menu.inventory-mode .menu-char-left-col,
+        .main-menu.inventory-mode #menu-element-badge {
             display: none;
         }
 
@@ -7229,38 +7300,60 @@
         }
         .daily-claim-lobby-btn {
             position: relative;
-            background: rgba(0,0,0,0.55);
-            border: 1px solid #5a3d0a;
-            border-top: 1px solid #7a5514;
-            border-radius: 8px;
+            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
+            border: 4px solid #100800;
+            border-radius: 6px;
             padding: 8px 14px;
             z-index: 10;
             cursor: pointer;
             text-align: center;
             font-family: 'Fredoka', sans-serif;
             font-size: 0.5em;
-            color: #c8960a;
-            text-shadow: 1px 1px 0 #000;
+            font-weight: 700;
+            color: #1c0a00;
+            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 5px 12px rgba(0,0,0,0.65),
+                0 2px 0 #100800;
             transition: all 0.2s;
             width: 100%;
             box-sizing: border-box;
             letter-spacing: 1px;
         }
         .daily-claim-lobby-btn:hover {
-            background: rgba(30,20,5,0.75);
-            border-color: #c9920e;
-            border-top-color: #ffd700;
-            color: #ffd700;
+            filter: brightness(1.08);
             transform: scale(1.02);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 8px 18px rgba(0,0,0,0.7),
+                0 2px 0 #100800;
         }
         .daily-claim-lobby-btn.has-reward {
             animation: dailyBtnPulse 1.5s ease-in-out infinite;
-            border-color: #b8860b;
-            color: #ffd700;
         }
         @keyframes dailyBtnPulse {
-            0%, 100% { box-shadow: 0 0 4px rgba(255,215,0,0.2); border-top-color: #7a5514; }
-            50% { box-shadow: 0 0 16px rgba(255,215,0,0.6); border-top-color: #ffd700; }
+            0%, 100% {
+                box-shadow:
+                    inset 0 0 0 2px rgba(220,150,10,0.7),
+                    inset 0 4px 0 rgba(255,255,180,0.45),
+                    inset 0 -3px 0 rgba(0,0,0,0.35),
+                    0 5px 12px rgba(0,0,0,0.65),
+                    0 2px 0 #100800;
+            }
+            50% {
+                box-shadow:
+                    inset 0 0 0 2px rgba(220,150,10,0.7),
+                    inset 0 4px 0 rgba(255,255,180,0.45),
+                    inset 0 -3px 0 rgba(0,0,0,0.35),
+                    0 0 22px rgba(255,200,0,0.8),
+                    0 5px 12px rgba(0,0,0,0.65),
+                    0 2px 0 #100800;
+            }
         }
         .daily-claim-toast {
             position: absolute;
@@ -7497,18 +7590,40 @@
         .xp-boost-manage-btn {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.38em;
-            background: rgba(255,235,59,0.15);
-            border: 2px solid rgba(255,235,59,0.5);
+            font-weight: 700;
+            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
+            border: 4px solid #100800;
             border-radius: 6px;
-            color: #ffeb3b;
-            padding: 6px 8px;
+            color: #1c0a00;
+            padding: 6px 10px;
             cursor: pointer;
             white-space: nowrap;
+            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 5px 12px rgba(0,0,0,0.65),
+                0 2px 0 #100800;
             transition: all 0.15s;
         }
         .xp-boost-manage-btn:hover {
-            background: rgba(255,235,59,0.3);
-            border-color: #ffeb3b;
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+            box-shadow:
+                inset 0 0 0 2px rgba(220,150,10,0.7),
+                inset 0 4px 0 rgba(255,255,180,0.45),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                0 8px 18px rgba(0,0,0,0.7),
+                0 2px 0 #100800;
+        }
+        .xp-boost-manage-btn:active {
+            transform: translateY(2px);
+            filter: brightness(0.88);
+            box-shadow:
+                inset 0 0 0 2px rgba(180,110,0,0.6),
+                inset 0 4px 8px rgba(0,0,0,0.4),
+                0 1px 0 #100800;
         }
 
         /* Boost modal */
@@ -8591,7 +8706,8 @@
                         <span class="menu-character-arrow disabled" id="menu-arrow-right">▶</span>
                     </div>
                 </div>
-                <div class="menu-character-info" id="menu-character-info">
+            </div>
+            <div class="menu-character-info" id="menu-character-info">
                     <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
                         <div class="menu-character-exp" id="menu-character-exp-container">
                             <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
@@ -8646,7 +8762,6 @@
                         <button class="menu-change-name" id="menu-change-name">✏️ CHANGE NAME</button>
                         <button class="menu-delete-character" id="menu-delete-character">🗑️ DELETE</button>
                     </div>
-                </div>
             </div>
 
             <!-- Right Side - Daily, Chests, Battle buttons -->
@@ -12846,8 +12961,8 @@
             }).catch(e => console.warn('[sync] character sync error:', e));
         }
 
-        // Fetches characters from server and merges any missing ones into localStorage.
-        // Called on login so characters appear on all browsers/devices.
+        // Fetches characters from server — server is source of truth.
+        // Adds missing chars locally AND removes local chars deleted from DB.
         async function fetchCharactersFromServer() {
             if (!playerSession || !BACKEND_URL || !SYNC_SECRET) return;
             try {
@@ -12858,9 +12973,18 @@
                 });
                 if (!resp.ok) return;
                 const data = await resp.json();
-                const serverChars = data.characters ?? [];
-                if (!serverChars.length) return;
+                // If characters key is missing entirely (API error), don't touch local data
+                if (!Array.isArray(data.characters)) return;
+                const serverChars = data.characters;
 
+                // Remove local characters that no longer exist on the server
+                const serverIds = new Set(serverChars.map(c => c.id));
+                const before = characters.length;
+                characters = characters.filter(c => serverIds.has(c.id));
+                const removed = before - characters.length;
+                if (removed > 0) console.log(`[fetchChars] removed ${removed} local char(s) deleted from server`);
+
+                // Add server characters missing locally (cross-device sync)
                 const localIds = new Set(characters.map(c => c.id));
                 let added = 0;
                 for (const sc of serverChars) {
@@ -12869,7 +12993,8 @@
                         added++;
                     }
                 }
-                if (added > 0) {
+
+                if (added > 0 || removed > 0) {
                     applyWellnessDecayAll();
                     applyMoraleDecayAll();
                     if (!selectedCharacterId || !characters.find(c => c.id === selectedCharacterId)) {
@@ -20087,6 +20212,7 @@
             gameArea.innerHTML = '';
             titleEl.textContent = itemIcon + ' ' + itemName.toUpperCase();
             closeCarePanel();
+            document.getElementById('lobby-wrapper').style.display = 'none';
             mgScreen.classList.add('active');
 
             const _charImg  = document.getElementById('menu-character-img');
