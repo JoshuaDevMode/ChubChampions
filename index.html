@@ -6034,11 +6034,28 @@
             flex-direction: column;
             gap: 4px;
             box-shadow: 0 0 8px rgba(0,0,0,0.5), inset 0 0 12px rgba(0,0,0,0.3);
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+            cursor: pointer;
+            user-select: none;
         }
         .elem-guide-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 16px var(--ec-glow), 0 4px 12px rgba(0,0,0,0.6);
+            filter: brightness(1.1);
+        }
+        .elem-guide-card.selected {
+            border: 2.5px solid var(--ec);
+            background: rgba(255,255,255,0.10);
+            transform: translateY(-3px);
+            box-shadow: 0 0 0 2px var(--ec), 0 6px 16px rgba(0,0,0,0.65);
+        }
+        .elem-guide-card.selected::after {
+            content: '✓';
+            display: block;
+            font-size: 11px;
+            color: var(--ec);
+            font-weight: 700;
+            margin-top: 2px;
+            line-height: 1;
         }
         .elem-guide-icon { font-size: 22px; line-height: 1; }
         .elem-guide-name {
@@ -6200,8 +6217,15 @@
             background: linear-gradient(to bottom, #9ca3af, #6b7280);
         }
 
-        .btn-confirm-create:hover {
+        .btn-confirm-create:hover:not(:disabled) {
             background: linear-gradient(to bottom, #86efac, #4ade80);
+        }
+
+        .btn-confirm-create:disabled {
+            background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
+            color: #555;
+            cursor: not-allowed;
+            border-color: #333;
         }
 
         /* Level Up Modal */
@@ -9174,12 +9198,12 @@
                         <span id="preview-element">--</span>
                     </div>
                 </div>
-                <!-- Element Guide -->
+                <!-- Element Guide / Picker -->
                 <div class="elem-guide-section">
-                    <div class="elem-guide-label">⚡ Element Bonuses &amp; Counters</div>
+                    <div class="elem-guide-label">⚡ CHOOSE YOUR ELEMENT</div>
                     <div class="elem-guide-cards">
 
-                        <div class="elem-guide-card" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
+                        <div class="elem-guide-card" data-element="fire" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
                             <div class="elem-guide-icon">🔥</div>
                             <div class="elem-guide-name">FIRE</div>
                             <div class="elem-guide-passive">+4% DMG</div>
@@ -9189,7 +9213,7 @@
                             <div class="elem-guide-weakto">🛡 Weak vs Water</div>
                         </div>
 
-                        <div class="elem-guide-card" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
+                        <div class="elem-guide-card" data-element="water" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
                             <div class="elem-guide-icon">💧</div>
                             <div class="elem-guide-name">WATER</div>
                             <div class="elem-guide-passive">+1.5% HP Regen / turn</div>
@@ -9199,7 +9223,7 @@
                             <div class="elem-guide-weakto">🛡 Weak vs Lightning</div>
                         </div>
 
-                        <div class="elem-guide-card" style="--ec:#ffd740;--ec-glow:rgba(255,215,64,0.4);">
+                        <div class="elem-guide-card" data-element="lightning" style="--ec:#ffd740;--ec-glow:rgba(255,215,64,0.4);">
                             <div class="elem-guide-icon">⚡</div>
                             <div class="elem-guide-name">LIGHTNING</div>
                             <div class="elem-guide-passive">+5% Crit Chance</div>
@@ -9209,7 +9233,7 @@
                             <div class="elem-guide-weakto">🛡 Weak vs Earth</div>
                         </div>
 
-                        <div class="elem-guide-card" style="--ec:#8bc34a;--ec-glow:rgba(139,195,74,0.4);">
+                        <div class="elem-guide-card" data-element="earth" style="--ec:#8bc34a;--ec-glow:rgba(139,195,74,0.4);">
                             <div class="elem-guide-icon">🌍</div>
                             <div class="elem-guide-name">EARTH</div>
                             <div class="elem-guide-passive">−4% DMG Taken</div>
@@ -9219,7 +9243,7 @@
                             <div class="elem-guide-weakto">🛡 Weak vs Wind</div>
                         </div>
 
-                        <div class="elem-guide-card" style="--ec:#b0bec5;--ec-glow:rgba(176,190,197,0.4);">
+                        <div class="elem-guide-card" data-element="wind" style="--ec:#b0bec5;--ec-glow:rgba(176,190,197,0.4);">
                             <div class="elem-guide-icon">🌪️</div>
                             <div class="elem-guide-name">WIND</div>
                             <div class="elem-guide-passive">+4% Dodge Chance</div>
@@ -14728,7 +14752,6 @@
             if (!tempNewCharacter) {
                 tempNewCharacter = createCharacter('');
                 rerollsUsed = 0;
-                rerollsMax = 3;
                 document.getElementById('character-name-input').value = '';
                 // Fetch initial stats from server (hidden bias archetypes)
                 const result = await spendOnServer('generate_stats');
@@ -14741,6 +14764,11 @@
                     tempNewCharacter.maxHp          = srv.hp;
                 }
             }
+            // Clear element selection and require player to pick one
+            document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
+            tempNewCharacter.element = null;
+            const previewElReset = document.getElementById('preview-element');
+            if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
             // Show stats
             const hp = getCharacterMaxHp(tempNewCharacter);
             document.getElementById('preview-hp').textContent = hp;
@@ -14748,13 +14776,14 @@
             document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
             document.getElementById('preview-agi').textContent = tempNewCharacter.stats.agility;
             document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
-            // Restore reroll button state
+            // Reroll button: 2 free, then 🪙30 each
             const rerollBtn = document.getElementById('btn-reroll-stats');
-            const rerollsLeft = rerollsMax - rerollsUsed;
-            const REROLL_COSTS_DISPLAY = [25, 30, 35];
-            const nextRerollCost = characters.length === 0 ? 0 : (REROLL_COSTS_DISPLAY[Math.min(rerollsUsed, REROLL_COSTS_DISPLAY.length - 1)]);
-            rerollBtn.disabled = rerollsLeft <= 0;
-            rerollBtn.textContent = rerollsLeft > 0 ? '🎲 REROLL 🪙' + nextRerollCost + ' (' + rerollsLeft + ')' : '🎲 NO REROLLS';
+            const FREE_REROLLS = 2;
+            const freeLeft = Math.max(0, FREE_REROLLS - rerollsUsed);
+            rerollBtn.disabled = false;
+            rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
+            // Disable CREATE until element is chosen
+            document.getElementById('btn-confirm-create').disabled = true;
             document.getElementById('character-create-modal').classList.add('active');
         }
 
@@ -14766,8 +14795,8 @@
         function rerollStats() {
             if (!tempNewCharacter || rerollsUsed >= rerollsMax) return;
 
-            const REROLL_COSTS = [25, 30, 35];
-            const rerollCost = characters.length === 0 ? 0 : (REROLL_COSTS[Math.min(rerollsUsed, REROLL_COSTS.length - 1)]);
+            const FREE_REROLLS = 2;
+            const rerollCost = rerollsUsed < FREE_REROLLS ? 0 : 30;
             if (rerollCost > 0 && globalTokens < rerollCost) {
                 showNotice('Not enough tokens! Reroll costs 🪙 ' + rerollCost + ' but you only have 🪙 ' + globalTokens);
                 return;
@@ -14797,22 +14826,21 @@
         }
 
         async function executeReroll(rerollCost) {
-            const idx = Math.min(rerollsUsed, 2);
-            const result = await spendOnServer('reroll', { rerollIndex: idx, isFirstCharacter: characters.length === 0 });
+            const FREE_REROLLS = 2;
+            const isFreeReroll = rerollsUsed < FREE_REROLLS;
+            const result = await spendOnServer('reroll', { rerollIndex: Math.min(rerollsUsed, 2), isFirstCharacter: isFreeReroll });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             saveProgression();
             // Use server-generated stats (hidden bias archetypes for variety)
             const srv = result.stats;
             const newStats = srv
                 ? { attack: srv.atk, strength: srv.str, agility: srv.agi, defense: srv.def, hp: srv.hp }
-                : generateBalancedStats(); // fallback if server didn't return stats
+                : generateBalancedStats();
             tempNewCharacter.stats.attack = newStats.attack;
             tempNewCharacter.stats.strength = newStats.strength;
             tempNewCharacter.stats.agility = newStats.agility;
             tempNewCharacter.stats.defense = newStats.defense;
-            if (srv?.element) tempNewCharacter.element = srv.element;
-            const previewEl = document.getElementById('preview-element');
-            if (previewEl) previewEl.innerHTML = elementBadgeHTML(tempNewCharacter.element, 'sm') || '--';
+            // Do NOT override player's chosen element
 
             // Recalculate HP based on new stats
             const statDiff = (newStats.defense + newStats.strength) - (newStats.attack + newStats.agility);
@@ -14824,12 +14852,10 @@
             document.getElementById('preview-def').textContent = newStats.defense;
 
             rerollsUsed++;
-            const rerollsLeft = rerollsMax - rerollsUsed;
-            const REROLL_COSTS_POST = [25, 30, 35];
-            const nextCost = characters.length === 0 ? 0 : (REROLL_COSTS_POST[Math.min(rerollsUsed, REROLL_COSTS_POST.length - 1)]);
+            const freeLeft = Math.max(0, FREE_REROLLS - rerollsUsed);
             const rerollBtn = document.getElementById('btn-reroll-stats');
-            rerollBtn.disabled = rerollsLeft <= 0;
-            rerollBtn.textContent = rerollsLeft > 0 ? '🎲 REROLL 🪙' + nextCost + ' (' + rerollsLeft + ')' : '🎲 NO REROLLS';
+            rerollBtn.disabled = false;
+            rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
         }
 
         async function confirmCharacterCreation() {
@@ -14848,7 +14874,7 @@
                 tempNewCharacter.stats.agility  = srv.agi;
                 tempNewCharacter.stats.defense  = srv.def;
                 tempNewCharacter.maxHp          = srv.hp;
-                if (srv.element) tempNewCharacter.element = srv.element;
+                // Do NOT override element — player's choice is authoritative
             }
 
             const name = sanitizeName(document.getElementById('character-name-input').value) || 'Fighter';
@@ -15225,6 +15251,20 @@
         document.getElementById('btn-cancel-create').addEventListener('click', closeCharacterCreation);
         document.getElementById('btn-reroll-stats').addEventListener('click', rerollStats);
         document.getElementById('btn-confirm-create').addEventListener('click', confirmCharacterCreation);
+
+        // Element picker — click to select element
+        document.querySelectorAll('.elem-guide-card[data-element]').forEach(card => {
+            card.addEventListener('click', () => {
+                if (!tempNewCharacter) return;
+                document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                const el = card.dataset.element;
+                tempNewCharacter.element = el;
+                const previewEl = document.getElementById('preview-element');
+                if (previewEl) previewEl.innerHTML = elementBadgeHTML(el, 'sm') || el;
+                document.getElementById('btn-confirm-create').disabled = false;
+            });
+        });
 
         // Play with selected character
         document.getElementById('btn-play-selected').addEventListener('click', async () => {
