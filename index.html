@@ -14644,11 +14644,12 @@
         // ===== CHARACTER UI FUNCTIONS =====
         let tempNewCharacter = null; // Temporary character for creation preview
 
-        // Only persist the element choice (safe, player-chosen).
-        // Stats are never stored — server is always authoritative for stats.
+        // Persist the full temp character (stats + element) for UX continuity across reloads.
+        // Editing these in dev tools only affects the preview — server always generates
+        // final authoritative stats when create_character is confirmed.
         function saveTempChar() {
-            if (tempNewCharacter && tempNewCharacter.element) {
-                localStorage.setItem('fightchub_temp_char', JSON.stringify({ element: tempNewCharacter.element }));
+            if (tempNewCharacter) {
+                localStorage.setItem('fightchub_temp_char', JSON.stringify(tempNewCharacter));
             } else {
                 localStorage.removeItem('fightchub_temp_char');
             }
@@ -14766,7 +14767,10 @@
                 return;
             }
 
-            // Always create fresh stats from server — never trust localStorage for stats
+            // Reuse pending character: in-memory → localStorage → fresh from server
+            if (!tempNewCharacter) {
+                tempNewCharacter = loadTempChar();
+            }
             if (!tempNewCharacter) {
                 tempNewCharacter = createCharacter('');
                 document.getElementById('character-name-input').value = '';
@@ -14780,11 +14784,10 @@
                     tempNewCharacter.stats.defense  = srv.def;
                     tempNewCharacter.maxHp          = srv.hp;
                 }
-                // Restore only the element choice from localStorage (safe)
-                const savedMeta = loadTempChar();
-                if (savedMeta && savedMeta.element) {
-                    tempNewCharacter.element = savedMeta.element;
-                }
+                saveTempChar();
+            } else {
+                const savedName = tempNewCharacter.name && tempNewCharacter.name !== 'Fighter' ? tempNewCharacter.name : '';
+                document.getElementById('character-name-input').value = savedName;
             }
             // Restore element selection UI, or ask player to pick
             document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
@@ -14880,6 +14883,7 @@
             document.getElementById('preview-def').textContent = newStats.defense;
 
             rerollsUsed++;
+            saveTempChar();    // persist rolled stats
             saveProgression(); // persist rerollsUsed
             const isFirstCharAfter = characters.length === 0;
             const freeLeft = isFirstCharAfter ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
