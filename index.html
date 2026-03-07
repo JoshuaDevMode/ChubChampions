@@ -8573,6 +8573,7 @@
             <!-- Character Display in Center -->
             <div class="menu-character-section">
                 <div class="menu-character-name" id="menu-character-name">NO FIGHTER</div>
+                <div id="menu-element-badge" style="text-align:center;margin-top:4px;min-height:1.4em;"></div>
                 <div class="menu-character-wrapper">
                     <div class="menu-char-left-col">
                         <span class="menu-character-arrow disabled" id="menu-arrow-left">◀</span>
@@ -8995,6 +8996,10 @@
                         <span class="preview-stat-label">DEF</span>
                         <span class="preview-stat-value" id="preview-def">--</span>
                     </div>
+                    <div class="preview-stat">
+                        <span class="preview-stat-label">ELEMENT</span>
+                        <span id="preview-element">--</span>
+                    </div>
                 </div>
                 <button class="btn-reroll-stats" id="btn-reroll-stats">🎲 REROLL STATS</button>
             </div>
@@ -9263,6 +9268,7 @@
         <div class="hud">
             <div class="player-info" id="player-hud-info" style="margin-right: 10px;">
                 <div class="player-name" id="player-name-display">PLAYER <span class="player-level" id="player-level-display">LVL 1</span></div>
+                <div id="player-element-badge" style="margin-bottom:4px;min-height:1em;"></div>
                 <div class="health-bar-container">
                     <div class="health-text" id="player-health-text">1000 / 1000</div>
                     <div class="health-bar" id="player-health" style="width: 100%;"></div>
@@ -9289,6 +9295,7 @@
 
             <div class="player-info" id="cpu-hud-info" style="margin-left: 10px;">
                 <div class="player-name" id="cpu-name-display" style="text-align:right;">CPU <span class="player-level" id="cpu-level-display">LVL 1</span></div>
+                <div id="cpu-element-badge" style="margin-bottom:4px;min-height:1em;text-align:right;"></div>
                 <div class="health-bar-container">
                     <div class="health-text" id="cpu-health-text">1000 / 1000</div>
                     <div class="health-bar" id="cpu-health" style="width: 100%;"></div>
@@ -10139,6 +10146,22 @@
             }
         }
 
+        // Elemental system
+        const ELEMENT_DATA = {
+            fire:      { icon: '🔥', label: 'Fire',      color: '#ff6b35', glow: 'rgba(255,107,53,0.5)'  },
+            water:     { icon: '💧', label: 'Water',     color: '#4fc3f7', glow: 'rgba(79,195,247,0.5)'  },
+            earth:     { icon: '🌍', label: 'Earth',     color: '#8bc34a', glow: 'rgba(139,195,74,0.5)'  },
+            wind:      { icon: '🌪️', label: 'Wind',      color: '#b0bec5', glow: 'rgba(176,190,197,0.5)' },
+            lightning: { icon: '⚡', label: 'Lightning', color: '#ffd740', glow: 'rgba(255,215,64,0.5)'  },
+        };
+        function elementBadgeHTML(element, size = 'sm') {
+            const d = ELEMENT_DATA[element];
+            if (!d) return '';
+            const fs = size === 'lg' ? '1.1em' : '0.75em';
+            const pd = size === 'lg' ? '4px 10px' : '2px 7px';
+            return `<span class="element-badge" style="font-size:${fs};padding:${pd};background:rgba(0,0,0,0.55);border:1px solid ${d.color};border-radius:12px;color:${d.color};white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${d.icon} ${d.label}</span>`;
+        }
+
         // Weapon definitions
         const WEAPONS = {
         };
@@ -10520,6 +10543,17 @@
             const cpuBaseHp = Math.round(BASE_HP + cpuStatDiff * HP_STAT_FACTOR);
             const expectedHp = cpuBaseHp + (playerLevel - 1) * AVG_HP_PER_LEVEL;
 
+            // Assign element based on dominant stat (mirrors backend assignElement logic)
+            const cpuMax = Math.max(cpu.attack, cpu.strength, cpu.agility, cpu.defense);
+            const cpuAvg = (cpu.attack + cpu.strength + cpu.agility + cpu.defense) / 4;
+            let cpuElement = 'water';
+            if (cpuMax - cpuAvg >= 8) {
+                if (cpu.attack === cpuMax)   cpuElement = 'fire';
+                else if (cpu.agility === cpuMax) cpuElement = 'wind';
+                else if (cpu.defense === cpuMax) cpuElement = 'earth';
+                else if (cpu.strength === cpuMax) cpuElement = 'lightning';
+            }
+
             return {
                 hp: Math.max(800, expectedHp),
                 attack: cpu.attack,
@@ -10527,7 +10561,8 @@
                 agility: cpu.agility,
                 defense: cpu.defense,
                 tier: playerTier,
-                level: playerLevel
+                level: playerLevel,
+                element: cpuElement,
             };
         }
 
@@ -12984,6 +13019,7 @@
                 equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
                 adaptability:        character.adaptability || 0,
                 qTable:              character.qTable       || {},
+                element:             character.element      || undefined,
             };
 
             const cpuData = {
@@ -12999,6 +13035,7 @@
                 maxHp:               currentCpuStats.hp || 1000,
                 skills:              {},
                 equippedConsumables: [],
+                element:             currentCpuStats.element || undefined,
             };
 
             try {
@@ -14357,7 +14394,7 @@
                     slot.innerHTML = `
                         <button class="character-slot-delete" data-id="${character.id}">&times;</button>
                         <div class="character-slot-name">${escapeHTML(character.name)}</div>
-                        <div class="character-slot-level">Level ${character.level}${character.level >= MAX_LEVEL ? ' (MAX)' : ''}</div>
+                        <div class="character-slot-level">Level ${character.level}${character.level >= MAX_LEVEL ? ' (MAX)' : ''} ${elementBadgeHTML(character.element)}</div>
                         <div class="character-slot-stats">
                             <div class="character-slot-stat">
                                 <span class="character-slot-stat-value">${maxHp}</span>
@@ -14532,6 +14569,9 @@
             tempNewCharacter.stats.strength = newStats.strength;
             tempNewCharacter.stats.agility = newStats.agility;
             tempNewCharacter.stats.defense = newStats.defense;
+            if (srv?.element) tempNewCharacter.element = srv.element;
+            const previewEl = document.getElementById('preview-element');
+            if (previewEl) previewEl.innerHTML = elementBadgeHTML(tempNewCharacter.element, 'sm') || '--';
 
             // Recalculate HP based on new stats
             const statDiff = (newStats.defense + newStats.strength) - (newStats.attack + newStats.agility);
@@ -14567,6 +14607,7 @@
                 tempNewCharacter.stats.agility  = srv.agi;
                 tempNewCharacter.stats.defense  = srv.def;
                 tempNewCharacter.maxHp          = srv.hp;
+                if (srv.element) tempNewCharacter.element = srv.element;
             }
 
             const name = sanitizeName(document.getElementById('character-name-input').value) || 'Fighter';
@@ -14604,6 +14645,9 @@
                 const expPercent = character.level >= MAX_LEVEL ? 100 : Math.floor((character.exp / expNeeded) * 100);
 
                 nameEl.textContent = character.name.toUpperCase();
+                // Element badge under name
+                const elBadgeEl = document.getElementById('menu-element-badge');
+                if (elBadgeEl) elBadgeEl.innerHTML = elementBadgeHTML(character.element, 'lg');
                 statsPanel.style.display = ''; // Show wooden panel
                 const charImg = document.getElementById('menu-character-img');
                 const charBg = document.querySelector('.menu-character-bg');
@@ -15796,6 +15840,12 @@
 
             hudEl.playerName.innerHTML = `${escapeHTML(playerName)} <span class="player-level">LVL ${playerLevel}</span>`;
             hudEl.cpuName.innerHTML = `${currentCpuName.toUpperCase()} <span class="player-level">LVL ${cpuLevel}</span>`;
+
+            // Element badges in HUD
+            const pBadge = document.getElementById('player-element-badge');
+            const cBadge = document.getElementById('cpu-element-badge');
+            if (pBadge) pBadge.innerHTML = elementBadgeHTML(character?.element);
+            if (cBadge) cBadge.innerHTML = elementBadgeHTML(currentCpuStats?.element);
 
             // Update all stats in HUD
             const playerAtk = character ? (character.stats.attack || 35) : 35;
