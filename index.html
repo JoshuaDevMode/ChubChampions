@@ -14644,6 +14644,20 @@
         // ===== CHARACTER UI FUNCTIONS =====
         let tempNewCharacter = null; // Temporary character for creation preview
 
+        function saveTempChar() {
+            if (tempNewCharacter) {
+                localStorage.setItem('fightchub_temp_char', JSON.stringify(tempNewCharacter));
+            } else {
+                localStorage.removeItem('fightchub_temp_char');
+            }
+        }
+        function loadTempChar() {
+            try {
+                const raw = localStorage.getItem('fightchub_temp_char');
+                return raw ? JSON.parse(raw) : null;
+            } catch(e) { return null; }
+        }
+
         function populateCharacterSlots() {
             const slotsContainer = document.getElementById('character-slots');
             slotsContainer.innerHTML = '';
@@ -14750,7 +14764,10 @@
                 return;
             }
 
-            // Reuse pending character if player closed without confirming
+            // Reuse pending character: in-memory first, then localStorage, then create fresh
+            if (!tempNewCharacter) {
+                tempNewCharacter = loadTempChar();
+            }
             if (!tempNewCharacter) {
                 tempNewCharacter = createCharacter('');
                 document.getElementById('character-name-input').value = '';
@@ -14764,12 +14781,22 @@
                     tempNewCharacter.stats.defense  = srv.def;
                     tempNewCharacter.maxHp          = srv.hp;
                 }
+                saveTempChar();
+            } else {
+                // Restore name input if player had typed something
+                const savedName = tempNewCharacter.name && tempNewCharacter.name !== 'Fighter' ? tempNewCharacter.name : '';
+                document.getElementById('character-name-input').value = savedName;
             }
-            // Clear element selection and require player to pick one
+            // Restore element selection UI, or ask player to pick
             document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
-            tempNewCharacter.element = null;
             const previewElReset = document.getElementById('preview-element');
-            if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
+            if (tempNewCharacter.element) {
+                const existingCard = document.querySelector(`.elem-guide-card[data-element="${tempNewCharacter.element}"]`);
+                if (existingCard) existingCard.classList.add('selected');
+                if (previewElReset) previewElReset.innerHTML = elementBadgeHTML(tempNewCharacter.element, 'sm') || tempNewCharacter.element;
+            } else {
+                if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
+            }
             // Show stats
             const hp = getCharacterMaxHp(tempNewCharacter);
             document.getElementById('preview-hp').textContent = hp;
@@ -14784,8 +14811,8 @@
             const freeLeft = isFirstCharNow ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
             rerollBtn.disabled = false;
             rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
-            // Disable CREATE until element is chosen
-            document.getElementById('btn-confirm-create').disabled = true;
+            // Disable CREATE until element is chosen (enable if already had one)
+            document.getElementById('btn-confirm-create').disabled = !tempNewCharacter.element;
             document.getElementById('character-create-modal').classList.add('active');
         }
 
@@ -14854,7 +14881,8 @@
             document.getElementById('preview-def').textContent = newStats.defense;
 
             rerollsUsed++;
-            saveProgression(); // persist so reload doesn't reset free rerolls
+            saveTempChar(); // persist stats so reload shows same roll
+            saveProgression(); // persist rerollsUsed
             const isFirstCharAfter = characters.length === 0;
             const freeLeft = isFirstCharAfter ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
             const rerollBtn = document.getElementById('btn-reroll-stats');
@@ -14891,6 +14919,7 @@
 
             closeCharacterCreation();
             tempNewCharacter = null;
+            saveTempChar(); // clears fightchub_temp_char
             rerollsUsed = 0;
             saveProgression(); // persist reset rerollsUsed
             updateLobbyCharacterDisplay();
@@ -15265,6 +15294,7 @@
                 card.classList.add('selected');
                 const el = card.dataset.element;
                 tempNewCharacter.element = el;
+                saveTempChar();
                 const previewEl = document.getElementById('preview-element');
                 if (previewEl) previewEl.innerHTML = elementBadgeHTML(el, 'sm') || el;
                 document.getElementById('btn-confirm-create').disabled = false;
