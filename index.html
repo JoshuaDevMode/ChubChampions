@@ -1814,26 +1814,26 @@
             text-shadow: 1px 1px 0 #000;
         }
 
-        /* Stat-specific accent colors (HP, ATK, STR, AGI, DEF) */
-        .menu-character-stat:nth-child(1) { border-bottom-color: #22c55e; }
-        .menu-character-stat:nth-child(1) .menu-character-stat-label { color: #4ade80; }
-        .menu-character-stat:nth-child(1) .menu-character-stat-value { color: #4ade80; text-shadow: 0 0 8px rgba(74,222,128,0.5), 1px 1px 0 #000; }
-        .menu-character-stat:nth-child(2) { border-bottom-color: #ef4444; }
-        .menu-character-stat:nth-child(2) .menu-character-stat-label { color: #f87171; }
-        .menu-character-stat:nth-child(2) .menu-character-stat-value { color: #f87171; text-shadow: 0 0 8px rgba(248,113,113,0.5), 1px 1px 0 #000; }
-        .menu-character-stat:nth-child(3) { border-bottom-color: #f97316; }
-        .menu-character-stat:nth-child(3) .menu-character-stat-label { color: #fb923c; }
-        .menu-character-stat:nth-child(3) .menu-character-stat-value { color: #fb923c; text-shadow: 0 0 8px rgba(251,146,60,0.5), 1px 1px 0 #000; }
-        .menu-character-stat:nth-child(4) { border-bottom-color: #06b6d4; }
-        .menu-character-stat:nth-child(4) .menu-character-stat-label { color: #22d3ee; }
-        .menu-character-stat:nth-child(4) .menu-character-stat-value { color: #22d3ee; text-shadow: 0 0 8px rgba(34,211,238,0.5), 1px 1px 0 #000; }
-        .menu-character-stat:nth-child(5) { border-bottom-color: #3b82f6; }
-        .menu-character-stat:nth-child(5) .menu-character-stat-label { color: #60a5fa; }
-        .menu-character-stat:nth-child(5) .menu-character-stat-value { color: #60a5fa; text-shadow: 0 0 8px rgba(96,165,250,0.5), 1px 1px 0 #000; }
+        /* Stat-specific accent colors (HP, ATK, STR, AGI, DEF) — unified white */
+        .menu-character-stat:nth-child(1) { border-bottom-color: rgba(255,255,255,0.25); }
+        .menu-character-stat:nth-child(1) .menu-character-stat-label { color: #fff; }
+        .menu-character-stat:nth-child(1) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(2) { border-bottom-color: rgba(255,255,255,0.25); }
+        .menu-character-stat:nth-child(2) .menu-character-stat-label { color: #fff; }
+        .menu-character-stat:nth-child(2) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(3) { border-bottom-color: rgba(255,255,255,0.25); }
+        .menu-character-stat:nth-child(3) .menu-character-stat-label { color: #fff; }
+        .menu-character-stat:nth-child(3) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(4) { border-bottom-color: rgba(255,255,255,0.25); }
+        .menu-character-stat:nth-child(4) .menu-character-stat-label { color: #fff; }
+        .menu-character-stat:nth-child(4) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
+        .menu-character-stat:nth-child(5) { border-bottom-color: rgba(255,255,255,0.25); }
+        .menu-character-stat:nth-child(5) .menu-character-stat-label { color: #fff; }
+        .menu-character-stat:nth-child(5) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
 
         .menu-character-winrate {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.65em;
             color: #4ade80;
             text-align: center;
             margin-top: 4px;
@@ -1890,7 +1890,7 @@
 
         .menu-char-xp-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.65em;
             color: rgba(255,255,255,0.45);
             position: relative;
             z-index: 1;
@@ -1901,7 +1901,7 @@
 
         .menu-char-exp-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.42em;
+            font-size: 0.58em;
             color: rgba(255,255,255,0.5);
             position: absolute;
             right: 12px;
@@ -2835,7 +2835,7 @@
             border-radius: 6px;
             color: #1c0a00;
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             font-weight: 700;
             padding: 7px 10px;
             cursor: pointer;
@@ -2899,7 +2899,7 @@
             border-radius: 6px;
             color: #1c0a00;
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             font-weight: 700;
             padding: 7px 10px;
             cursor: pointer;
@@ -2948,8 +2948,8 @@
             justify-content: space-between;
             align-items: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 5.5px;
-            color: #ccc;
+            font-size: 9px;
+            color: #4ade80;
             margin-bottom: 3px;
         }
         .wellness-bar-label .wellness-status-text {
@@ -3009,9 +3009,14 @@
             width: 500px;
             height: 100%;
             box-sizing: border-box;
-            background: linear-gradient(180deg, #0c1a3a 0%, #091326 60%, #060d1c 100%);
-            border-right: 2px solid rgba(96,165,250,0.35);
-            box-shadow: inset 0 0 40px rgba(37,99,235,0.08), 4px 0 24px rgba(0,0,0,0.5);
+            background: none;
+            border: 20px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DqEaz9cL.png');
+            border-image-slice: 15% fill;
+            border-image-width: 20px;
+            border-image-repeat: stretch;
+            box-shadow: none;
+            filter: drop-shadow(4px 0 16px rgba(0,0,0,0.7));
             z-index: 1100;
             display: flex;
             flex-direction: column;
@@ -3086,7 +3091,7 @@
             justify-content: space-between;
             margin-top: 5px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             line-height: 1.6;
         }
         .hint-minus { color: #f87171; }
@@ -3100,7 +3105,7 @@
         }
         .care-activity-free-badge {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
+            font-size: 11px;
             color: #4ade80;
             border: 1px solid #4ade80;
             border-radius: 4px;
@@ -3120,7 +3125,7 @@
         /* Buy button inside care item card */
         .care-item-buy-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
+            font-size: 11px;
             background: linear-gradient(135deg, #d97706, #f59e0b);
             color: #000;
             border: none;
@@ -3131,8 +3136,8 @@
             width: 100%;
         }
         .care-item-buy-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-        .care-item-owned-badge { color: #4ade80; font-family: 'Fredoka', sans-serif; font-size: 6px; margin-top: 3px; }
-        .care-item-cd-text { font-family: 'Fredoka', sans-serif; font-size: 6px; color: #9ca3af; margin-top: 3px; }
+        .care-item-owned-badge { color: #4ade80; font-family: 'Fredoka', sans-serif; font-size: 10px; margin-top: 3px; }
+        .care-item-cd-text { font-family: 'Fredoka', sans-serif; font-size: 10px; color: #9ca3af; margin-top: 3px; }
         /* Drop zone glow on character section */
         .menu-character-section.care-drop-target #menu-character-container {
             outline: 3px dashed #60a5fa;
@@ -3168,12 +3173,12 @@
             justify-content: space-between;
             align-items: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 8px;
+            font-size: 12px;
             color: #93c5fd;
         }
         .care-stat-status {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
+            font-size: 11px;
             text-align: right;
             margin-top: 1px;
         }
@@ -3247,27 +3252,27 @@
             cursor: default;
         }
         .care-item.empty:hover { transform: none; box-shadow: none; border-color: rgba(96,165,250,0.2); }
-        .care-item-icon { font-size: 18px; }
+        .care-item-icon { font-size: 22px; }
         .care-item-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             color: #e0e7ff;
             text-align: center;
         }
         .care-item-restore {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             color: #4ade80;
         }
         .care-item-restore.morale-restore { color: #f97316; }
         .care-item-xp {
             font-family: 'Fredoka', sans-serif;
-            font-size: 5.5px;
+            font-size: 9px;
             color: #facc15;
         }
         .care-item-count {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             color: #7dd3fc;
         }
 
@@ -3294,17 +3299,17 @@
         .care-activity-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
         .care-activity-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7.5px;
+            font-size: 12px;
             color: #e0e7ff;
         }
         .care-activity-stats {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 10px;
             color: #94a3b8;
         }
         .care-activity-buy-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
+            font-size: 11px;
             background: linear-gradient(to bottom, #d97706, #b45309);
             border: 2px solid #f59e0b;
             border-radius: 6px;
@@ -3416,8 +3421,8 @@
             justify-content: space-between;
             align-items: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 5.5px;
-            color: #ccc;
+            font-size: 9px;
+            color: #c07830;
             margin-bottom: 3px;
         }
         .morale-bar-label .morale-status-text {
@@ -3440,7 +3445,7 @@
         /* Battle Instinct (Q-learning) bar in lobby */
         .instinct-bar-container {
             width: 100%;
-            margin-top: 4px;
+            margin-top: 2px;
             padding: 0 4px;
             box-sizing: border-box;
         }
@@ -3449,8 +3454,8 @@
             justify-content: space-between;
             align-items: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 5.5px;
-            color: #ccc;
+            font-size: 9px;
+            color: #ffd700;
             margin-bottom: 3px;
         }
         .instinct-bar-track {
@@ -6000,13 +6005,90 @@
         }
 
         .character-create-container {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a4e 100%);
-            border: 4px solid #a855f7;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 0 50px rgba(168,85,247,0.3);
+            background: none;
+            border: 24px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DqEaz9cL.png');
+            border-image-slice: 15% fill;
+            border-image-width: 24px;
+            border-image-repeat: stretch;
+            border-radius: 0;
+            padding: 16px 24px 20px;
+            max-width: 600px;
+            width: 95%;
+            box-shadow: none;
+            filter: drop-shadow(0 0 24px rgba(0,0,0,0.9));
+        }
+
+        /* ── Element Guide (inside character create modal) ── */
+        .elem-guide-section {
+            margin-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+        }
+        .elem-guide-label {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            color: #888;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .elem-guide-cards {
+            display: flex;
+            gap: 6px;
+        }
+        .elem-guide-card {
+            flex: 1;
+            background: rgba(0,0,0,0.45);
+            border: 1.5px solid var(--ec);
+            border-radius: 10px;
+            padding: 9px 5px 7px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5), inset 0 0 12px rgba(0,0,0,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .elem-guide-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 16px var(--ec-glow), 0 4px 12px rgba(0,0,0,0.6);
+        }
+        .elem-guide-icon { font-size: 22px; line-height: 1; }
+        .elem-guide-name {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--ec);
+            letter-spacing: 0.5px;
+        }
+        .elem-guide-passive {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            color: #e0e0e0;
+            line-height: 1.4;
+            min-height: 24px;
+        }
+        .elem-guide-fury {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 8px;
+            color: rgba(255,200,80,0.7);
+            font-style: italic;
+        }
+        .elem-guide-divider {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 2px 0;
+        }
+        .elem-guide-beats {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 8.5px;
+            color: #4ade80;
+        }
+        .elem-guide-weakto {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 8.5px;
+            color: #f87171;
         }
 
         .character-create-header {
@@ -7589,7 +7671,7 @@
         }
         .xp-boost-manage-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.38em;
+            font-size: 0.55em;
             font-weight: 700;
             background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
             border: 4px solid #100800;
@@ -7846,15 +7928,20 @@
             pointer-events: auto;
         }
         .results-panel {
-            background: rgba(10,10,30,0.92);
-            border: 3px solid #555;
-            border-radius: 12px;
-            padding: 25px 40px;
+            background: none;
+            border: 24px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DqEaz9cL.png');
+            border-image-slice: 15% fill;
+            border-image-width: 24px;
+            border-image-repeat: stretch;
+            border-radius: 0;
+            padding: 16px 30px 20px;
             min-width: 500px;
             max-width: 650px;
             pointer-events: auto;
             position: relative;
             z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
         }
         .results-title {
             font-family: 'Fuzzy Bubbles', cursive;
@@ -8742,17 +8829,17 @@
                                         <div class="morale-bar-fill" id="morale-bar-fill" style="width:100%;background:#f97316;"></div>
                                     </div>
                                 </div>
-                                <div class="instinct-bar-container" id="instinct-bar-container" style="display:none;">
-                                    <div class="instinct-bar-label">
-                                        <span class="instinct-status-text" id="instinct-status-text">🧠 INSTINCT</span>
-                                        <span id="instinct-value-text">0/100</span>
-                                    </div>
-                                    <div class="instinct-bar-track">
-                                        <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
-                                    </div>
-                                </div>
                             </div>
                             <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
+                        </div>
+                        <div class="instinct-bar-container" id="instinct-bar-container" style="display:none;">
+                            <div class="instinct-bar-label">
+                                <span class="instinct-status-text" id="instinct-status-text">🧠 INSTINCT</span>
+                                <span id="instinct-value-text">0/100</span>
+                            </div>
+                            <div class="instinct-bar-track">
+                                <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
+                            </div>
                         </div>
                     </div>
                     <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">
@@ -9117,6 +9204,64 @@
                         <span id="preview-element">--</span>
                     </div>
                 </div>
+                <!-- Element Guide -->
+                <div class="elem-guide-section">
+                    <div class="elem-guide-label">⚡ Element Bonuses &amp; Counters</div>
+                    <div class="elem-guide-cards">
+
+                        <div class="elem-guide-card" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
+                            <div class="elem-guide-icon">🔥</div>
+                            <div class="elem-guide-name">FIRE</div>
+                            <div class="elem-guide-passive">+4% DMG</div>
+                            <div class="elem-guide-fury">+12% in Fury</div>
+                            <div class="elem-guide-divider"></div>
+                            <div class="elem-guide-beats">⚔ Beats Wind</div>
+                            <div class="elem-guide-weakto">🛡 Weak vs Water</div>
+                        </div>
+
+                        <div class="elem-guide-card" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
+                            <div class="elem-guide-icon">💧</div>
+                            <div class="elem-guide-name">WATER</div>
+                            <div class="elem-guide-passive">+1.5% HP Regen / turn</div>
+                            <div class="elem-guide-fury">+4% in Fury</div>
+                            <div class="elem-guide-divider"></div>
+                            <div class="elem-guide-beats">⚔ Beats Fire</div>
+                            <div class="elem-guide-weakto">🛡 Weak vs Lightning</div>
+                        </div>
+
+                        <div class="elem-guide-card" style="--ec:#ffd740;--ec-glow:rgba(255,215,64,0.4);">
+                            <div class="elem-guide-icon">⚡</div>
+                            <div class="elem-guide-name">LIGHTNING</div>
+                            <div class="elem-guide-passive">+5% Crit Chance</div>
+                            <div class="elem-guide-fury">+14% in Fury</div>
+                            <div class="elem-guide-divider"></div>
+                            <div class="elem-guide-beats">⚔ Beats Water</div>
+                            <div class="elem-guide-weakto">🛡 Weak vs Earth</div>
+                        </div>
+
+                        <div class="elem-guide-card" style="--ec:#8bc34a;--ec-glow:rgba(139,195,74,0.4);">
+                            <div class="elem-guide-icon">🌍</div>
+                            <div class="elem-guide-name">EARTH</div>
+                            <div class="elem-guide-passive">−4% DMG Taken</div>
+                            <div class="elem-guide-fury">−12% in Fury</div>
+                            <div class="elem-guide-divider"></div>
+                            <div class="elem-guide-beats">⚔ Beats Lightning</div>
+                            <div class="elem-guide-weakto">🛡 Weak vs Wind</div>
+                        </div>
+
+                        <div class="elem-guide-card" style="--ec:#b0bec5;--ec-glow:rgba(176,190,197,0.4);">
+                            <div class="elem-guide-icon">🌪️</div>
+                            <div class="elem-guide-name">WIND</div>
+                            <div class="elem-guide-passive">+4% Dodge Chance</div>
+                            <div class="elem-guide-fury">+12% in Fury</div>
+                            <div class="elem-guide-divider"></div>
+                            <div class="elem-guide-beats">⚔ Beats Earth</div>
+                            <div class="elem-guide-weakto">🛡 Weak vs Fire</div>
+                        </div>
+
+                    </div>
+                </div>
+
                 <button class="btn-reroll-stats" id="btn-reroll-stats">🎲 REROLL STATS</button>
             </div>
             <div class="character-create-actions">
