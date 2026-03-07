@@ -1728,12 +1728,9 @@
         }
 
         .menu-character-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
             width: 340px;
             text-align: center;
+            margin: 8px auto 0;
         }
 
         .menu-character-name {
@@ -1830,6 +1827,45 @@
         .menu-character-stat:nth-child(5) { border-bottom-color: rgba(255,255,255,0.25); }
         .menu-character-stat:nth-child(5) .menu-character-stat-label { color: #fff; }
         .menu-character-stat:nth-child(5) .menu-character-stat-value { color: #fff; text-shadow: 1px 1px 0 #000; }
+
+        /* Element stat box (last in stats row) */
+        .menu-elem-stat {
+            position: relative;
+            cursor: default;
+            min-width: 42px;
+        }
+        .menu-elem-stat .menu-character-stat-value {
+            font-size: 1.25em;
+            line-height: 1;
+        }
+        .elem-stat-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0;
+            background: rgba(8,8,14,0.97);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 8px 11px;
+            white-space: nowrap;
+            font-size: 0.72em;
+            z-index: 200;
+            text-align: left;
+            pointer-events: none;
+            line-height: 1.6;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
+        }
+        .elem-stat-tooltip .ett-name {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .elem-stat-tooltip .ett-row { color: rgba(255,255,255,0.75); }
+        .elem-stat-tooltip .ett-fury { color: #ffd700; }
+        .elem-stat-tooltip .ett-strong { color: #4ade80; }
+        .elem-stat-tooltip .ett-weak   { color: #f87171; }
+        .menu-elem-stat:hover .elem-stat-tooltip { display: block; }
 
         .menu-character-winrate {
             font-family: 'Fredoka', sans-serif;
@@ -8770,7 +8806,7 @@
             <!-- Character Display in Center -->
             <div class="menu-character-section">
                 <div class="menu-character-name" id="menu-character-name">NO FIGHTER</div>
-                <div id="menu-element-badge" style="text-align:center;margin-top:4px;min-height:1.4em;"></div>
+                <div id="menu-element-badge" style="display:none;"></div>
                 <div class="menu-character-wrapper">
                     <div class="menu-char-left-col">
                         <span class="menu-character-arrow disabled" id="menu-arrow-left">◀</span>
@@ -10409,6 +10445,14 @@
             wind:      { icon: '🌪️', label: 'Wind',      color: '#b0bec5', glow: 'rgba(176,190,197,0.5)' },
             lightning: { icon: '⚡', label: 'Lightning', color: '#ffd740', glow: 'rgba(255,215,64,0.5)'  },
         };
+        const ELEMENT_BONUSES = {
+            fire:      { base: '+4% damage',          fury: '+12% in Fury',  strong: 'Wind',      weak: 'Water'     },
+            water:     { base: '+1.5% HP regen/turn', fury: '+4% in Fury',   strong: 'Fire',      weak: 'Lightning' },
+            lightning: { base: '+5% crit chance',     fury: '+14% in Fury',  strong: 'Water',     weak: 'Earth'     },
+            earth:     { base: '-4% enemy defense',   fury: '+12% in Fury',  strong: 'Lightning', weak: 'Wind'      },
+            wind:      { base: '+4% dodge chance',    fury: '+12% in Fury',  strong: 'Earth',     weak: 'Fire'      },
+        };
+
         function elementBadgeHTML(element, size = 'sm') {
             const d = ELEMENT_DATA[element];
             if (!d) return '';
@@ -14962,9 +15006,6 @@
                 const expPercent = character.level >= MAX_LEVEL ? 100 : Math.floor((character.exp / expNeeded) * 100);
 
                 nameEl.textContent = character.name.toUpperCase();
-                // Element badge under name
-                const elBadgeEl = document.getElementById('menu-element-badge');
-                if (elBadgeEl) elBadgeEl.innerHTML = elementBadgeHTML(character.element, 'lg');
                 statsPanel.style.display = ''; // Show wooden panel
                 const charImg = document.getElementById('menu-character-img');
                 const charBg = document.querySelector('.menu-character-bg');
@@ -14985,6 +15026,23 @@
                     levelEl.textContent = 'NO BATTLES YET';
                 }
 
+                const elemD  = ELEMENT_DATA[character.element];
+                const elemBn = ELEMENT_BONUSES[character.element];
+                const elemBox = elemD ? (() => {
+                    const tooltip = elemBn
+                        ? `<div class="elem-stat-tooltip" style="border-color:${elemD.color}33;">
+                               <div class="ett-name" style="color:${elemD.color};">${elemD.icon} ${elemD.label}</div>
+                               <div class="ett-row">${elemBn.base}</div>
+                               <div class="ett-fury">⚡ ${elemBn.fury}</div>
+                               <div class="ett-strong">▲ Strong vs ${elemBn.strong}</div>
+                               <div class="ett-weak">▼ Weak vs ${elemBn.weak}</div>
+                           </div>` : '';
+                    return `<div class="menu-character-stat menu-elem-stat" style="border-bottom-color:${elemD.color}66;">
+                                <span class="menu-character-stat-label" style="color:${elemD.color};">ELEMENT</span>
+                                <span class="menu-character-stat-value">${elemD.icon}</span>
+                                ${tooltip}
+                            </div>`;
+                })() : '';
                 statsEl.innerHTML = [
                     ['HP',  maxHp],
                     ['ATK', character.stats.attack],
@@ -14996,7 +15054,7 @@
                         <span class="menu-character-stat-label">${label}</span>
                         <span class="menu-character-stat-value">${val}</span>
                     </div>`
-                ).join('');
+                ).join('') + elemBox;
 
                 if (character.level < MAX_LEVEL) {
                     expContainer.style.display = '';
