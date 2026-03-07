@@ -14775,10 +14775,11 @@
             document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
             document.getElementById('preview-agi').textContent = tempNewCharacter.stats.agility;
             document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
-            // Reroll button: 2 free, then 🪙30 each
+            // Reroll button: 2 free for first character, paid (🪙30) otherwise
             const rerollBtn = document.getElementById('btn-reroll-stats');
             const FREE_REROLLS = 2;
-            const freeLeft = Math.max(0, FREE_REROLLS - rerollsUsed);
+            const isFirstCharNow = characters.length === 0;
+            const freeLeft = isFirstCharNow ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
             rerollBtn.disabled = false;
             rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
             // Disable CREATE until element is chosen
@@ -14795,7 +14796,8 @@
             if (!tempNewCharacter || rerollsUsed >= rerollsMax) return;
 
             const FREE_REROLLS = 2;
-            const rerollCost = rerollsUsed < FREE_REROLLS ? 0 : 30;
+            const isFirstChar = characters.length === 0;
+            const rerollCost = (isFirstChar && rerollsUsed < FREE_REROLLS) ? 0 : 30;
             if (rerollCost > 0 && globalTokens < rerollCost) {
                 showNotice('Not enough tokens! Reroll costs 🪙 ' + rerollCost + ' but you only have 🪙 ' + globalTokens);
                 return;
@@ -14826,7 +14828,7 @@
 
         async function executeReroll(rerollCost) {
             const FREE_REROLLS = 2;
-            const isFreeReroll = rerollsUsed < FREE_REROLLS;
+            const isFreeReroll = characters.length === 0 && rerollsUsed < FREE_REROLLS;
             const result = await spendOnServer('reroll', { rerollIndex: Math.min(rerollsUsed, 2), isFirstCharacter: isFreeReroll });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             saveProgression();
@@ -14851,7 +14853,8 @@
             document.getElementById('preview-def').textContent = newStats.defense;
 
             rerollsUsed++;
-            const freeLeft = Math.max(0, FREE_REROLLS - rerollsUsed);
+            const isFirstCharAfter = characters.length === 0;
+            const freeLeft = isFirstCharAfter ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
             const rerollBtn = document.getElementById('btn-reroll-stats');
             rerollBtn.disabled = false;
             rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
