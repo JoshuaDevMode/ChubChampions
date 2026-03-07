@@ -10639,6 +10639,7 @@
                     shopFragmentDate = data.shopFragmentDate || '';
                     shopFragmentBoughtToday = data.shopFragmentBoughtToday || false;
                     lastLoginTimestamp = data.lastLoginTimestamp || null;
+                    rerollsUsed = data.rerollsUsed || 0;
                     xpBoostMultiplier = data.xpBoostMultiplier || 1.0;
                     xpBoostBattlesLeft = data.xpBoostBattlesLeft || 0;
                     pendingXpBoosts = data.pendingXpBoosts || [];
@@ -10721,7 +10722,8 @@
                     dailyChestDate: dailyChestDate,
                     shopFragmentDate: shopFragmentDate,
                     shopFragmentBoughtToday: shopFragmentBoughtToday,
-                    lastLoginTimestamp: lastLoginTimestamp
+                    lastLoginTimestamp: lastLoginTimestamp,
+                    rerollsUsed: rerollsUsed
                 }));
             } catch (e) {
                 console.error('Error saving progression:', e);
@@ -14751,7 +14753,6 @@
             // Reuse pending character if player closed without confirming
             if (!tempNewCharacter) {
                 tempNewCharacter = createCharacter('');
-                rerollsUsed = 0;
                 document.getElementById('character-name-input').value = '';
                 // Fetch initial stats from server (hidden bias archetypes)
                 const result = await spendOnServer('generate_stats');
@@ -14832,7 +14833,6 @@
             const isFreeReroll = characters.length === 0 && rerollsUsed < FREE_REROLLS;
             const result = await spendOnServer('reroll', { rerollIndex: Math.min(rerollsUsed, 2), isFirstCharacter: isFreeReroll });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
-            saveProgression();
             // Use server-generated stats (hidden bias archetypes for variety)
             const srv = result.stats;
             const newStats = srv
@@ -14854,6 +14854,7 @@
             document.getElementById('preview-def').textContent = newStats.defense;
 
             rerollsUsed++;
+            saveProgression(); // persist so reload doesn't reset free rerolls
             const isFirstCharAfter = characters.length === 0;
             const freeLeft = isFirstCharAfter ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
             const rerollBtn = document.getElementById('btn-reroll-stats');
@@ -14891,6 +14892,7 @@
             closeCharacterCreation();
             tempNewCharacter = null;
             rerollsUsed = 0;
+            saveProgression(); // persist reset rerollsUsed
             updateLobbyCharacterDisplay();
         }
 
