@@ -1936,7 +1936,7 @@
             padding: 25px 35px;
             text-align: center;
             min-width: 280px;
-            box-shadow: 0 0 30px rgba(168,85,247,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
         .char-options-title {
@@ -2002,7 +2002,7 @@
             padding: 25px 35px;
             text-align: center;
             min-width: 320px;
-            box-shadow: 0 0 30px rgba(59,130,246,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
         .input-modal-title {
@@ -2147,23 +2147,8 @@
         }
 
         @keyframes upgradeButtonPulse {
-            0%, 100% {
-                box-shadow:
-                    inset 0 0 0 2px rgba(220,150,10,0.7),
-                    inset 0 4px 0 rgba(255,255,180,0.45),
-                    inset 0 -3px 0 rgba(0,0,0,0.35),
-                    0 5px 12px rgba(0,0,0,0.65),
-                    0 2px 0 #100800;
-            }
-            50% {
-                box-shadow:
-                    inset 0 0 0 2px rgba(220,150,10,0.7),
-                    inset 0 4px 0 rgba(255,255,180,0.45),
-                    inset 0 -3px 0 rgba(0,0,0,0.35),
-                    0 0 22px rgba(255,200,0,0.8),
-                    0 5px 12px rgba(0,0,0,0.65),
-                    0 2px 0 #100800;
-            }
+            0%, 100% { transform: translateY(0); filter: brightness(1); }
+            50% { transform: translateY(-3px); filter: brightness(1.12); }
         }
 
         /* Equipment Panel in Lobby */
@@ -2300,7 +2285,7 @@
             padding: 25px 35px;
             text-align: center;
             max-width: 400px;
-            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
         .notice-message {
@@ -2350,7 +2335,7 @@
             padding: 25px 35px;
             text-align: center;
             max-width: 400px;
-            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
         .confirm-title {
@@ -2425,7 +2410,7 @@
             border-radius: 15px;
             padding: 40px 60px;
             text-align: center;
-            box-shadow: 0 0 40px rgba(78,205,196,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
         .matchmaking-title {
@@ -3995,7 +3980,7 @@
             border-bottom-color: #7f1d1d;
             background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
             color: #ffddcc;
-            box-shadow: 0 0 18px rgba(239,68,68,0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
         .aon-custom-input {
             flex: 1;
@@ -4012,7 +3997,7 @@
         }
         .aon-custom-input:focus {
             border-color: #ef4444;
-            box-shadow: 0 0 8px rgba(239,68,68,0.2);
+            box-shadow: none;
         }
         .aon-custom-input::placeholder {
             color: #554433;
@@ -4085,7 +4070,7 @@
         .aon-summary-row.aon-winnings .aon-val {
             color: #4ade80;
             font-size: 1.2em;
-            text-shadow: 0 0 12px rgba(74,222,128,0.5);
+            text-shadow: 1px 1px 0 #000;
         }
         .aon-summary-row.aon-fee-row .aon-val {
             color: #f87171;
@@ -5406,7 +5391,7 @@
             width: 95%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 0 50px rgba(245,158,11,0.3);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.85);
         }
 
         .armory-header {
@@ -5808,7 +5793,7 @@
             padding: 30px;
             max-width: 900px;
             width: 95%;
-            box-shadow: 0 0 50px rgba(74,222,128,0.3);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.85);
         }
 
         .character-select-header {
@@ -7184,8 +7169,8 @@
         }
 
         @keyframes chestReady {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(76,175,80,0.6); }
-            50% { transform: scale(1.1); box-shadow: 0 0 18px rgba(76,175,80,1); }
+            0%, 100% { transform: scale(1) translateY(0); filter: brightness(1); }
+            50% { transform: scale(1.08) translateY(-3px); filter: brightness(1.2); }
         }
 
         /* Chest unlock confirmation modal */
@@ -7368,8 +7353,8 @@
             box-shadow: 0 0 18px rgba(255,215,0,0.8);
         }
         @keyframes dailyPulse {
-            0%, 100% { box-shadow: 0 0 6px rgba(255,215,0,0.3); }
-            50% { box-shadow: 0 0 16px rgba(255,215,0,0.7); }
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.06); filter: brightness(1.15); }
         }
         .daily-claim-cell.missed {
             background: rgba(120,20,20,0.4);
@@ -7419,23 +7404,8 @@
             animation: dailyBtnPulse 1.5s ease-in-out infinite;
         }
         @keyframes dailyBtnPulse {
-            0%, 100% {
-                box-shadow:
-                    inset 0 0 0 2px rgba(220,150,10,0.7),
-                    inset 0 4px 0 rgba(255,255,180,0.45),
-                    inset 0 -3px 0 rgba(0,0,0,0.35),
-                    0 5px 12px rgba(0,0,0,0.65),
-                    0 2px 0 #100800;
-            }
-            50% {
-                box-shadow:
-                    inset 0 0 0 2px rgba(220,150,10,0.7),
-                    inset 0 4px 0 rgba(255,255,180,0.45),
-                    inset 0 -3px 0 rgba(0,0,0,0.35),
-                    0 0 22px rgba(255,200,0,0.8),
-                    0 5px 12px rgba(0,0,0,0.65),
-                    0 2px 0 #100800;
-            }
+            0%, 100% { transform: translateY(0); filter: brightness(1); }
+            50% { transform: translateY(-3px); filter: brightness(1.12); }
         }
         .daily-claim-toast {
             position: absolute;
@@ -7613,8 +7583,8 @@
             animation: forgeBtnPulse 1.5s ease-in-out infinite;
         }
         @keyframes forgeBtnPulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.3); }
-            50% { box-shadow: 0 0 20px rgba(255,215,0,0.7); }
+            0%, 100% { transform: translateY(0); filter: brightness(1); }
+            50% { transform: translateY(-3px); filter: brightness(1.12); }
         }
         .forge-weapons-collected {
             font-family: 'Fredoka', sans-serif;
