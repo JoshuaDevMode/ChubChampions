@@ -1729,12 +1729,33 @@
 
         .menu-character-info {
             position: absolute;
-            bottom: -10px;
+            bottom: -40px;
             left: 50%;
             transform: translateX(-50%);
-            width: 340px;
+            width: 400px;
             text-align: center;
             z-index: 2;
+        }
+
+        /* Exp bar + upgrade + skills on one row */
+        .menu-exp-skills-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .menu-exp-skills-row .menu-character-exp {
+            flex: 1;
+            margin: 0;
+            width: auto;
+        }
+        .menu-exp-skills-row .menu-upgrade-stats {
+            padding: 5px 8px;
+            margin-top: 0;
+            font-size: 0.58em;
+            flex-shrink: 0;
+            animation: upgradeButtonPulse 1.5s ease-in-out infinite;
         }
 
         .menu-character-name {
@@ -2852,6 +2873,7 @@
             gap: 8px;
             width: 100%;
         }
+        .menu-stats-with-skill { justify-content: center; }
         .menu-stats-with-skill .menu-character-stats { flex: 1; }
 
         .skills-icon-btn {
@@ -8830,17 +8852,20 @@
             </div>
             <div class="menu-character-info" id="menu-character-info">
                     <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
-                        <div class="menu-character-exp" id="menu-character-exp-container">
-                            <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
-                            <div class="menu-char-exp-track">
-                                <div class="menu-character-exp-bar" id="menu-character-exp-bar"></div>
-                                <span class="menu-char-xp-label">XP</span>
-                                <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
+                        <div class="menu-exp-skills-row">
+                            <div class="menu-character-exp" id="menu-character-exp-container">
+                                <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
+                                <div class="menu-char-exp-track">
+                                    <div class="menu-character-exp-bar" id="menu-character-exp-bar"></div>
+                                    <span class="menu-char-xp-label">XP</span>
+                                    <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
+                                </div>
                             </div>
+                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">⬆️ UPGRADE</button>
+                            <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-stats-with-skill">
                             <div class="menu-character-stats" id="menu-character-stats"></div>
-                            <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-character-level" id="menu-character-level"></div>
                         <div class="menu-bars-with-care">
@@ -8876,9 +8901,6 @@
                             </div>
                         </div>
                     </div>
-                    <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">
-                        ⬆️ UPGRADE STATS
-                    </button>
                     <div class="menu-character-actions" id="menu-character-actions" style="display:none;">
                         <button class="menu-change-name" id="menu-change-name">✏️ CHANGE NAME</button>
                         <button class="menu-delete-character" id="menu-delete-character">🗑️ DELETE</button>
