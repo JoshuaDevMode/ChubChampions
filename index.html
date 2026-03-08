@@ -412,6 +412,46 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
         }
 
+        /* ── Element fury auras (on .fighter.fury-glow.fury-aura-X .fighter-body) ── */
+        .fighter.fury-glow.fury-aura-fire  .fighter-body { animation: furyFlicker 0.15s ease-in-out infinite, furyAuraFire  0.55s ease-in-out infinite; }
+        .fighter.fury-glow.fury-aura-water .fighter-body { animation: furyFlicker 0.15s ease-in-out infinite, furyAuraWater 0.90s ease-in-out infinite; }
+        .fighter.fury-glow.fury-aura-earth .fighter-body { animation: furyFlicker 0.15s ease-in-out infinite, furyAuraEarth 1.20s ease-in-out infinite; }
+        .fighter.fury-glow.fury-aura-wind  .fighter-body { animation: furyFlicker 0.15s ease-in-out infinite, furyAuraWind  0.30s ease-in-out infinite; }
+
+        @keyframes furyAuraFire {
+            0%,100% { filter: brightness(1.10) drop-shadow(0 0 10px #ff4500) drop-shadow(0 0 22px #ff8c00); }
+            50%     { filter: brightness(1.25) drop-shadow(0 0 20px #ff6600) drop-shadow(0 0 38px #ff2200); }
+        }
+        @keyframes furyAuraWater {
+            0%,100% { filter: brightness(1.08) drop-shadow(0 0 10px #00bfff) drop-shadow(0 0 22px #0055ff); }
+            50%     { filter: brightness(1.18) drop-shadow(0 0 18px #00e5ff) drop-shadow(0 0 34px #0088ff); }
+        }
+        @keyframes furyAuraEarth {
+            0%,100% { filter: brightness(1.05) drop-shadow(0 0 8px #a07830) drop-shadow(0 0 18px #5a8c28); }
+            50%     { filter: brightness(1.16) drop-shadow(0 0 15px #d4a040) drop-shadow(0 0 30px #7cc040); }
+        }
+        @keyframes furyAuraWind {
+            0%,100% { filter: brightness(1.08) drop-shadow(0 0 8px #b8eeff) drop-shadow(0 0 18px #ffffff); }
+            50%     { filter: brightness(1.22) drop-shadow(0 0 16px #e0f8ff) drop-shadow(0 0 28px #c0ecff); }
+        }
+
+        /* Fury aura particles */
+        .fury-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 20;
+            border-radius: 50%;
+            animation: furyParticleAnim var(--dur, 0.6s) ease-out forwards;
+        }
+        @keyframes furyParticleAnim {
+            0%   { opacity: 1;   transform: translate(0,0) scale(1); }
+            100% { opacity: 0;   transform: translate(var(--dx,0px), var(--dy,-40px)) scale(0.15); }
+        }
+        .fury-particle-fire  { width: 8px;  height: 8px;  background: radial-gradient(circle, #fff 0%, #ff8c00 45%, #ff2200 100%); }
+        .fury-particle-water { width: 7px;  height: 7px;  background: radial-gradient(circle, #fff 0%, #00e5ff 55%, #0055ff 100%); }
+        .fury-particle-earth { width: 10px; height: 10px; background: radial-gradient(circle, #d4aa40 0%, #7a5510 100%); border-radius: 2px; }
+        .fury-particle-wind  { width: 20px; height: 3px;  background: linear-gradient(90deg, transparent, #e0f8ff 40%, #fff 60%, transparent); border-radius: 2px; }
+
         /* Damage effects */
         .damage-text {
             position: absolute;
@@ -16990,6 +17030,61 @@
         let FURY_ORB_FRAMES_PLAYER = [];
         let FURY_ORB_FRAMES_CPU = [];
 
+        function getFighterElement(fighter) {
+            if (fighter === 'player') return getSelectedCharacter()?.element || null;
+            return currentCpuStats?.element || null;
+        }
+
+        function startFuryAuraParticles(fighter, element) {
+            const f = game[fighter];
+            const interval = element === 'wind' ? 70 : element === 'fire' ? 90 : 130;
+            if (f.furyAuraParticleInterval) clearInterval(f.furyAuraParticleInterval);
+            f.furyAuraParticleInterval = setInterval(() => {
+                if (!f.furyActive) return;
+                emitFuryAuraParticle(fighter, element);
+            }, interval);
+        }
+
+        function emitFuryAuraParticle(fighter, element) {
+            const arena = document.getElementById('arena');
+            if (!arena) return;
+            const zoom = getGameZoom();
+            const arenaRect = arena.getBoundingClientRect();
+            const f = game[fighter];
+            const body = f.element.querySelector('.fighter-body') || f.element;
+            const rect = body.getBoundingClientRect();
+            const cx = (rect.left - arenaRect.left) / zoom + (rect.width / zoom) / 2;
+            const cy = (rect.top - arenaRect.top) / zoom + (rect.height / zoom) / 2;
+
+            const p = document.createElement('div');
+            p.className = `fury-particle fury-particle-${element}`;
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 20 + Math.random() * 55;
+            p.style.left = (cx + Math.cos(angle) * radius) + 'px';
+            p.style.top  = (cy + Math.sin(angle) * radius) + 'px';
+
+            let dx, dy;
+            if (element === 'fire') {
+                dx = (Math.random() - 0.5) * 30;
+                dy = -(25 + Math.random() * 45);
+            } else if (element === 'earth') {
+                dx = Math.cos(angle) * (10 + Math.random() * 20);
+                dy = 8 + Math.random() * 22;
+            } else if (element === 'wind') {
+                const dir = fighter === 'player' ? 1 : -1;
+                dx = dir * (22 + Math.random() * 42);
+                dy = (Math.random() - 0.5) * 28;
+            } else { // water
+                dx = Math.cos(angle) * (15 + Math.random() * 30);
+                dy = Math.sin(angle) * (15 + Math.random() * 30);
+            }
+            p.style.setProperty('--dx', dx + 'px');
+            p.style.setProperty('--dy', dy + 'px');
+            p.style.setProperty('--dur', (0.45 + Math.random() * 0.5) + 's');
+            arena.appendChild(p);
+            p.addEventListener('animationend', () => p.remove(), { once: true });
+        }
+
         function activateFury(fighter) {
             const f = game[fighter];
             f.furyActive = true;
@@ -17063,29 +17158,57 @@
                 updateFuryOrbPosition(fighter);
             }, 32);
 
-            // Apply hue shift to match character color
-            // Calculamos el offset desde el color base del orbe (amarillo 60°) al color del personaje
-            const targetHue = fighter === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-            // hue=0 means the sprite has no shift applied (grey look) — keep orb at its base yellow
-            const hueOffset  = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
-            const glowHue    = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
-            const glowColor  = `hsl(${glowHue}, 100%, 60%)`;
+            // Element-specific fury visuals
+            const furyElement = getFighterElement(fighter);
+            f.element.classList.add('fury-aura-' + (furyElement || 'lightning'));
 
-            const orb = document.createElement('img');
-            orb.src = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES[0] : FURY_ORB_SRC;
-            orb.className = 'fury-orb';
-            orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
-            (hudEl.arena || document.getElementById('arena')).appendChild(orb);
-            f.furyOrbEl = orb;
-            updateFuryOrbPosition(fighter);
+            if (!furyElement || furyElement === 'lightning') {
+                // ── Lightning: electric orb + contact damage ──────────────────────────
+                const targetHue = fighter === 'cpu' ? selectedCpuHue : selectedPlayerHue;
+                const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
+                const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
+                const glowColor = `hsl(${glowHue}, 100%, 60%)`;
 
-            // Animate fury orb frames
-            if (FURY_ORB_FRAMES.length > 1) {
-                let frame = 0;
-                f.furyOrbAnim = setInterval(() => {
-                    frame = (frame + 1) % FURY_ORB_FRAMES.length;
-                    orb.src = FURY_ORB_FRAMES[frame];
-                }, 60);
+                const orb = document.createElement('img');
+                orb.src = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES[0] : FURY_ORB_SRC;
+                orb.className = 'fury-orb';
+                orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
+                (hudEl.arena || document.getElementById('arena')).appendChild(orb);
+                f.furyOrbEl = orb;
+                updateFuryOrbPosition(fighter);
+
+                if (FURY_ORB_FRAMES.length > 1) {
+                    let frame = 0;
+                    f.furyOrbAnim = setInterval(() => {
+                        frame = (frame + 1) % FURY_ORB_FRAMES.length;
+                        orb.src = FURY_ORB_FRAMES[frame];
+                    }, 60);
+                }
+
+                // Contact damage — only for lightning orb
+                f.furyOrbDamageInterval = setInterval(() => {
+                    if (game.gameOver || !f.furyActive || !f.furyOrbEl) return;
+                    const orbRect = f.furyOrbEl.getBoundingClientRect();
+                    const oppRect = game[opponent].element.getBoundingClientRect();
+                    const shrink = orbRect.width * 0.3;
+                    const touching = (orbRect.left + shrink) < oppRect.right &&
+                                     (orbRect.right - shrink) > oppRect.left &&
+                                     (orbRect.top + shrink) < oppRect.bottom &&
+                                     (orbRect.bottom - shrink) > oppRect.top;
+                    if (!touching) return;
+                    let fighterLevel = 1;
+                    if (fighter === 'player') { const ch = getSelectedCharacter(); if (ch) fighterLevel = ch.level; }
+                    else if (currentCpuStats) { fighterLevel = currentCpuStats.level; }
+                    const orbDamage = Math.max(1, Math.round(3 + fighterLevel * 0.5));
+                    game[opponent].health = Math.max(0, game[opponent].health - orbDamage);
+                    updateHealth(opponent);
+                    showDamage(opponent, orbDamage, false);
+                    trimAndPlay(FURY_HIT_SOUND, 0.15);
+                    if (game[opponent].health <= 0) showGameOver(fighter, opponent);
+                }, 250);
+            } else {
+                // ── Other elements: particle aura ─────────────────────────────────────
+                startFuryAuraParticles(fighter, furyElement);
             }
 
             trimAndPlay(FURY_SOUND, 0.6);
@@ -17099,47 +17222,10 @@
             f.furyInterval = setInterval(() => {
                 f.fury = Math.max(0, f.fury - drainAmount);
                 updateFuryBar(fighter);
-                if (f.fury <= 0) {
-                    deactivateFury(fighter);
-                }
+                if (f.fury <= 0) deactivateFury(fighter);
             }, drainStep);
 
-            f.furyTimeout = setTimeout(() => {
-                deactivateFury(fighter);
-            }, FURY_DURATION);
-
-            // Fury orb contact damage - only hits when orb overlaps opponent
-            f.furyOrbDamageInterval = setInterval(() => {
-                if (game.gameOver || !f.furyActive || !f.furyOrbEl) return;
-
-                // Collision check: shrink orb hitbox to ~40% center for tighter feel
-                const orbRect = f.furyOrbEl.getBoundingClientRect();
-                const oppRect = game[opponent].element.getBoundingClientRect();
-                const shrink = orbRect.width * 0.3;
-                const touching = (orbRect.left + shrink) < oppRect.right &&
-                                 (orbRect.right - shrink) > oppRect.left &&
-                                 (orbRect.top + shrink) < oppRect.bottom &&
-                                 (orbRect.bottom - shrink) > oppRect.top;
-                if (!touching) return;
-
-                // Level-based damage per tick: 3 + level * 0.5
-                let fighterLevel = 1;
-                if (fighter === 'player') {
-                    const ch = getSelectedCharacter();
-                    if (ch) fighterLevel = ch.level;
-                } else if (currentCpuStats) {
-                    fighterLevel = currentCpuStats.level;
-                }
-                const orbDamage = Math.max(1, Math.round(3 + fighterLevel * 0.5));
-
-                game[opponent].health = Math.max(0, game[opponent].health - orbDamage);
-                updateHealth(opponent);
-                showDamage(opponent, orbDamage, false);
-                trimAndPlay(FURY_HIT_SOUND, 0.15);
-                if (game[opponent].health <= 0) {
-                    showGameOver(fighter, opponent);
-                }
-            }, 250);
+            f.furyTimeout = setTimeout(() => { deactivateFury(fighter); }, FURY_DURATION);
 
             updateFuryBar(fighter);
         }
@@ -17318,6 +17404,10 @@
             if (f.furyOrbEl) { f.furyOrbEl.remove(); f.furyOrbEl = null; }
             if (f.furyLightInterval) { clearInterval(f.furyLightInterval); f.furyLightInterval = null; }
             if (f.furyOrbDamageInterval) { clearInterval(f.furyOrbDamageInterval); f.furyOrbDamageInterval = null; }
+            if (f.furyAuraParticleInterval) { clearInterval(f.furyAuraParticleInterval); f.furyAuraParticleInterval = null; }
+            f.element.classList.remove('fury-aura-fire', 'fury-aura-water', 'fury-aura-earth', 'fury-aura-wind', 'fury-aura-lightning');
+            const _dfa = document.getElementById('arena');
+            if (_dfa) _dfa.querySelectorAll('.fury-particle').forEach(el => el.remove());
             updateFuryBar(fighter);
             log(`${fighterName(fighter)} fury ended`, 'log-fury');
 
@@ -17826,52 +17916,70 @@
         }
 
         function showFurySparks(defender, attacker) {
-            const el = game[defender].element;
-            const arena = document.getElementById('arena');
-            const zoom = getGameZoom();
-            const arenaRect = arena.getBoundingClientRect();
-            const defenderRect = el.getBoundingClientRect();
-
-            // Posición del golpe - compensar zoom y centrar en el torso del defensor
-            const cx = (defenderRect.left - arenaRect.left) / zoom + (defenderRect.width / zoom) / 2;
-            const cy = (defenderRect.top - arenaRect.top) / zoom + (defenderRect.height / zoom) / 2 - 20;
-
-            // Get attacker's hue offset to color the lightning (from yellow base ~60°)
-            const targetHue = attacker === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-            const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
-            const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
-            const glowColor = `hsl(${glowHue}, 100%, 60%)`;
-
-            const boltCount = 5 + Math.floor(Math.random() * 3);
-
-            for (let i = 0; i < boltCount; i++) {
-                const lightning = document.createElement('div');
-                lightning.className = 'fury-lightning';
-
-                // Ángulos más abiertos y variados (evitar 90 y 180 exactos)
-                const baseAngle = Math.random() * Math.PI * 2;
-                const angle = baseAngle + (Math.random() - 0.5) * 1.2;
-                const boltLength = 100 + Math.random() * 60;
-                const boltWidth = 60;
-                const duration = 0.6 + Math.random() * 0.4;
-                const delay = Math.random() * 0.08;
-
-                const canvas = createLightningCanvas(boltWidth, boltLength, angle);
-                lightning.appendChild(canvas);
-
-                const rotation = (angle * 180 / Math.PI) + 90;
-                lightning.style.left = cx + 'px';
-                lightning.style.top = cy + 'px';
-                lightning.style.transformOrigin = 'center top';
-                lightning.style.setProperty('--rot', rotation + 'deg');
-                lightning.style.setProperty('--duration', duration + 's');
-                lightning.style.animationDelay = delay + 's';
-
-                // Apply hue offset to match attacker's color + glow matching the orb
-                lightning.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
-
-                arena.appendChild(lightning);
-                lightning.addEventListener('animationend', () => lightning.remove(), { once: true });
+            const attackerElement = getFighterElement(attacker);
+            if (!attackerElement || attackerElement === 'lightning') {
+                // Lightning: electric bolt sparks
+                const el = game[defender].element;
+                const arena = document.getElementById('arena');
+                const zoom = getGameZoom();
+                const arenaRect = arena.getBoundingClientRect();
+                const defenderRect = el.getBoundingClientRect();
+                const cx = (defenderRect.left - arenaRect.left) / zoom + (defenderRect.width / zoom) / 2;
+                const cy = (defenderRect.top - arenaRect.top) / zoom + (defenderRect.height / zoom) / 2 - 20;
+                const targetHue = attacker === 'cpu' ? selectedCpuHue : selectedPlayerHue;
+                const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
+                const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
+                const glowColor = `hsl(${glowHue}, 100%, 60%)`;
+                const boltCount = 5 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < boltCount; i++) {
+                    const lightning = document.createElement('div');
+                    lightning.className = 'fury-lightning';
+                    const baseAngle = Math.random() * Math.PI * 2;
+                    const angle = baseAngle + (Math.random() - 0.5) * 1.2;
+                    const boltLength = 100 + Math.random() * 60;
+                    const duration = 0.6 + Math.random() * 0.4;
+                    const delay = Math.random() * 0.08;
+                    const canvas = createLightningCanvas(60, boltLength, angle);
+                    lightning.appendChild(canvas);
+                    const rotation = (angle * 180 / Math.PI) + 90;
+                    lightning.style.left = cx + 'px';
+                    lightning.style.top = cy + 'px';
+                    lightning.style.transformOrigin = 'center top';
+                    lightning.style.setProperty('--rot', rotation + 'deg');
+                    lightning.style.setProperty('--duration', duration + 's');
+                    lightning.style.animationDelay = delay + 's';
+                    lightning.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
+                    arena.appendChild(lightning);
+                    lightning.addEventListener('animationend', () => lightning.remove(), { once: true });
+                }
+            } else {
+                // Other elements: element-themed hit particles
+                const el = game[defender].element;
+                const arena = document.getElementById('arena');
+                const zoom = getGameZoom();
+                const arenaRect = arena.getBoundingClientRect();
+                const defenderRect = el.getBoundingClientRect();
+                const cx = (defenderRect.left - arenaRect.left) / zoom + (defenderRect.width / zoom) / 2;
+                const cy = (defenderRect.top - arenaRect.top) / zoom + (defenderRect.height / zoom) / 2 - 20;
+                const count = 6 + Math.floor(Math.random() * 4);
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('div');
+                    p.className = `fury-particle fury-particle-${attackerElement}`;
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 8 + Math.random() * 25;
+                    p.style.left = (cx + Math.cos(angle) * radius) + 'px';
+                    p.style.top  = (cy + Math.sin(angle) * radius) + 'px';
+                    const spread = 35 + Math.random() * 45;
+                    let dx = Math.cos(angle) * spread;
+                    let dy = attackerElement === 'fire'  ? -(spread * 0.8 + Math.random() * 30)
+                           : attackerElement === 'earth' ? (10 + Math.random() * 25)
+                           : Math.sin(angle) * spread;
+                    p.style.setProperty('--dx', dx + 'px');
+                    p.style.setProperty('--dy', dy + 'px');
+                    p.style.setProperty('--dur', (0.35 + Math.random() * 0.35) + 's');
+                    arena.appendChild(p);
+                    p.addEventListener('animationend', () => p.remove(), { once: true });
+                }
             }
         }
 
