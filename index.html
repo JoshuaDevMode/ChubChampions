@@ -17023,22 +17023,33 @@
                                     }
                                 }
 
-                                // Gradient fade: only after reaching target, creeps tail→tip
+                                // "<" shaped fade: only after reaching target, erases tail→tip
                                 if (t >= IMPACT_T) {
-                                    const fadePhase = (t - IMPACT_T) / (1 - IMPACT_T);
-                                    const grad = fCtx.createLinearGradient(
-                                        fromLeft ? 0 : flameW, 0,
-                                        fromLeft ? flameW : 0, 0
-                                    );
-                                    grad.addColorStop(0, 'rgba(0,0,0,0)');
-                                    grad.addColorStop(Math.min(fadePhase, 0.97), 'rgba(0,0,0,0)');
-                                    if (fadePhase < 1) {
-                                        grad.addColorStop(Math.min(fadePhase + 0.06, 1), 'rgba(0,0,0,1)');
-                                        grad.addColorStop(1, 'rgba(0,0,0,1)');
-                                    }
+                                    const fadePhase    = (t - IMPACT_T) / (1 - IMPACT_T);
+                                    const chevronDepth = flameH * 0.55;
+                                    const cutCenter    = fadePhase * flameW;
                                     fCtx.globalCompositeOperation = 'destination-in';
-                                    fCtx.fillStyle = grad;
-                                    fCtx.fillRect(0, 0, flameW, flameH);
+                                    fCtx.beginPath();
+                                    if (fromLeft) {
+                                        // Opaque region: right side of "<" front
+                                        const xEdge = cutCenter + chevronDepth;
+                                        fCtx.moveTo(xEdge, 0);
+                                        fCtx.lineTo(cutCenter, flameH / 2);
+                                        fCtx.lineTo(xEdge, flameH);
+                                        fCtx.lineTo(flameW, flameH);
+                                        fCtx.lineTo(flameW, 0);
+                                    } else {
+                                        // Opaque region: left side of ">" front
+                                        const xEdge = flameW - cutCenter - chevronDepth;
+                                        fCtx.moveTo(0, 0);
+                                        fCtx.lineTo(0, flameH);
+                                        fCtx.lineTo(xEdge, flameH);
+                                        fCtx.lineTo(flameW - cutCenter, flameH / 2);
+                                        fCtx.lineTo(xEdge, 0);
+                                    }
+                                    fCtx.closePath();
+                                    fCtx.fillStyle = 'rgba(0,0,0,1)';
+                                    fCtx.fill();
                                     fCtx.globalCompositeOperation = 'source-over';
                                 }
                             }
@@ -17047,6 +17058,7 @@
                                 flameImpactDone = true;
                                 spawnImpact(tp.x, tp.y, 70, '#ff4400');
                                 spawnParticles(tp.x, tp.y, 8, '#ff6600');
+                                showHitEffect(target, 'normal');
                             }
 
                             if (t < 1) {
