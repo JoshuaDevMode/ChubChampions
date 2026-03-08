@@ -828,13 +828,8 @@
             animation: jumpAttackArc 0.95s cubic-bezier(0.25, 0, 0.6, 1) forwards;
         }
         @keyframes jumpAttackArc {
-            0%   { transform: translateY(0); }
-            26%  { transform: translateY(-135px); }
-            48%  { transform: translateY(-135px); }
-            60%  { transform: translateY(-100px); }
-            71%  { transform: translateY(-55px); }
-            81%  { transform: translateY(-20px); }
-            89%  { transform: translateY(-4px); }
+            0%   { transform: translateY(0);      animation-timing-function: ease-out; }
+            32%  { transform: translateY(-135px); animation-timing-function: ease-in; }
             100% { transform: translateY(0); }
         }
         /* Jump shockwave */
@@ -14393,23 +14388,14 @@
                 stopRunAnimation(attackerEl);
                 playFootstep();
 
-                // Landing: reverse attack frames from last to halfway + rotate back to 0°
-                if (jaImg && jaPeakFrames.length > 0) {
-                    const halfIdx    = Math.floor(jaPeakFrames.length / 2);
-                    const landFrames = jaPeakFrames.slice(halfIdx).reverse();
-                    let li = 0;
-                    const landInterval = setInterval(() => {
-                        if (li < landFrames.length) { jaImg.src = landFrames[li++]; }
-                        else { clearInterval(landInterval); }
-                    }, 55);
-                    // Rotate back to neutral (CPU needs scaleX(-1) restored, player clears to '')
-                    jaImg.style.transition = 'transform 0.28s ease-out';
+                // Reset rotation on landing
+                if (jaImg) {
+                    jaImg.style.transition = 'transform 0.15s ease-out';
                     jaImg.style.transform  = isCpuAtt ? 'scaleX(-1)' : '';
                     setTimeout(() => {
                         jaImg.style.transition = '';
-                        // Let CSS rule handle CPU flip — clear inline so CSS takes over again
                         if (isCpuAtt) jaImg.style.transform = '';
-                    }, 320);
+                    }, 180);
                 }
             } else {
                 // Normal first hit: run from starting corner to opponent
