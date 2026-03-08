@@ -17091,77 +17091,71 @@
             f.furyActive = true;
             f.fury = f.maxFury;
 
-            // Crear capas de efecto de furia
             const arena = hudEl.arena || document.getElementById('arena');
-
-            // Limpiar overlays existentes para recrearlos frescos
-            let existingSaturator = document.querySelector('.fury-saturator');
-            let existingGray = _furyGrayOverlay || document.querySelector('.fury-grayscale-overlay');
-            let existingDarkness = _furyDarknessEl || document.querySelector('.fury-darkness');
-
-            // Capa 1: Fondo saturado (se ve a través del agujero)
-            if (!existingSaturator) {
-                const saturator = document.createElement('div');
-                saturator.className = 'fury-saturator';
-                saturator.style.backgroundImage = arena.style.backgroundImage;
-                arena.insertBefore(saturator, arena.firstChild);
-                existingSaturator = saturator;
-            }
-
-            // Capa 2: Overlay de grises con agujero
-            if (!existingGray) {
-                const grayOverlay = document.createElement('div');
-                grayOverlay.className = 'fury-grayscale-overlay';
-                grayOverlay.style.backgroundImage = arena.style.backgroundImage;
-                if (existingSaturator && existingSaturator.nextSibling) {
-                    arena.insertBefore(grayOverlay, existingSaturator.nextSibling);
-                } else {
-                    arena.appendChild(grayOverlay);
-                }
-                existingGray = grayOverlay;
-            }
-
-            // Capa 3: Oscurecimiento con agujero
-            if (!existingDarkness) {
-                const darkness = document.createElement('div');
-                darkness.className = 'fury-darkness';
-                if (existingGray && existingGray.nextSibling) {
-                    arena.insertBefore(darkness, existingGray.nextSibling);
-                } else {
-                    arena.appendChild(darkness);
-                }
-                existingDarkness = darkness;
-            }
-
-            // Cache overlay refs for hot path in updateFuryLight
-            _furyGrayOverlay = existingGray;
-            _furyDarknessEl = existingDarkness;
-
-            // El personaje con furia sobre la oscuridad
-            f.element.classList.add('fury-glow');
-            f.element.classList.remove('fury-dimmed'); // No oscurecer al que tiene furia
-            f.element.style.filter = ''; // Quitar cualquier filtro de brillo previo
-
-            // Oscurecer al contrincante solo si no tiene furia
             const opponent = fighter === 'player' ? 'cpu' : 'player';
-            if (!game[opponent].furyActive) {
-                game[opponent].element.classList.add('fury-dimmed');
-            } else {
-                // Ambos tienen furia - ninguno debe estar oscurecido
-                game[opponent].element.classList.remove('fury-dimmed');
-                game[opponent].element.style.filter = ''; // Quitar filtro del oponente también
-            }
-
-            // Actualizar posición de la luz y del orbe continuamente (30fps is sufficient for light effects)
-            if (f.furyLightInterval) clearInterval(f.furyLightInterval);
-            f.furyLightInterval = setInterval(() => {
-                updateFuryLight(fighter);
-                updateFuryOrbPosition(fighter);
-            }, 32);
 
             // Element-specific fury visuals
             const furyElement = getFighterElement(fighter);
+            f.element.classList.add('fury-glow');
+            f.element.classList.remove('fury-dimmed');
+            f.element.style.filter = '';
             f.element.classList.add('fury-aura-' + (furyElement || 'lightning'));
+
+            // Darkness overlay only for lightning and fire
+            const useDarkness = !furyElement || furyElement === 'lightning' || furyElement === 'fire';
+            if (useDarkness) {
+                let existingSaturator = document.querySelector('.fury-saturator');
+                let existingGray = _furyGrayOverlay || document.querySelector('.fury-grayscale-overlay');
+                let existingDarkness = _furyDarknessEl || document.querySelector('.fury-darkness');
+
+                if (!existingSaturator) {
+                    const saturator = document.createElement('div');
+                    saturator.className = 'fury-saturator';
+                    saturator.style.backgroundImage = arena.style.backgroundImage;
+                    arena.insertBefore(saturator, arena.firstChild);
+                    existingSaturator = saturator;
+                }
+                if (!existingGray) {
+                    const grayOverlay = document.createElement('div');
+                    grayOverlay.className = 'fury-grayscale-overlay';
+                    grayOverlay.style.backgroundImage = arena.style.backgroundImage;
+                    if (existingSaturator && existingSaturator.nextSibling) {
+                        arena.insertBefore(grayOverlay, existingSaturator.nextSibling);
+                    } else {
+                        arena.appendChild(grayOverlay);
+                    }
+                    existingGray = grayOverlay;
+                }
+                if (!existingDarkness) {
+                    const darkness = document.createElement('div');
+                    darkness.className = 'fury-darkness';
+                    if (existingGray && existingGray.nextSibling) {
+                        arena.insertBefore(darkness, existingGray.nextSibling);
+                    } else {
+                        arena.appendChild(darkness);
+                    }
+                    existingDarkness = darkness;
+                }
+                _furyGrayOverlay = existingGray;
+                _furyDarknessEl = existingDarkness;
+
+                if (!game[opponent].furyActive) {
+                    game[opponent].element.classList.add('fury-dimmed');
+                } else {
+                    game[opponent].element.classList.remove('fury-dimmed');
+                    game[opponent].element.style.filter = '';
+                }
+
+                if (f.furyLightInterval) clearInterval(f.furyLightInterval);
+                f.furyLightInterval = setInterval(() => {
+                    updateFuryLight(fighter);
+                    updateFuryOrbPosition(fighter);
+                }, 32);
+            } else {
+                // No darkness: opponent is not dimmed
+                game[opponent].element.classList.remove('fury-dimmed');
+                game[opponent].element.style.filter = '';
+            }
 
             if (!furyElement || furyElement === 'lightning') {
                 // ── Lightning: electric orb + contact damage ──────────────────────────
