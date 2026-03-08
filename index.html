@@ -10905,13 +10905,13 @@
             10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi' }],
             15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08 },
                   { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
-            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10 }],
+            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true }],
             25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true }],
             30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06 }],
             40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09 }],
             50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
             60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06 }],
-            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi' }],
+            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true }],
             80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08 }],
             100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
         };
@@ -19875,10 +19875,14 @@
                         try { _weaponRunFramesCache[entry.id] = await extractFrames(runPath, 5, 2); }
                         catch(e) { _weaponRunFramesCache[entry.id] = []; }
                     }
-                    if (!_weaponAttackFramesCache[entry.id] && entry.img) {
-                        const attackPath = entry.img.replace('.png', ' Attack.png');
-                        try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2); }
-                        catch(e) { _weaponAttackFramesCache[entry.id] = []; }
+                    if (!_weaponAttackFramesCache[entry.id]) {
+                        if (entry.attackOverlay && entry.img) {
+                            const attackPath = entry.img.replace('.png', ' Attack.png');
+                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2); }
+                            catch(e) { _weaponAttackFramesCache[entry.id] = []; }
+                        } else {
+                            _weaponAttackFramesCache[entry.id] = [];
+                        }
                     }
                     // Preload idle weapon pose overlay
                     if (!_weaponIdlePoseCache[entry.id] && WEAPON_POSE_MAP[entry.id]) {
@@ -21085,7 +21089,7 @@
                 const allUrls = [];
                 for (const w of allWeapons) {
                     allUrls.push(w.img.replace('.png', ' Run.png'));
-                    allUrls.push(w.img.replace('.png', ' Attack.png'));
+                    if (w.attackOverlay) allUrls.push(w.img.replace('.png', ' Attack.png'));
                 }
 
                 // ── Phase 2 (12–55%): parallel fetch — real byte progress ──
@@ -21147,8 +21151,12 @@
                         catch(e) { _weaponRunFramesCache[weapon.id] = []; }
                     }
                     if (!_weaponAttackFramesCache[weapon.id]) {
-                        try { _weaponAttackFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[attackUrl] || attackUrl, 4, 2); }
-                        catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
+                        if (weapon.attackOverlay) {
+                            try { _weaponAttackFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[attackUrl] || attackUrl, 4, 2); }
+                            catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
+                        } else {
+                            _weaponAttackFramesCache[weapon.id] = [];
+                        }
                     }
                 }
 
@@ -21181,8 +21189,12 @@
                     catch(e) { _weaponRunFramesCache[weaponId] = []; }
                 }
                 if (!_weaponAttackFramesCache[weaponId]) {
-                    try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
-                    catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                    if (WEAPONS[weaponId]?.attackOverlay) {
+                        try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                        catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+                    } else {
+                        _weaponAttackFramesCache[weaponId] = [];
+                    }
                 }
             }
         }
