@@ -14317,8 +14317,10 @@
             // TEST: inject jumpAttack 30% of the time so the animation can be verified visually
             // TODO: remove once backend sends event.jumpAttack
             // TEST trigger: jump attack only for punch/kick (no weapons yet)
-            if (!event.jumpAttack && !isComboFollow && !isLSFollow && !isWeaponAnim
-                && (attackType === 'punch' || attackType === 'kick') && Math.random() < 0.30) {
+            if (!event.jumpAttack && !isComboFollow && !isLSFollow
+                && !WEAPONS[event.attackType]
+                && (event.attackType === 'punch' || event.attackType === 'kick')
+                && Math.random() < 0.30) {
                 event = { ...event, jumpAttack: true };
             }
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
