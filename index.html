@@ -16945,6 +16945,7 @@
                         setTimeout(() => {
                             spawnImpact(tp.x, tp.y, 90, '#ff5500');
                             spawnParticles(tp.x, tp.y, 12, '#ff4400');
+                            showHitEffect(target, 'normal');
                         }, 420);
                     } else if (power.includes('flamethrower')) {
                         const fromLeft = caster === 'player';
@@ -16965,6 +16966,7 @@
                         const endY   = tp.y - flameH * 0.5;
                         flameCanvas.style.left = startX + 'px';
                         flameCanvas.style.top  = startY + 'px';
+                        flameCanvas.style.zIndex = '10';
                         arena.appendChild(flameCanvas);
                         const fCtx = flameCanvas.getContext('2d');
 
@@ -16975,9 +16977,9 @@
                         fImg.src = 'Assets/Player/Effects/Flamethrower.png';
                         if (fImg.complete && fImg.naturalWidth > 0) fImgSrc = fImg;
 
-                        // Travel ends at t=0.67, fade runs 0.67→1 (25% longer than before)
+                        // Travel ends at t=0.52, fade runs 0.52→1
                         const FLAME_TOTAL  = 750;
-                        const IMPACT_T     = 0.67;
+                        const IMPACT_T     = 0.52;
                         const flameStartT  = performance.now();
                         let flameImpactDone = false;
 
@@ -17106,12 +17108,14 @@
                             lbEl.addEventListener('animationend', () => lbEl.remove(), { once: true });
                             spawnImpact(tp.x, tp.y, 65, color);
                             spawnParticles(tp.x, tp.y, 8, color);
+                            showHitEffect(target, 'normal');
                         }, 450);
                     } else if (power.includes('sky_discharge')) {
                         [-45, 0, 45].forEach((offset, i) => {
                             setTimeout(() => {
                                 spawnLightningV(tp.x + offset, tp.y, color);
                                 spawnImpact(tp.x + offset, tp.y, 42, color);
+                                if (i === 0) showHitEffect(target, 'normal');
                             }, i * 1500);
                         });
                     } else if (power.includes('orb_active')) {
@@ -17129,6 +17133,7 @@
                             spawnImpact(tp.x, tp.y, 80, '#8B5E3C');
                             spawnParticles(tp.x, tp.y, 12, '#a0826d');
                             arenaShake();
+                            showHitEffect(target, 'normal');
                         }, 390);
                     } else if (power.includes('seismic_trap')) {
                         const crack = document.createElement('div');
@@ -17138,6 +17143,7 @@
                         crack.addEventListener('animationend', () => crack.remove(), { once: true });
                         spawnRing(tp.x, tp.y, 65, color);
                         spawnParticles(tp.x, tp.y + 40, 12, color, 80);
+                        showHitEffect(target, 'normal');
                         setTimeout(arenaShake, 120);
                     } else if (power.includes('stone_skin') && !power.includes('break')) {
                         spawnRing(cp.x, cp.y, 55, color);
@@ -17285,8 +17291,8 @@
                                 }
                             }
 
-                            // Impact at t=0.78: show hurt frame + rotate 90° in place for 1s
-                            if (t >= 0.78 && !knockdownDone) {
+                            // Impact at t=0.60: show hurt frame + rotate 90° in place for 1s
+                            if (t >= 0.60 && !knockdownDone) {
                                 knockdownDone = true;
                                 spawnImpact(tp.x, tp.y, 95, color);
                                 spawnParticles(tp.x, tp.y, 16, color);
@@ -17417,6 +17423,7 @@
                                 setTimeout(() => { el.style.opacity = '0'; }, P3_TRAVEL * 0.65);
                                 setTimeout(() => el.remove(), P3_TRAVEL + 80);
                                 if (i % 4 === 0) setTimeout(() => spawnImpact(tp.x, tp.y, 22, color), P3_TRAVEL);
+                                if (i === 0) setTimeout(() => showHitEffect(target, 'normal'), P3_TRAVEL);
                             }, P3_DELAY + i * P3_INTERVAL);
                         });
                     }
