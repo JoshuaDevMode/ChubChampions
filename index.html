@@ -21296,6 +21296,15 @@
             }
         });
 
+        function stopMatchTimer() {
+            if (matchTimerInterval) {
+                clearInterval(matchTimerInterval);
+                matchTimerInterval = null;
+            }
+            const timerEl = document.getElementById('match-timer');
+            if (timerEl) timerEl.style.visibility = 'hidden';
+        }
+
         function startMatchTimer(startFrom) {
             let remaining = startFrom || 90;
             matchTimerRemaining = remaining;
