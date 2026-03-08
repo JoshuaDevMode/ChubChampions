@@ -12920,7 +12920,7 @@
             try {
                 const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
                     body: JSON.stringify({ action: 'get_options', characterId: character.id })
                 });
                 const data = await resp.json();
@@ -15995,7 +15995,7 @@
             try {
                 const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
                     body: JSON.stringify({ action: 'apply', characterId: character.id, optionIndex: optIndex })
                 });
                 const data = await resp.json();
@@ -22208,7 +22208,7 @@
                 try {
                     const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
                         method: 'POST',
-                        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                        headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                         body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId })
                     });
                     const data = await resp.json();
@@ -22226,7 +22226,7 @@
                     try {
                         const resp = await fetch(BACKEND_URL + '/api/minigame/complete', {
                             method: 'POST',
-                            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                            headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                             body: JSON.stringify({ playerId: playerSession.playerId, sessionToken: currentSessionToken, score: rawValue })
                         });
                         const result = await resp.json();
@@ -22270,7 +22270,7 @@
                         try {
                             const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
                                 method: 'POST',
-                                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                                headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId, parentToken: currentSessionToken })
                             });
                             const data = await resp.json();
