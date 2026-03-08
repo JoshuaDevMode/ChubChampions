@@ -825,7 +825,7 @@
 
         /* Jump attack arc */
         .jump-attack-arc {
-            animation: jumpAttackArc 0.62s cubic-bezier(0.25, 0, 0.6, 1) forwards;
+            animation: jumpAttackArc 0.95s cubic-bezier(0.25, 0, 0.6, 1) forwards;
         }
         @keyframes jumpAttackArc {
             0%   { transform: translateY(0); }
@@ -14355,24 +14355,32 @@
                 const jaBody = attackerEl.querySelector('.fighter-body');
                 if (jaImg) {
                     jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
-                    // Frame index 2 = mid-air stride pose (5×2 sprite, 3rd frame)
+                    // Frame 8 (index 8) = airborne pose in the 5×2 run sprite sheet
                     const airFrame = isWeaponAnim
-                        ? (jaImg._weaponRunFrames?.[2] || jaImg._runFrames?.[2] || jaImg.src)
-                        : (jaImg._runFrames?.[2] || jaImg.src);
+                        ? (jaImg._weaponRunFrames?.[8] || jaImg._runFrames?.[8] || jaImg.src)
+                        : (jaImg._runFrames?.[8] || jaImg.src);
                     jaImg.src = airFrame;
-                    // Show weapon overlay in matching air frame if present
+                    // Weapon overlay: matching frame 8 from weapon run cache
                     const jaWepOverlay = attackerEl.querySelector('.weapon-run-overlay');
                     if (jaWepOverlay && isWeaponAnim) {
-                        const wepAirFrame = _weaponRunFramesCache[attackType]?.[2];
+                        const wepAirFrame = _weaponRunFramesCache[attackType]?.[8];
                         if (wepAirFrame) jaWepOverlay.src = wepAirFrame;
+                    }
+                    // At peak (~380ms): flash a single attack frame if the character has learned it
+                    const jaPeakAnimType = isWeaponAnim ? 'punch' : attackType;
+                    const jaPeakFrames   = jaImg['_' + jaPeakAnimType + 'Frames'];
+                    if (jaPeakFrames?.length > 0) {
+                        setTimeout(() => {
+                            jaImg.src = jaPeakFrames[0];
+                        }, 380);
                     }
                 }
                 // Arc jump animation synced with slower horizontal travel
                 jaBody.classList.add('jump-attack-arc');
-                attackerEl.style.transition = 'left 0.60s ease-in, right 0.60s ease-in';
+                attackerEl.style.transition = 'left 0.93s ease-in, right 0.93s ease-in';
                 if (attacker === 'player') attackerEl.style.left  = '67%';
                 else                       attackerEl.style.right = '67%';
-                await sleep(620);
+                await sleep(950);
                 attackerEl.style.transition = '';
                 jaBody.classList.remove('jump-attack-arc');
                 stopRunAnimation(attackerEl);
