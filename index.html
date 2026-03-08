@@ -14066,10 +14066,10 @@
                 return;
             }
 
-            // P1 path: poll every 2s for up to 30s
+            // P1 path: poll every 2s for up to 8s
             pvpMatchId = joinData.matchId;
             const pollStart = Date.now();
-            while (!cancelled && (Date.now() - pollStart) < 30000) {
+            while (!cancelled && (Date.now() - pollStart) < 8000) {
                 await sleep(2000);
                 if (cancelled) break;
 
