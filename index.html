@@ -829,13 +829,12 @@
         }
         @keyframes jumpAttackArc {
             0%   { transform: translateY(0); }
-            28%  { transform: translateY(-135px); }
-            58%  { transform: translateY(-135px); }
-            67%  { transform: translateY(-108px); }
-            76%  { transform: translateY(-70px); }
-            84%  { transform: translateY(-38px); }
-            90%  { transform: translateY(-16px); }
-            95%  { transform: translateY(-5px); }
+            26%  { transform: translateY(-135px); }
+            48%  { transform: translateY(-135px); }
+            60%  { transform: translateY(-100px); }
+            71%  { transform: translateY(-55px); }
+            81%  { transform: translateY(-20px); }
+            89%  { transform: translateY(-4px); }
             100% { transform: translateY(0); }
         }
         /* Jump shockwave */
@@ -14363,8 +14362,11 @@
                 const jaPeakAnimType = attackType; // punch or kick
                 const jaPeakFrames   = jaImg?.['_' + jaPeakAnimType + 'Frames'] || [];
                 // Rotation: punch 35°, kick 45° — mirrored for CPU
-                const rotAngle = jaPeakAnimType === 'kick' ? 45 : 35;
-                const rotDir   = attacker === 'player' ? 1 : -1;
+                const rotAngle  = jaPeakAnimType === 'kick' ? 45 : 35;
+                // CPU img already has scaleX(-1) via CSS — must include it in inline transform
+                // or the flip is lost. Player has no base flip so just rotate.
+                const isCpuAtt  = attacker === 'cpu';
+                const baseXform = isCpuAtt ? 'scaleX(-1) ' : '';
 
                 if (jaImg) {
                     jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
@@ -14375,7 +14377,7 @@
                         setTimeout(() => {
                             jaImg.src = jaPeakFrames[jaPeakFrames.length - 1];
                             jaImg.style.transition = 'transform 0.08s ease-out';
-                            jaImg.style.transform  = `rotate(${rotAngle * rotDir}deg)`;
+                            jaImg.style.transform  = `${baseXform}rotate(${rotAngle}deg)`;
                         }, 400);
                     }
                 }
@@ -14400,10 +14402,14 @@
                         if (li < landFrames.length) { jaImg.src = landFrames[li++]; }
                         else { clearInterval(landInterval); }
                     }, 55);
-                    // Rotate back to neutral
+                    // Rotate back to neutral (CPU needs scaleX(-1) restored, player clears to '')
                     jaImg.style.transition = 'transform 0.28s ease-out';
-                    jaImg.style.transform  = '';
-                    setTimeout(() => { jaImg.style.transition = ''; }, 320);
+                    jaImg.style.transform  = isCpuAtt ? 'scaleX(-1)' : '';
+                    setTimeout(() => {
+                        jaImg.style.transition = '';
+                        // Let CSS rule handle CPU flip — clear inline so CSS takes over again
+                        if (isCpuAtt) jaImg.style.transform = '';
+                    }, 320);
                 }
             } else {
                 // Normal first hit: run from starting corner to opponent
