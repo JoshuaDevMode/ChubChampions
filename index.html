@@ -16959,7 +16959,9 @@
                         // Start: origin (big fire side) at caster, tip pointing toward target
                         // Image: tip=LEFT, bigfire=RIGHT → flip ctx when going right
                         const startX = fromLeft ? cp.x - flameW * 0.15 : cp.x - flameW * 0.85;
-                        const endX   = fromLeft ? tp.x - flameW * 0.85 : tp.x - flameW * 0.15;
+                        // Extend end a bit past target so dodge looks natural
+                        const OVERSHOOT  = fromLeft ? 70 : -70;
+                        const endX   = fromLeft ? tp.x - flameW * 0.85 + OVERSHOOT : tp.x - flameW * 0.15 + OVERSHOOT;
                         const startY = cp.y - flameH * 0.5;
                         const endY   = tp.y - flameH * 0.5;
                         flameCanvas.style.left = startX + 'px';
@@ -16974,23 +16976,26 @@
                         fImg.src = 'Assets/Player/Effects/Flamethrower.png';
                         if (fImg.complete && fImg.naturalWidth > 0) fImgSrc = fImg;
 
-                        const FLAME_TOTAL  = 700;
+                        // Travel ends at t=0.67, fade runs 0.67→1 (25% longer than before)
+                        const FLAME_TOTAL  = 750;
+                        const IMPACT_T     = 0.67;
                         const flameStartT  = performance.now();
                         let flameImpactDone = false;
 
-                        // scaleY: grows from 0→1 in first 12% of animation
                         flameCanvas.style.transformOrigin = 'center center';
 
                         function animFlame(now) {
                             const elapsed = now - flameStartT;
                             const t = Math.min(elapsed / FLAME_TOTAL, 1);
 
-                            flameCanvas.style.left = (startX + (endX - startX) * t) + 'px';
-                            flameCanvas.style.top  = (startY + (endY - startY) * t) + 'px';
+                            flameCanvas.style.left = (startX + (endX - startX) * Math.min(t / IMPACT_T, 1)) + 'px';
+                            flameCanvas.style.top  = (startY + (endY - startY) * Math.min(t / IMPACT_T, 1)) + 'px';
 
-                            // Start tiny and expand: scaleX 0→1, scaleY 0.05→1 (more compressed at start)
-                            const grow = t < 0.15 ? t / 0.15 : 1;
-                            flameCanvas.style.transform = `scaleX(${grow}) scaleY(${0.05 + grow * 0.95})`;
+                            // Funnel entry: scaleX grows 0→1 fast, scaleY grows 0→1 slightly slower
+                            // giving a narrow-then-wide "nozzle" feel
+                            const growX = t < 0.18 ? t / 0.18 : 1;
+                            const growY = t < 0.25 ? t / 0.25 : 1;
+                            flameCanvas.style.transform = `scaleX(${growX}) scaleY(${growY})`;
 
                             fCtx.clearRect(0, 0, flameW, flameH);
                             if (fImgSrc) {
@@ -16998,9 +17003,6 @@
                                 const amp  = 5 + Math.sin(elapsed * 0.008) * 3;
                                 const freq = 0.06;
                                 const iw = fImgSrc.naturalWidth, ih = fImgSrc.naturalHeight;
-                                // Image: tip=LEFT, bigfire=RIGHT
-                                // fromLeft=false (CPU→player, going left): tip points left → no flip
-                                // fromLeft=true  (player→CPU, going right): tip points right → flip
                                 if (!fromLeft) {
                                     fCtx.save();
                                     fCtx.scale(-1, 1);
@@ -17021,10 +17023,9 @@
                                     }
                                 }
 
-                                // Gradient fade: only after reaching target (t >= 0.72)
-                                // Transparent creeps from tail to tip
-                                if (t >= 0.72) {
-                                    const fadePhase = (t - 0.72) / 0.28;
+                                // Gradient fade: only after reaching target, creeps tail→tip
+                                if (t >= IMPACT_T) {
+                                    const fadePhase = (t - IMPACT_T) / (1 - IMPACT_T);
                                     const grad = fCtx.createLinearGradient(
                                         fromLeft ? 0 : flameW, 0,
                                         fromLeft ? flameW : 0, 0
@@ -17042,7 +17043,7 @@
                                 }
                             }
 
-                            if (t >= 0.72 && !flameImpactDone) {
+                            if (t >= IMPACT_T && !flameImpactDone) {
                                 flameImpactDone = true;
                                 spawnImpact(tp.x, tp.y, 70, '#ff4400');
                                 spawnParticles(tp.x, tp.y, 8, '#ff6600');
