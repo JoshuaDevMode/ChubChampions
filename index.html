@@ -14311,8 +14311,8 @@
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             // TEST: inject jumpAttack 30% of the time so the animation can be verified visually
             // TODO: remove once backend sends event.jumpAttack
-            // TEST trigger: jump attack only for punch/kick (no weapons yet)
-            if (!event.jumpAttack && !isComboFollow && !isLSFollow
+            // TEST trigger: jump attack only for punch/kick solo attacks (no combos, no weapons)
+            if (!event.jumpAttack && !isComboFirst && !isComboFollow && !isLSFirst && !isLSFollow
                 && !WEAPONS[event.attackType]
                 && (event.attackType === 'punch' || event.attackType === 'kick')
                 && Math.random() < 0.30) {
@@ -14378,13 +14378,13 @@
                 }
 
                 // Arc + horizontal travel — ease-in-out so arrival is gradual (less vertical drop feel)
-                jaBody.classList.add('jump-attack-arc');
+                if (jaBody) jaBody.classList.add('jump-attack-arc');
                 attackerEl.style.transition = 'left 0.93s ease-in-out, right 0.93s ease-in-out';
                 if (attacker === 'player') attackerEl.style.left  = '67%';
                 else                       attackerEl.style.right = '67%';
                 await sleep(950);
                 attackerEl.style.transition = '';
-                jaBody.classList.remove('jump-attack-arc');
+                if (jaBody) jaBody.classList.remove('jump-attack-arc');
                 stopRunAnimation(attackerEl);
                 playFootstep();
 
