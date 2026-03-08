@@ -16978,6 +16978,9 @@
                         const flameStartT  = performance.now();
                         let flameImpactDone = false;
 
+                        // scaleY: grows from 0→1 in first 12% of animation
+                        flameCanvas.style.transformOrigin = 'center center';
+
                         function animFlame(now) {
                             const elapsed = now - flameStartT;
                             const t = Math.min(elapsed / FLAME_TOTAL, 1);
@@ -16985,14 +16988,20 @@
                             flameCanvas.style.left = (startX + (endX - startX) * t) + 'px';
                             flameCanvas.style.top  = (startY + (endY - startY) * t) + 'px';
 
+                            // Expand from compressed to full height
+                            const scaleY = t < 0.12 ? t / 0.12 : 1;
+                            flameCanvas.style.transform = `scaleY(${scaleY})`;
+
                             fCtx.clearRect(0, 0, flameW, flameH);
                             if (fImgSrc) {
                                 const sliceH = 3;
                                 const amp  = 5 + Math.sin(elapsed * 0.008) * 3;
                                 const freq = 0.06;
                                 const iw = fImgSrc.naturalWidth, ih = fImgSrc.naturalHeight;
-                                if (fromLeft) {
-                                    // Flip horizontally so tip points right
+                                // Image: tip=LEFT, bigfire=RIGHT
+                                // fromLeft=false (CPU→player, going left): tip points left → no flip
+                                // fromLeft=true  (player→CPU, going right): tip points right → flip
+                                if (!fromLeft) {
                                     fCtx.save();
                                     fCtx.scale(-1, 1);
                                     fCtx.translate(-flameW, 0);
@@ -17011,9 +17020,31 @@
                                         fCtx.drawImage(fImgSrc, 0, srcY, iw, srcH, xOff, y, flameW, sliceH);
                                     }
                                 }
+
+                                // Gradient mask: transparent at tail, opaque toward tip
+                                // During fade phase (t>0.72): transparent creeps from tail to tip
+                                const fadePhase   = t > 0.72 ? (t - 0.72) / 0.28 : 0;
+                                const TAIL_FADE   = 0.28; // permanent soft tail fade
+                                // fromLeft=true: tail=left, tip=right
+                                // fromLeft=false: tail=right, tip=left
+                                const transparentEnd = TAIL_FADE + fadePhase * (1 - TAIL_FADE);
+                                const grad = fCtx.createLinearGradient(
+                                    fromLeft ? 0 : flameW, 0,
+                                    fromLeft ? flameW : 0, 0
+                                );
+                                grad.addColorStop(0, 'rgba(0,0,0,0)');
+                                grad.addColorStop(Math.min(transparentEnd, 0.97), 'rgba(0,0,0,0)');
+                                if (transparentEnd < 1) {
+                                    grad.addColorStop(Math.min(transparentEnd + 0.06, 1), 'rgba(0,0,0,1)');
+                                    grad.addColorStop(1, 'rgba(0,0,0,1)');
+                                }
+                                fCtx.globalCompositeOperation = 'destination-in';
+                                fCtx.fillStyle = grad;
+                                fCtx.fillRect(0, 0, flameW, flameH);
+                                fCtx.globalCompositeOperation = 'source-over';
                             }
 
-                            if (t >= 0.85 && !flameImpactDone) {
+                            if (t >= 0.72 && !flameImpactDone) {
                                 flameImpactDone = true;
                                 spawnImpact(tp.x, tp.y, 70, '#ff4400');
                                 spawnParticles(tp.x, tp.y, 8, '#ff6600');
