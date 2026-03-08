@@ -17028,10 +17028,10 @@
                                     const fadePhase    = (t - IMPACT_T) / (1 - IMPACT_T);
                                     const chevronDepth = flameH * 0.55;
                                     const cutCenter    = fadePhase * flameW;
+                                    fCtx.filter = 'blur(14px)';
                                     fCtx.globalCompositeOperation = 'destination-in';
                                     fCtx.beginPath();
                                     if (fromLeft) {
-                                        // Opaque region: right side of "<" front
                                         const xEdge = cutCenter + chevronDepth;
                                         fCtx.moveTo(xEdge, 0);
                                         fCtx.lineTo(cutCenter, flameH / 2);
@@ -17039,7 +17039,6 @@
                                         fCtx.lineTo(flameW, flameH);
                                         fCtx.lineTo(flameW, 0);
                                     } else {
-                                        // Opaque region: left side of ">" front
                                         const xEdge = flameW - cutCenter - chevronDepth;
                                         fCtx.moveTo(0, 0);
                                         fCtx.lineTo(0, flameH);
@@ -17050,6 +17049,7 @@
                                     fCtx.closePath();
                                     fCtx.fillStyle = 'rgba(0,0,0,1)';
                                     fCtx.fill();
+                                    fCtx.filter = 'none';
                                     fCtx.globalCompositeOperation = 'source-over';
                                 }
                             }
