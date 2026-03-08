@@ -14365,13 +14365,12 @@
                         const wepAirFrame = _weaponRunFramesCache[attackType]?.[8];
                         if (wepAirFrame) jaWepOverlay.src = wepAirFrame;
                     }
-                    // At peak (~380ms): flash a single attack frame if the character has learned it
+                    // At peak (~380ms): flash a single attack frame (character always attempts it,
+                    // even if untrained — will improve as they learn aerial attacks)
                     const jaPeakAnimType = isWeaponAnim ? 'punch' : attackType;
                     const jaPeakFrames   = jaImg['_' + jaPeakAnimType + 'Frames'];
                     if (jaPeakFrames?.length > 0) {
-                        setTimeout(() => {
-                            jaImg.src = jaPeakFrames[0];
-                        }, 380);
+                        setTimeout(() => { jaImg.src = jaPeakFrames[0]; }, 380);
                     }
                 }
                 // Arc jump animation synced with slower horizontal travel
