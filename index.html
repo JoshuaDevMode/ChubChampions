@@ -823,6 +823,28 @@
             100% { transform: translateY(0); }
         }
 
+        /* Jump attack arc */
+        .jump-attack-arc {
+            animation: jumpAttackArc 0.62s cubic-bezier(0.25, 0, 0.6, 1) forwards;
+        }
+        @keyframes jumpAttackArc {
+            0%   { transform: translateY(0); }
+            30%  { transform: translateY(-135px); }
+            62%  { transform: translateY(-135px); }
+            84%  { transform: translateY(-18px); }
+            92%  { transform: translateY(-30px); }
+            100% { transform: translateY(0); }
+        }
+        /* Jump shockwave */
+        @keyframes jumpShockwave {
+            0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+        }
+        @keyframes jumpShockwaveFlat {
+            0%   { transform: translate(-50%, -50%) scaleX(0) scaleY(0); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scaleX(1) scaleY(1); opacity: 0; }
+        }
+
         .blocking {
             animation: blockPushback 0.35s ease-out forwards;
         }
@@ -14262,10 +14284,39 @@
             }
         }
 
+        function triggerArenaShake() {
+            const a = document.getElementById('arena');
+            a.classList.remove('fp-arena-shake');
+            void a.offsetWidth;
+            a.classList.add('fp-arena-shake');
+            a.addEventListener('animationend', () => a.classList.remove('fp-arena-shake'), { once: true });
+        }
+
+        function spawnJumpShockwave(x, y, color) {
+            const arena = document.getElementById('arena');
+            // Two expanding circular rings, second one delayed
+            [0, 90].forEach(delay => {
+                const r = document.createElement('div');
+                r.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:22px;height:22px;border-radius:50%;border:3px solid ${color};box-shadow:0 0 10px ${color},0 0 20px ${color}66;pointer-events:none;z-index:25;animation:jumpShockwave 0.55s ${delay}ms ease-out forwards;`;
+                arena.appendChild(r);
+                r.addEventListener('animationend', () => r.remove(), { once: true });
+            });
+            // Flat ground ellipse
+            const g = document.createElement('div');
+            g.style.cssText = `position:absolute;left:${x}px;top:${y + 14}px;width:110px;height:22px;border-radius:50%;border:2px solid ${color}aa;box-shadow:0 0 14px ${color};pointer-events:none;z-index:25;animation:jumpShockwaveFlat 0.6s ease-out forwards;`;
+            arena.appendChild(g);
+            g.addEventListener('animationend', () => g.remove(), { once: true });
+        }
+
         // Animates a single attack event from the server log.
         // isComboFirst/Follow: real combo (stays in place between hits)
         // isLSFirst/Follow: Light Step follow-up (old midpoint run behavior)
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
+            // TEST: inject jumpAttack 30% of the time so the animation can be verified visually
+            // TODO: remove once backend sends event.jumpAttack
+            if (!event.jumpAttack && !isComboFollow && !isLSFollow && Math.random() < 0.30) {
+                event = { ...event, jumpAttack: true };
+            }
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
 
             const attackerEl  = game[attacker].element;
@@ -14296,6 +14347,34 @@
                 if (attacker === 'player') attackerEl.style.left  = '67%';
                 else                       attackerEl.style.right = '67%';
                 await sleep(190);
+                stopRunAnimation(attackerEl);
+                playFootstep();
+            } else if (event.jumpAttack) {
+                // Jump attack: show mid-air run frame, arc up and crash down toward opponent
+                const jaImg  = attackerEl.querySelector('img.character-png');
+                const jaBody = attackerEl.querySelector('.fighter-body');
+                if (jaImg) {
+                    jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
+                    // Frame index 2 = mid-air stride pose (5×2 sprite, 3rd frame)
+                    const airFrame = isWeaponAnim
+                        ? (jaImg._weaponRunFrames?.[2] || jaImg._runFrames?.[2] || jaImg.src)
+                        : (jaImg._runFrames?.[2] || jaImg.src);
+                    jaImg.src = airFrame;
+                    // Show weapon overlay in matching air frame if present
+                    const jaWepOverlay = attackerEl.querySelector('.weapon-run-overlay');
+                    if (jaWepOverlay && isWeaponAnim) {
+                        const wepAirFrame = _weaponRunFramesCache[attackType]?.[2];
+                        if (wepAirFrame) jaWepOverlay.src = wepAirFrame;
+                    }
+                }
+                // Arc jump animation synced with slower horizontal travel
+                jaBody.classList.add('jump-attack-arc');
+                attackerEl.style.transition = 'left 0.60s ease-in, right 0.60s ease-in';
+                if (attacker === 'player') attackerEl.style.left  = '67%';
+                else                       attackerEl.style.right = '67%';
+                await sleep(620);
+                attackerEl.style.transition = '';
+                jaBody.classList.remove('jump-attack-arc');
                 stopRunAnimation(attackerEl);
                 playFootstep();
             } else {
@@ -14377,6 +14456,18 @@
                 showBloodEffect(defender, isCrit);
                 if (hasFury) showFurySparks(defender, attacker);
                 playHitSound(animType, isCrit);
+                // Jump attack landing shockwave
+                if (event.jumpAttack) {
+                    const defRect   = defenderEl.getBoundingClientRect();
+                    const arenaRect = document.getElementById('arena').getBoundingClientRect();
+                    const jwX = defRect.left - arenaRect.left + defRect.width  * 0.5;
+                    const jwY = defRect.top  - arenaRect.top  + defRect.height * 0.85;
+                    const attackerChar = attacker === 'player' ? getSelectedCharacter() : null;
+                    const attackerElem = attackerChar?.element || currentCpuStats?.element || 'none';
+                    const jwColor = (ELEMENT_DATA[attackerElem] || {}).color || '#ffffff';
+                    spawnJumpShockwave(jwX, jwY, jwColor);
+                    if (hasFury) triggerArenaShake();
+                }
                 stats[attacker].hits        = (stats[attacker].hits        || 0) + 1;
                 stats[attacker].totalDamage = (stats[attacker].totalDamage || 0) + damage;
                 if (isCrit) stats[attacker].criticals = (stats[attacker].criticals || 0) + 1;
