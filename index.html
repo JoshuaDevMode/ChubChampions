@@ -17061,6 +17061,17 @@
                                 spawnImpact(tp.x, tp.y, 70, '#ff4400');
                                 spawnParticles(tp.x, tp.y, 8, '#ff6600');
                                 showHitEffect(target, 'normal');
+                                // Soot / charred effect: darken target for 2s, then fade out over 1s
+                                const sootImg = game[target]?.element?.querySelector('img');
+                                if (sootImg) {
+                                    const prevFilter = sootImg.style.filter || '';
+                                    sootImg.style.transition = 'filter 0.08s ease-in';
+                                    sootImg.style.filter = 'brightness(0.12) grayscale(1) contrast(1.4)';
+                                    setTimeout(() => {
+                                        sootImg.style.transition = 'filter 1s ease-out';
+                                        sootImg.style.filter = prevFilter;
+                                    }, 2000);
+                                }
                             }
 
                             if (t < 1) {
