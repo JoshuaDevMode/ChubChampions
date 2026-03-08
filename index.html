@@ -831,10 +831,11 @@
             0%   { transform: translateY(0); }
             28%  { transform: translateY(-135px); }
             58%  { transform: translateY(-135px); }
-            72%  { transform: translateY(-90px); }
-            84%  { transform: translateY(-32px); }
-            91%  { transform: translateY(-22px); }
-            96%  { transform: translateY(-6px); }
+            67%  { transform: translateY(-108px); }
+            76%  { transform: translateY(-70px); }
+            84%  { transform: translateY(-38px); }
+            90%  { transform: translateY(-16px); }
+            95%  { transform: translateY(-5px); }
             100% { transform: translateY(0); }
         }
         /* Jump shockwave */
@@ -14355,33 +14356,32 @@
                 stopRunAnimation(attackerEl);
                 playFootstep();
             } else if (event.jumpAttack) {
-                // Jump attack: show mid-air run frame, arc up and crash down toward opponent
+                // Jump attack: arc up toward opponent, last attack frame at peak (rotated), landing reverse anim
                 const jaImg  = attackerEl.querySelector('img.character-png');
                 const jaBody = attackerEl.querySelector('.fighter-body');
+                const jaPeakAnimType = attackType; // punch or kick
+                const jaPeakFrames   = jaImg?.['_' + jaPeakAnimType + 'Frames'] || [];
+                // Rotation: punch 35°, kick 45° — mirrored for CPU
+                const rotAngle = jaPeakAnimType === 'kick' ? 45 : 35;
+                const rotDir   = attacker === 'player' ? 1 : -1;
+
                 if (jaImg) {
                     jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
-                    // Frame 8 (index 8) = airborne pose in the 5×2 run sprite sheet
-                    const airFrame = isWeaponAnim
-                        ? (jaImg._weaponRunFrames?.[8] || jaImg._runFrames?.[8] || jaImg.src)
-                        : (jaImg._runFrames?.[8] || jaImg.src);
-                    jaImg.src = airFrame;
-                    // Weapon overlay: matching frame 8 from weapon run cache
-                    const jaWepOverlay = attackerEl.querySelector('.weapon-run-overlay');
-                    if (jaWepOverlay && isWeaponAnim) {
-                        const wepAirFrame = _weaponRunFramesCache[attackType]?.[8];
-                        if (wepAirFrame) jaWepOverlay.src = wepAirFrame;
-                    }
-                    // At peak (~380ms): flash a single attack frame (character always attempts it,
-                    // even if untrained — will improve as they learn aerial attacks)
-                    const jaPeakAnimType = isWeaponAnim ? 'punch' : attackType;
-                    const jaPeakFrames   = jaImg['_' + jaPeakAnimType + 'Frames'];
-                    if (jaPeakFrames?.length > 0) {
-                        setTimeout(() => { jaImg.src = jaPeakFrames[0]; }, 380);
+                    // Frame 8 = airborne pose
+                    jaImg.src = jaImg._runFrames?.[8] || jaImg.src;
+                    // At peak (~400ms): last attack frame, rotated diagonally downward
+                    if (jaPeakFrames.length > 0) {
+                        setTimeout(() => {
+                            jaImg.src = jaPeakFrames[jaPeakFrames.length - 1];
+                            jaImg.style.transition = 'transform 0.08s ease-out';
+                            jaImg.style.transform  = `rotate(${rotAngle * rotDir}deg)`;
+                        }, 400);
                     }
                 }
-                // Arc jump animation synced with slower horizontal travel
+
+                // Arc + horizontal travel — ease-in-out so arrival is gradual (less vertical drop feel)
                 jaBody.classList.add('jump-attack-arc');
-                attackerEl.style.transition = 'left 0.93s ease-in, right 0.93s ease-in';
+                attackerEl.style.transition = 'left 0.93s ease-in-out, right 0.93s ease-in-out';
                 if (attacker === 'player') attackerEl.style.left  = '67%';
                 else                       attackerEl.style.right = '67%';
                 await sleep(950);
@@ -14389,6 +14389,21 @@
                 jaBody.classList.remove('jump-attack-arc');
                 stopRunAnimation(attackerEl);
                 playFootstep();
+
+                // Landing: reverse attack frames from last to halfway + rotate back to 0°
+                if (jaImg && jaPeakFrames.length > 0) {
+                    const halfIdx    = Math.floor(jaPeakFrames.length / 2);
+                    const landFrames = jaPeakFrames.slice(halfIdx).reverse();
+                    let li = 0;
+                    const landInterval = setInterval(() => {
+                        if (li < landFrames.length) { jaImg.src = landFrames[li++]; }
+                        else { clearInterval(landInterval); }
+                    }, 55);
+                    // Rotate back to neutral
+                    jaImg.style.transition = 'transform 0.28s ease-out';
+                    jaImg.style.transform  = '';
+                    setTimeout(() => { jaImg.style.transition = ''; }, 320);
+                }
             } else {
                 // Normal first hit: run from starting corner to opponent
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
