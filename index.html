@@ -16947,13 +16947,84 @@
                             spawnParticles(tp.x, tp.y, 12, '#ff4400');
                         }, 420);
                     } else if (power.includes('flamethrower')) {
-                        for (let i = 0; i < 9; i++) {
-                            spawnProjectile(
-                                cp.x + (Math.random()-0.5)*24, cp.y + (Math.random()-0.5)*24,
-                                tp.x + (Math.random()-0.5)*35, tp.y + (Math.random()-0.5)*35,
-                                13 + Math.random()*8, '#ff5500', '#ff3300', 0.28 + Math.random()*0.15, i*0.05);
+                        const fromLeft = caster === 'player';
+                        const flameW   = Math.round(arena.offsetWidth * 0.50);
+                        const flameH   = Math.round(flameW * 0.437); // 878x384 ratio
+
+                        const flameCanvas = document.createElement('canvas');
+                        flameCanvas.className = 'tsunami-canvas';
+                        flameCanvas.width  = flameW;
+                        flameCanvas.height = flameH;
+                        // Start: origin (big fire side) at caster, tip pointing toward target
+                        // Image: tip=LEFT, bigfire=RIGHT → flip ctx when going right
+                        const startX = fromLeft ? cp.x - flameW * 0.15 : cp.x - flameW * 0.85;
+                        const endX   = fromLeft ? tp.x - flameW * 0.85 : tp.x - flameW * 0.15;
+                        const startY = cp.y - flameH * 0.5;
+                        const endY   = tp.y - flameH * 0.5;
+                        flameCanvas.style.left = startX + 'px';
+                        flameCanvas.style.top  = startY + 'px';
+                        arena.appendChild(flameCanvas);
+                        const fCtx = flameCanvas.getContext('2d');
+
+                        const fImg = new Image();
+                        let fImgSrc = null;
+                        fImg.crossOrigin = 'anonymous';
+                        fImg.onload = () => { fImgSrc = fImg; };
+                        fImg.src = 'Assets/Player/Effects/Flamethrower.png';
+                        if (fImg.complete && fImg.naturalWidth > 0) fImgSrc = fImg;
+
+                        const FLAME_TOTAL  = 700;
+                        const flameStartT  = performance.now();
+                        let flameImpactDone = false;
+
+                        function animFlame(now) {
+                            const elapsed = now - flameStartT;
+                            const t = Math.min(elapsed / FLAME_TOTAL, 1);
+
+                            flameCanvas.style.left = (startX + (endX - startX) * t) + 'px';
+                            flameCanvas.style.top  = (startY + (endY - startY) * t) + 'px';
+
+                            fCtx.clearRect(0, 0, flameW, flameH);
+                            if (fImgSrc) {
+                                const sliceH = 3;
+                                const amp  = 5 + Math.sin(elapsed * 0.008) * 3;
+                                const freq = 0.06;
+                                const iw = fImgSrc.naturalWidth, ih = fImgSrc.naturalHeight;
+                                if (fromLeft) {
+                                    // Flip horizontally so tip points right
+                                    fCtx.save();
+                                    fCtx.scale(-1, 1);
+                                    fCtx.translate(-flameW, 0);
+                                    for (let y = 0; y < flameH; y += sliceH) {
+                                        const xOff = Math.sin(y * freq + elapsed * 0.007) * amp;
+                                        const srcY = Math.round(y * ih / flameH);
+                                        const srcH = Math.max(1, Math.round(sliceH * ih / flameH));
+                                        fCtx.drawImage(fImgSrc, 0, srcY, iw, srcH, xOff, y, flameW, sliceH);
+                                    }
+                                    fCtx.restore();
+                                } else {
+                                    for (let y = 0; y < flameH; y += sliceH) {
+                                        const xOff = Math.sin(y * freq + elapsed * 0.007) * amp;
+                                        const srcY = Math.round(y * ih / flameH);
+                                        const srcH = Math.max(1, Math.round(sliceH * ih / flameH));
+                                        fCtx.drawImage(fImgSrc, 0, srcY, iw, srcH, xOff, y, flameW, sliceH);
+                                    }
+                                }
+                            }
+
+                            if (t >= 0.85 && !flameImpactDone) {
+                                flameImpactDone = true;
+                                spawnImpact(tp.x, tp.y, 70, '#ff4400');
+                                spawnParticles(tp.x, tp.y, 8, '#ff6600');
+                            }
+
+                            if (t < 1) {
+                                requestAnimationFrame(animFlame);
+                            } else {
+                                flameCanvas.remove();
+                            }
                         }
-                        setTimeout(() => { spawnRing(tp.x, tp.y, 65, '#ff4400'); spawnParticles(tp.x, tp.y, 8, '#ff6600'); }, 340);
+                        requestAnimationFrame(animFlame);
                     } else if (power.includes('burn_aura')) {
                         spawnRing(tp.x, tp.y, 55, '#ff4400');
                         spawnRing(tp.x, tp.y, 80, '#ff6600', 0.12);
@@ -17186,11 +17257,11 @@
                                     const isCpu = target === 'cpu';
                                     const rotDir = fromLeft ? -90 : 90;
                                     tImg.style.transformOrigin = 'center center';
-                                    tImg.style.transition = 'transform 0.25s ease-out';
+                                    tImg.style.transition = 'transform 0.12s ease-out';
                                     tImg.style.transform = `scaleX(${isCpu ? -1 : 1}) rotate(${rotDir}deg)`;
                                     setTimeout(() => {
                                         if (!tImg) return;
-                                        tImg.style.transition = 'transform 0.3s ease-in';
+                                        tImg.style.transition = 'transform 0.15s ease-in';
                                         tImg.style.transform = '';
                                         tImg.style.transformOrigin = '';
                                         if (tImg._idleSrc) tImg.src = tImg._idleSrc;
