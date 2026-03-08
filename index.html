@@ -16988,9 +16988,9 @@
                             flameCanvas.style.left = (startX + (endX - startX) * t) + 'px';
                             flameCanvas.style.top  = (startY + (endY - startY) * t) + 'px';
 
-                            // Expand from compressed to full height
-                            const scaleY = t < 0.12 ? t / 0.12 : 1;
-                            flameCanvas.style.transform = `scaleY(${scaleY})`;
+                            // Start tiny and expand: scaleX 0→1, scaleY 0.05→1 (more compressed at start)
+                            const grow = t < 0.15 ? t / 0.15 : 1;
+                            flameCanvas.style.transform = `scaleX(${grow}) scaleY(${0.05 + grow * 0.95})`;
 
                             fCtx.clearRect(0, 0, flameW, flameH);
                             if (fImgSrc) {
@@ -17021,27 +17021,25 @@
                                     }
                                 }
 
-                                // Gradient mask: transparent at tail, opaque toward tip
-                                // During fade phase (t>0.72): transparent creeps from tail to tip
-                                const fadePhase   = t > 0.72 ? (t - 0.72) / 0.28 : 0;
-                                const TAIL_FADE   = 0.28; // permanent soft tail fade
-                                // fromLeft=true: tail=left, tip=right
-                                // fromLeft=false: tail=right, tip=left
-                                const transparentEnd = TAIL_FADE + fadePhase * (1 - TAIL_FADE);
-                                const grad = fCtx.createLinearGradient(
-                                    fromLeft ? 0 : flameW, 0,
-                                    fromLeft ? flameW : 0, 0
-                                );
-                                grad.addColorStop(0, 'rgba(0,0,0,0)');
-                                grad.addColorStop(Math.min(transparentEnd, 0.97), 'rgba(0,0,0,0)');
-                                if (transparentEnd < 1) {
-                                    grad.addColorStop(Math.min(transparentEnd + 0.06, 1), 'rgba(0,0,0,1)');
-                                    grad.addColorStop(1, 'rgba(0,0,0,1)');
+                                // Gradient fade: only after reaching target (t >= 0.72)
+                                // Transparent creeps from tail to tip
+                                if (t >= 0.72) {
+                                    const fadePhase = (t - 0.72) / 0.28;
+                                    const grad = fCtx.createLinearGradient(
+                                        fromLeft ? 0 : flameW, 0,
+                                        fromLeft ? flameW : 0, 0
+                                    );
+                                    grad.addColorStop(0, 'rgba(0,0,0,0)');
+                                    grad.addColorStop(Math.min(fadePhase, 0.97), 'rgba(0,0,0,0)');
+                                    if (fadePhase < 1) {
+                                        grad.addColorStop(Math.min(fadePhase + 0.06, 1), 'rgba(0,0,0,1)');
+                                        grad.addColorStop(1, 'rgba(0,0,0,1)');
+                                    }
+                                    fCtx.globalCompositeOperation = 'destination-in';
+                                    fCtx.fillStyle = grad;
+                                    fCtx.fillRect(0, 0, flameW, flameH);
+                                    fCtx.globalCompositeOperation = 'source-over';
                                 }
-                                fCtx.globalCompositeOperation = 'destination-in';
-                                fCtx.fillStyle = grad;
-                                fCtx.fillRect(0, 0, flameW, flameH);
-                                fCtx.globalCompositeOperation = 'source-over';
                             }
 
                             if (t >= 0.72 && !flameImpactDone) {
