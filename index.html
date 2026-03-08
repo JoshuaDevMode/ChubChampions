@@ -13543,17 +13543,32 @@
                 const removed = before - characters.length;
                 if (removed > 0) console.log(`[fetchChars] removed ${removed} local char(s) deleted from server`);
 
-                // Add server characters missing locally (cross-device sync)
+                // Add server characters missing locally, and update server-authoritative
+                // fields (element, adaptability, qTable, level, stats) on existing ones
                 const localIds = new Set(characters.map(c => c.id));
-                let added = 0;
+                let added = 0, updated = 0;
                 for (const sc of serverChars) {
                     if (!localIds.has(sc.id)) {
                         characters.push(sc);
                         added++;
+                    } else {
+                        const local = characters.find(c => c.id === sc.id);
+                        if (local) {
+                            // Server-authoritative fields the client can't set
+                            local.element      = sc.element;
+                            local.adaptability = sc.adaptability;
+                            local.qTable       = sc.qTable;
+                            // Level and stats are validated server-side
+                            local.level  = sc.level;
+                            local.stats  = sc.stats;
+                            local.maxHp  = sc.maxHp;
+                            local.skills = sc.skills;
+                            updated++;
+                        }
                     }
                 }
 
-                if (added > 0 || removed > 0) {
+                if (added > 0 || removed > 0 || updated > 0) {
                     applyWellnessDecayAll();
                     applyMoraleDecayAll();
                     if (!selectedCharacterId || !characters.find(c => c.id === selectedCharacterId)) {
