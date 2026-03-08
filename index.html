@@ -17153,7 +17153,7 @@
                     if (power.includes('tsunami')) {
                         const fromLeft  = caster === 'player';
                         const charH     = game[target].element.getBoundingClientRect().height / getGameZoom();
-                        const feetY     = getCharacterFeetY(caster) - 5;
+                        const feetY     = getCharacterFeetY(caster) - 40;
                         const waveH     = Math.round(Math.max(charH * 2, 200));
                         const waveW     = Math.round(waveH * 1.45);
                         // WAVE_DRAWN: fraction of canvas height where the wave visually meets the ground.
@@ -17328,11 +17328,11 @@
                         // Rain zone: caster's half, drops fall to mid-screen
                         const rainLeft = fromLeft ? 0 : arenaW * 0.50;
                         const rainW    = arenaW * 0.50;
-                        const P1_FALL_MAX = 900; // max individual fall duration
+                        const P1_FALL_MAX = 550; // max individual fall duration
                         const restPos = Array.from({length: N}, () => ({
                             x:   rainLeft + Math.random() * rainW,          // spawn X = rest X (no horizontal move during fall)
                             y:   arenaH * (0.25 + Math.random() * 0.32),    // wider Y spread: 25%-57%
-                            dur: 520 + Math.random() * (P1_FALL_MAX - 520), // 520-900ms each
+                            dur: 300 + Math.random() * (P1_FALL_MAX - 300), // 300-550ms each
                         }));
 
                         // Create drop elements
@@ -17345,7 +17345,7 @@
                         });
 
                         // ── Phase 1: drops fall straight down (no horizontal movement) ──
-                        const P1_STAGGER = 50;
+                        const P1_STAGGER = 28;
                         drops.forEach((el, i) => {
                             const p = restPos[i];
                             setTimeout(() => {
@@ -17361,8 +17361,8 @@
                         const orbitRX  = 80;   // horizontal radius (larger)
                         const orbitRY  = 42;   // vertical radius
                         const P2_DELAY    = P1_STAGGER * (N - 1) + P1_FALL_MAX + 100;
-                        const P2_MOVE_DUR = 420;  // converge to orbit
-                        const P2_SPIN_DUR = 1600; // spin in orbit (3x slower, ~0.5 revolution)
+                        const P2_MOVE_DUR = 300;  // converge to orbit
+                        const P2_SPIN_DUR = 700;  // spin in orbit
                         let gsRafId = null;
 
                         setTimeout(() => {
