@@ -305,6 +305,7 @@
             width: 220px;
             height: 220px;
             transition: all 0.15s ease;
+            z-index: 5;
         }
 
         .fighter-body {
@@ -405,6 +406,7 @@
             pointer-events: none;
             z-index: 25;
             animation: furyOrbPulse 0.6s ease-in-out infinite;
+            mix-blend-mode: screen;
         }
 
         @keyframes furyOrbPulse {
@@ -734,6 +736,23 @@
             60%     { transform: translate(5px, -1px); }
             78%     { transform: translate(-2px, 1px); }
             90%     { transform: translate(2px, 0); }
+        }
+
+        /* Tsunami wave canvas */
+        .tsunami-canvas {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+
+        /* Water drop swarm buzz */
+        .fp-drop-swarm {
+            animation: fpDropBuzz 0.11s ease-in-out infinite alternate;
+        }
+        @keyframes fpDropBuzz {
+            0%   { transform: translate(-2px,  1px) rotate(-10deg) scale(1.0); }
+            100% { transform: translate( 2px, -2px) rotate( 10deg) scale(1.1); }
         }
 
         /* HUD fury powers / adaptability row */
@@ -10129,7 +10148,14 @@
                     const ctx = canvas.getContext('2d', { willReadFrequently: true });
                     ctx.drawImage(img, 0, 0);
 
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    let imageData;
+                    try {
+                        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    } catch(e) {
+                        // Canvas tainted (file:// protocol) — skip pixel processing
+                        resolve(imageSrc);
+                        return;
+                    }
                     const data = imageData.data;
 
                     // Convert hue to target RGB color (fully saturated)
@@ -14208,7 +14234,12 @@
                             if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
                             else showDamage(event.target, event.damage, false);
                         }
-                        await sleep(isPassive ? 450 : 980);
+                        const fpSleepMs = isPassive ? 450
+                                        : event.power.includes('sky_discharge')  ? 3800
+                                        : event.power.includes('tsunami')        ? 1500
+                                        : event.power.includes('water_bullets')  ? 3300
+                                        : 980;
+                        await sleep(fpSleepMs);
                         break;
                     }
 
@@ -16761,6 +16792,63 @@
             return h - 60; // offset from yellow (lightning canvas base hue)
         }
 
+        // Returns the Y position (unscaled arena coords) of the lowest drawn pixel
+        // in the character sprite — i.e. where the feet actually touch the ground.
+        function getCharacterFeetY(fighterKey) {
+            const arena = document.getElementById('arena');
+            const el    = game[fighterKey] && game[fighterKey].element;
+            if (!arena || !el) return arena ? arena.offsetHeight - 35 : 0;
+
+            const arenaRect = arena.getBoundingClientRect();
+            const zoom      = getGameZoom();
+            const img       = el.querySelector('.character-png');
+
+            if (img && img.complete && img.naturalWidth > 0) {
+                try {
+                    const nw = img.naturalWidth, nh = img.naturalHeight;
+                    const CSS_BOX = 200;
+                    const scale   = Math.min(CSS_BOX / nw, CSS_BOX / nh);
+                    const drawH   = nh * scale;
+                    const topGap  = (CSS_BOX - drawH) / 2;
+
+                    const tmp = document.createElement('canvas');
+                    tmp.width = nw; tmp.height = nh;
+                    const ctx = tmp.getContext('2d', { willReadFrequently: true });
+                    ctx.drawImage(img, 0, 0);
+                    const data = ctx.getImageData(0, 0, nw, nh).data;
+
+                    // Initialize to -1: if drawImage failed silently (revoked blob URL),
+                    // the canvas stays empty and we must fall back rather than use nh-1.
+                    let lastRow = -1;
+                    outer: for (let y = nh - 1; y >= 0; y--) {
+                        for (let x = 0; x < nw; x++) {
+                            if (data[(y * nw + x) * 4 + 3] > 10) {
+                                lastRow = y;
+                                break outer;
+                            }
+                        }
+                    }
+
+                    if (lastRow >= 0) {
+                        const imgRect     = img.getBoundingClientRect();
+                        const imgTopArena = (imgRect.top - arenaRect.top) / zoom;
+                        return imgTopArena + topGap + (lastRow + 1) * scale;
+                    }
+                    // lastRow === -1 means canvas was empty → drawImage failed silently
+                } catch (_) { /* fall through */ }
+            }
+
+            // Fallback: img element top + 62% of CSS img height.
+            // The .fighter is bottom:35px/height:220px; .character-png is 200px centered (10px gap).
+            // Game sprites have their feet at roughly 62% of the 200px img height from the top.
+            if (img) {
+                const imgRect = img.getBoundingClientRect();
+                return (imgRect.top - arenaRect.top) / zoom + 200 * 0.62;
+            }
+            const rect = el.getBoundingClientRect();
+            return (rect.bottom - arenaRect.top) / zoom;
+        }
+
         function playFuryPowerAnimation(caster, target, power, color) {
             const arena = document.getElementById('arena');
             if (!arena || !game[caster] || !game[target]) return;
@@ -16875,14 +16963,43 @@
 
                 case 'lightning':
                     if (power.includes('lightning_bolt')) {
-                        spawnLightningV(tp.x, tp.y, color);
-                        setTimeout(() => { spawnImpact(tp.x, tp.y, 65, color); spawnParticles(tp.x, tp.y, 8, color); }, 200);
+                        // Charge orb at caster: expands then compresses, then directional bolt fires
+                        const lbChargeOrb = document.createElement('div');
+                        lbChargeOrb.style.cssText = `position:absolute;left:${cp.x}px;top:${cp.y}px;width:60px;height:60px;transform:translate(-50%,-50%) scale(0);border-radius:50%;background:radial-gradient(circle,#fff 0%,${color}cc 40%,${color}44 70%,transparent 100%);box-shadow:0 0 20px ${color},0 0 40px ${color}88;transition:transform 0.28s ease-out;z-index:30;pointer-events:none;`;
+                        arena.appendChild(lbChargeOrb);
+                        requestAnimationFrame(() => requestAnimationFrame(() => { lbChargeOrb.style.transform = 'translate(-50%,-50%) scale(1)'; }));
+                        setTimeout(() => {
+                            lbChargeOrb.style.transition = 'transform 0.14s ease-in';
+                            lbChargeOrb.style.transform = 'translate(-50%,-50%) scale(0.1)';
+                        }, 300);
+                        setTimeout(() => {
+                            lbChargeOrb.remove();
+                            const lbDx = tp.x - cp.x, lbDy = tp.y - cp.y;
+                            const lbAngle = Math.atan2(lbDy, lbDx);
+                            const lbLen   = Math.sqrt(lbDx*lbDx + lbDy*lbDy);
+                            const lbEl = document.createElement('div');
+                            lbEl.className = 'fury-lightning';
+                            lbEl.appendChild(createLightningCanvas(50, lbLen, lbAngle));
+                            lbEl.style.left = cp.x + 'px';
+                            lbEl.style.top  = cp.y + 'px';
+                            lbEl.style.transformOrigin = 'center top';
+                            lbEl.style.setProperty('--rot', (lbAngle * 180 / Math.PI + 90) + 'deg');
+                            lbEl.style.setProperty('--duration', '0.5s');
+                            const lbHue = caster === 'cpu' ? selectedCpuHue : selectedPlayerHue;
+                            lbEl.style.filter = lbHue === 0
+                                ? `saturate(0.15) brightness(1.3) drop-shadow(0 0 8px #a0a0b0) drop-shadow(0 0 20px #a0a0b088)`
+                                : `hue-rotate(${lbHue - FURY_ORB_BASE_HUE}deg) saturate(1.6) brightness(1.3) drop-shadow(0 0 8px ${color}) drop-shadow(0 0 20px ${color}88)`;
+                            arena.appendChild(lbEl);
+                            lbEl.addEventListener('animationend', () => lbEl.remove(), { once: true });
+                            spawnImpact(tp.x, tp.y, 65, color);
+                            spawnParticles(tp.x, tp.y, 8, color);
+                        }, 450);
                     } else if (power.includes('sky_discharge')) {
                         [-45, 0, 45].forEach((offset, i) => {
                             setTimeout(() => {
                                 spawnLightningV(tp.x + offset, tp.y, color);
                                 spawnImpact(tp.x + offset, tp.y, 42, color);
-                            }, i * 160);
+                            }, i * 1500);
                         });
                     } else if (power.includes('orb_active')) {
                         spawnRing(cp.x, cp.y, 55, color);
@@ -16921,18 +17038,273 @@
 
                 case 'water':
                     if (power.includes('tsunami')) {
+                        const fromLeft  = caster === 'player';
+                        const charH     = game[target].element.getBoundingClientRect().height / getGameZoom();
+                        const feetY     = getCharacterFeetY(caster) - 5;
+                        const waveH     = Math.round(Math.max(charH * 2, 200));
+                        const waveW     = Math.round(waveH * 1.45);
+                        // WAVE_DRAWN: fraction of canvas height where the wave visually meets the ground.
+                        // Used only to calibrate the initial canvas position so the visual base
+                        // lands at feetY when scaleY = MAX_SCALE.
+                        const WAVE_DRAWN  = 0.89;
+                        const MAX_SCALE   = 0.80;
+                        const cbOffset    = Math.round((1 - WAVE_DRAWN) * waveH * MAX_SCALE);
+                        // Wave 1: slight raise at caster side, descends to feetY by impact (t=0.78)
+                        const RAISE_START  = 20;
+                        const cbStart = feetY - RAISE_START + cbOffset;
+                        const cbEnd   = feetY               + cbOffset;
+
+                        // Wave canvas 1 — stays behind both fighters (z-index 2)
+                        const waveCanvas = document.createElement('canvas');
+                        waveCanvas.className = 'tsunami-canvas';
+                        waveCanvas.width  = waveW;
+                        waveCanvas.height = waveH;
+                        waveCanvas.style.top             = (cbStart - waveH) + 'px';
+                        waveCanvas.style.transformOrigin = `center ${waveH}px`;
+                        waveCanvas.style.left = (fromLeft ? -waveW : arena.offsetWidth) + 'px';
+                        arena.appendChild(waveCanvas);
+                        const wCtx = waveCanvas.getContext('2d');
+
+                        // Wave canvas 2 — starts higher, descends over full travel, switches in front mid-travel
+                        const waveCanvas2 = document.createElement('canvas');
+                        waveCanvas2.className = 'tsunami-canvas';
+                        waveCanvas2.width  = waveW;
+                        waveCanvas2.height = waveH;
+                        waveCanvas2.style.top             = (cbStart - waveH) + 'px';
+                        waveCanvas2.style.transformOrigin = `center ${waveH}px`;
+                        waveCanvas2.style.left = (fromLeft ? -waveW : arena.offsetWidth) + 'px';
+                        waveCanvas2.style.zIndex = '2';
+                        arena.appendChild(waveCanvas2);
+                        const wCtx2 = waveCanvas2.getContext('2d');
+
+                        // Load wave images
+                        let wImgSrc = null;
+                        const wImgRaw = new Image();
+                        wImgRaw.onload = () => { wImgSrc = wImgRaw; };
+                        wImgRaw.src = 'Assets/Player/Effects/Tsunami.png';
+                        if (wImgRaw.complete && wImgRaw.naturalWidth > 0) wImgSrc = wImgRaw;
+
+                        let wImgSrc2 = null;
+                        const wImgRaw2 = new Image();
+                        wImgRaw2.onload = () => { wImgSrc2 = wImgRaw2; };
+                        wImgRaw2.src = 'Assets/Player/Effects/Tsunami2.png';
+                        if (wImgRaw2.complete && wImgRaw2.naturalWidth > 0) wImgSrc2 = wImgRaw2;
+
+                        const WAVE_TOTAL = 1500;
+                        const waveStartT = performance.now();
+
+                        // Impact at t=0.78; extrapolate full travel so wave reaches hitX at t=0.78
+                        const startX  = fromLeft ? -waveW : arena.offsetWidth;
+                        const hitX    = fromLeft ? tp.x - waveW * 0.35 : tp.x - waveW * 0.65;
+                        const travelX = (hitX - startX) / 0.78;
+
+                        let waveAnimId;
+                        let knockdownDone = false;
+                        let wave2ZSwitched = false;
+
+                        function animTsunami(now) {
+                            const elapsed = now - waveStartT;
+                            const t = Math.min(elapsed / WAVE_TOTAL, 1);
+
+                            // Horizontal movement
+                            const leftPos = startX + travelX * t;
+                            waveCanvas.style.left  = leftPos + 'px';
+                            waveCanvas2.style.left = leftPos + 'px';
+
+                            // Wave 1: descends from caster level to target level, done by t=0.78
+                            const travelFrac = Math.min(t / 0.78, 1);
+                            const cb         = Math.round(cbStart + (cbEnd - cbStart) * travelFrac);
+                            waveCanvas.style.top = (cb - waveH) + 'px';
+
+                            waveCanvas2.style.top = (cb - waveH) + 'px';
+
+                            // Scale Y: start at MAX_SCALE immediately, hold until t=0.60, then crash
+                            let scaleY;
+                            if (t < 0.40) {
+                                scaleY = MAX_SCALE;
+                            } else {
+                                const crashT = (t - 0.40) / 0.60;
+                                scaleY = Math.max(0, MAX_SCALE - crashT * MAX_SCALE);
+                            }
+
+                            // Lean forward as wave approaches target, accentuates into crash
+                            const skew  = t > 0.45 ? Math.min(((t - 0.45) / 0.55), 1) * (fromLeft ? -22 : 22) : 0;
+                            const flipX = fromLeft ? 1 : -1;
+                            const tfm   = `scaleX(${flipX}) scaleY(${scaleY}) skewX(${skew}deg)`;
+                            waveCanvas.style.transform  = tfm;
+                            waveCanvas2.style.transform = tfm;
+
+                            // Wave 2 passes in front of fighters once past the midpoint
+                            if (t >= 0.50 && !wave2ZSwitched) {
+                                wave2ZSwitched = true;
+                                waveCanvas2.style.zIndex = '10';
+                            }
+
+                            // Draw wave 1
+                            wCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+                            if (wImgSrc) {
+                                const sliceH = 3;
+                                const amp    = Math.max(0, 9 - t * 7);
+                                const freq   = 0.055;
+                                const iw = wImgSrc.naturalWidth, ih = wImgSrc.naturalHeight;
+                                for (let y = 0; y < waveCanvas.height; y += sliceH) {
+                                    const xOff = Math.sin(y * freq + elapsed * 0.005) * amp;
+                                    const srcY = Math.round(y * ih / waveCanvas.height);
+                                    const srcH = Math.max(1, Math.round(sliceH * ih / waveCanvas.height));
+                                    wCtx.drawImage(wImgSrc, 0, srcY, iw, srcH,
+                                                            xOff, y, waveCanvas.width, sliceH);
+                                }
+                            }
+
+                            // Draw wave 2
+                            wCtx2.clearRect(0, 0, waveCanvas2.width, waveCanvas2.height);
+                            if (wImgSrc2) {
+                                const sliceH = 3;
+                                const amp    = Math.max(0, 9 - t * 7);
+                                const freq   = 0.055;
+                                const iw2 = wImgSrc2.naturalWidth, ih2 = wImgSrc2.naturalHeight;
+                                for (let y = 0; y < waveCanvas2.height; y += sliceH) {
+                                    const xOff = Math.sin(y * freq + elapsed * 0.005) * amp;
+                                    const srcY = Math.round(y * ih2 / waveCanvas2.height);
+                                    const srcH = Math.max(1, Math.round(sliceH * ih2 / waveCanvas2.height));
+                                    wCtx2.drawImage(wImgSrc2, 0, srcY, iw2, srcH,
+                                                             xOff, y, waveCanvas2.width, sliceH);
+                                }
+                            }
+
+                            // Impact at t=0.78: show hurt frame + rotate 90° in place for 1s
+                            if (t >= 0.78 && !knockdownDone) {
+                                knockdownDone = true;
+                                spawnImpact(tp.x, tp.y, 95, color);
+                                spawnParticles(tp.x, tp.y, 16, color);
+                                arenaShake();
+                                const tEl  = game[target] && game[target].element;
+                                const tImg = tEl && tEl.querySelector('img');
+                                if (tImg) {
+                                    if (tImg._hurtFrames && tImg._hurtFrames.length > 0)
+                                        tImg.src = tImg._hurtFrames[Math.floor(Math.random() * tImg._hurtFrames.length)];
+                                    const isCpu = target === 'cpu';
+                                    const rotDir = fromLeft ? -90 : 90;
+                                    tImg.style.transformOrigin = 'center center';
+                                    tImg.style.transition = 'transform 0.25s ease-out';
+                                    tImg.style.transform = `scaleX(${isCpu ? -1 : 1}) rotate(${rotDir}deg)`;
+                                    setTimeout(() => {
+                                        if (!tImg) return;
+                                        tImg.style.transition = 'transform 0.3s ease-in';
+                                        tImg.style.transform = '';
+                                        tImg.style.transformOrigin = '';
+                                        if (tImg._idleSrc) tImg.src = tImg._idleSrc;
+                                    }, 1000);
+                                }
+                            }
+
+                            if (t < 1) {
+                                waveAnimId = requestAnimationFrame(animTsunami);
+                            } else {
+                                waveCanvas.remove();
+                                waveCanvas2.remove();
+                            }
+                        }
+
+                        waveAnimId = requestAnimationFrame(animTsunami);
+                    } else if (power.includes('water_bullets')) {
                         const fromLeft = caster === 'player';
-                        const wave = document.createElement('div');
-                        wave.className = 'fp-wave';
-                        wave.style.cssText = `left:${fromLeft ? cp.x : tp.x - 60}px;top:${Math.min(cp.y,tp.y)-30}px;width:${Math.abs(tp.x-cp.x)+70}px;height:90px;background:linear-gradient(to ${fromLeft?'right':'left'},transparent,${color}88,${color}cc,transparent);border-radius:40%;transform-origin:${fromLeft?'left':'right'} center;`;
-                        wave.style.setProperty('--dur', '0.52s');
-                        arena.appendChild(wave);
-                        wave.addEventListener('animationend', () => wave.remove(), { once: true });
-                        setTimeout(() => { spawnImpact(tp.x, tp.y, 75, color); spawnParticles(tp.x, tp.y, 10, color); }, 460);
-                    } else if (power.includes('glacial_storm')) {
-                        [-30, 0, 30].forEach((oy, i) => {
-                            spawnProjectile(cp.x, cp.y + oy, tp.x, tp.y + oy, 20, color, color, 0.33, i * 0.13);
-                            setTimeout(() => spawnImpact(tp.x, tp.y + oy, 38, color), 300 + i*130);
+                        const N = 20, dW = 22, dH = 28;
+                        const arenaW = arena.offsetWidth;
+                        const arenaH = arena.offsetHeight;
+                        // Rain zone: caster's half, drops fall to mid-screen
+                        const rainLeft = fromLeft ? 0 : arenaW * 0.50;
+                        const rainW    = arenaW * 0.50;
+                        const P1_FALL_MAX = 900; // max individual fall duration
+                        const restPos = Array.from({length: N}, () => ({
+                            x:   rainLeft + Math.random() * rainW,          // spawn X = rest X (no horizontal move during fall)
+                            y:   arenaH * (0.25 + Math.random() * 0.32),    // wider Y spread: 25%-57%
+                            dur: 520 + Math.random() * (P1_FALL_MAX - 520), // 520-900ms each
+                        }));
+
+                        // Create drop elements
+                        const drops = restPos.map(pos => {
+                            const el = document.createElement('img');
+                            el.src = 'Assets/Player/Effects/WaterDrop.png';
+                            el.style.cssText = `position:absolute;width:${dW}px;height:${dH}px;pointer-events:none;z-index:27;opacity:0;left:${pos.x}px;top:-45px;`;
+                            arena.appendChild(el);
+                            return el;
+                        });
+
+                        // ── Phase 1: drops fall straight down (no horizontal movement) ──
+                        const P1_STAGGER = 50;
+                        drops.forEach((el, i) => {
+                            const p = restPos[i];
+                            setTimeout(() => {
+                                el.style.opacity    = '1';
+                                el.style.transition = `top ${p.dur}ms cubic-bezier(0.3,0,0.8,1)`;
+                                el.style.top  = p.y + 'px';
+                            }, i * P1_STAGGER);
+                        });
+
+                        // ── Phase 2: converge into spinning oval orbit ──
+                        const orbitCX  = cp.x;
+                        const orbitCY  = arenaH * 0.50;  // mid-screen
+                        const orbitRX  = 80;   // horizontal radius (larger)
+                        const orbitRY  = 42;   // vertical radius
+                        const P2_DELAY    = P1_STAGGER * (N - 1) + P1_FALL_MAX + 100;
+                        const P2_MOVE_DUR = 420;  // converge to orbit
+                        const P2_SPIN_DUR = 1600; // spin in orbit (3x slower, ~0.5 revolution)
+                        let gsRafId = null;
+
+                        setTimeout(() => {
+                            // Move each drop to its starting orbit position
+                            drops.forEach((el, i) => {
+                                const a0 = (i / N) * Math.PI * 2;
+                                el.style.transition = `left ${P2_MOVE_DUR}ms ease-in-out, top ${P2_MOVE_DUR}ms ease-in-out, opacity 0.2s`;
+                                el.style.left = (orbitCX + Math.cos(a0) * orbitRX - dW / 2) + 'px';
+                                el.style.top  = (orbitCY + Math.sin(a0) * orbitRY - dH / 2) + 'px';
+                            });
+
+                            // After converge, spin with RAF — fake 3D depth via scale + opacity
+                            setTimeout(() => {
+                                drops.forEach(el => { el.style.transition = 'none'; });
+                                let spinStart = null;
+                                const spinSpeed = (Math.PI * 2) / 3; // 1 revolution per 3 seconds (slow)
+                                function spinOrbit(now) {
+                                    if (!spinStart) spinStart = now;
+                                    const t = now - spinStart;
+                                    if (t >= P2_SPIN_DUR) return;
+                                    const baseAngle = (t / 1000) * spinSpeed;
+                                    drops.forEach((el, i) => {
+                                        const a = baseAngle + (i / N) * Math.PI * 2;
+                                        const depth = (Math.sin(a) + 1) / 2; // 0=back, 1=front
+                                        el.style.left    = (orbitCX + Math.cos(a) * orbitRX - dW / 2) + 'px';
+                                        el.style.top     = (orbitCY + Math.sin(a) * orbitRY - dH / 2) + 'px';
+                                        el.style.opacity = (0.45 + 0.55 * depth).toString();
+                                        el.style.transform = `scale(${0.65 + 0.35 * depth})`;
+                                        el.style.zIndex  = Math.round(25 + depth * 4).toString();
+                                    });
+                                    gsRafId = requestAnimationFrame(spinOrbit);
+                                }
+                                gsRafId = requestAnimationFrame(spinOrbit);
+                            }, P2_MOVE_DUR + 20);
+                        }, P2_DELAY);
+
+                        // ── Phase 3: fire drops one-by-one toward enemy ──
+                        const P3_DELAY    = P2_DELAY + P2_MOVE_DUR + 20 + P2_SPIN_DUR + 50;
+                        const P3_INTERVAL = 40;
+                        const P3_TRAVEL   = 260;
+                        // -90 so the bottom of the drop (the tip) points toward the target
+                        const fireAngle = Math.atan2(tp.y - orbitCY, tp.x - orbitCX) * 180 / Math.PI - 90;
+                        drops.forEach((el, i) => {
+                            setTimeout(() => {
+                                if (gsRafId) { cancelAnimationFrame(gsRafId); gsRafId = null; }
+                                el.style.transform  = `scale(1) rotate(${fireAngle}deg)`;
+                                el.style.transition = `left ${P3_TRAVEL}ms linear, top ${P3_TRAVEL}ms linear, opacity 0.06s`;
+                                el.style.opacity    = '1';
+                                el.style.zIndex     = '27';
+                                el.style.left = (tp.x - dW / 2) + 'px';
+                                el.style.top  = (tp.y - dH / 2) + 'px';
+                                setTimeout(() => { el.style.opacity = '0'; }, P3_TRAVEL * 0.65);
+                                setTimeout(() => el.remove(), P3_TRAVEL + 80);
+                                if (i % 4 === 0) setTimeout(() => spawnImpact(tp.x, tp.y, 22, color), P3_TRAVEL);
+                            }, P3_DELAY + i * P3_INTERVAL);
                         });
                     }
                     break;
@@ -17180,7 +17552,7 @@
             fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Meteor',         id: 'fire_meteor'              }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
             lightning: { passive: { name: 'Electric Orb',  id: 'lightning_orb_active'      }, p1: { name: 'Lightning Bolt', id: 'lightning_lightning_bolt'  }, p2: { name: 'Sky Discharge', id: 'lightning_sky_discharge' } },
             earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Seismic Trap',  id: 'earth_seismic_trap'      } },
-            water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Glacial Storm', id: 'water_glacial_storm'     } },
+            water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Water Bullets', id: 'water_water_bullets'     } },
             wind:      { passive: { name: 'Gust',          id: 'wind_passive'              }, p1: { name: 'Tornado',        id: 'wind_tornado'              }, p2: { name: 'Air Columns',   id: 'wind_air_columns'        } },
         };
 
@@ -17402,15 +17774,18 @@
 
             if (!furyElement || furyElement === 'lightning') {
                 // ── Lightning: electric orb + contact damage ──────────────────────────
+                trimAndPlay(FURY_SOUND, 0.6);
                 const targetHue = fighter === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-                const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
-                const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
-                const glowColor = `hsl(${glowHue}, 100%, 60%)`;
+                const isGreyChar = targetHue === 0;
+                const hueOffset  = isGreyChar ? 0 : targetHue - FURY_ORB_BASE_HUE;
+                const glowColor  = isGreyChar ? '#a0a0b0' : `hsl(${targetHue}, 100%, 60%)`;
 
                 const orb = document.createElement('img');
                 orb.src = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES[0] : FURY_ORB_SRC;
                 orb.className = 'fury-orb';
-                orb.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
+                orb.style.filter = isGreyChar
+                    ? `saturate(0) brightness(1.1) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`
+                    : `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 18px ${glowColor})`;
                 (hudEl.arena || document.getElementById('arena')).appendChild(orb);
                 f.furyOrbEl = orb;
                 updateFuryOrbPosition(fighter);
@@ -17449,7 +17824,6 @@
                 startFuryAuraParticles(fighter, furyElement);
             }
 
-            trimAndPlay(FURY_SOUND, 0.6);
             log(`${fighterName(fighter)} FURY MODE! x2 damage`, 'log-fury');
 
             if (f.furyTimeout) clearTimeout(f.furyTimeout);
@@ -18164,10 +18538,10 @@
                 const defenderRect = el.getBoundingClientRect();
                 const cx = (defenderRect.left - arenaRect.left) / zoom + (defenderRect.width / zoom) / 2;
                 const cy = (defenderRect.top - arenaRect.top) / zoom + (defenderRect.height / zoom) / 2 - 20;
-                const targetHue = attacker === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-                const hueOffset = targetHue === 0 ? 0 : targetHue - FURY_ORB_BASE_HUE;
-                const glowHue   = targetHue === 0 ? FURY_ORB_BASE_HUE : targetHue;
-                const glowColor = `hsl(${glowHue}, 100%, 60%)`;
+                const targetHue  = attacker === 'cpu' ? selectedCpuHue : selectedPlayerHue;
+                const isGreySpark = targetHue === 0;
+                const hueOffset  = isGreySpark ? 0 : targetHue - FURY_ORB_BASE_HUE;
+                const glowColor  = isGreySpark ? '#a0a0b0' : `hsl(${targetHue}, 100%, 60%)`;
                 const boltCount = 5 + Math.floor(Math.random() * 3);
                 for (let i = 0; i < boltCount; i++) {
                     const lightning = document.createElement('div');
@@ -18186,7 +18560,9 @@
                     lightning.style.setProperty('--rot', rotation + 'deg');
                     lightning.style.setProperty('--duration', duration + 's');
                     lightning.style.animationDelay = delay + 's';
-                    lightning.style.filter = `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
+                    lightning.style.filter = isGreySpark
+                        ? `saturate(0.15) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`
+                        : `hue-rotate(${hueOffset}deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
                     arena.appendChild(lightning);
                     lightning.addEventListener('animationend', () => lightning.remove(), { once: true });
                 }
@@ -18686,7 +19062,7 @@
             // Clear arena overlays
             const arena = document.getElementById('arena');
             // Note: DO NOT remove countdown-overlay as it's a permanent HTML element
-            arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-ground-crack, .fp-lightning-v, .fp-particle').forEach(el => el.remove());
+            arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
             arena.classList.remove('fp-arena-shake');
 
             // Clear any fury intervals
@@ -19923,7 +20299,6 @@
                             0, 0, outW, outH      // destino (escalado si necesario)
                         );
 
-                        removeGreenFromCanvas(ctx, outW, outH);
                         frames.push(await canvasToBlobURL(canvas));
                     }
                 }
@@ -19936,12 +20311,14 @@
             }
         };
         img.onerror = () => resolve([imgSrc]);
+        if (location.protocol !== 'file:') img.crossOrigin = 'anonymous';
         img.src = imgSrc;
     });
 }
 
         function removeGreenFromCanvas(ctx, w, h) {
-            const imageData = ctx.getImageData(0, 0, w, h);
+            let imageData;
+            try { imageData = ctx.getImageData(0, 0, w, h); } catch(e) { return; }
             const data = imageData.data;
             for (let i = 0; i < data.length; i += 4) {
                 const dr = data[i], dg = data[i+1], db = data[i+2];
