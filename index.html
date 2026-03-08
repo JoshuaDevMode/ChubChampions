@@ -535,6 +535,14 @@
         }
         .menu-btn-powerlab:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
 
+        .menu-btn-training {
+            font-family: 'Fredoka', sans-serif; font-size: 0.7em; font-weight: bold;
+            background: rgba(255,160,0,0.10); border: 1px solid rgba(255,160,0,0.28);
+            border-radius: 10px; padding: 8px 16px; color: #ffb347; cursor: pointer;
+            letter-spacing: 1px; transition: all 0.15s; margin-top: 4px;
+        }
+        .menu-btn-training:hover { background: rgba(255,160,0,0.20); color: #ffd080; border-color: rgba(255,160,0,0.5); }
+
         /* Damage effects */
         .damage-text {
             position: absolute;
@@ -9280,6 +9288,7 @@
                     ALL OR<br>NOTHING
                 </button>
                 <button class="menu-btn-powerlab" onclick="enterPowerTestMode()">⚗️ POWER LAB</button>
+                <button class="menu-btn-training" onclick="startTrainingMode()">🥊 TRAINING</button>
                 <div class="xp-boost-container" id="xp-boost-container">
                     <div class="xp-boost-widget-title">⚡ XP BOOST</div>
                     <div class="xp-boost-status-row">
@@ -14062,10 +14071,10 @@
                 return;
             }
 
-            // P1 path: poll every 2s for up to 8s
+            // P1 path: poll every 2s for up to 30s
             pvpMatchId = joinData.matchId;
             const pollStart = Date.now();
-            while (!cancelled && (Date.now() - pollStart) < 8000) {
+            while (!cancelled && (Date.now() - pollStart) < 30000) {
                 await sleep(2000);
                 if (cancelled) break;
 
@@ -16161,7 +16170,7 @@
 
             // Start the backend battle fetch NOW so it runs in parallel with the countdown
             _preBattleFetch = null;
-            if (!_pvpBattleResult && playerSession) {
+            if (!trainingMode && !_pvpBattleResult && playerSession) {
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
                 _preBattleFetch = fetch(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
@@ -16208,7 +16217,7 @@
             initWeaponInventory();
             log('The fight has begun!');
             startMatchTimer();
-            if (!playerSession) {
+            if (!trainingMode && !playerSession) {
                 // Online-only: require login before battling
                 stopMatchTimer();
                 stopBattleHeartbeat();
@@ -16219,7 +16228,11 @@
                 return;
             }
 
-            await startServerBattle(character);
+            if (trainingMode) {
+                await runTrainingBattle(character);
+            } else {
+                await startServerBattle(character);
+            }
         }
 
         function initWeaponInventory() {
@@ -17783,6 +17796,82 @@
             p.style.setProperty('--dur', (0.45 + Math.random() * 0.5) + 's');
             arena.appendChild(p);
             p.addEventListener('animationend', () => p.remove(), { once: true });
+        }
+
+        // ── Training Mode ─────────────────────────────────────────────────────
+        let trainingMode = false;
+
+        function generateTrainingEvents(character, pMaxHp, cMaxHp) {
+            const events = [];
+            const basicTypes = ['punch', 'kick'];
+            const weapons = (character.equippedWeapons || []).filter(id => WEAPONS[id]);
+            const allTypes = [...basicTypes, ...weapons];
+            const pEl = character.element;
+            let furyDone = false;
+
+            for (let i = 0; i < 30; i++) {
+                const attacker = i % 2 === 0 ? 'player' : 'cpu';
+
+                // At turn ~10 trigger player fury powers if they have an element
+                if (attacker === 'player' && pEl && !furyDone && i >= 10) {
+                    events.push({ type: 'fury_update', fighter: 'player', active: true, changed: true });
+                    events.push({ type: 'log', message: '✨ FURY activated! (Training)', cssClass: 'log-critical' });
+                    const ptPow = PT_POWERS[pEl];
+                    if (ptPow) {
+                        for (const pk of ['p1', 'p2']) {
+                            events.push({ type: 'fury_power', caster: 'player', target: 'cpu', power: ptPow[pk].id, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp });
+                            events.push({ type: 'log', message: `Power: ${ptPow[pk].name}`, cssClass: 'log-critical' });
+                        }
+                    }
+                    events.push({ type: 'fury_update', fighter: 'player', active: false, changed: true });
+                    furyDone = true;
+                    continue;
+                }
+
+                const attackType = allTypes[Math.floor(Math.random() * allTypes.length)];
+                events.push({
+                    type: 'attack', attacker, defender: attacker === 'player' ? 'cpu' : 'player',
+                    attackType, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp,
+                    hasFury: false, isBlock: false, isCrit: false, isMiss: false,
+                });
+                events.push({ type: 'log', message: attacker === 'player' ? '[TRAINING] Practice hit' : '[TRAINING] NPC swings', cssClass: '' });
+            }
+            return events;
+        }
+
+        async function runTrainingBattle(character) {
+            const pMaxHp = game.player.maxHealth;
+            const cMaxHp = game.cpu.maxHealth;
+            const events = generateTrainingEvents(character, pMaxHp, cMaxHp);
+            log('🥊 TRAINING MODE — No damage dealt', 'log-critical');
+            game.inProgress = true;
+            await animateBattleFromLog(events, pMaxHp, cMaxHp);
+            if (!game.gameOver) {
+                game.inProgress = false;
+                log('Training session complete! Returning to lobby...', 'log-critical');
+                await sleep(2000);
+                exitTrainingMode();
+            }
+        }
+
+        function startTrainingMode() {
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Select a character first.'); return; }
+            trainingMode = true;
+            startGameWithCharacter(character);
+        }
+
+        function exitTrainingMode() {
+            trainingMode = false;
+            stopMatchTimer();
+            stopBattleHeartbeat();
+            localStorage.removeItem('fightchub_battle_active');
+            ['player', 'cpu'].forEach(f => { if (game[f].furyActive) deactivateFury(f); });
+            document.querySelectorAll('.fury-saturator,.fury-grayscale-overlay,.fury-darkness').forEach(e => e.remove());
+            _furyGrayOverlay = null; _furyDarknessEl = null;
+            game.gameOver = false; game.gameOverHandled = false; game.inProgress = false;
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('lobby-wrapper').style.display  = '';
         }
 
         // ── Power Lab ──────────────────────────────────────────────────────────
