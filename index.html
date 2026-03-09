@@ -21164,25 +21164,52 @@
         function scaleGame() {
             const baseWidth = 1280;
             const baseHeight = 720;
-            const minZoom = 0.8;
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+            const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+
+            // On mobile use visualViewport when available — it reflects the actual visible area
+            // independent of the viewport meta tag, catching cases where the browser switches
+            // from the fixed 1280 layout viewport to device-width in fullscreen.
+            const vvp = window.visualViewport;
+            const windowWidth  = (IS_MOBILE && vvp) ? vvp.width  : window.innerWidth;
+            const windowHeight = (IS_MOBILE && vvp) ? vvp.height : window.innerHeight;
+
+            // On mobile always fit to screen (no minZoom) — prevents horizontal overflow when
+            // the browser reports actual device dimensions (< 1280) instead of the fixed viewport.
+            const minZoom = IS_MOBILE ? 0 : 0.8;
             const zoom = Math.max(minZoom, Math.min(windowWidth / baseWidth, windowHeight / baseHeight));
 
             const visualWidth = baseWidth * zoom;
             const visualHeight = baseHeight * zoom;
-            const overflowsX = visualWidth > windowWidth;
-            const overflowsY = visualHeight > windowHeight;
+            const overflowsX = visualWidth > windowWidth + 1; // +1 for sub-pixel rounding
+            const overflowsY = visualHeight > windowHeight + 1;
 
             // Game container: CSS zoom (scales layout without GPU texture overhead)
             if (_cachedContainer) _cachedContainer.style.zoom = zoom;
 
-            // Force body wider/taller than viewport when game overflows, so viewport scrollbar appears
-            _bodyStyle.justifyContent = overflowsX ? 'flex-start' : 'center';
-            _bodyStyle.minWidth = overflowsX ? visualWidth + 'px' : '';
-            _bodyStyle.minHeight = overflowsY ? visualHeight + 'px' : '';
-            _docEl.style.overflowX = overflowsX ? 'auto' : 'hidden';
-            _docEl.style.overflowY = overflowsY ? 'auto' : 'hidden';
+            if (IS_MOBILE && (isFS || !overflowsX && !overflowsY)) {
+                // In fullscreen (or when game fits): lock scroll and pin body to exact viewport size
+                // so min-height:100vh can't add unwanted scrollable space.
+                _bodyStyle.overflow   = 'hidden';
+                _bodyStyle.height     = windowHeight + 'px';
+                _bodyStyle.minHeight  = '';
+                _bodyStyle.minWidth   = '';
+                _bodyStyle.justifyContent = 'center';
+                _bodyStyle.alignItems = 'center';
+                _docEl.style.overflow = 'hidden';
+                _docEl.style.height   = windowHeight + 'px';
+            } else {
+                // Desktop / mobile with overflow: allow scrollbars
+                _bodyStyle.overflow   = '';
+                _bodyStyle.height     = '';
+                _bodyStyle.alignItems = '';
+                _bodyStyle.justifyContent = overflowsX ? 'flex-start' : 'center';
+                _bodyStyle.minWidth  = overflowsX ? visualWidth + 'px' : '';
+                _bodyStyle.minHeight = overflowsY ? visualHeight + 'px' : '';
+                _docEl.style.overflow  = '';
+                _docEl.style.height    = '';
+                _docEl.style.overflowX = overflowsX ? 'auto' : 'hidden';
+                _docEl.style.overflowY = overflowsY ? 'auto' : 'hidden';
+            }
 
             // Main menu: same zoom and 1280x720 box as game container
             if (_cachedMenu) {
@@ -21250,9 +21277,13 @@
         function onFullscreenChange() {
             updateFullscreenIcon();
             // Recalculate zoom after fullscreen transition — browser chrome appears/disappears
-            // changing window.innerHeight. Two passes catch slow transitions.
+            // changing window dimensions. Multiple passes catch slow/stepped transitions
+            // (Android Chrome can take up to ~600 ms to settle nav-bar/status-bar).
+            scaleGame();
             setTimeout(scaleGame, 50);
-            setTimeout(scaleGame, 350);
+            setTimeout(scaleGame, 200);
+            setTimeout(scaleGame, 500);
+            setTimeout(scaleGame, 900);
         }
 
         if (IS_MOBILE) {
