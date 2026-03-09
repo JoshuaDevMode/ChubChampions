@@ -10479,7 +10479,8 @@
                 furyActive: false,
                 furyTimeout: null,
                 furyInterval: null,
-                element: document.getElementById('player')
+                element: document.getElementById('player'),
+                _homeX: 128,   // PLAYER_START_X — updated by move events
             },
             cpu: {
                 health: 1000,
@@ -10489,7 +10490,8 @@
                 furyActive: false,
                 furyTimeout: null,
                 furyInterval: null,
-                element: document.getElementById('cpu')
+                element: document.getElementById('cpu'),
+                _homeX: 1252,  // CPU_START_X — updated by move events
             },
             turn: 'player',
             inProgress: false,
@@ -14309,6 +14311,28 @@
                         break;
                     }
 
+                    case 'move': {
+                        // Update home positions and animate fighter sliding to new location
+                        game.player._homeX = event.playerX;
+                        game.cpu._homeX    = event.cpuX;
+                        const pEl = game.player.element;
+                        const cEl = game.cpu.element;
+                        pEl.style.left  = event.playerX + 'px';
+                        pEl.style.right = 'auto';
+                        cEl.style.left  = event.cpuX + 'px';
+                        cEl.style.right = 'auto';
+                        // Brief run animation on the moving fighter
+                        if (event.from !== event.to) {
+                            const movEl  = game[event.fighter].element;
+                            const isBack = event.action === 'retreat';
+                            animateRun(movEl, isBack, null);
+                            await sleep(160);
+                            stopRunAnimation(movEl);
+                        }
+                        await sleep(20);
+                        break;
+                    }
+
                     case 'game_over': {
                         game.player.health = finalPlayerHp;
                         game.cpu.health    = finalCpuHp;
@@ -14646,8 +14670,9 @@
                     // Force reflow so .dashing transition is computed before left/right changes
                     void attackerEl.offsetWidth;
                 }
-                if (attacker === 'player') attackerEl.style.left  = '8%';
-                else                       attackerEl.style.right = '8%';
+                // Return to current home position (updated by move events)
+                attackerEl.style.left  = (game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) + 'px';
+                attackerEl.style.right = 'auto';
                 await sleep(350);
                 stopRunAnimation(attackerEl);
             }
@@ -16212,6 +16237,13 @@
             game.gameOver = false;
             game.gameOverHandled = false;
             game.inProgress = false;
+            // Reset fighter positions to arena start
+            game.player._homeX = 128;
+            game.cpu._homeX    = 1252;
+            game.player.element.style.left  = '8%';
+            game.player.element.style.right = '';
+            game.cpu.element.style.right    = '8%';
+            game.cpu.element.style.left     = '';
             // Reset stamina bars to full
             updateStaminaBar('player', 100, 100);
             updateStaminaBar('cpu',    100, 100);
