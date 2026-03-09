@@ -14418,6 +14418,7 @@
                         const t = Math.min((now - r0) / 280, 1);
                         attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
                         if (t < 1) { requestAnimationFrame(runStep); return; }
+                        attackerEl.style.transition = 'none'; // freeze left/right so commit doesn't trigger CSS transition
                         attackerEl.style.transform = '';
                         if (!isCpuAtt) {
                             attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
@@ -14628,6 +14629,8 @@
                         jImg.style.transform = jIsCpu ? 'scaleX(-1)' : '';
                         setTimeout(() => { jImg.style.transition = ''; }, 150);
                     }
+                    // Force reflow so .dashing transition is computed before left/right changes
+                    void attackerEl.offsetWidth;
                 }
                 if (attacker === 'player') attackerEl.style.left  = '8%';
                 else                       attackerEl.style.right = '8%';
