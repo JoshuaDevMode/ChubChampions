@@ -25,8 +25,8 @@
         }
 
         .game-container {
-            width: 1280px;
-            min-width: 1280px;
+            width: 1600px;
+            min-width: 1600px;
             flex-shrink: 0;
         }
 
@@ -1833,8 +1833,8 @@
         /* Main Menu */
         .lobby-wrapper {
             position: relative;
-            width: 1280px;
-            min-width: 1280px;
+            width: 1600px;
+            min-width: 1600px;
             height: 720px;
             flex-shrink: 0;
             border: 5px solid #000;
@@ -4822,7 +4822,7 @@
             display: flex;
             flex-direction: column;
             padding: 6px;
-            transform: translateX(1280px);
+            transform: translateX(1600px);
             transition: transform 0.45s ease;
         }
 
@@ -21166,7 +21166,7 @@
 
 
         function scaleGame() {
-            const baseWidth = 1280;
+            const baseWidth = 1600;
             const baseHeight = 720;
             const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
 
@@ -21177,12 +21177,10 @@
             const windowWidth  = (IS_MOBILE && vvp) ? vvp.width  : window.innerWidth;
             const windowHeight = (IS_MOBILE && vvp) ? vvp.height : window.innerHeight;
 
-            // On mobile scale by width only — ensures game always fills the full screen width
-            // with no side gaps. On desktop, contain within both dimensions (min 0.8x).
+            // Scale to fit both dimensions — no clipping on any device.
+            // 1600×720 ratio (2.22:1) matches modern phone landscape aspect ratios closely.
             const minZoom = IS_MOBILE ? 0 : 0.8;
-            const zoom = IS_MOBILE
-                ? windowWidth / baseWidth
-                : Math.max(minZoom, Math.min(windowWidth / baseWidth, windowHeight / baseHeight));
+            const zoom = Math.max(minZoom, Math.min(windowWidth / baseWidth, windowHeight / baseHeight));
 
             const visualWidth = baseWidth * zoom;
             const visualHeight = baseHeight * zoom;
