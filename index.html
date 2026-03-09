@@ -22,7 +22,6 @@
             min-height: 100vh;
             padding-top: 0;
             color: #fff;
-            overflow: hidden;
         }
 
         .game-container {
@@ -10100,22 +10099,6 @@
     </div>
 
     <script>
-        // Mobile scaling: fit 1280px game into any screen size
-        (function() {
-            const GAME_WIDTH = 1280;
-            function scaleGame() {
-                const container = document.querySelector('.game-container');
-                if (!container) return;
-                const scale = Math.min(window.innerWidth / GAME_WIDTH, 1);
-                container.style.transform = scale < 1 ? `scale(${scale})` : '';
-                container.style.transformOrigin = 'top left';
-                document.body.style.width = scale < 1 ? (GAME_WIDTH * scale) + 'px' : '';
-            }
-            window.addEventListener('resize', scaleGame);
-            window.addEventListener('orientationchange', function() { setTimeout(scaleGame, 100); });
-            document.addEventListener('DOMContentLoaded', scaleGame);
-        })();
-
         const ARENA_BACKGROUNDS = [
             'Assets/Background/Apocalypse.webp',
             'Assets/Background/Athena.webp',
@@ -21190,10 +21173,12 @@
             const windowWidth  = (IS_MOBILE && vvp) ? vvp.width  : window.innerWidth;
             const windowHeight = (IS_MOBILE && vvp) ? vvp.height : window.innerHeight;
 
-            // On mobile always fit to screen (no minZoom) — prevents horizontal overflow when
-            // the browser reports actual device dimensions (< 1280) instead of the fixed viewport.
+            // On mobile scale by width only — ensures game always fills the full screen width
+            // with no side gaps. On desktop, contain within both dimensions (min 0.8x).
             const minZoom = IS_MOBILE ? 0 : 0.8;
-            const zoom = Math.max(minZoom, Math.min(windowWidth / baseWidth, windowHeight / baseHeight));
+            const zoom = IS_MOBILE
+                ? windowWidth / baseWidth
+                : Math.max(minZoom, Math.min(windowWidth / baseWidth, windowHeight / baseHeight));
 
             const visualWidth = baseWidth * zoom;
             const visualHeight = baseHeight * zoom;
