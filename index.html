@@ -16485,8 +16485,9 @@
 
             const rect = fighterEl.getBoundingClientRect();
             const arenaRect = arena.getBoundingClientRect();
-            textEl.style.left = (rect.left - arenaRect.left + rect.width / 2) + 'px';
-            textEl.style.top = (rect.top - arenaRect.top - 20) + 'px';
+            const _wpZoom = getGameZoom();
+            textEl.style.left = ((rect.left - arenaRect.left + rect.width / 2) / _wpZoom) + 'px';
+            textEl.style.top = ((rect.top - arenaRect.top - 20) / _wpZoom) + 'px';
             textEl.style.transform = 'translateX(-50%)';
 
             arena.appendChild(textEl);
@@ -16932,9 +16933,10 @@
             const arena = document.getElementById('arena');
             const arenaRect = arena.getBoundingClientRect();
             const fighterRect = fighterEl.getBoundingClientRect();
-            healEl.style.left = (fighterRect.left - arenaRect.left + fighterRect.width / 2) + 'px';
+            const _healZoom = getGameZoom();
+            healEl.style.left = ((fighterRect.left - arenaRect.left + fighterRect.width / 2) / _healZoom) + 'px';
             healEl.style.transform = 'translateX(-50%)';
-            healEl.style.top = (fighterRect.top - arenaRect.top - 50) + 'px';
+            healEl.style.top = ((fighterRect.top - arenaRect.top - 50) / _healZoom) + 'px';
             arena.appendChild(healEl);
             healEl.addEventListener('animationend', () => healEl.remove(), { once: true });
         }
@@ -16947,8 +16949,9 @@
             const arena = document.getElementById('arena');
             const arenaRect = arena.getBoundingClientRect();
             const fighterRect = fighterEl.getBoundingClientRect();
-            popEl.style.left = (fighterRect.left - arenaRect.left + fighterRect.width / 2 - 20) + 'px';
-            popEl.style.top = (fighterRect.top - arenaRect.top - 10) + 'px';
+            const _popZoom = getGameZoom();
+            popEl.style.left = ((fighterRect.left - arenaRect.left + fighterRect.width / 2 - 20) / _popZoom) + 'px';
+            popEl.style.top = ((fighterRect.top - arenaRect.top - 10) / _popZoom) + 'px';
             arena.appendChild(popEl);
             popEl.addEventListener('animationend', () => popEl.remove(), { once: true });
         }
@@ -16980,8 +16983,9 @@
             const fighterEl  = game[caster] && game[caster].element;
             if (fighterEl) {
                 const fr = fighterEl.getBoundingClientRect();
-                el.style.left = (fr.left - arenaRect.left + fr.width / 2) + 'px';
-                el.style.top  = (fr.top  - arenaRect.top  - 20) + 'px';
+                const _pfZoom = getGameZoom();
+                el.style.left = ((fr.left - arenaRect.left + fr.width / 2) / _pfZoom) + 'px';
+                el.style.top  = ((fr.top  - arenaRect.top  - 20) / _pfZoom) + 'px';
             }
             arena.appendChild(el);
             el.addEventListener('animationend', () => el.remove(), { once: true });
