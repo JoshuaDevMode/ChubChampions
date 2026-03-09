@@ -785,6 +785,18 @@
             100% { transform: translate( 2px, -2px) rotate( 10deg) scale(1.1); }
         }
 
+        /* Giant Rock — shatter fragments */
+        .fp-rock-frag {
+            position: absolute;
+            pointer-events: none;
+            z-index: 20;
+            animation: fp-rock-frag-anim var(--dur, 0.6s) ease-out forwards;
+        }
+        @keyframes fp-rock-frag-anim {
+            0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--dx,0px), var(--dy,0px)) rotate(var(--rot,90deg)); opacity: 0; }
+        }
+
         /* HUD fury powers / adaptability row */
         .hud-powers-row {
             display: flex; gap: 3px; align-items: center; flex-wrap: wrap;
@@ -14280,7 +14292,7 @@
                         if (event.damage > 0) {
                             // Delay damage number slightly so projectile reaches first
                             const fpHitDelay = event.power.includes('fireball') ? 700
-                                             : event.power.includes('giant_rock') ? 420
+                                             : event.power.includes('giant_rock') ? 1500
                                              : event.power.includes('tsunami') || event.power.includes('tornado')   ? 460
                                              : 0;
                             if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
@@ -14291,6 +14303,7 @@
                                         : event.power.includes('tsunami')        ? 1500
                                         : event.power.includes('water_bullets')  ? 3300
                                         : event.power.includes('fireball')         ? 2900
+                                        : event.power.includes('giant_rock')       ? 3700
                                         : 980;
                         await sleep(fpSleepMs);
                         break;
@@ -17393,14 +17406,90 @@
 
                 case 'earth':
                     if (power.includes('giant_rock')) {
-                        spawnProjectile(tp.x + (Math.random()-0.5)*40, -35, tp.x, tp.y, 42,
-                            'radial-gradient(circle,#c8a882 0%,#7a5230 55%,#3e2510 100%)', '#8B5E3C', 0.42);
-                        setTimeout(() => {
-                            spawnImpact(tp.x, tp.y, 80, '#8B5E3C');
-                            spawnParticles(tp.x, tp.y, 12, '#a0826d');
-                            arenaShake();
-                            showHitEffect(target, 'normal');
-                        }, 390);
+                        const ROCK_SIZE   = 400;
+                        const RISE_DUR    = 600;
+                        const FLY_DUR     = 900;
+                        const casterFeetY = getCharacterFeetY(caster);
+                        const targetFeetY = getCharacterFeetY(target);
+
+                        // Phase 1: rock rises from ground — overflow:hidden clips it below ground level
+                        const wrapper = document.createElement('div');
+                        wrapper.style.cssText = `position:absolute;left:${cp.x - ROCK_SIZE/2}px;top:${casterFeetY - ROCK_SIZE}px;width:${ROCK_SIZE}px;height:${ROCK_SIZE}px;overflow:hidden;z-index:15;pointer-events:none;`;
+                        const rockRise = document.createElement('img');
+                        rockRise.src = 'Assets/UI/rock_giant.png';
+                        rockRise.style.cssText = `width:${ROCK_SIZE}px;height:${ROCK_SIZE}px;position:absolute;top:0;left:0;transform:translateY(${ROCK_SIZE}px);`;
+                        wrapper.appendChild(rockRise);
+                        arena.appendChild(wrapper);
+
+                        const riseStart = performance.now();
+                        function animRise(ts) {
+                            const t    = Math.min((ts - riseStart) / RISE_DUR, 1);
+                            const ease = 1 - Math.pow(1 - t, 3);
+                            rockRise.style.transform = `translateY(${ROCK_SIZE * (1 - ease)}px)`;
+                            if (t < 1) { requestAnimationFrame(animRise); return; }
+                            wrapper.remove();
+
+                            // Phase 2: parabolic flight
+                            const flyRock = document.createElement('img');
+                            flyRock.src = 'Assets/UI/rock_giant.png';
+                            flyRock.style.cssText = `position:absolute;width:${ROCK_SIZE}px;height:${ROCK_SIZE}px;z-index:15;pointer-events:none;`;
+                            arena.appendChild(flyRock);
+                            const fsx = cp.x, fsy = casterFeetY - ROCK_SIZE / 2;
+                            const fex = tp.x, fey = targetFeetY - ROCK_SIZE / 2;
+                            const ARC = 260;
+                            const flyStart = performance.now();
+                            function animFly(ts2) {
+                                const tf   = Math.min((ts2 - flyStart) / FLY_DUR, 1);
+                                const x    = fsx + (fex - fsx) * tf;
+                                const y    = fsy + (fey - fsy) * tf - ARC * 4 * tf * (1 - tf);
+                                flyRock.style.left      = (x - ROCK_SIZE / 2) + 'px';
+                                flyRock.style.top       = y + 'px';
+                                flyRock.style.transform = `rotate(${tf * 200}deg)`;
+                                if (tf < 1) { requestAnimationFrame(animFly); return; }
+                                flyRock.remove();
+
+                                // Phase 3: impact + shatter
+                                arenaShake();
+                                showHitEffect(target, 'normal');
+                                spawnImpact(fex, targetFeetY, 120, '#8B5E3C');
+                                spawnParticles(fex, targetFeetY, 18, '#a0826d', 130);
+
+                                const COLS = 3, ROWS = 3;
+                                const fw = ROCK_SIZE / COLS, fh = ROCK_SIZE / ROWS;
+                                for (let r = 0; r < ROWS; r++) {
+                                    for (let c = 0; c < COLS; c++) {
+                                        const frag = document.createElement('div');
+                                        const ang  = Math.atan2(r - 1, c - 1) + (Math.random() - 0.5) * 0.8;
+                                        const dist = 70 + Math.random() * 110;
+                                        frag.className = 'fp-rock-frag';
+                                        frag.style.cssText = `left:${fex - ROCK_SIZE/2 + c*fw}px;top:${targetFeetY - ROCK_SIZE/2 + r*fh}px;width:${fw}px;height:${fh}px;background:url('Assets/UI/rock_giant.png') -${c*fw}px -${r*fh}px / ${ROCK_SIZE}px ${ROCK_SIZE}px;`;
+                                        frag.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
+                                        frag.style.setProperty('--dy', (Math.sin(ang) * dist) + 'px');
+                                        frag.style.setProperty('--rot', ((Math.random() - 0.5) * 360) + 'deg');
+                                        frag.style.setProperty('--dur', (0.45 + Math.random() * 0.3) + 's');
+                                        arena.appendChild(frag);
+                                        frag.addEventListener('animationend', () => frag.remove(), { once: true });
+                                    }
+                                }
+
+                                // Phase 4: target falls to ground
+                                const targetEl = game[target].element;
+                                const fallDir  = caster === 'player' ? 85 : -85;
+                                targetEl.style.transformOrigin = 'bottom center';
+                                targetEl.style.transition      = 'transform 0.35s cubic-bezier(0.4,0,1,1)';
+                                targetEl.style.transform       = `rotate(${fallDir}deg)`;
+                                setTimeout(() => {
+                                    targetEl.style.transition = 'transform 0.45s cubic-bezier(0,0,0.6,1)';
+                                    targetEl.style.transform  = '';
+                                    setTimeout(() => {
+                                        targetEl.style.transition      = '';
+                                        targetEl.style.transformOrigin = '';
+                                    }, 450);
+                                }, 2000);
+                            }
+                            requestAnimationFrame(animFly);
+                        }
+                        requestAnimationFrame(animRise);
                     } else if (power.includes('seismic_trap')) {
                         const crack = document.createElement('div');
                         crack.className = 'fp-ground-crack';
