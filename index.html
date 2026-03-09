@@ -14389,7 +14389,6 @@
                 const rotAngle     = attackType === 'kick' ? 45 : 35;
                 const isCpuAtt     = attacker === 'cpu';
                 const baseXform    = isCpuAtt ? 'scaleX(-1) ' : '';
-                const isRunningJump = Math.random() < 0.35;
 
                 // Save idle src
                 if (jaImg) jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
@@ -14405,57 +14404,40 @@
                                 + (defRect.width / zoom) / 2;
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
-                let startLeft; // updated after run phase if running jump
+                // ── Phase 1: run to screen center (≈280ms) ───────────────────
+                animateRun(attackerEl, false, null);
+                const r0Rect    = attackerEl.getBoundingClientRect();
+                const r0Left    = (r0Rect.left - arenaRect.left) / zoom;
+                const r0W       = r0Rect.width / zoom;
+                const runTarget = arenaW * 0.5 - r0W * 0.5;
+                const runDelta  = runTarget - r0Left;
 
-                if (isRunningJump) {
-                    // ── Phase 1: run to screen center (≈280ms) ──────────────────
-                    animateRun(attackerEl, false, null);
-                    const r0Rect      = attackerEl.getBoundingClientRect();
-                    const r0Left      = (r0Rect.left - arenaRect.left) / zoom;
-                    const r0W         = r0Rect.width / zoom;
-                    const runTarget   = arenaW * 0.5 - r0W * 0.5; // center on screen
-                    const runDelta    = runTarget - r0Left;
-                    const RUN_DUR     = 280;
+                await new Promise(res => {
+                    const r0 = performance.now();
+                    const easeOut = t => 1 - (1 - t) * (1 - t);
+                    const runStep = now => {
+                        const t = Math.min((now - r0) / 280, 1);
+                        attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
+                        if (t < 1) { requestAnimationFrame(runStep); return; }
+                        attackerEl.style.transform = '';
+                        if (!isCpuAtt) {
+                            attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
+                        } else {
+                            attackerEl.style.right = ((arenaW - runTarget - r0W) / arenaW * 100) + '%';
+                        }
+                        res();
+                    };
+                    requestAnimationFrame(runStep);
+                });
+                stopRunAnimation(attackerEl);
+                if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
 
-                    await new Promise(res => {
-                        const r0 = performance.now();
-                        const easeOut = t => 1 - (1 - t) * (1 - t);
-                        const runStep = now => {
-                            const t = Math.min((now - r0) / RUN_DUR, 1);
-                            attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
-                            if (t < 1) { requestAnimationFrame(runStep); return; }
-                            // Commit run position
-                            attackerEl.style.transform = '';
-                            if (!isCpuAtt) {
-                                attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
-                            } else {
-                                attackerEl.style.right = ((arenaW - runTarget - r0W) / arenaW * 100) + '%';
-                            }
-                            startLeft = runTarget;
-                            res();
-                        };
-                        requestAnimationFrame(runStep);
-                    });
-                    stopRunAnimation(attackerEl);
-                    // Switch to airborne pose after run
-                    if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src;
+                // ── Phase 2: jump arc from center to defender chest ───────────
+                const atkW   = attackerEl.getBoundingClientRect().width / zoom;
+                const atkCx  = runTarget + atkW / 2;
+                const deltaX = defCx - atkCx;
 
-                } else {
-                    // Normal jump: airborne pose immediately
-                    if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src;
-                    const r = attackerEl.getBoundingClientRect();
-                    startLeft = (r.left - arenaRect.left) / zoom;
-                }
-
-                // ── Phase 2: jump arc ─────────────────────────────────────────
-                const atkW    = attackerEl.getBoundingClientRect().width / zoom;
-                const atkCx   = startLeft + atkW / 2;
-                const deltaX  = defCx - atkCx;
-                // Running: taller arc, shorter hop (character is already closer)
-                const JUMP_DUR = isRunningJump ? 860 : 880;
-                const PEAK_H   = isRunningJump ? -185 : -132;
-
-                const peakMs = JUMP_DUR * 0.36;
+                const peakMs = 860 * 0.36;
                 let peakDone = false;
                 const peakTmr = setTimeout(() => {
                     if (!peakDone && jaImg && jaPeakFrames.length > 0) {
@@ -14470,13 +14452,13 @@
                 await new Promise(res => {
                     const t0 = performance.now();
                     const step = now => {
-                        const t  = Math.min((now - t0) / JUMP_DUR, 1);
+                        const t  = Math.min((now - t0) / 860, 1);
                         const tx = deltaX * jaEase(t);
-                        const ty = PEAK_H  * Math.sin(Math.PI * t);
+                        const ty = -185   * Math.sin(Math.PI * t);
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
                         if (t < 1) { requestAnimationFrame(step); return; }
                         attackerEl.style.transform = '';
-                        const finalLeft = startLeft + deltaX;
+                        const finalLeft = runTarget + deltaX;
                         if (!isCpuAtt) {
                             attackerEl.style.left  = (finalLeft / arenaW * 100) + '%';
                         } else {
@@ -14488,15 +14470,12 @@
                 });
 
                 clearTimeout(peakTmr);
+                // Restore CSS transition so the return run animates (was 'none' during RAF)
+                attackerEl.style.transition = '';
                 stopRunAnimation(attackerEl);
                 playFootstep();
-
-                // Reset image rotation on landing
-                if (jaImg) {
-                    jaImg.style.transition = 'transform 0.15s ease-out';
-                    jaImg.style.transform  = isCpuAtt ? 'scaleX(-1)' : '';
-                    setTimeout(() => { jaImg.style.transition = ''; if (isCpuAtt) jaImg.style.transform = ''; }, 180);
-                }
+                // Defer rotation reset — character turns around only after returning to corner
+                attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
@@ -14641,6 +14620,16 @@
             } else {
                 // Last hit (or solo attack): run back to starting corner
                 animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+                // Deferred rotation reset after jump attack — flip when starting return run
+                if (attackerEl._jumpReturn) {
+                    const { img: jImg, isCpu: jIsCpu } = attackerEl._jumpReturn;
+                    delete attackerEl._jumpReturn;
+                    if (jImg) {
+                        jImg.style.transition = 'transform 0.12s ease-out';
+                        jImg.style.transform = jIsCpu ? 'scaleX(-1)' : '';
+                        setTimeout(() => { jImg.style.transition = ''; }, 150);
+                    }
+                }
                 if (attacker === 'player') attackerEl.style.left  = '8%';
                 else                       attackerEl.style.right = '8%';
                 await sleep(350);
