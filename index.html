@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Wet+Paint&family=Fredoka:wght@400;600;700&family=DynaPuff:wght@400;700&family=Chewy&family=Sour+Gummy:ital,wght@0,400;0,700;1,400&family=Fuzzy+Bubbles:wght@400;700&display=swap" rel="stylesheet">
     <title>FightChub</title>
     <link rel="icon" type="image/png" href="/FightChub/assets/Golden-Dv2GeYWe.png">
@@ -22,6 +22,7 @@
             min-height: 100vh;
             padding-top: 0;
             color: #fff;
+            overflow: hidden;
         }
 
         .game-container {
@@ -9102,7 +9103,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/FightChub/assets/index-CTEqSLQg.js"></script>
+  <script type="module" crossorigin src="/FightChub/assets/index-BU7ZQ_j2.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -10100,6 +10101,22 @@
     </div>
 
     <script>
+        // Mobile scaling: fit 1280px game into any screen size
+        (function() {
+            const GAME_WIDTH = 1280;
+            function scaleGame() {
+                const container = document.querySelector('.game-container');
+                if (!container) return;
+                const scale = Math.min(window.innerWidth / GAME_WIDTH, 1);
+                container.style.transform = scale < 1 ? `scale(${scale})` : '';
+                container.style.transformOrigin = 'top left';
+                document.body.style.width = scale < 1 ? (GAME_WIDTH * scale) + 'px' : '';
+            }
+            window.addEventListener('resize', scaleGame);
+            window.addEventListener('orientationchange', function() { setTimeout(scaleGame, 100); });
+            document.addEventListener('DOMContentLoaded', scaleGame);
+        })();
+
         const ARENA_BACKGROUNDS = [
             'Assets/Background/Apocalypse.webp',
             'Assets/Background/Athena.webp',
