@@ -14255,7 +14255,7 @@
                         game.cpu.health    = event.cpuHp;
                         updateHealth('player');
                         updateHealth('cpu');
-                        // Determine element from power id prefix (e.g. 'fire_meteor' → 'fire')
+                        // Determine element from power id prefix (e.g. 'fire_fireball' → 'fire')
                         const fpEl    = event.power.split('_')[0];
                         const fpElemD = ELEMENT_DATA[fpEl] || {};
                         const fpColor = fpElemD.color || '#ffd700';
@@ -14269,7 +14269,7 @@
                         playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
                         if (event.damage > 0) {
                             // Delay damage number slightly so projectile reaches first
-                            const fpHitDelay = event.power.includes('meteor') ? 700
+                            const fpHitDelay = event.power.includes('fireball') ? 700
                                              : event.power.includes('giant_rock') ? 420
                                              : event.power.includes('tsunami') || event.power.includes('tornado')   ? 460
                                              : 0;
@@ -14280,7 +14280,7 @@
                                         : event.power.includes('sky_discharge')  ? 3800
                                         : event.power.includes('tsunami')        ? 1500
                                         : event.power.includes('water_bullets')  ? 3300
-                                        : event.power.includes('meteor')         ? 2900
+                                        : event.power.includes('fireball')         ? 2900
                                         : 980;
                         await sleep(fpSleepMs);
                         break;
@@ -17080,7 +17080,7 @@
 
             switch (el) {
                 case 'fire':
-                    if (power.includes('meteor')) {
+                    if (power.includes('fireball')) {
                         const fbFromLeft  = caster === 'player';
                         const fbArenaW    = arena.offsetWidth;
                         const fbArenaH    = arena.offsetHeight;
@@ -17944,7 +17944,7 @@
         const PT_BG_NAMES = ['Apocalypse', 'Athena', 'Celta', 'Ruins', 'Samurai'];
 
         const PT_POWERS = {
-            fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Fireball',        id: 'fire_meteor'              }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
+            fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Fireball',        id: 'fire_fireball'            }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
             lightning: { passive: { name: 'Electric Orb',  id: 'lightning_orb_active'      }, p1: { name: 'Lightning Bolt', id: 'lightning_lightning_bolt'  }, p2: { name: 'Sky Discharge', id: 'lightning_sky_discharge' } },
             earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Seismic Trap',  id: 'earth_seismic_trap'      } },
             water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Water Bullets', id: 'water_water_bullets'     } },
