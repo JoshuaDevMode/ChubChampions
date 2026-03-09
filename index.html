@@ -647,6 +647,19 @@
         }
 
         /* ── Fury power in-battle visual effects ──────────────────────────────── */
+        .fp-fireball {
+            position: absolute;
+            pointer-events: none;
+            z-index: 15;
+            width: 52px;
+            filter: drop-shadow(0 0 8px #ff8800) drop-shadow(0 0 18px #ff4400) brightness(1.1);
+        }
+        @keyframes fp-fireball-wobble {
+            0%, 100% { transform: rotate(var(--rot, 0deg)) scaleX(1)   scaleY(1);   }
+            25%       { transform: rotate(var(--rot, 0deg)) scaleX(1.06) scaleY(0.96); }
+            75%       { transform: rotate(var(--rot, 0deg)) scaleX(0.96) scaleY(1.06); }
+        }
+
         .fp-projectile {
             position: absolute;
             border-radius: 50%;
@@ -14256,7 +14269,8 @@
                         playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
                         if (event.damage > 0) {
                             // Delay damage number slightly so projectile reaches first
-                            const fpHitDelay = event.power.includes('meteor') || event.power.includes('giant_rock') ? 420
+                            const fpHitDelay = event.power.includes('meteor') ? 700
+                                             : event.power.includes('giant_rock') ? 420
                                              : event.power.includes('tsunami') || event.power.includes('tornado')   ? 460
                                              : 0;
                             if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
@@ -14266,6 +14280,7 @@
                                         : event.power.includes('sky_discharge')  ? 3800
                                         : event.power.includes('tsunami')        ? 1500
                                         : event.power.includes('water_bullets')  ? 3300
+                                        : event.power.includes('meteor')         ? 2900
                                         : 980;
                         await sleep(fpSleepMs);
                         break;
@@ -17066,13 +17081,60 @@
             switch (el) {
                 case 'fire':
                     if (power.includes('meteor')) {
-                        spawnProjectile(cp.x, cp.y - 90, tp.x, tp.y, 34,
-                            'radial-gradient(circle,#fff 0%,#ff7700 45%,#cc2200 100%)', '#ff6600', 0.48);
-                        setTimeout(() => {
-                            spawnImpact(tp.x, tp.y, 90, '#ff5500');
-                            spawnParticles(tp.x, tp.y, 12, '#ff4400');
-                            showHitEffect(target, 'normal');
-                        }, 420);
+                        const fbFromLeft  = caster === 'player';
+                        const fbArenaW    = arena.offsetWidth;
+                        const fbArenaH    = arena.offsetHeight;
+                        // Angle image: keep roughly upright, just lean ~20° in travel direction
+                        const fbRot       = fbFromLeft ? -20 : 20;
+                        // Travel endpoint well off-screen past the target
+                        const fbEndX      = fbFromLeft ? fbArenaW * 1.25 : -fbArenaW * 0.25;
+                        const fbEndY      = tp.y - 26; // aim at target center height
+                        const FB_TRAVEL   = 700;  // ms to reach target hit point
+                        const FB_INTERVAL = 920;  // ms between fireballs
+
+                        for (let fi = 0; fi < 3; fi++) {
+                            setTimeout(() => {
+                                const fb    = document.createElement('img');
+                                fb.src      = 'Assets/Player/Effects/Fireball.png';
+                                fb.className = 'fp-fireball';
+                                const fbStartX = cp.x - 26;
+                                const fbStartY = cp.y - 52;
+                                fb.style.left = fbStartX + 'px';
+                                fb.style.top  = fbStartY + 'px';
+                                fb.style.setProperty('--rot', fbRot + 'deg');
+                                fb.style.animation = 'fp-fireball-wobble 0.28s ease-in-out infinite';
+                                arena.appendChild(fb);
+
+                                // RAF travel loop — linear movement to off-screen
+                                const fbTStart   = performance.now();
+                                const fbTotalDur = FB_TRAVEL * (1 + (fbEndX - cp.x) / (tp.x - cp.x + 0.01) * 0.4);
+                                const fbDx       = fbEndX - fbStartX;
+                                const fbDy       = fbEndY - fbStartY;
+                                // Compute how far along [0..1] the target is
+                                const fbTotalDist = Math.sqrt(fbDx * fbDx + fbDy * fbDy);
+                                const fbTargDist  = Math.sqrt((tp.x - 26 - fbStartX) ** 2 + (tp.y - 52 - fbStartY) ** 2);
+                                const fbHitFrac   = fbTargDist / fbTotalDist;
+                                // Total animation time = FB_TRAVEL / fbHitFrac so target is hit at FB_TRAVEL ms
+                                const fbAnimDur   = Math.min(FB_TRAVEL / Math.max(fbHitFrac, 0.3), 2200);
+
+                                const animFb = (now) => {
+                                    const t = Math.min((now - fbTStart) / fbAnimDur, 1);
+                                    fb.style.left = (fbStartX + fbDx * t) + 'px';
+                                    fb.style.top  = (fbStartY + fbDy * t) + 'px';
+                                    if (t < 1) requestAnimationFrame(animFb);
+                                    else fb.remove();
+                                };
+                                requestAnimationFrame(animFb);
+
+                                // Impact at target position when fireball passes through
+                                setTimeout(() => {
+                                    spawnImpact(tp.x, tp.y, 65, '#ff5500', 0);
+                                    spawnParticles(tp.x, tp.y, fi === 0 ? 14 : 8, '#ff4400', 55);
+                                    spawnRing(tp.x, tp.y, 50, '#ff6600', 0);
+                                    if (fi === 0) showHitEffect(target, 'normal');
+                                }, FB_TRAVEL);
+                            }, fi * FB_INTERVAL);
+                        }
                     } else if (power.includes('flamethrower')) {
                         const fromLeft = caster === 'player';
                         const flameW   = Math.round(arena.offsetWidth * 0.50);
@@ -17882,7 +17944,7 @@
         const PT_BG_NAMES = ['Apocalypse', 'Athena', 'Celta', 'Ruins', 'Samurai'];
 
         const PT_POWERS = {
-            fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Meteor',         id: 'fire_meteor'              }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
+            fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Fireball',        id: 'fire_meteor'              }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
             lightning: { passive: { name: 'Electric Orb',  id: 'lightning_orb_active'      }, p1: { name: 'Lightning Bolt', id: 'lightning_lightning_bolt'  }, p2: { name: 'Sky Discharge', id: 'lightning_sky_discharge' } },
             earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Seismic Trap',  id: 'earth_seismic_trap'      } },
             water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Water Bullets', id: 'water_water_bullets'     } },
