@@ -651,13 +651,22 @@
             position: absolute;
             pointer-events: none;
             z-index: 15;
-            width: 52px;
+            width: 82px;
+            height: auto;
             filter: drop-shadow(0 0 8px #ff8800) drop-shadow(0 0 18px #ff4400) brightness(1.1);
+            transform-origin: center center;
         }
         @keyframes fp-fireball-wobble {
-            0%, 100% { transform: rotate(var(--rot, 0deg)) scaleX(1)   scaleY(1);   }
-            25%       { transform: rotate(var(--rot, 0deg)) scaleX(1.06) scaleY(0.96); }
-            75%       { transform: rotate(var(--rot, 0deg)) scaleX(0.96) scaleY(1.06); }
+            0%, 100% { transform: scaleX(var(--flip,1)) scaleY(1);    }
+            40%       { transform: scaleX(var(--flip,1)) scaleY(0.88); }
+        }
+        @keyframes fb-dissolve-right {
+            0%   { clip-path: inset(0 0%   0 0); opacity: 1; }
+            100% { clip-path: inset(0 100% 0 0); opacity: 0; }
+        }
+        @keyframes fb-dissolve-left {
+            0%   { clip-path: inset(0 0 0 0%  ); opacity: 1; }
+            100% { clip-path: inset(0 0 0 100%); opacity: 0; }
         }
 
         .fp-projectile {
@@ -14375,51 +14384,84 @@
                 stopRunAnimation(attackerEl);
                 playFootstep();
             } else if (event.jumpAttack) {
-                // Jump attack: arc up toward opponent, last attack frame at peak (rotated), landing reverse anim
-                const jaImg  = attackerEl.querySelector('img.character-png');
-                const jaBody = attackerEl.querySelector('.fighter-body');
-                const jaPeakAnimType = attackType; // punch or kick
-                const jaPeakFrames   = jaImg?.['_' + jaPeakAnimType + 'Frames'] || [];
-                // Rotation: punch 35°, kick 45° — mirrored for CPU
-                const rotAngle  = jaPeakAnimType === 'kick' ? 45 : 35;
-                // CPU img already has scaleX(-1) via CSS — must include it in inline transform
-                // or the flip is lost. Player has no base flip so just rotate.
-                const isCpuAtt  = attacker === 'cpu';
-                const baseXform = isCpuAtt ? 'scaleX(-1) ' : '';
+                const jaImg      = attackerEl.querySelector('img.character-png');
+                const jaPeakFrames = jaImg?.['_' + attackType + 'Frames'] || [];
+                const rotAngle   = attackType === 'kick' ? 45 : 35;
+                const isCpuAtt   = attacker === 'cpu';
+                const baseXform  = isCpuAtt ? 'scaleX(-1) ' : '';
 
+                // Running jump variant (35%): bigger arc + brief run-up
+                const isRunningJump = Math.random() < 0.35;
+                const JUMP_DUR  = isRunningJump ? 1050 : 880;
+                const PEAK_H    = isRunningJump ? -170 : -132;
+
+                // Airborne pose
                 if (jaImg) {
                     jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
-                    // Frame 8 = airborne pose
                     jaImg.src = jaImg._runFrames?.[8] || jaImg.src;
-                    // At peak (~400ms): last attack frame, rotated diagonally downward
-                    if (jaPeakFrames.length > 0) {
-                        setTimeout(() => {
-                            jaImg.src = jaPeakFrames[jaPeakFrames.length - 1];
-                            jaImg.style.transition = 'transform 0.08s ease-out';
-                            jaImg.style.transform  = `${baseXform}rotate(${rotAngle}deg)`;
-                        }, 400);
-                    }
                 }
 
-                // Arc + horizontal travel — ease-in-out so arrival is gradual (less vertical drop feel)
-                if (jaBody) jaBody.classList.add('jump-attack-arc');
-                attackerEl.style.transition = 'left 0.93s ease-in-out, right 0.93s ease-in-out';
-                if (attacker === 'player') attackerEl.style.left  = '67%';
-                else                       attackerEl.style.right = '67%';
-                await sleep(950);
-                attackerEl.style.transition = '';
-                if (jaBody) jaBody.classList.remove('jump-attack-arc');
+                // Precise landing: attacker center lands at defender chest center
+                const arenaEl   = document.getElementById('arena');
+                const zoom      = getGameZoom();
+                const arenaRect = arenaEl.getBoundingClientRect();
+                const atkRect   = attackerEl.getBoundingClientRect();
+                const defBodyEl = defenderEl.querySelector('.fighter-body') || defenderEl;
+                const defRect   = defBodyEl.getBoundingClientRect();
+                const atkW      = atkRect.width  / zoom;
+                const arenaW    = arenaEl.offsetWidth;
+                const startLeft = (atkRect.left - arenaRect.left) / zoom;
+                const atkCx     = startLeft + atkW / 2;
+                const defCx     = (defRect.left - arenaRect.left) / zoom + (defRect.width / zoom) / 2;
+                const deltaX    = defCx - atkCx;
+
+                // Peak attack frame
+                const peakMs = JUMP_DUR * (isRunningJump ? 0.40 : 0.36);
+                let peakDone = false;
+                const peakTmr = setTimeout(() => {
+                    if (!peakDone && jaImg && jaPeakFrames.length > 0) {
+                        peakDone = true;
+                        jaImg.src = jaPeakFrames[jaPeakFrames.length - 1];
+                        jaImg.style.transition = 'transform 0.08s ease-out';
+                        jaImg.style.transform  = `${baseXform}rotate(${rotAngle}deg)`;
+                    }
+                }, peakMs);
+
+                if (isRunningJump) animateRun(attackerEl, false, null);
+
+                // RAF: X ease-in-out + Y parabolic arc — both in sync
+                attackerEl.style.transition = 'none';
+                const jaEase = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                await new Promise(res => {
+                    const t0 = performance.now();
+                    const step = now => {
+                        const t  = Math.min((now - t0) / JUMP_DUR, 1);
+                        const tx = deltaX * jaEase(t);
+                        const ty = PEAK_H  * Math.sin(Math.PI * t);
+                        attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
+                        if (t < 1) { requestAnimationFrame(step); return; }
+                        // Commit final position, clear transform
+                        attackerEl.style.transform = '';
+                        const finalLeft = startLeft + deltaX;
+                        if (!isCpuAtt) {
+                            attackerEl.style.left  = (finalLeft / arenaW * 100) + '%';
+                        } else {
+                            attackerEl.style.right = ((arenaW - finalLeft - atkW) / arenaW * 100) + '%';
+                        }
+                        res();
+                    };
+                    requestAnimationFrame(step);
+                });
+
+                clearTimeout(peakTmr);
                 stopRunAnimation(attackerEl);
                 playFootstep();
 
-                // Reset rotation on landing
+                // Reset image rotation on landing
                 if (jaImg) {
                     jaImg.style.transition = 'transform 0.15s ease-out';
                     jaImg.style.transform  = isCpuAtt ? 'scaleX(-1)' : '';
-                    setTimeout(() => {
-                        jaImg.style.transition = '';
-                        if (isCpuAtt) jaImg.style.transform = '';
-                    }, 180);
+                    setTimeout(() => { jaImg.style.transition = ''; if (isCpuAtt) jaImg.style.transform = ''; }, 180);
                 }
             } else {
                 // Normal first hit: run from starting corner to opponent
@@ -17083,51 +17125,43 @@
                 case 'fire':
                     if (power.includes('fireball')) {
                         const fbFromLeft  = caster === 'player';
-                        const fbArenaW    = arena.offsetWidth;
-                        const fbArenaH    = arena.offsetHeight;
-                        // Angle image: keep roughly upright, just lean ~20° in travel direction
-                        const fbRot       = fbFromLeft ? -20 : 20;
-                        // Travel endpoint well off-screen past the target
-                        const fbEndX      = fbFromLeft ? fbArenaW * 1.25 : -fbArenaW * 0.25;
-                        const fbEndY      = tp.y - 26; // aim at target center height
-                        const FB_TRAVEL   = 700;  // ms to reach target hit point
+                        const FB_TRAVEL   = 680;  // ms to reach target
                         const FB_INTERVAL = 920;  // ms between fireballs
+                        const fbFlip      = fbFromLeft ? 1 : -1;
+                        const fbImgH      = 46;   // half-height offset (image ~92px tall)
+                        const fbImgW      = 41;   // half-width  offset (image ~82px wide)
 
                         for (let fi = 0; fi < 3; fi++) {
                             setTimeout(() => {
-                                const fb    = document.createElement('img');
-                                fb.src      = 'Assets/Player/Effects/Fireball.png';
+                                const fb = document.createElement('img');
+                                fb.src   = 'Assets/Player/Effects/Fireball.png';
                                 fb.className = 'fp-fireball';
-                                const fbStartX = cp.x - 26;
-                                const fbStartY = cp.y - 52;
+                                const fbStartX = cp.x - fbImgW;
+                                const fbStartY = cp.y - fbImgH;
                                 fb.style.left = fbStartX + 'px';
                                 fb.style.top  = fbStartY + 'px';
-                                fb.style.setProperty('--rot', fbRot + 'deg');
-                                fb.style.animation = 'fp-fireball-wobble 0.28s ease-in-out infinite';
+                                // Flip for CPU→player (going left)
+                                fb.style.setProperty('--flip', fbFlip);
+                                fb.style.animation = 'fp-fireball-wobble 0.32s ease-in-out infinite';
                                 arena.appendChild(fb);
 
-                                // RAF travel loop — linear movement to off-screen
-                                const fbTStart   = performance.now();
-                                const fbTotalDur = FB_TRAVEL * (1 + (fbEndX - cp.x) / (tp.x - cp.x + 0.01) * 0.4);
-                                const fbDx       = fbEndX - fbStartX;
-                                const fbDy       = fbEndY - fbStartY;
-                                // Compute how far along [0..1] the target is
-                                const fbTotalDist = Math.sqrt(fbDx * fbDx + fbDy * fbDy);
-                                const fbTargDist  = Math.sqrt((tp.x - 26 - fbStartX) ** 2 + (tp.y - 52 - fbStartY) ** 2);
-                                const fbHitFrac   = fbTargDist / fbTotalDist;
-                                // Total animation time = FB_TRAVEL / fbHitFrac so target is hit at FB_TRAVEL ms
-                                const fbAnimDur   = Math.min(FB_TRAVEL / Math.max(fbHitFrac, 0.3), 2200);
+                                // Travel toward target (stop there — no off-screen continuation)
+                                const fbEndX  = tp.x - fbImgW;
+                                const fbEndY  = tp.y - fbImgH;
+                                const fbTStart = performance.now();
 
                                 const animFb = (now) => {
-                                    const t = Math.min((now - fbTStart) / fbAnimDur, 1);
-                                    fb.style.left = (fbStartX + fbDx * t) + 'px';
-                                    fb.style.top  = (fbStartY + fbDy * t) + 'px';
-                                    if (t < 1) requestAnimationFrame(animFb);
-                                    else fb.remove();
+                                    const t = Math.min((now - fbTStart) / FB_TRAVEL, 1);
+                                    fb.style.left = (fbStartX + (fbEndX - fbStartX) * t) + 'px';
+                                    fb.style.top  = (fbStartY + (fbEndY - fbStartY) * t) + 'px';
+                                    if (t < 1) { requestAnimationFrame(animFb); return; }
+                                    // Arrived at target — dissolve from impact side
+                                    fb.style.animation = `fb-dissolve-${fbFromLeft ? 'right' : 'left'} 0.32s ease-in forwards`;
+                                    fb.addEventListener('animationend', () => fb.remove(), { once: true });
                                 };
                                 requestAnimationFrame(animFb);
 
-                                // Impact at target position when fireball passes through
+                                // Impact effects at target
                                 setTimeout(() => {
                                     spawnImpact(tp.x, tp.y, 65, '#ff5500', 0);
                                     spawnParticles(tp.x, tp.y, fi === 0 ? 14 : 8, '#ff4400', 55);
@@ -17249,15 +17283,17 @@
                                 spawnImpact(tp.x, tp.y, 70, '#ff4400');
                                 spawnParticles(tp.x, tp.y, 8, '#ff6600');
                                 showHitEffect(target, 'normal');
-                                // Soot / charred effect: darken target for 2s, then fade out over 1s
+                                // Soot / charred effect: darken target for 2s, then fade out over 1.2s
                                 const sootImg = game[target]?.element?.querySelector('img');
                                 if (sootImg) {
-                                    const prevFilter = sootImg.style.filter || '';
                                     sootImg.style.transition = 'filter 0.08s ease-in';
                                     sootImg.style.filter = 'brightness(0.12) grayscale(1) contrast(1.4)';
                                     setTimeout(() => {
-                                        sootImg.style.transition = 'filter 1s ease-out';
-                                        sootImg.style.filter = prevFilter;
+                                        sootImg.style.transition = 'filter 1.2s ease-out';
+                                        // Double rAF ensures transition is active before the filter change
+                                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                                            sootImg.style.filter = '';
+                                        }));
                                     }, 2000);
                                 }
                             }
