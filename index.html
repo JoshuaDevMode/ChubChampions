@@ -17551,14 +17551,15 @@
                         const PILLAR_W    = 200;
                         const PILLAR_H    = 280;
                         const RISE_DUR    = 680;
-                        const targetFeetY = getCharacterFeetY(target);
+                        // Always erupt from the arena floor — Y is fixed, only X follows the target.
+                        const groundY     = arena.offsetHeight - 35;
 
                         // Ground rumble before rise
-                        spawnParticles(tp.x, targetFeetY, 8, '#8B5E3C', 55);
+                        spawnParticles(tp.x, groundY, 8, '#8B5E3C', 55);
 
                         // Clip wrapper: pillar rises from ground (overflow:hidden = cut effect)
                         const pillarWrap = document.createElement('div');
-                        pillarWrap.style.cssText = `position:absolute;left:${tp.x - PILLAR_W/2}px;top:${targetFeetY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
+                        pillarWrap.style.cssText = `position:absolute;left:${tp.x - PILLAR_W/2}px;top:${groundY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
                         const pillarImg = document.createElement('img');
                         pillarImg.src = 'Assets/UI/rock_pillar.png';
                         pillarImg.style.cssText = `width:${PILLAR_W}px;height:${PILLAR_H}px;position:absolute;top:0;left:0;transform:translateY(${PILLAR_H}px);`;
@@ -17582,8 +17583,8 @@
                             if (t >= 0.35 && !impactFired) {
                                 impactFired = true;
                                 arenaShake();
-                                spawnImpact(tp.x, targetFeetY, 90, '#8B5E3C');
-                                spawnParticles(tp.x, targetFeetY, 16, '#a0826d', 100);
+                                spawnImpact(tp.x, groundY, 90, '#8B5E3C');
+                                spawnParticles(tp.x, groundY, 16, '#a0826d', 100);
                                 showHitEffect(target, 'normal');
 
                                 // tEl moves straight up (no rotation on wrapper)
