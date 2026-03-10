@@ -14165,6 +14165,19 @@
 
         // Replays a server-computed event log with the existing animation system.
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
+            // Convert both fighters to left-based px positioning immediately.
+            // CSS cannot transition from right:% or left:auto → left:Xpx, which would
+            // cause the first move/attack to snap instead of slide.
+            {
+                const _initArenaW = document.getElementById('arena').offsetWidth;
+                const _initScale  = _initArenaW / 1600;
+                const pEl = game.player.element;
+                const cEl = game.cpu.element;
+                pEl.style.left  = (game.player._homeX * _initScale) + 'px';
+                pEl.style.right = 'auto';
+                cEl.style.left  = (game.cpu._homeX * _initScale) + 'px';
+                cEl.style.right = 'auto';
+            }
             let _comboCount = 1; // tracks hits in current combo sequence
             for (let _ei = 0; _ei < events.length; _ei++) {
                 const event = events[_ei];
@@ -18365,6 +18378,11 @@
             const allTypes = [...basicTypes, ...weapons];
             const pEl = character.element;
             let furyDone = false;
+
+            // Emit an initial advance so fighters close to melee range before first hit.
+            // Server coords (1600px space): gap = cpuX - (playerX + 220) = 950-(650+220) = 80 = MELEE_RANGE
+            events.push({ type: 'move', fighter: 'player', action: 'advance',
+                from: 128, to: 650, playerX: 650, cpuX: 950 });
 
             for (let i = 0; i < 30; i++) {
                 const attacker = i % 2 === 0 ? 'player' : 'cpu';
