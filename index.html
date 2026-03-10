@@ -11182,6 +11182,8 @@
         const HAPPY_PILL_ABSENCE_HOURS = 36;
         let lastLoginTimestamp = null;   // saved to localStorage — previous session start
         let happyPillAvailable = false;  // computed once on load, stays true until bought
+        let rerollsUsed = 0;
+        let rerollsMax  = 3;
 
         // XP Boost system
         let xpBoostMultiplier = 1.0;
@@ -15680,9 +15682,6 @@
         function closeCharacterSelection() {
             document.getElementById('character-select-panel').classList.remove('active');
         }
-
-        let rerollsUsed = 0; // Track how many rerolls used
-        let rerollsMax = 3; // Max rerolls allowed
 
         async function openCharacterCreation() {
             const creationCost = globalCharactersCreated === 0 ? 0 : Math.floor(60 * Math.pow(1.1, globalCharactersCreated));
