@@ -10212,6 +10212,7 @@
 
         // Apply color tint to an image (like sepia + saturate + hue-rotate) preserving blacks
         function applyHueShiftPreservingBlacks(imageSrc, hueShift) {
+            if (!imageSrc || imageSrc === 'undefined') return Promise.resolve(imageSrc);
             return new Promise((resolve) => {
                 const img = new Image();
                 img.onload = function() {
@@ -10278,6 +10279,7 @@
 
         // Apply hue shift to an array of frames, revoking old blob URLs
         async function applyHueShiftToFrames(sourceFrames, hueShift, oldFrames) {
+            if (!sourceFrames || sourceFrames.length === 0) return [];
             // Revoke previous blob URLs, but NEVER revoke source/original URLs
             if (oldFrames) {
                 const sourceSet = new Set(sourceFrames);
@@ -10286,6 +10288,7 @@
             }
             const processed = [];
             for (const frame of sourceFrames) {
+                if (!frame || frame === 'undefined') { processed.push(frame); continue; }
                 processed.push(await applyHueShiftPreservingBlacks(frame, hueShift));
             }
             return processed;
@@ -21421,11 +21424,11 @@
 
                 // Process win sprite (first frame)
                 const winFrames = await exf(img.dataset.win, 'win');
-                img.dataset.win = winFrames[0];
+                if (winFrames[0]) img.dataset.win = winFrames[0];
 
                 // Process idle sprite from ORIGINAL source
                 const idleFrames = await exf(originalIdleSrc, 'idle');
-                img.src = idleFrames[0];
+                if (idleFrames[0]) img.src = idleFrames[0];
                 img._idleSrc = img.src;
                 img._unarmedIdleSrc = img._idleSrc; // saved for restoring when weapon is unequipped
 
@@ -21518,13 +21521,17 @@
             }
             img._idleBlinkFrames = await applyHueShiftToFrames(img._originalFrames.idleBlink, hue, img._idleBlinkFrames);
             img._loserFrames = await applyHueShiftToFrames(img._originalFrames.loser, hue, img._loserFrames);
-            img.dataset.lose = img._loserFrames[0];
+            if (img._loserFrames[0]) img.dataset.lose = img._loserFrames[0];
             // Only revoke if it's a hue-shifted copy (not the original)
-            if (img.dataset.win !== img._originalFrames.win) revokeBlobURLs(img.dataset.win);
-            img.dataset.win = await applyHueShiftPreservingBlacks(img._originalFrames.win, hue);
-            if (img._idleSrc !== img._originalFrames.idle) revokeBlobURLs(img._idleSrc);
-            img.src = await applyHueShiftPreservingBlacks(img._originalFrames.idle, hue);
-            img._idleSrc = img.src;
+            if (img._originalFrames.win) {
+                if (img.dataset.win !== img._originalFrames.win) revokeBlobURLs(img.dataset.win);
+                img.dataset.win = await applyHueShiftPreservingBlacks(img._originalFrames.win, hue);
+            }
+            if (img._originalFrames.idle) {
+                if (img._idleSrc !== img._originalFrames.idle) revokeBlobURLs(img._idleSrc);
+                img.src = await applyHueShiftPreservingBlacks(img._originalFrames.idle, hue);
+                img._idleSrc = img.src;
+            }
             img._unarmedIdleSrc = img._idleSrc; // update after hue-shifted idle is set
 
             // Apply hue shift to CPU fury orb frames
