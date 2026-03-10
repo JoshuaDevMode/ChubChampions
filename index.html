@@ -14822,6 +14822,14 @@
                 selectedCharacterId = characters.length > 0 ? characters[0].id : null;
             }
             saveCharacters();
+            // Sync deletion to Supabase
+            if (playerSession && BACKEND_URL && SYNC_SECRET) {
+                fetch(BACKEND_URL + '/api/character/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: id }),
+                }).catch(e => console.warn('[delete] character delete error:', e));
+            }
         }
 
         // Load player session (Privy) + characters on page load
