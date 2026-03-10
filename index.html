@@ -865,6 +865,16 @@
             100% { transform: translateY(0); }
         }
 
+        /* Aerial counter — quick rise-and-fire jump */
+        @keyframes aerialCounterRise {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(-90px); }
+        }
+        @keyframes aerialCounterFall {
+            0%   { transform: translateY(-90px); }
+            100% { transform: translateY(0); }
+        }
+
         /* Jump attack arc */
         .jump-attack-arc {
             animation: jumpAttackArc 0.95s cubic-bezier(0.25, 0, 0.6, 1) forwards;
@@ -14289,6 +14299,16 @@
                         // Passive effects (stone_skin, burn_aura, orb_active) skip the name flash
                         const isPassive = event.power.includes('stone_skin') || event.power.includes('burn_aura') || event.power.includes('orb_active');
                         if (!isPassive) showFuryPowerFlash(event.caster, fpName, fpColor);
+
+                        // ── Aerial counter (jump_fury) ────────────────────────────────────────
+                        if (event.aerial) {
+                            playAerialCounterAnimation(event.caster, event.target, event.power, fpColor, event.targetDefense || 'none');
+                            // Show damage number when projectile arrives (~740ms)
+                            if (event.damage > 0) setTimeout(() => showDamage(event.target, event.damage, false), 740);
+                            await sleep(1200);
+                            break;
+                        }
+
                         // Play element-specific visual effect
                         playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
                         if (event.damage > 0) {
@@ -17124,6 +17144,132 @@
             }
             const rect = el.getBoundingClientRect();
             return (rect.bottom - arenaRect.top) / zoom;
+        }
+
+        /**
+         * Aerial counter-attack animation for jump_fury.
+         * Caster rises quickly, fires a single aimed projectile at the target,
+         * then lands. Target's defense reaction is shown on impact.
+         */
+        function playAerialCounterAnimation(caster, target, power, color, targetDefense) {
+            const arena = document.getElementById('arena');
+            if (!arena || !game[caster] || !game[target]) return;
+            const zoom      = getGameZoom();
+            const arenaRect = arena.getBoundingClientRect();
+
+            const casterFB = game[caster].element.querySelector('.fighter-body');
+            const RISE_MS  = 280;  // ms to reach peak
+            const FIRE_AT  = 240;  // ms after start to fire (near peak)
+            const TRAVEL   = 500;  // ms for projectile to reach target
+            const FALL_MS  = 320;  // ms to land
+
+            // Phase 1: jump up
+            casterFB.style.animation = `aerialCounterRise ${RISE_MS}ms cubic-bezier(0.33, 1, 0.68, 1) forwards`;
+
+            // Phase 2: fire at peak
+            setTimeout(() => {
+                const cEl   = game[caster].element;
+                const tEl   = game[target].element;
+                const cRect = cEl.getBoundingClientRect();
+                const tRect = tEl.getBoundingClientRect();
+                // getBoundingClientRect reflects the current CSS transform (elevated position)
+                const cx = (cRect.left - arenaRect.left) / zoom + (cRect.width  / zoom) / 2;
+                const cy = (cRect.top  - arenaRect.top)  / zoom + (cRect.height / zoom) / 2 - 20;
+                const tx = (tRect.left - arenaRect.left) / zoom + (tRect.width  / zoom) / 2;
+                const ty = (tRect.top  - arenaRect.top)  / zoom + (tRect.height / zoom) / 2 - 20;
+                const dx = tx - cx, dy = ty - cy;
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                const el = power.split('_')[0];
+
+                if (el === 'fire') {
+                    // Fireball image, rotated to trajectory angle
+                    const imgW = 41, imgH = 46;
+                    const fb   = document.createElement('img');
+                    fb.src     = 'Assets/Player/Effects/Fireball.png';
+                    fb.className = 'fp-fireball';
+                    fb.style.left      = (cx - imgW) + 'px';
+                    fb.style.top       = (cy - imgH) + 'px';
+                    fb.style.transform = `rotate(${angle}deg)`;  // aimed trajectory
+                    arena.appendChild(fb);
+                    const t0 = performance.now();
+                    const anim = (now) => {
+                        const t = Math.min((now - t0) / TRAVEL, 1);
+                        fb.style.left = (cx - imgW + dx * t) + 'px';
+                        fb.style.top  = (cy - imgH + dy * t) + 'px';
+                        if (t < 1) { requestAnimationFrame(anim); return; }
+                        fb.style.animation = `fb-dissolve-${caster === 'player' ? 'right' : 'left'} 0.28s ease-in forwards`;
+                        fb.addEventListener('animationend', () => fb.remove(), { once: true });
+                    };
+                    requestAnimationFrame(anim);
+                } else {
+                    // Colored orb for all other elements
+                    const S   = 28;
+                    const orb = document.createElement('div');
+                    orb.className = 'fp-projectile';
+                    orb.style.cssText = `width:${S}px;height:${S}px;background:${color};` +
+                        `box-shadow:0 0 ${S}px ${color},0 0 ${S * 1.8}px ${color};` +
+                        `left:${cx - S/2}px;top:${cy - S/2}px;`;
+                    orb.style.setProperty('--dx', dx + 'px');
+                    orb.style.setProperty('--dy', dy + 'px');
+                    orb.style.setProperty('--dur', (TRAVEL / 1000) + 's');
+                    arena.appendChild(orb);
+                    orb.addEventListener('animationend', () => orb.remove(), { once: true });
+                }
+
+                // Impact at target
+                setTimeout(() => {
+                    // Burst effects
+                    const imp = document.createElement('div');
+                    imp.className = 'fp-impact';
+                    imp.style.cssText = `width:55px;height:55px;left:${tx}px;top:${ty}px;` +
+                        `background:radial-gradient(circle,${color}99 0%,${color}00 70%);` +
+                        `border:2px solid ${color};box-shadow:0 0 12px ${color};`;
+                    arena.appendChild(imp);
+                    imp.addEventListener('animationend', () => imp.remove(), { once: true });
+
+                    const ring = document.createElement('div');
+                    ring.className = 'fp-ring';
+                    ring.style.cssText = `width:44px;height:44px;left:${tx}px;top:${ty}px;` +
+                        `border:3px solid ${color};box-shadow:0 0 14px ${color},inset 0 0 8px ${color}44;`;
+                    ring.style.setProperty('--delay', '0s');
+                    arena.appendChild(ring);
+                    ring.addEventListener('animationend', () => ring.remove(), { once: true });
+
+                    for (let i = 0; i < 8; i++) {
+                        const a = (i / 8) * Math.PI * 2;
+                        const d = 50 * (0.6 + Math.random() * 0.7);
+                        const pt = document.createElement('div');
+                        pt.className = 'fp-particle';
+                        pt.style.cssText = `width:7px;height:7px;background:${color};` +
+                            `box-shadow:0 0 5px ${color};left:${tx}px;top:${ty}px;`;
+                        pt.style.setProperty('--px', (Math.cos(a) * d) + 'px');
+                        pt.style.setProperty('--py', (Math.sin(a) * d) + 'px');
+                        pt.style.setProperty('--dur', (0.35 + Math.random() * 0.3) + 's');
+                        pt.style.setProperty('--delay', (Math.random() * 0.08) + 's');
+                        arena.appendChild(pt);
+                        pt.addEventListener('animationend', () => pt.remove(), { once: true });
+                    }
+
+                    // Target defense reaction
+                    if (targetDefense === 'evaded') {
+                        // jumped forward and dodged — no hit effect
+                    } else if (targetDefense === 'block') {
+                        const tFB = game[target].element.querySelector('.fighter-body');
+                        tFB.classList.add('blocking');
+                        setTimeout(() => tFB.classList.remove('blocking'), 350);
+                        showHitEffect(target, 'block');
+                    } else {
+                        showHitEffect(target, 'normal');
+                    }
+                }, TRAVEL);
+
+                // Phase 3: land (start descending shortly after firing)
+                setTimeout(() => {
+                    casterFB.style.animation = `aerialCounterFall ${FALL_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`;
+                    setTimeout(() => { casterFB.style.animation = ''; }, FALL_MS + 20);
+                }, 80);
+
+            }, FIRE_AT);
         }
 
         function playFuryPowerAnimation(caster, target, power, color) {
