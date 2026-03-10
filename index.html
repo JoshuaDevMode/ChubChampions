@@ -10895,7 +10895,7 @@
         const FURY_POWERS_FRONTEND = {
             fire:      { p1: { name: 'Meteor',        desc: 'Massive impact + 1-turn stun' },       p2: { name: 'Flamethrower',  desc: 'Continuous burn DoT (4 ticks)' } },
             lightning: { p1: { name: 'Lightning Bolt',desc: 'High damage, ignores DEF' },           p2: { name: 'Sky Discharge', desc: '3 sequential lightning strikes' } },
-            earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },             p2: { name: 'Seismic Trap',  desc: 'Damage + 2-turn stun' } },
+            earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },             p2: { name: 'Earth Spike',  desc: 'Damage + 2-turn stun' } },
             water:     { p1: { name: 'Tsunami',       desc: 'Damage + enemy skips turn' },          p2: { name: 'Glacial Storm', desc: '3 ice shard hits' } },
             wind:      { p1: { name: 'Tornado',       desc: 'Damage + wind blades + skip turn' },   p2: { name: 'Air Columns',   desc: '3-hit air juggle' } },
         };
@@ -14292,9 +14292,10 @@
                         playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
                         if (event.damage > 0) {
                             // Delay damage number slightly so projectile reaches first
-                            const fpHitDelay = event.power.includes('fireball') ? 700
-                                             : event.power.includes('giant_rock') ? 1500
-                                             : event.power.includes('tsunami') || event.power.includes('tornado')   ? 460
+                            const fpHitDelay = event.power.includes('fireball')     ? 700
+                                             : event.power.includes('giant_rock')    ? 1500
+                                             : event.power.includes('earth_spike')  ? 650
+                                             : event.power.includes('tsunami') || event.power.includes('tornado') ? 460
                                              : 0;
                             if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
                             else showDamage(event.target, event.damage, false);
@@ -14303,8 +14304,9 @@
                                         : event.power.includes('sky_discharge')  ? 3800
                                         : event.power.includes('tsunami')        ? 1500
                                         : event.power.includes('water_bullets')  ? 3300
-                                        : event.power.includes('fireball')         ? 2900
-                                        : event.power.includes('giant_rock')       ? 3700
+                                        : event.power.includes('fireball')       ? 2900
+                                        : event.power.includes('giant_rock')     ? 3700
+                                        : event.power.includes('earth_spike')   ? 3400
                                         : 980;
                         await sleep(fpSleepMs);
                         break;
@@ -17523,7 +17525,7 @@
                                     }
                                 }
 
-                                // Phase 4: target falls to ground
+                                // Phase 4: target falls to ground (1 s on ground)
                                 const targetEl = game[target].element;
                                 const fallDir  = caster === 'player' ? 85 : -85;
                                 targetEl.style.transformOrigin = 'bottom center';
@@ -17536,21 +17538,79 @@
                                         targetEl.style.transition      = '';
                                         targetEl.style.transformOrigin = '';
                                     }, 450);
-                                }, 2000);
+                                }, 1000);
                             }
                             requestAnimationFrame(animFly);
                         }
                         requestAnimationFrame(animRise);
-                    } else if (power.includes('seismic_trap')) {
-                        const crack = document.createElement('div');
-                        crack.className = 'fp-ground-crack';
-                        crack.style.cssText = `left:${tp.x}px;top:${tp.y+55}px;width:200px;height:10px;background:linear-gradient(to right,transparent,${color},${color},transparent);box-shadow:0 0 12px ${color};border-radius:4px;`;
-                        arena.appendChild(crack);
-                        crack.addEventListener('animationend', () => crack.remove(), { once: true });
-                        spawnRing(tp.x, tp.y, 65, color);
-                        spawnParticles(tp.x, tp.y + 40, 12, color, 80);
-                        showHitEffect(target, 'normal');
-                        setTimeout(arenaShake, 120);
+                    } else if (power.includes('earth_spike')) {
+                        // ── Earth Spike — rock pillar erupts at target's feet ──────────────
+                        const PILLAR_W    = 200;
+                        const PILLAR_H    = 280;
+                        const RISE_DUR    = 680;
+                        const targetFeetY = getCharacterFeetY(target);
+
+                        // Ground rumble particles before rise
+                        spawnParticles(tp.x, targetFeetY, 8, '#8B5E3C', 55);
+
+                        // Clip wrapper: pillar rises from the ground (overflow hidden = cut effect)
+                        const pillarWrap = document.createElement('div');
+                        pillarWrap.style.cssText = `position:absolute;left:${tp.x - PILLAR_W/2}px;top:${targetFeetY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
+                        const pillarImg = document.createElement('img');
+                        pillarImg.src = 'Assets/UI/rock_pillar.png';
+                        pillarImg.style.cssText = `width:${PILLAR_W}px;height:${PILLAR_H}px;position:absolute;top:0;left:0;transform:translateY(${PILLAR_H}px);transform-origin:bottom center;`;
+                        pillarWrap.appendChild(pillarImg);
+                        arena.appendChild(pillarWrap);
+
+                        // Animate rise
+                        const riseStart = performance.now();
+                        function animPillarRise(ts) {
+                            const t    = Math.min((ts - riseStart) / RISE_DUR, 1);
+                            const ease = 1 - Math.pow(1 - t, 3);
+                            pillarImg.style.transform = `translateY(${PILLAR_H * (1 - ease)}px)`;
+                            if (t < 1) { requestAnimationFrame(animPillarRise); return; }
+
+                            // Peak: impact effects
+                            arenaShake();
+                            spawnImpact(tp.x, targetFeetY, 90, '#8B5E3C');
+                            spawnParticles(tp.x, targetFeetY, 16, '#a0826d', 100);
+                            showHitEffect(target, 'normal');
+
+                            // Phase 2: target launches upward — hurt frame rotating in air
+                            const targetEl = game[target].element;
+                            const launchDir = caster === 'player' ? 1 : -1;
+                            targetEl.style.transformOrigin = 'center center';
+                            targetEl.style.transition      = 'transform 0.55s cubic-bezier(0.2,0,0.4,1)';
+                            targetEl.style.transform       = `translateY(-190px) rotate(${launchDir * 30}deg)`;
+
+                            // Spin hurt effect while airborne
+                            let spinAngle = launchDir * 30;
+                            const spinInterval = setInterval(() => {
+                                spinAngle += launchDir * 22;
+                                targetEl.style.transform = `translateY(-190px) rotate(${spinAngle}deg)`;
+                            }, 90);
+
+                            // Phase 3: fall back down after 700ms airborne → lies on ground 1s
+                            setTimeout(() => {
+                                clearInterval(spinInterval);
+                                const groundRot = launchDir * 85;
+                                targetEl.style.transformOrigin = 'bottom center';
+                                targetEl.style.transition      = 'transform 0.4s cubic-bezier(0.4,0,1,1)';
+                                targetEl.style.transform       = `translateY(0px) rotate(${groundRot}deg)`;
+                                // Remove pillar during fall
+                                setTimeout(() => pillarWrap.remove(), 200);
+                                // Stand back up after 1s on ground
+                                setTimeout(() => {
+                                    targetEl.style.transition = 'transform 0.4s cubic-bezier(0,0,0.6,1)';
+                                    targetEl.style.transform  = '';
+                                    setTimeout(() => {
+                                        targetEl.style.transition      = '';
+                                        targetEl.style.transformOrigin = '';
+                                    }, 400);
+                                }, 1000);
+                            }, 700);
+                        }
+                        requestAnimationFrame(animPillarRise);
                     } else if (power.includes('stone_skin') && !power.includes('break')) {
                         spawnRing(cp.x, cp.y, 55, color);
                         spawnRing(cp.x, cp.y, 80, color, 0.14);
@@ -18153,7 +18213,7 @@
         const PT_POWERS = {
             fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Fireball',        id: 'fire_fireball'            }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
             lightning: { passive: { name: 'Electric Orb',  id: 'lightning_orb_active'      }, p1: { name: 'Lightning Bolt', id: 'lightning_lightning_bolt'  }, p2: { name: 'Sky Discharge', id: 'lightning_sky_discharge' } },
-            earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Seismic Trap',  id: 'earth_seismic_trap'      } },
+            earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Earth Spike',  id: 'earth_spike'             } },
             water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Water Bullets', id: 'water_water_bullets'     } },
             wind:      { passive: { name: 'Gust',          id: 'wind_passive'              }, p1: { name: 'Tornado',        id: 'wind_tornado'              }, p2: { name: 'Air Columns',   id: 'wind_air_columns'        } },
         };
