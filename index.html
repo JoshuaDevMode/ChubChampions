@@ -17053,6 +17053,12 @@
             return h - 60; // offset from yellow (lightning canvas base hue)
         }
 
+        // Cache: keyed by "NWxNH" — survives blob URL revocation.
+        // Once we successfully pixel-scan a sprite, we remember the feet offset
+        // within the CSS box (topGap + lastRow*scale) so subsequent calls that
+        // hit a revoked URL can still return the correct position.
+        const _feetOffsetCache = {};
+
         // Returns the Y position (unscaled arena coords) of the lowest drawn pixel
         // in the character sprite — i.e. where the feet actually touch the ground.
         function getCharacterFeetY(fighterKey) {
@@ -17065,21 +17071,21 @@
             const img       = el.querySelector('.character-png');
 
             if (img && img.complete && img.naturalWidth > 0) {
-                try {
-                    const nw = img.naturalWidth, nh = img.naturalHeight;
-                    const CSS_BOX = 200;
-                    const scale   = Math.min(CSS_BOX / nw, CSS_BOX / nh);
-                    const drawH   = nh * scale;
-                    const topGap  = (CSS_BOX - drawH) / 2;
+                const nw       = img.naturalWidth, nh = img.naturalHeight;
+                const cacheKey = nw + 'x' + nh;
+                const CSS_BOX  = 200;
+                const scale    = Math.min(CSS_BOX / nw, CSS_BOX / nh);
+                const drawH    = nh * scale;
+                const topGap   = (CSS_BOX - drawH) / 2;
 
+                try {
                     const tmp = document.createElement('canvas');
                     tmp.width = nw; tmp.height = nh;
                     const ctx = tmp.getContext('2d', { willReadFrequently: true });
                     ctx.drawImage(img, 0, 0);
                     const data = ctx.getImageData(0, 0, nw, nh).data;
 
-                    // Initialize to -1: if drawImage failed silently (revoked blob URL),
-                    // the canvas stays empty and we must fall back rather than use nh-1.
+                    // -1 = canvas empty (drawImage failed silently on revoked blob)
                     let lastRow = -1;
                     outer: for (let y = nh - 1; y >= 0; y--) {
                         for (let x = 0; x < nw; x++) {
@@ -17091,17 +17097,27 @@
                     }
 
                     if (lastRow >= 0) {
+                        const offset      = topGap + (lastRow + 1) * scale;
+                        _feetOffsetCache[cacheKey] = offset; // persist for later
                         const imgRect     = img.getBoundingClientRect();
                         const imgTopArena = (imgRect.top - arenaRect.top) / zoom;
-                        return imgTopArena + topGap + (lastRow + 1) * scale;
+                        return imgTopArena + offset;
                     }
-                    // lastRow === -1 means canvas was empty → drawImage failed silently
-                } catch (_) { /* fall through */ }
+                    // lastRow === -1: canvas empty (revoked blob) → try cache
+                } catch (_) { /* fall through to cache */ }
+
+                // Use cached offset from a previous successful scan
+                if (_feetOffsetCache[cacheKey] !== undefined) {
+                    const imgRect     = img.getBoundingClientRect();
+                    const imgTopArena = (imgRect.top - arenaRect.top) / zoom;
+                    return imgTopArena + _feetOffsetCache[cacheKey];
+                }
+
+                // Last resort: 62% estimate
+                const imgRect = img.getBoundingClientRect();
+                return (imgRect.top - arenaRect.top) / zoom + CSS_BOX * 0.62;
             }
 
-            // Fallback: img element top + 62% of CSS img height.
-            // The .fighter is bottom:35px/height:220px; .character-png is 200px centered (10px gap).
-            // Game sprites have their feet at roughly 62% of the 200px img height from the top.
             if (img) {
                 const imgRect = img.getBoundingClientRect();
                 return (imgRect.top - arenaRect.top) / zoom + 200 * 0.62;
