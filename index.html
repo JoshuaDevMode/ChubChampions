@@ -14339,17 +14339,26 @@
                         game.cpu._homeX    = event.cpuX;
                         const pEl = game.player.element;
                         const cEl = game.cpu.element;
-                        pEl.style.left  = event.playerX + 'px';
-                        pEl.style.right = 'auto';
-                        cEl.style.left  = event.cpuX + 'px';
-                        cEl.style.right = 'auto';
-                        // Brief run animation on the moving fighter
                         if (event.from !== event.to) {
                             const movEl  = game[event.fighter].element;
                             const isBack = event.action === 'retreat';
+                            // Add .dashing BEFORE changing left so the CSS transition fires
+                            movEl.classList.add('dashing');
+                            void movEl.offsetWidth; // force reflow
+                            pEl.style.left  = event.playerX + 'px';
+                            pEl.style.right = 'auto';
+                            cEl.style.left  = event.cpuX + 'px';
+                            cEl.style.right = 'auto';
                             animateRun(movEl, isBack, null);
                             await sleep(160);
                             stopRunAnimation(movEl);
+                            movEl.classList.remove('dashing');
+                        } else {
+                            // No actual movement — just sync positions silently
+                            pEl.style.left  = event.playerX + 'px';
+                            pEl.style.right = 'auto';
+                            cEl.style.left  = event.cpuX + 'px';
+                            cEl.style.right = 'auto';
                         }
                         await sleep(20);
                         break;
@@ -14420,16 +14429,27 @@
             defenderEl.style.zIndex = '10';
             const isWeaponAnim = !!WEAPONS[attackType];
 
+            // Compute attack and mid positions in px (always left-based so CSS transitions work on both fighters).
+            // right:X% + left:auto can't transition because CSS can't animate from/to 'auto'.
+            const _arenaW   = document.getElementById('arena').offsetWidth;
+            const _elW      = attackerEl.offsetWidth;
+            const _atkLeftPx = attacker === 'player'
+                ? _arenaW * 0.72           // player: 72% from left
+                : _arenaW * 0.28 - _elW;   // cpu: mirrors right:72%  (right-edge at 28%)
+            const _midLeftPx = attacker === 'player'
+                ? _arenaW * 0.44           // player mid: 44% from left
+                : _arenaW * 0.56 - _elW;   // cpu mid: mirrors right:44%
+
             if (isComboFollow) {
                 // Real combo follow-up: snap to combat position in case anything reset it
-                if (attacker === 'player') { attackerEl.style.left = '72%'; attackerEl.style.right = 'auto'; }
-                else                       { attackerEl.style.right = '72%'; attackerEl.style.left = 'auto'; }
+                attackerEl.style.left  = _atkLeftPx + 'px';
+                attackerEl.style.right = 'auto';
                 await sleep(50);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
-                if (attacker === 'player') { attackerEl.style.left = '72%'; attackerEl.style.right = 'auto'; }
-                else                       { attackerEl.style.right = '72%'; attackerEl.style.left = 'auto'; }
+                attackerEl.style.left  = _atkLeftPx + 'px';
+                attackerEl.style.right = 'auto';
                 await sleep(190);
                 stopRunAnimation(attackerEl);
                 playFootstep();
@@ -14510,11 +14530,8 @@
                         if (t < 1) { requestAnimationFrame(step); return; }
                         attackerEl.style.transform = '';
                         const finalLeft = runTarget + deltaX;
-                        if (!isCpuAtt) {
-                            attackerEl.style.left  = (finalLeft / arenaW * 100) + '%';
-                        } else {
-                            attackerEl.style.right = ((arenaW - finalLeft - atkW) / arenaW * 100) + '%';
-                        }
+                        attackerEl.style.left  = finalLeft + 'px';
+                        attackerEl.style.right = 'auto';
                         res();
                     };
                     requestAnimationFrame(step);
@@ -14530,8 +14547,8 @@
             } else {
                 // Normal first hit: run from starting corner to opponent
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
-                if (attacker === 'player') { attackerEl.style.left = '72%'; attackerEl.style.right = 'auto'; }
-                else                       { attackerEl.style.right = '72%'; attackerEl.style.left = 'auto'; }
+                attackerEl.style.left  = _atkLeftPx + 'px';
+                attackerEl.style.right = 'auto';
                 await sleep(300);
                 stopRunAnimation(attackerEl);
                 playFootstep();
@@ -14664,8 +14681,8 @@
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
                 animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
-                if (attacker === 'player') attackerEl.style.left  = '44%';
-                else                       attackerEl.style.right = '44%';
+                attackerEl.style.left  = _midLeftPx + 'px';
+                attackerEl.style.right = 'auto';
                 await sleep(210);
                 stopRunAnimation(attackerEl);
             } else {
