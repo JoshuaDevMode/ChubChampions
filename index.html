@@ -14456,8 +14456,9 @@
             const _arenaW   = document.getElementById('arena').offsetWidth;
             const _scale    = _arenaW / 1600;
             const _elW      = attackerEl.offsetWidth;
-            // Attack position: put attacker just inside melee range of defender (30px gap in 1600-space)
-            const _ATCK_GAP = 250; // FIGHTER_WIDTH(220) + 30 hit gap
+            // Attack position: overlap attacker 120px into defender's div (120px sprite overlap → ~5px visible contact)
+            // _ATCK_GAP = FIGHTER_WIDTH(220) - 120 = 100; physical gap = _ATCK_GAP - 220 = -120px overlap
+            const _ATCK_GAP = 100;
             const _atkLeftPx = attacker === 'player'
                 ? (game.cpu._homeX    - _ATCK_GAP) * _scale   // player runs toward CPU
                 : (game.player._homeX + _ATCK_GAP) * _scale;  // cpu runs toward player (right edge)
