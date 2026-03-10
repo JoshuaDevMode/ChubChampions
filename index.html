@@ -16333,6 +16333,13 @@
             startIdleBlink(game.player.element);
             startIdleBlink(game.cpu.element);
 
+            // Ensure the character exists in Supabase before the battle fetch.
+            // Characters created locally may not have been synced yet — upsert now
+            // so battle/run never returns 403 "Character not found".
+            if (!trainingMode && !_pvpBattleResult && playerSession) {
+                try { await syncCharacterToBackend(character); } catch (_) {}
+            }
+
             // Start the backend battle fetch NOW so it runs in parallel with the countdown
             _preBattleFetch = null;
             if (!trainingMode && !_pvpBattleResult && playerSession) {
