@@ -17534,10 +17534,10 @@
                                     const isCpuGR  = target === 'cpu';
                                     const rotDirGR = caster === 'player' ? -90 : 90;
                                     tImgGR.style.transformOrigin = 'center center';
-                                    tImgGR.style.transition      = 'transform 0.35s cubic-bezier(0.4,0,1,1)';
+                                    tImgGR.style.transition      = 'transform 0.12s cubic-bezier(0.4,0,1,1)';
                                     tImgGR.style.transform       = `scaleX(${isCpuGR ? -1 : 1}) rotate(${rotDirGR}deg)`;
                                     setTimeout(() => {
-                                        tImgGR.style.transition      = 'transform 0.45s cubic-bezier(0,0,0.6,1)';
+                                        tImgGR.style.transition      = 'transform 0.35s ease-out';
                                         tImgGR.style.transform       = '';
                                         tImgGR.style.transformOrigin = '';
                                     }, 1000);
@@ -17551,8 +17551,8 @@
                         const PILLAR_W    = 200;
                         const PILLAR_H    = 280;
                         const RISE_DUR    = 680;
-                        // Always erupt from the arena floor — Y is fixed, only X follows the target.
-                        const groundY     = arena.offsetHeight - 35;
+                        // Erupt from the ground at the target's feet level (same reference as Giant Rock).
+                        const groundY     = getCharacterFeetY(target);
 
                         // Ground rumble before rise
                         spawnParticles(tp.x, groundY, 8, '#8B5E3C', 55);
@@ -17585,13 +17585,17 @@
                                 arenaShake();
                                 spawnImpact(tp.x, groundY, 90, '#8B5E3C');
                                 spawnParticles(tp.x, groundY, 16, '#a0826d', 100);
-                                showHitEffect(target, 'normal');
 
-                                // tEl moves straight up (no rotation on wrapper)
+                                // Set hurt frame directly — do NOT use showHitEffect (it auto-resets the frame)
+                                // Frame stays until character stands back up
+                                if (tImgSp && tImgSp._hurtFrames && tImgSp._hurtFrames.length > 0)
+                                    tImgSp.src = tImgSp._hurtFrames[Math.floor(Math.random() * tImgSp._hurtFrames.length)];
+
+                                // tEl moves straight up (translateY only — no rotation on wrapper)
                                 targetElSp.style.transition = 'transform 0.36s cubic-bezier(0.1,0,0.3,1)';
                                 targetElSp.style.transform  = 'translateY(-300px)';
 
-                                // tImg spins around its center independently of the vertical travel
+                                // tImg spins around its center during the upward travel
                                 if (tImgSp) {
                                     let spinAngle = 0;
                                     tImgSp.style.transformOrigin = 'center center';
@@ -17603,30 +17607,34 @@
                                     }, 75);
                                 }
 
-                                // After 700ms airborne → fall + lie on ground
+                                // Stop spinning exactly when launch transition ends (peak height)
+                                // Character holds that rotation angle while at peak and during fall
+                                setTimeout(() => { clearInterval(spinIv); }, 360);
+
+                                // After 700ms airborne → fall back + snap to lying down
                                 setTimeout(() => {
-                                    clearInterval(spinIv);
                                     // tEl falls back to original position
                                     targetElSp.style.transition = 'transform 0.42s cubic-bezier(0.4,0,1,1)';
                                     targetElSp.style.transform  = '';
-                                    // tImg lands lying flat (same technique as tsunami: center center, no Y shift)
+                                    // tImg snaps to lying-flat rotation (fast, like Giant Rock)
                                     if (tImgSp) {
                                         const rotDir = caster === 'player' ? -90 : 90;
-                                        tImgSp.style.transition = 'transform 0.42s cubic-bezier(0.4,0,1,1)';
+                                        tImgSp.style.transition = 'transform 0.12s cubic-bezier(0.4,0,1,1)';
                                         tImgSp.style.transform  = `scaleX(${isCpuSp ? -1 : 1}) rotate(${rotDir}deg)`;
                                     }
                                     setTimeout(() => pillarWrap.remove(), 180);
 
-                                    // Stand back up after 1s on ground
+                                    // Stand back up after 1s on ground — restore idle frame on stand-up
                                     setTimeout(() => {
                                         targetElSp.style.transition = '';
                                         if (tImgSp) {
-                                            tImgSp.style.transition      = 'transform 0.4s ease-out';
-                                            tImgSp.style.transform       = '';
+                                            tImgSp.style.transition = 'transform 0.35s ease-out';
+                                            tImgSp.style.transform  = '';
+                                            if (tImgSp._idleSrc) tImgSp.src = tImgSp._idleSrc;
                                             setTimeout(() => {
                                                 tImgSp.style.transition      = '';
                                                 tImgSp.style.transformOrigin = '';
-                                            }, 400);
+                                            }, 350);
                                         }
                                     }, 1000);
                                 }, 700);
