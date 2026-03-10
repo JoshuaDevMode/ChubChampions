@@ -17527,19 +17527,21 @@
                                 }
 
                                 // Phase 4: target falls to ground (1 s on ground)
-                                const targetEl = game[target].element;
-                                const fallDir  = caster === 'player' ? 85 : -85;
-                                targetEl.style.transformOrigin = 'bottom center';
-                                targetEl.style.transition      = 'transform 0.35s cubic-bezier(0.4,0,1,1)';
-                                targetEl.style.transform       = `rotate(${fallDir}deg)`;
-                                setTimeout(() => {
-                                    targetEl.style.transition = 'transform 0.45s cubic-bezier(0,0,0.6,1)';
-                                    targetEl.style.transform  = '';
+                                // Rotate tImg around center (like tsunami) so character stays at correct Y level.
+                                const targetEl  = game[target].element;
+                                const tImgGR    = targetEl && targetEl.querySelector('img');
+                                if (tImgGR) {
+                                    const isCpuGR  = target === 'cpu';
+                                    const rotDirGR = caster === 'player' ? -90 : 90;
+                                    tImgGR.style.transformOrigin = 'center center';
+                                    tImgGR.style.transition      = 'transform 0.35s cubic-bezier(0.4,0,1,1)';
+                                    tImgGR.style.transform       = `scaleX(${isCpuGR ? -1 : 1}) rotate(${rotDirGR}deg)`;
                                     setTimeout(() => {
-                                        targetEl.style.transition      = '';
-                                        targetEl.style.transformOrigin = '';
-                                    }, 450);
-                                }, 1000);
+                                        tImgGR.style.transition      = 'transform 0.45s cubic-bezier(0,0,0.6,1)';
+                                        tImgGR.style.transform       = '';
+                                        tImgGR.style.transformOrigin = '';
+                                    }, 1000);
+                                }
                             }
                             requestAnimationFrame(animFly);
                         }
@@ -17551,65 +17553,85 @@
                         const RISE_DUR    = 680;
                         const targetFeetY = getCharacterFeetY(target);
 
-                        // Ground rumble particles before rise
+                        // Ground rumble before rise
                         spawnParticles(tp.x, targetFeetY, 8, '#8B5E3C', 55);
 
-                        // Clip wrapper: pillar rises from the ground (overflow hidden = cut effect)
+                        // Clip wrapper: pillar rises from ground (overflow:hidden = cut effect)
                         const pillarWrap = document.createElement('div');
                         pillarWrap.style.cssText = `position:absolute;left:${tp.x - PILLAR_W/2}px;top:${targetFeetY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
                         const pillarImg = document.createElement('img');
                         pillarImg.src = 'Assets/UI/rock_pillar.png';
-                        pillarImg.style.cssText = `width:${PILLAR_W}px;height:${PILLAR_H}px;position:absolute;top:0;left:0;transform:translateY(${PILLAR_H}px);transform-origin:bottom center;`;
+                        pillarImg.style.cssText = `width:${PILLAR_W}px;height:${PILLAR_H}px;position:absolute;top:0;left:0;transform:translateY(${PILLAR_H}px);`;
                         pillarWrap.appendChild(pillarImg);
                         arena.appendChild(pillarWrap);
 
-                        // Animate rise
+                        const targetElSp = game[target].element;
+                        const tImgSp     = targetElSp && targetElSp.querySelector('img');
+                        const isCpuSp    = target === 'cpu';
+                        const launchDir  = caster === 'player' ? 1 : -1;
+                        let   impactFired = false;
+                        let   spinIv;
+
                         const riseStart = performance.now();
                         function animPillarRise(ts) {
                             const t    = Math.min((ts - riseStart) / RISE_DUR, 1);
                             const ease = 1 - Math.pow(1 - t, 3);
                             pillarImg.style.transform = `translateY(${PILLAR_H * (1 - ease)}px)`;
-                            if (t < 1) { requestAnimationFrame(animPillarRise); return; }
 
-                            // Peak: impact effects
-                            arenaShake();
-                            spawnImpact(tp.x, targetFeetY, 90, '#8B5E3C');
-                            spawnParticles(tp.x, targetFeetY, 16, '#a0826d', 100);
-                            showHitEffect(target, 'normal');
+                            // Impact fires at ~35% rise — when the pillar top first touches the character
+                            if (t >= 0.35 && !impactFired) {
+                                impactFired = true;
+                                arenaShake();
+                                spawnImpact(tp.x, targetFeetY, 90, '#8B5E3C');
+                                spawnParticles(tp.x, targetFeetY, 16, '#a0826d', 100);
+                                showHitEffect(target, 'normal');
 
-                            // Phase 2: target launches upward — hurt frame rotating in air
-                            const targetEl = game[target].element;
-                            const launchDir = caster === 'player' ? 1 : -1;
-                            targetEl.style.transformOrigin = 'center center';
-                            targetEl.style.transition      = 'transform 0.55s cubic-bezier(0.2,0,0.4,1)';
-                            targetEl.style.transform       = `translateY(-190px) rotate(${launchDir * 30}deg)`;
+                                // tEl moves straight up (no rotation on wrapper)
+                                targetElSp.style.transition = 'transform 0.36s cubic-bezier(0.1,0,0.3,1)';
+                                targetElSp.style.transform  = 'translateY(-300px)';
 
-                            // Spin hurt effect while airborne
-                            let spinAngle = launchDir * 30;
-                            const spinInterval = setInterval(() => {
-                                spinAngle += launchDir * 22;
-                                targetEl.style.transform = `translateY(-190px) rotate(${spinAngle}deg)`;
-                            }, 90);
+                                // tImg spins around its center independently of the vertical travel
+                                if (tImgSp) {
+                                    let spinAngle = 0;
+                                    tImgSp.style.transformOrigin = 'center center';
+                                    tImgSp.style.transition      = '';
+                                    tImgSp.style.transform       = `scaleX(${isCpuSp ? -1 : 1}) rotate(0deg)`;
+                                    spinIv = setInterval(() => {
+                                        spinAngle += launchDir * 28;
+                                        tImgSp.style.transform = `scaleX(${isCpuSp ? -1 : 1}) rotate(${spinAngle}deg)`;
+                                    }, 75);
+                                }
 
-                            // Phase 3: fall back down after 700ms airborne → lies on ground 1s
-                            setTimeout(() => {
-                                clearInterval(spinInterval);
-                                const groundRot = launchDir * 85;
-                                targetEl.style.transformOrigin = 'bottom center';
-                                targetEl.style.transition      = 'transform 0.4s cubic-bezier(0.4,0,1,1)';
-                                targetEl.style.transform       = `translateY(0px) rotate(${groundRot}deg)`;
-                                // Remove pillar during fall
-                                setTimeout(() => pillarWrap.remove(), 200);
-                                // Stand back up after 1s on ground
+                                // After 700ms airborne → fall + lie on ground
                                 setTimeout(() => {
-                                    targetEl.style.transition = 'transform 0.4s cubic-bezier(0,0,0.6,1)';
-                                    targetEl.style.transform  = '';
+                                    clearInterval(spinIv);
+                                    // tEl falls back to original position
+                                    targetElSp.style.transition = 'transform 0.42s cubic-bezier(0.4,0,1,1)';
+                                    targetElSp.style.transform  = '';
+                                    // tImg lands lying flat (same technique as tsunami: center center, no Y shift)
+                                    if (tImgSp) {
+                                        const rotDir = caster === 'player' ? -90 : 90;
+                                        tImgSp.style.transition = 'transform 0.42s cubic-bezier(0.4,0,1,1)';
+                                        tImgSp.style.transform  = `scaleX(${isCpuSp ? -1 : 1}) rotate(${rotDir}deg)`;
+                                    }
+                                    setTimeout(() => pillarWrap.remove(), 180);
+
+                                    // Stand back up after 1s on ground
                                     setTimeout(() => {
-                                        targetEl.style.transition      = '';
-                                        targetEl.style.transformOrigin = '';
-                                    }, 400);
-                                }, 1000);
-                            }, 700);
+                                        targetElSp.style.transition = '';
+                                        if (tImgSp) {
+                                            tImgSp.style.transition      = 'transform 0.4s ease-out';
+                                            tImgSp.style.transform       = '';
+                                            setTimeout(() => {
+                                                tImgSp.style.transition      = '';
+                                                tImgSp.style.transformOrigin = '';
+                                            }, 400);
+                                        }
+                                    }, 1000);
+                                }, 700);
+                            }
+
+                            if (t < 1) requestAnimationFrame(animPillarRise);
                         }
                         requestAnimationFrame(animPillarRise);
                     } else if (power.includes('stone_skin') && !power.includes('break')) {
