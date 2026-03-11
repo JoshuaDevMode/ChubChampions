@@ -13825,6 +13825,90 @@
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
         const SYNC_SECRET  = 'fc_sync_lol'; // ← paste your SYNC_SECRET from Vercel env vars here
 
+        // ── Dev Battle ──────────────────────────────────────────────────────────
+        // Call window.devBattle() from the browser console to watch a test battle.
+        // Optional config: devBattle({ level:50, seed:1337, playerName:'Kira', cpuName:'Zael' })
+        //
+        // Animation speed reference (ms per event):
+        //   log / skill_effect → 40–180 ms
+        //   attack (normal)    → ~500 ms total
+        //   combo finisher     → ~1 200 ms
+        //   fury power         → ~800–1 500 ms
+        //   consumable use     → ~280 ms
+        // A 200-turn battle animates in roughly 2–3 minutes.
+        window.devBattle = async function devBattle(opts = {}) {
+            const level = opts.level ?? 50;
+            const seed  = opts.seed  ?? Math.floor(Math.random() * 100000);
+
+            // ── Kira — Earth/Warrior tank-brawler ────────────────────────────
+            const P = {
+                id: -1, name: opts.playerName || 'Kira', level,
+                stats: { attack: 320, strength: 400, agility: 180, defense: 360 },
+                maxHp: 5200,
+                skills: {
+                    warrior_heavy_blow: 6, warrior_berserker: 5,
+                    warrior_combat_mastery: 4, warrior_penetration: 3,
+                    guardian_endurance: 4, guardian_iron_hide: 3,
+                    guardian_thorns: 3, mastery_familiarity: 2,
+                },
+                equippedConsumables: ['big_potion', 'big_potion'],
+                equippedWeapons: ['tier_morning_star', 'tier_sledgehammer', 'tier_mace'],
+                element: 'earth', furyPowerChoice: 'p2', furyPassiveEnabled: true,
+                wellness: 100, morale: 90, adaptability: 68,
+            };
+
+            // ── Zael — Fire/Intimidation debuffer ────────────────────────────
+            const C = {
+                id: -2, name: opts.cpuName || 'Zael', level,
+                stats: { attack: 370, strength: 240, agility: 350, defense: 200 },
+                maxHp: 4700,
+                skills: {
+                    intimidation_bleed: 5, intimidation_fracture: 4,
+                    intimidation_weaken: 4, intimidation_paralysis: 3,
+                    vampirism_fangs: 4, vampirism_bloodthirst: 4,
+                    warrior_critical: 3, phantom_reflexes: 3, phantom_light_step: 2,
+                },
+                equippedConsumables: ['big_potion', 'stamina_potion'],
+                equippedWeapons: ['tier_katana', 'tier_spear', 'tier_knife'],
+                element: 'fire', furyPowerChoice: 'p1', furyPassiveEnabled: true,
+                wellness: 96, morale: 82, adaptability: 74,
+            };
+
+            console.log(`[devBattle] seed=${seed}  ${P.name}(${P.element}) vs ${C.name}(${C.element})`);
+
+            const resp = await fetch(BACKEND_URL + '/api/battle/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                body: JSON.stringify({ seed, player: P, cpu: C }),
+            });
+            if (!resp.ok) {
+                const err = await resp.text();
+                console.error('[devBattle] API error:', err);
+                alert('[devBattle] API error: ' + resp.status + ' — ' + err);
+                return;
+            }
+            const result = await resp.json();
+            console.log(`[devBattle] winner=${result.winner}  turns=${result.turns}  playerHp=${result.finalPlayerHp}/${P.maxHp}  cpuHp=${result.finalCpuHp}/${C.maxHp}`);
+
+            // Set CPU display globals before startGameWithCharacter reads them
+            currentCpuName  = C.name;
+            currentCpuStats = {
+                hp: C.maxHp, attack: C.stats.attack, strength: C.stats.strength,
+                agility: C.stats.agility, defense: C.stats.defense, level, tier: 3,
+            };
+
+            // Use the selected character's sprite/visual but with dev stats,
+            // so the player fighter looks like their real character.
+            const visual = getSelectedCharacter();
+            const battlePlayer = visual
+                ? { ...visual, level: P.level, maxHp: P.maxHp, skills: P.skills,
+                    element: P.element, furyPowerChoice: P.furyPowerChoice, name: P.name }
+                : P;
+
+            _pvpBattleResult = { result, rewards: null };
+            await startGameWithCharacter(battlePlayer);
+        };
+
         // ── On-chain AoN — Monad contract addresses ───────────────────────────
         // Fill these in after deploying with `forge script DeployAoN.s.sol`
         const AON_ESCROW_ADDRESS = ''; // e.g. '0x1234...'
