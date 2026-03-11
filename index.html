@@ -15017,11 +15017,12 @@
                             // Set transition inline (bypasses the fixed .dashing class)
                             movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                             void movEl.offsetWidth; // force reflow so transition fires
-                            pEl.style.left  = (event.playerX * _mvScale) + 'px';
-                            pEl.style.right = 'auto';
-                            cEl.style.left  = (event.cpuX * _mvScale) + 'px';
-                            cEl.style.right = 'auto';
-                            animateRun(movEl, isBack, null);
+                            // Only move the fighter that's actually moving — setting the
+                            // stationary fighter would teleport it if its DOM pos drifted.
+                            const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
+                            movEl.style.left  = _movTargetX + 'px';
+                            movEl.style.right = 'auto';
+                            animateRun(movEl, isBack, null, moveDur);
                             await sleep(moveDur);
                             stopRunAnimation(movEl);
                             movEl.style.transition = ''; // restore default
@@ -19762,7 +19763,7 @@
             noise.stop(t + duration);
         }
 
-        function animateRun(fighterEl, reverse, weaponIdForRun) {
+        function animateRun(fighterEl, reverse, weaponIdForRun, moveDur) {
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
@@ -19774,6 +19775,12 @@
 
             const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
             const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
+
+            // Scale frame cycling and footstep rate with movement speed:
+            //   moveDur≈100ms (fast sprint) → ~90ms frames / 65ms steps
+            //   moveDur≈240ms (slow walk)   → ~215ms frames / 155ms steps
+            const _frameMs = moveDur != null ? Math.max(65, Math.round(moveDur * 0.9)) : 250;
+            const _footMs  = moveDur != null ? Math.max(55, Math.round(moveDur * 0.65)) : 150;
 
             if (hasWeaponRun) {
                 // Weapon run: character in weapon-holding pose + weapon overlay
@@ -19793,10 +19800,10 @@
                     frame = (frame + 1) % charFrames.length;
                     img.src = charFrames[frame];
                     if (weaponFrames.length > 0) overlay.src = weaponFrames[frame % weaponFrames.length];
-                }, 250);
+                }, _frameMs);
             } else {
                 // Normal run (no weapon)
-                animateSprite(fighterEl, 'run', { loop: true, halfOnly: false, speed: 250 });
+                animateSprite(fighterEl, 'run', { loop: true, halfOnly: false, speed: _frameMs });
             }
 
             // Flip sprite direction for returning to base
@@ -19815,7 +19822,7 @@
             // Footstep sounds synced to run cycle
             if (img._footstepInterval) clearInterval(img._footstepInterval);
             playFootstep();
-            img._footstepInterval = setInterval(playFootstep, 150);
+            img._footstepInterval = setInterval(playFootstep, _footMs);
         }
         function stopRunAnimation(fighterEl) {
             const img = fighterEl.querySelector('img');
