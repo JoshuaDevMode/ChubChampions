@@ -1848,15 +1848,10 @@
             letter-spacing: 2px;
         }
 
-        /* Combo finisher — defender tumbles backwards */
-        .combo-finisher-knockback {
-            animation: cfKnockbackTumble 400ms ease-out forwards;
-        }
-        @keyframes cfKnockbackTumble {
-            0%   { filter: brightness(2); }
-            30%  { transform: rotate(-18deg) translateY(-18px); filter: brightness(1.5); }
-            65%  { transform: rotate(-32deg) translateY(-6px); }
-            100% { transform: rotate(0deg) translateY(0); filter: brightness(1); }
+        /* Combo finisher — brief white flash on impact */
+        @keyframes cfImpactFlash {
+            0%   { filter: brightness(3); }
+            100% { filter: brightness(1); }
         }
 
         @keyframes victoryBounce {
@@ -10604,6 +10599,48 @@
             trimAndPlay(sounds[Math.floor(Math.random() * sounds.length)], 0.5);
         }
 
+        function playFinisherKickSound() {
+            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            const src = KICK_SOUNDS[Math.floor(Math.random() * KICK_SOUNDS.length)];
+            const vol = 0.65 * _globalVolume; // 0.5 * 1.3 = 30% louder than normal kick
+
+            // Build a short impulse response for the reverb (0.35s noise decay)
+            const reverbDur = 0.35;
+            const reverbLen = Math.floor(_audioCtx.sampleRate * reverbDur);
+            const irBuf = _audioCtx.createBuffer(2, reverbLen, _audioCtx.sampleRate);
+            for (let ch = 0; ch < 2; ch++) {
+                const d = irBuf.getChannelData(ch);
+                for (let i = 0; i < reverbLen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / reverbLen, 2.8);
+            }
+            const convolver = _audioCtx.createConvolver();
+            convolver.buffer = irBuf;
+
+            // Dry/wet mix: 60% dry, 40% wet reverb
+            const dryGain = _audioCtx.createGain(); dryGain.gain.value = vol * 0.60;
+            const wetGain = _audioCtx.createGain(); wetGain.gain.value = vol * 0.40;
+
+            const playBuf = buf => {
+                const s = _audioCtx.createBufferSource();
+                s.buffer = buf;
+                s.connect(dryGain).connect(_audioCtx.destination);
+                s.connect(convolver);
+                convolver.connect(wetGain).connect(_audioCtx.destination);
+                s.start();
+            };
+
+            if (_trimmedCache[src]) { playBuf(_trimmedCache[src]); return; }
+            fetch(src).then(r => r.arrayBuffer()).then(arr => _audioCtx.decodeAudioData(arr)).then(buf => {
+                const data = buf.getChannelData(0);
+                let start = 0; for (let i = 0; i < data.length; i++) { if (Math.abs(data[i]) > 0.01) { start = i; break; } }
+                let end = data.length - 1; for (let i = data.length - 1; i >= 0; i--) { if (Math.abs(data[i]) > 0.01) { end = i; break; } }
+                const trimmed = _audioCtx.createBuffer(buf.numberOfChannels, end - start + 1, buf.sampleRate);
+                for (let ch = 0; ch < buf.numberOfChannels; ch++) trimmed.copyToChannel(buf.getChannelData(ch).slice(start, end + 1), ch);
+                _trimmedCache[src] = trimmed;
+                playBuf(trimmed);
+            });
+        }
+
         function playDodgeSound() {
             trimAndPlay(DODGE_SOUNDS[Math.floor(Math.random() * DODGE_SOUNDS.length)], 0.5);
         }
@@ -14568,12 +14605,80 @@
                         break;
 
                     case 'combo_finisher': {
-                        // ── 1. Flash "COMBO FINISHER!" text ─────────────────────────────
                         document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
-                        const cfArena    = document.getElementById('arena');
-                        const cfAttEl    = game[event.attacker].element;
-                        const cfDefEl    = game[event.defender].element;
-                        const cfFlash    = document.createElement('div');
+                        const cfArena  = document.getElementById('arena');
+                        const cfArenaW = cfArena.offsetWidth;
+                        const cfScale  = cfArenaW / 1600;
+                        const cfAttEl  = game[event.attacker].element;
+                        const cfDefEl  = game[event.defender].element;
+                        const cfAttImg = cfAttEl.querySelector('img.character-png');
+                        const cfDefImg = cfDefEl.querySelector('img.character-png');
+                        const cfIsCpu  = event.attacker === 'cpu';
+                        const cfBaseXf = cfIsCpu ? 'scaleX(-1) ' : '';
+
+                        cfAttEl.style.zIndex = '20';
+                        cfDefEl.style.zIndex = '10';
+
+                        // attacker is already at combat position from combo hits
+                        const _cfGap = 100;
+                        const cfAtkLeftPx = event.attacker === 'player'
+                            ? (game.cpu._homeX    - _cfGap) * cfScale
+                            : (game.player._homeX + _cfGap) * cfScale;
+                        cfAttEl.style.transition = 'none';
+                        cfAttEl.style.left  = cfAtkLeftPx + 'px';
+                        cfAttEl.style.right = 'auto';
+
+                        // ── Phase 0: defender gets lifted slightly (last combo hit launched them) ─
+                        if (cfDefImg) {
+                            cfDefImg._idleSrc = cfDefImg._idleSrc || cfDefImg.src;
+                            const cfHurtF = cfDefImg._hurtFrames;
+                            if (cfHurtF && cfHurtF.length) cfDefImg.src = cfHurtF[Math.floor(Math.random() * cfHurtF.length)];
+                        }
+                        cfDefEl.style.transition = 'transform 200ms ease-out';
+                        void cfDefEl.offsetWidth;
+                        cfDefEl.style.transform = 'translateY(-28px)';
+                        await sleep(200);
+
+                        // ── Phase 1: attacker mini jump arc + kick sprite at peak ────────
+                        cfAttEl.style.transition = 'none';
+                        const cfKickFrames = cfAttImg?._kickFrames || [];
+                        await new Promise(res => {
+                            const t0   = performance.now();
+                            const DUR  = 380;
+                            const step = now => {
+                                const t  = Math.min((now - t0) / DUR, 1);
+                                const ty = -68 * Math.sin(Math.PI * t);
+                                cfAttEl.style.transform = `translateY(${ty}px)`;
+                                // At peak (~50%), switch to kick frame + rotation
+                                if (t >= 0.45 && cfAttImg) {
+                                    if (cfKickFrames.length) cfAttImg.src = cfKickFrames[cfKickFrames.length - 1];
+                                    cfAttImg.style.transition = 'transform 0.06s ease-out';
+                                    cfAttImg.style.transform  = `${cfBaseXf}rotate(${cfIsCpu ? -38 : 38}deg)`;
+                                }
+                                if (t < 1) { requestAnimationFrame(step); return; }
+                                cfAttEl.style.transform = '';
+                                res();
+                            };
+                            requestAnimationFrame(step);
+                        });
+
+                        // ── Phase 2: impact ───────────────────────────────────────────────
+                        game.player.health = event.playerHp;
+                        game.cpu.health    = event.cpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        if (event.damage > 0) showDamage(event.defender, event.damage, false);
+                        playFinisherKickSound();
+
+                        // Screen flash
+                        const cfBg = document.createElement('div');
+                        cfBg.className = 'fury-power-screen-flash';
+                        cfBg.style.background = '#ff4500';
+                        cfArena.appendChild(cfBg);
+                        cfBg.addEventListener('animationend', () => cfBg.remove(), { once: true });
+
+                        // "COMBO FINISHER" text
+                        const cfFlash = document.createElement('div');
                         cfFlash.className = 'battle-combo-counter';
                         cfFlash.innerHTML =
                             '<span class="combo-x" style="color:#ff4500;text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 24px #ff4500">FINISH!</span>' +
@@ -14581,58 +14686,84 @@
                         cfArena.appendChild(cfFlash);
                         cfFlash.addEventListener('animationend', () => cfFlash.remove(), { once: true });
 
-                        // ── 2. Screen flash ──────────────────────────────────────────────
-                        const cfBg = document.createElement('div');
-                        cfBg.className = 'fury-power-screen-flash';
-                        cfBg.style.background = '#ff4500';
-                        cfArena.appendChild(cfBg);
-                        cfBg.addEventListener('animationend', () => cfBg.remove(), { once: true });
+                        // Restore attacker kick sprite rotation
+                        if (cfAttImg) {
+                            setTimeout(() => {
+                                cfAttImg.style.transition = 'transform 0.12s ease-in';
+                                cfAttImg.style.transform  = cfBaseXf ? cfBaseXf.trim() : '';
+                                setTimeout(() => {
+                                    if (cfAttImg._idleSrc) cfAttImg.src = cfAttImg._idleSrc;
+                                    cfAttImg.style.transform = '';
+                                }, 120);
+                            }, 80);
+                        }
 
-                        // ── 3. Attacker dashes in for the kick ──────────────────────────
-                        const cfArenaW  = cfArena.offsetWidth;
-                        const cfScale   = cfArenaW / 1600;
-                        const _cfGap    = 100;
-                        const cfAtkLeftPx = event.attacker === 'player'
-                            ? (game.cpu._homeX - _cfGap) * cfScale
-                            : (game.player._homeX + _cfGap) * cfScale;
-                        cfAttEl.classList.add('dashing');
-                        cfAttEl.style.zIndex = '20';
-                        cfDefEl.style.zIndex = '10';
-                        cfAttEl.style.left  = cfAtkLeftPx + 'px';
-                        cfAttEl.style.right = 'auto';
-                        await sleep(180);
-
-                        // ── 4. Damage number ─────────────────────────────────────────────
-                        game.player.health = event.playerHp;
-                        game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
-                        if (event.damage > 0) showDamage(event.defender, event.damage, false);
-
-                        // ── 5. Defender flies backward ───────────────────────────────────
+                        // ── Phase 3: defender flies back with parabolic arc + spin ────────
                         game.player._homeX = event.playerX;
                         game.cpu._homeX    = event.cpuX;
-                        cfDefEl.classList.add('combo-finisher-knockback');
-                        cfDefEl.style.transition = 'left 380ms cubic-bezier(0.1,0.8,0.4,1)';
-                        void cfDefEl.offsetWidth;
-                        cfDefEl.style.left  = (event[event.defender === 'player' ? 'playerX' : 'cpuX'] * cfScale) + 'px';
-                        cfDefEl.style.right = 'auto';
-                        await sleep(420);
-                        cfDefEl.style.transition = '';
-                        cfDefEl.classList.remove('combo-finisher-knockback');
+                        const cfDefFinalX = (event.defender === 'player' ? event.playerX : event.cpuX) * cfScale;
+                        const cfDefCurX   = parseFloat(cfDefEl.style.left) || 0;
+                        const cfDeltaX    = cfDefFinalX - cfDefCurX;
+                        const cfDefIsCpu  = event.defender === 'cpu';
+                        const cfSpinDir   = cfDefIsCpu ? 1 : -1; // spin away from attacker
 
-                        // ── 6. Attacker returns to home ──────────────────────────────────
+                        cfDefEl.style.transition = 'none';
+                        await new Promise(res => {
+                            const t0   = performance.now();
+                            const DUR  = 580;
+                            const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                            const step = now => {
+                                const t   = Math.min((now - t0) / DUR, 1);
+                                const tx  = cfDeltaX * ease(t);
+                                const ty  = -110 * Math.sin(Math.PI * t * 0.85); // arc: up then crash
+                                const rot = 360 * cfSpinDir * ease(t);
+                                cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
+                                if (cfDefImg) cfDefImg.style.transform = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${rot}deg)`;
+                                if (t < 1) { requestAnimationFrame(step); return; }
+                                // Commit final position
+                                cfDefEl.style.transform = '';
+                                cfDefEl.style.left  = cfDefFinalX + 'px';
+                                cfDefEl.style.right = 'auto';
+                                if (cfDefImg) cfDefImg.style.transform = cfDefIsCpu ? 'scaleX(-1)' : '';
+                                res();
+                            };
+                            requestAnimationFrame(step);
+                        });
+
+                        // ── Phase 4: landing impact ───────────────────────────────────────
+                        triggerArenaShake();
+                        const cfBodyEl = cfDefEl.querySelector('.fighter-body') || cfDefEl;
+                        const cfBodyR  = cfBodyEl.getBoundingClientRect();
+                        const cfArenaR = cfArena.getBoundingClientRect();
+                        const cfZoom   = getGameZoom();
+                        spawnJumpShockwave(
+                            (cfBodyR.left - cfArenaR.left) / cfZoom + (cfBodyR.width / cfZoom) / 2 - 11,
+                            (cfBodyR.bottom - cfArenaR.top) / cfZoom - 25,
+                            '#ff4500',
+                        );
+                        await sleep(120);
+
+                        // Defender stays in hurt frame for 700ms (knocked down feel)
+                        // then restores idle unless they're dead
+                        if (cfDefImg) {
+                            setTimeout(() => {
+                                if (event.cpuHp > 0 && event.playerHp > 0 && cfDefImg._idleSrc)
+                                    cfDefImg.src = cfDefImg._idleSrc;
+                            }, 700);
+                        }
+
+                        // ── Phase 5: attacker returns home ────────────────────────────────
                         cfAttEl.classList.remove('dashing');
-                        cfAttEl.style.transition = 'left 200ms ease-out';
+                        cfAttEl.style.transition = 'left 220ms ease-out';
                         void cfAttEl.offsetWidth;
                         const cfAttHome = (event.attacker === 'player' ? event.playerX : event.cpuX) * cfScale;
                         cfAttEl.style.left  = cfAttHome + 'px';
                         cfAttEl.style.right = 'auto';
-                        await sleep(220);
+                        await sleep(240);
                         cfAttEl.style.transition = '';
 
                         _comboCount = 0;
-                        await sleep(300);
+                        await sleep(280);
                         break;
                     }
 
