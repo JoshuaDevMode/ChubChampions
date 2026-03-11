@@ -47,9 +47,12 @@
         .player-stats-combat {
             display: flex;
             justify-content: space-between;
-            margin-top: 5px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.55em;
+            font-size: 0.75em;
             color: #fff;
             text-shadow: 1px 1px 0 #000;
         }
@@ -103,15 +106,15 @@
 
         .player-name {
             font-family: 'DynaPuff', sans-serif;
-            font-size: 0.85em;
-            margin-bottom: 8px;
+            font-size: 1.05em;
+            margin-bottom: 4px;
             color: #4ecdc4;
             text-shadow: 2px 2px 0 #000;
             letter-spacing: 2px;
         }
 
         .player-level {
-            font-size: 0.7em;
+            font-size: 0.85em;
             color: #ffd700;
             margin-left: 8px;
         }
@@ -119,7 +122,7 @@
         .health-bar-container {
             position: relative;
             width: 100%;
-            height: 18px;
+            height: 22px;
             background: #333;
             border: 3px solid #000;
             border-radius: 5px;
@@ -160,7 +163,7 @@
 
         .fury-bar-container {
             width: 100%;
-            height: 12px;
+            height: 15px;
             background: #222;
             border: 2px solid #000;
             border-radius: 3px;
@@ -178,7 +181,7 @@
         /* Stamina bar */
         .stamina-bar-container {
             width: 100%;
-            height: 9px;
+            height: 11px;
             background: #1a1a1a;
             border: 1px solid #000;
             border-radius: 3px;
@@ -196,7 +199,7 @@
         }
         .stamina-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 11px;
             color: #d4a017;
             margin-top: 2px;
             text-align: left;
@@ -209,7 +212,7 @@
             transform: translateY(-50%);
             width: 100%;
             text-align: center;
-            font-size: 0.65em;
+            font-size: 0.8em;
             font-weight: bold;
             color: #fff;
             text-shadow: 1px 1px 2px #000;
@@ -528,17 +531,17 @@
 
         /* small lobby entry button */
         .menu-btn-powerlab {
-            font-family: 'Fredoka', sans-serif; font-size: 0.7em; font-weight: bold;
+            font-family: 'Fredoka', sans-serif; font-size: 0.88em; font-weight: bold;
             background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-            border-radius: 10px; padding: 8px 16px; color: #aaa; cursor: pointer;
+            border-radius: 10px; padding: 10px 20px; color: #aaa; cursor: pointer;
             letter-spacing: 1px; transition: all 0.15s; margin-top: 4px;
         }
         .menu-btn-powerlab:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
 
         .menu-btn-training {
-            font-family: 'Fredoka', sans-serif; font-size: 0.7em; font-weight: bold;
+            font-family: 'Fredoka', sans-serif; font-size: 0.88em; font-weight: bold;
             background: rgba(255,160,0,0.10); border: 1px solid rgba(255,160,0,0.28);
-            border-radius: 10px; padding: 8px 16px; color: #ffb347; cursor: pointer;
+            border-radius: 10px; padding: 10px 20px; color: #ffb347; cursor: pointer;
             letter-spacing: 1px; transition: all 0.15s; margin-top: 4px;
         }
         .menu-btn-training:hover { background: rgba(255,160,0,0.20); color: #ffd080; border-color: rgba(255,160,0,0.5); }
@@ -799,9 +802,7 @@
 
         /* HUD fury powers / adaptability row */
         .hud-powers-row {
-            display: flex; gap: 3px; align-items: center; flex-wrap: wrap;
-            margin: 1px 0 3px;
-            min-height: 0;
+            display: inline-flex; gap: 3px; align-items: center; flex-wrap: wrap;
         }
         .hud-power-pip {
             font-size: 0.52em;
@@ -855,13 +856,13 @@
         }
 
         .jumping {
-            animation: jumpUp 0.55s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+            animation: jumpUp 0.85s cubic-bezier(0.33, 1, 0.68, 1) forwards;
         }
 
         @keyframes jumpUp {
             0%   { transform: translateY(0); }
-            35%  { transform: translateY(-90px); }
-            65%  { transform: translateY(-90px); }
+            30%  { transform: translateY(-170px); }
+            70%  { transform: translateY(-170px); }
             100% { transform: translateY(0); }
         }
 
@@ -1050,7 +1051,7 @@
         /* Weapon Inventory Bar - Below HUD */
         .weapon-bar {
             position: absolute;
-            top: 110px;
+            top: 130px;
             left: 0;
             right: 0;
             display: flex;
@@ -1103,7 +1104,7 @@
         /* Consumable slots in arena */
         .consumable-bar {
             position: absolute;
-            top: 170px;
+            top: 190px;
             left: 0;
             right: 0;
             display: flex;
@@ -1907,12 +1908,12 @@
 
         .menu-content {
             display: grid;
-            grid-template-columns: 260px 1fr 260px;
+            grid-template-columns: 320px 1fr 300px;
             grid-template-rows: 1fr;
             grid-template-areas: "nav character battle";
             flex: 1;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1520px;
             padding: 25px 20px 0;
             position: relative;
             z-index: 1;
@@ -2099,13 +2100,12 @@
         }
 
         .menu-character-info {
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 400px;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
             text-align: center;
             z-index: 2;
+            margin-top: 4px;
         }
 
         /* Exp bar + upgrade + skills on one row */
@@ -2114,19 +2114,19 @@
             align-items: center;
             gap: 6px;
             width: 100%;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            position: relative;
         }
         .menu-exp-skills-row .menu-character-exp {
             flex: 1;
             margin: 0;
             width: auto;
         }
+        /* Upgrade button in flex flow — takes space only when visible */
         .menu-exp-skills-row .menu-upgrade-stats {
-            padding: 5px 8px;
-            margin-top: 0;
-            font-size: 0.58em;
             flex-shrink: 0;
-            animation: upgradeButtonPulse 1.5s ease-in-out infinite;
+            margin: 0;
+            padding: 0;
         }
 
         .menu-character-name {
@@ -2147,13 +2147,13 @@
         /* Stats Panel — compact single-row */
         .menu-stats-panel {
             background: none;
-            border: 16px solid transparent;
+            border: 10px solid transparent;
             border-image-source: url('Assets/UI/iron-frame.png');
             border-image-slice: 15% fill;
-            border-image-width: 16px;
+            border-image-width: 10px;
             border-image-repeat: stretch;
             border-radius: 0;
-            padding: 4px 14px;
+            padding: 2px 8px;
             margin: 0 auto;
             min-width: 280px;
             width: 100%;
@@ -2167,8 +2167,8 @@
             font-size: 0.62em;
             color: #999;
             text-shadow: 1px 1px 0 #000;
-            margin-top: 8px;
-            margin-bottom: 4px;
+            margin-top: 3px;
+            margin-bottom: 2px;
             text-align: center;
             letter-spacing: 1px;
         }
@@ -2177,20 +2177,20 @@
             display: flex;
             justify-content: center;
             gap: 5px;
-            font-size: 0.7em;
+            font-size: 0.85em;
         }
 
         .menu-character-stat {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.08);
             border-bottom: 2px solid rgba(255,255,255,0.14);
             border-radius: 6px;
-            padding: 5px 7px;
-            min-width: 42px;
+            padding: 3px 5px;
+            min-width: 38px;
         }
 
         .menu-character-stat-label {
@@ -2264,8 +2264,8 @@
         .menu-elem-stat:hover .elem-stat-tooltip { display: block; }
 
         .fury-power-row {
-            display: flex; align-items: center; gap: 6px;
-            width: 100%; padding: 5px 8px 2px;
+            display: flex; align-items: center; gap: 4px;
+            width: 100%; padding: 3px 6px 2px;
             border-top: 1px solid rgba(255,255,255,0.07);
             flex-wrap: nowrap;
         }
@@ -2316,8 +2316,8 @@
         }
 
         .menu-char-lv-circle {
-            width: 38px;
-            height: 38px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: radial-gradient(circle at 40% 35%, #1e1608, #0a0804);
             border: 2px solid #c8930a;
@@ -2336,7 +2336,7 @@
             flex: 1;
             background: rgba(0,0,0,0.55);
             border-radius: 20px;
-            height: 26px;
+            height: 22px;
             overflow: hidden;
             border: 1px solid rgba(200,147,10,0.2);
             position: relative;
@@ -2570,50 +2570,52 @@
         }
 
         .menu-upgrade-stats {
-            padding: 12px 20px;
+            width: 26px;
+            height: 32px;
+            padding: 0;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.65em;
+            font-size: 11px;
             font-weight: 700;
-            background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
-            border: 4px solid #100800;
-            border-radius: 6px;
-            color: #1c0a00;
+            line-height: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            background: linear-gradient(180deg, #86efac 0%, #22c55e 40%, #16a34a 70%, #14532d 100%);
+            border: 2px solid #052e16;
+            border-radius: 5px;
+            color: #fff;
             cursor: pointer;
             transition: all 0.2s;
-            text-shadow: 0 1px 0 rgba(255,220,80,0.5);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
             box-shadow:
-                inset 0 0 0 2px rgba(220,150,10,0.7),
-                inset 0 4px 0 rgba(255,255,180,0.45),
-                inset 0 -3px 0 rgba(0,0,0,0.35),
-                0 5px 12px rgba(0,0,0,0.65),
-                0 2px 0 #100800;
-            margin-top: 10px;
-            animation: upgradeButtonPulse 1.5s ease-in-out infinite;
+                inset 0 0 0 1px rgba(134,239,172,0.5),
+                inset 0 3px 0 rgba(255,255,255,0.25),
+                inset 0 -2px 0 rgba(0,0,0,0.3),
+                0 4px 10px rgba(0,0,0,0.6),
+                0 2px 0 #052e16;
+            margin-top: 0;
         }
 
         .menu-upgrade-stats:hover {
-            filter: brightness(1.08);
+            filter: brightness(1.2);
             transform: translateY(-2px);
             box-shadow:
-                inset 0 0 0 2px rgba(220,150,10,0.7),
-                inset 0 4px 0 rgba(255,255,180,0.45),
-                inset 0 -3px 0 rgba(0,0,0,0.35),
-                0 8px 18px rgba(0,0,0,0.7),
-                0 2px 0 #100800;
+                inset 0 0 0 1px rgba(134,239,172,0.5),
+                inset 0 3px 0 rgba(255,255,255,0.25),
+                inset 0 -2px 0 rgba(0,0,0,0.3),
+                0 6px 16px rgba(0,0,0,0.7),
+                0 2px 0 #052e16;
         }
 
         .menu-upgrade-stats:active {
             transform: translateY(2px);
             filter: brightness(0.88);
             box-shadow:
-                inset 0 0 0 2px rgba(180,110,0,0.6),
-                inset 0 4px 8px rgba(0,0,0,0.4),
-                0 1px 0 #100800;
-        }
-
-        @keyframes upgradeButtonPulse {
-            0%, 100% { transform: translateY(0); filter: brightness(1); }
-            50% { transform: translateY(-3px); filter: brightness(1.12); }
+                inset 0 0 0 1px rgba(100,200,120,0.4),
+                inset 0 3px 6px rgba(0,0,0,0.4),
+                0 1px 0 #052e16;
         }
 
         /* Equipment Panel in Lobby */
@@ -2642,7 +2644,7 @@
 
         .menu-equipment-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.55em;
+            font-size: 0.75em;
             color: #4a2c0a;
             text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
             white-space: nowrap;
@@ -2690,7 +2692,7 @@
 
         .menu-equip-section-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.42em;
+            font-size: 0.7em;
             color: #4a2c0a;
             text-align: center;
             margin-top: 6px;
@@ -3028,7 +3030,7 @@
             flex-direction: column;
             gap: 12px;
             z-index: 5;
-            width: 260px;
+            width: 320px;
             margin-top: 80px;
         }
 
@@ -3036,7 +3038,7 @@
             grid-area: battle;
             align-self: center;
             justify-self: end;
-            width: 240px;
+            width: 280px;
             z-index: 5;
             display: flex;
             flex-direction: column;
@@ -3047,17 +3049,17 @@
 
         .menu-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.85em;
+            font-size: 1em;
             font-weight: bold;
             color: #fff;
             border: 3px solid #000;
             border-radius: 10px;
-            padding: 15px 25px;
+            padding: 16px 28px;
             cursor: pointer;
             letter-spacing: 2px;
             text-shadow: 2px 2px 0 #000;
             transition: all 0.15s ease;
-            min-width: 220px;
+            min-width: 260px;
             text-align: center;
         }
 
@@ -3129,10 +3131,10 @@
         /* Battle Button - blackstone */
         .menu-btn-battle {
             font-family: 'Rubik Wet Paint', system-ui;
-            font-size: 1.4em;
+            font-size: 1.65em;
             letter-spacing: 3px;
-            padding: 18px 20px;
-            min-width: 180px;
+            padding: 20px 24px;
+            min-width: 220px;
             background: url('Assets/UI/btn-blackstone.png') center/100% 100% no-repeat;
             -webkit-mask-image: url('Assets/UI/btn-blackstone.png');
             -webkit-mask-size: 100% 100%;
@@ -3182,7 +3184,7 @@
 
         .daily-battle-counter {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.55em;
+            font-size: 0.72em;
             color: rgba(255,200,100,0.8);
             text-shadow: 0 0 5px rgba(255,140,0,0.4);
             text-align: center;
@@ -3196,11 +3198,11 @@
 
         .menu-btn-aon {
             font-family: 'Rubik Wet Paint', system-ui;
-            font-size: 1.2em;
+            font-size: 1.4em;
             letter-spacing: 2px;
             line-height: 1.3;
-            padding: 12px 20px;
-            min-width: 180px;
+            padding: 14px 24px;
+            min-width: 220px;
             background: url('Assets/UI/btn-brownstone.png') center/100% 100% no-repeat;
             -webkit-mask-image: url('Assets/UI/btn-brownstone.png');
             -webkit-mask-size: 100% 100%;
@@ -3332,15 +3334,17 @@
         /* Wrapper: wellness+morale bars on the left, CARE button on the right */
         .menu-bars-with-care {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             width: 100%;
+            margin-top: 2px;
         }
         .menu-bars-col {
             flex: 1;
             display: flex;
-            flex-direction: column;
-            gap: 0;
+            flex-direction: row;
+            gap: 6px;
+            align-items: flex-start;
         }
 
         /* CARE button — right of bars, same width as SKILLS */
@@ -3389,9 +3393,9 @@
 
         /* Wellness bar in lobby */
         .wellness-bar-container {
-            width: 100%;
-            margin-top: 4px;
-            padding: 0 4px;
+            flex: 1;
+            margin-top: 2px;
+            padding: 0;
             box-sizing: border-box;
         }
         .wellness-bar-label {
@@ -3475,6 +3479,7 @@
             transform: translateX(-510px);
             transition: transform 0.4s ease;
             overflow: hidden;
+            font-size: 18px;
         }
         .care-panel.active {
             transform: translateX(0);
@@ -3496,7 +3501,7 @@
         }
         .care-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 10px;
+            font-size: 0.65em;
             color: #93c5fd;
             text-shadow: 0 0 12px rgba(96,165,250,0.5);
         }
@@ -3542,7 +3547,7 @@
             justify-content: space-between;
             margin-top: 5px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 10px;
+            font-size: 0.6em;
             line-height: 1.6;
         }
         .hint-minus { color: #f87171; }
@@ -3556,7 +3561,7 @@
         }
         .care-activity-free-badge {
             font-family: 'Fredoka', sans-serif;
-            font-size: 11px;
+            font-size: 0.65em;
             color: #4ade80;
             border: 1px solid #4ade80;
             border-radius: 4px;
@@ -3576,7 +3581,7 @@
         /* Buy button inside care item card */
         .care-item-buy-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 11px;
+            font-size: 0.65em;
             background: linear-gradient(135deg, #d97706, #f59e0b);
             color: #000;
             border: none;
@@ -3587,8 +3592,8 @@
             width: 100%;
         }
         .care-item-buy-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-        .care-item-owned-badge { color: #4ade80; font-family: 'Fredoka', sans-serif; font-size: 10px; margin-top: 3px; }
-        .care-item-cd-text { font-family: 'Fredoka', sans-serif; font-size: 10px; color: #9ca3af; margin-top: 3px; }
+        .care-item-owned-badge { color: #4ade80; font-family: 'Fredoka', sans-serif; font-size: 0.6em; margin-top: 3px; }
+        .care-item-cd-text { font-family: 'Fredoka', sans-serif; font-size: 0.6em; color: #9ca3af; margin-top: 3px; }
         /* Drop zone glow on character section */
         .menu-character-section.care-drop-target #menu-character-container {
             outline: 3px dashed #60a5fa;
@@ -3862,9 +3867,9 @@
 
         /* Morale bar in lobby (below wellness bar) */
         .morale-bar-container {
-            width: 100%;
-            margin-top: 4px;
-            padding: 0 4px;
+            flex: 1;
+            margin-top: 2px;
+            padding: 0;
             box-sizing: border-box;
         }
         .morale-bar-label {
@@ -3896,8 +3901,8 @@
         /* Battle Instinct (Q-learning) bar in lobby */
         .instinct-bar-container {
             width: 100%;
-            margin-top: 2px;
-            padding: 0 4px;
+            margin-top: 1px;
+            padding: 0;
             box-sizing: border-box;
         }
         .instinct-bar-label {
@@ -3926,14 +3931,14 @@
 
         /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
 
-        /* Mini-game screen — full viewport overlay */
+        /* Mini-game screen — full game area overlay (inside lobby-wrapper) */
         .minigame-screen {
             display: none;
-            position: fixed;
+            position: absolute;
             top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 100%; height: 100%;
             background: rgb(4,4,10);
-            z-index: 500;
+            z-index: 800;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -3944,18 +3949,18 @@
         }
         .minigame-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 16px;
+            font-size: 22px;
             color: #c4b5fd;
             text-shadow: 0 0 15px rgba(167,139,250,0.5);
         }
         .minigame-subtitle {
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
+            font-size: 13px;
             color: #666;
         }
         .minigame-back-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 8px;
+            font-size: 13px;
             padding: 10px 24px;
             background: #1a1a1a;
             border: 2px solid #444;
@@ -3991,9 +3996,9 @@
         }
         .mg-score {
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px; color: #f97316; letter-spacing: 1px;
+            font-size: 14px; color: #f97316; letter-spacing: 1px;
         }
-        .mg-hint { font-family: 'Fredoka', sans-serif; font-size: 7px; color: #444; }
+        .mg-hint { font-family: 'Fredoka', sans-serif; font-size: 12px; color: #444; }
 
         /* Login gate is now handled by React (src/main.jsx + src/LoginGate.jsx) */
 
@@ -4033,12 +4038,12 @@
         }
         .mg-result-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 14px; color: #4ade80; text-align: center;
+            font-size: 22px; color: #4ade80; text-align: center;
             text-shadow: 0 0 20px rgba(74,222,128,0.45);
         }
-        .mg-result-score { font-family: 'Fredoka', sans-serif; font-size: 9px; color: #c4b5fd; }
+        .mg-result-score { font-family: 'Fredoka', sans-serif; font-size: 14px; color: #c4b5fd; }
         .mg-retry-btn {
-            font-family: 'Fredoka', sans-serif; font-size: 9px;
+            font-family: 'Fredoka', sans-serif; font-size: 14px;
             background: #1a1a2e; color: #f97316; border: 2px solid #f97316;
             padding: 10px 20px; cursor: pointer; border-radius: 4px;
             transition: background 0.15s;
@@ -4058,7 +4063,7 @@
         }
         .shop-tab {
             font-family: 'Fredoka', sans-serif;
-            font-size: 6px;
+            font-size: 0.65em;
             padding: 6px 12px;
             border: 1px solid #333;
             border-radius: 6px 6px 0 0;
@@ -4098,6 +4103,7 @@
             padding: 10px;
             transform: translateX(-520px);
             transition: transform 0.5s ease;
+            font-size: 18px;
         }
 
         .shop-panel.active {
@@ -4172,20 +4178,20 @@
 
         .shop-item-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.55em;
+            font-size: 0.65em;
             color: #fff;
             text-align: center;
         }
 
         .shop-item-heal {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.45em;
+            font-size: 0.6em;
             color: #22c55e;
         }
 
         .shop-item-price {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.6em;
+            font-size: 0.65em;
             color: #fbbf24;
             background: rgba(0,0,0,0.3);
             padding: 4px 10px;
@@ -4194,7 +4200,7 @@
 
         .shop-item-cooldown {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.6em;
             color: #f97316;
             background: rgba(0,0,0,0.3);
             padding: 4px 10px;
@@ -4818,6 +4824,7 @@
             padding: 10px;
             transform: translateX(-560px);
             transition: transform 0.5s ease;
+            font-size: 18px;
         }
 
         .inventory-panel.active {
@@ -4893,6 +4900,7 @@
             padding: 10px;
             transform: translateX(640px);
             transition: transform 0.5s ease;
+            font-size: 18px;
         }
         .wardrobe-panel.active { transform: translateX(0); }
 
@@ -4924,12 +4932,12 @@
         }
         .wardrobe-wallet-addr {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.38em; color: #aaa; flex: 1;
+            font-size: 0.6em; color: #aaa; flex: 1;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .wardrobe-wallet-addr.connected { color: #4ade80; }
         .wardrobe-chain-btn {
-            font-family: 'Fredoka', sans-serif; font-size: 0.32em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.6em;
             padding: 4px 7px; border-radius: 5px; cursor: pointer;
             border: 2px solid rgba(100,95,90,0.5); background: transparent;
             color: #888; transition: all 0.15s;
@@ -4938,7 +4946,7 @@
             border-color: #7c3aed; background: rgba(124,58,237,0.25); color: #c4b5fd;
         }
         .wardrobe-connect-btn {
-            font-family: 'Fredoka', sans-serif; font-size: 0.35em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.65em;
             padding: 5px 10px; border-radius: 6px; cursor: pointer;
             background: linear-gradient(to bottom, #7c3aed, #5b21b6);
             border: 2px solid #7c3aed; color: #fff;
@@ -4962,17 +4970,17 @@
         .wardrobe-equipped-slot:hover { border-color: #7c3aed; }
         .wardrobe-equipped-slot.has-skin { border-color: rgba(124,58,237,0.6); }
         .wardrobe-slot-label {
-            font-family: 'Fredoka', sans-serif; font-size: 0.3em; color: #666;
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em; color: #666;
         }
         .wardrobe-slot-img {
             width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated;
         }
         .wardrobe-slot-name {
-            font-family: 'Fredoka', sans-serif; font-size: 0.28em; color: #c4b5fd;
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em; color: #c4b5fd;
             max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .wardrobe-slot-empty {
-            font-family: 'Fredoka', sans-serif; font-size: 0.28em; color: #444;
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em; color: #444;
         }
         .wardrobe-unequip-x {
             position: absolute; top: 3px; right: 5px;
@@ -4982,7 +4990,7 @@
 
         /* Rarity badges */
         .wardrobe-rarity {
-            font-family: 'Fredoka', sans-serif; font-size: 0.28em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em;
             padding: 2px 5px; border-radius: 3px;
         }
         .wardrobe-rarity.common    { background: #374151; color: #9ca3af; }
@@ -4996,7 +5004,7 @@
             display: flex; gap: 4px;
         }
         .wardrobe-tab {
-            font-family: 'Fredoka', sans-serif; font-size: 0.38em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.65em;
             flex: 1; padding: 6px; border-radius: 6px; cursor: pointer;
             background: rgba(0,0,0,0.3); border: 2px solid rgba(100,95,90,0.4);
             color: #666; transition: all 0.15s;
@@ -5030,7 +5038,7 @@
             width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated;
         }
         .wardrobe-skin-card-name {
-            font-family: 'Fredoka', sans-serif; font-size: 0.3em; color: #ccc;
+            font-family: 'Fredoka', sans-serif; font-size: 0.6em; color: #ccc;
             text-align: center; line-height: 1.4;
         }
         .wardrobe-equipped-badge {
@@ -5040,12 +5048,12 @@
         }
         .wardrobe-empty-msg {
             grid-column: 1/-1; text-align: center;
-            font-family: 'Fredoka', sans-serif; font-size: 0.4em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.65em;
             color: #555; padding: 30px 10px; line-height: 2;
         }
         .wardrobe-loading {
             grid-column: 1/-1; text-align: center;
-            font-family: 'Fredoka', sans-serif; font-size: 0.38em;
+            font-family: 'Fredoka', sans-serif; font-size: 0.65em;
             color: #7c3aed; padding: 20px; animation: wardrobePulse 1s ease infinite;
         }
         @keyframes wardrobePulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
@@ -5703,7 +5711,7 @@
 
         .inv-equipment-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.6em;
+            font-size: 0.7em;
             color: #a855f7;
             text-shadow: 1px 1px 0 #000;
             text-align: center;
@@ -5800,7 +5808,7 @@
 
         .inventory-weapon-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.65em;
             color: #fff;
             margin-bottom: 8px;
         }
@@ -6064,6 +6072,7 @@
         }
 
         .history-container {
+            font-size: 18px;
             background: none;
             border: 40px solid transparent;
             border-image-source: url('Assets/UI/window-frame.png');
@@ -7035,7 +7044,7 @@
         }
         .top-nav-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.68em;
             color: #fff;
             background: url('Assets/UI/btn-wood.png') center/100% 100% no-repeat;
             -webkit-mask-image: url('Assets/UI/btn-wood.png');
@@ -7160,7 +7169,7 @@
         .session-disconnect-btn:hover { background: rgba(248,113,113,0.1); }
         .session-login-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.42em;
+            font-size: 0.62em;
             color: #fff;
             background: linear-gradient(to bottom, #7c3aed, #5b21b6);
             border: 2px solid #a78bfa;
@@ -7318,7 +7327,7 @@
 
         .currency-item {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.65em;
+            font-size: 0.82em;
             color: #ffd700;
             text-shadow: 1px 1px 0 #000, 0 0 8px rgba(255,215,0,0.25);
             white-space: nowrap;
@@ -7405,16 +7414,11 @@
         }
 
         .fragment-chest-widget.ready {
-            animation: fragmentWidgetPulse 1.5s ease-in-out infinite;
+            border-radius: 8px;
         }
 
         .fragment-chest-widget.ready:hover {
-            transform: scale(1.03);
-        }
-
-        @keyframes fragmentWidgetPulse {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.3); }
+            filter: brightness(1.15);
         }
 
         .fragment-icon-inline {
@@ -7436,8 +7440,8 @@
         }
 
         .fragment-chest-icon-big {
-            width: 60px;
-            height: 60px;
+            width: 72px;
+            height: 72px;
             object-fit: contain;
             filter: grayscale(0.5);
             transition: all 0.3s;
@@ -7445,12 +7449,6 @@
 
         .fragment-chest-widget.ready .fragment-chest-icon-big {
             filter: grayscale(0);
-            animation: chestBounce 1s ease-in-out infinite;
-        }
-
-        @keyframes chestBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
         }
 
         .fragment-chest-info {
@@ -7462,7 +7460,7 @@
 
         .fragment-chest-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.48em;
+            font-size: 0.68em;
             color: #cba6f7;
             text-shadow: 1px 1px 0 #000;
             text-align: center;
@@ -7531,7 +7529,7 @@
 
         .victory-chest-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.58em;
+            font-size: 0.75em;
             color: #c8960a;
             text-shadow: 1px 1px 0 #000;
             text-align: center;
@@ -7548,20 +7546,19 @@
         }
 
         .victory-chest-slot {
-            width: 52px;
-            height: 52px;
+            width: 64px;
+            height: 64px;
             background: rgba(20,20,20,0.8);
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            overflow: visible;
         }
 
         .chest-slot-img {
-            width: 42px;
-            height: 42px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
             pointer-events: none;
         }
@@ -7581,7 +7578,6 @@
         }
 
         .victory-chest-slot.filled.chest-ready {
-            animation: chestReady 1s ease-in-out infinite;
         }
 
         .victory-chest-slot.filled:hover {
@@ -7628,7 +7624,7 @@
             animation: chestUnlocking 1.5s ease-in-out infinite, epicGlow 2s ease-in-out infinite;
         }
         .victory-chest-slot.tier-epic.chest-ready {
-            animation: chestReady 1s ease-in-out infinite, epicGlow 2s ease-in-out infinite;
+            animation: epicGlow 2s ease-in-out infinite;
         }
         .victory-chest-slot.tier-legendary {
             border-color: #ff4500;
@@ -7640,7 +7636,7 @@
             animation: chestUnlocking 1.5s ease-in-out infinite, legendaryGlow 1.5s ease-in-out infinite;
         }
         .victory-chest-slot.tier-legendary.chest-ready {
-            animation: chestReady 1s ease-in-out infinite, legendaryGlow 1.5s ease-in-out infinite;
+            animation: legendaryGlow 1.5s ease-in-out infinite;
         }
 
         @keyframes epicGlow {
@@ -7658,10 +7654,6 @@
             50% { opacity: 1; transform: scale(1.05); }
         }
 
-        @keyframes chestReady {
-            0%, 100% { transform: scale(1) translateY(0); filter: brightness(1); }
-            50% { transform: scale(1.08) translateY(-3px); filter: brightness(1.2); }
-        }
 
         /* Chest unlock confirmation modal */
         .chest-confirm-overlay {
@@ -7836,16 +7828,30 @@
             border-color: #ffd700;
             box-shadow: 0 0 10px rgba(255,215,0,0.5);
             cursor: pointer;
-            animation: dailyPulse 1.5s ease-in-out infinite;
+            overflow: clip;
+            overflow-clip-margin: 2px;
         }
         .daily-claim-cell.available:hover {
             transform: scale(1.08);
             box-shadow: 0 0 18px rgba(255,215,0,0.8);
         }
-        @keyframes dailyPulse {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.06); filter: brightness(1.15); }
+        .daily-claim-cell.available::before,
+        .daily-claim-cell.available::after {
+            content: '';
+            position: absolute;
+            width: 24px; height: 3px;
+            top: 0; left: 0;
+            border-radius: 3px;
+            background: linear-gradient(to right, transparent 0%, rgba(255,215,60,0.35) 20%, rgba(255,252,190,0.95) 70%, rgba(255,255,255,1.0) 100%);
+            filter: drop-shadow(0 0 4px rgba(255,248,190,1.0)) drop-shadow(0 0 10px rgba(255,210,0,1.0)) drop-shadow(0 0 18px rgba(255,170,0,0.7));
+            offset-path: inset(1px round 6px);
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            pointer-events: none;
+            z-index: 10;
         }
+        .daily-claim-cell.available::before { animation-delay: 0s; }
+        .daily-claim-cell.available::after  { animation-delay: -1s; }
         .daily-claim-cell.missed {
             background: rgba(120,20,20,0.4);
             border-color: #c0392b;
@@ -7860,12 +7866,12 @@
             background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
             border: 4px solid #100800;
             border-radius: 6px;
-            padding: 8px 14px;
+            padding: 10px 18px;
             z-index: 10;
             cursor: pointer;
             text-align: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.5em;
+            font-size: 0.7em;
             font-weight: 700;
             color: #1c0a00;
             text-shadow: 0 1px 0 rgba(255,220,80,0.5);
@@ -7891,12 +7897,115 @@
                 0 2px 0 #100800;
         }
         .daily-claim-lobby-btn.has-reward {
-            animation: dailyBtnPulse 1.5s ease-in-out infinite;
         }
-        @keyframes dailyBtnPulse {
-            0%, 100% { transform: translateY(0); filter: brightness(1); }
-            50% { transform: translateY(-3px); filter: brightness(1.12); }
+
+        /* ── Magic Dust Active Indicator ────────────────────────────────────────
+         * Uses offset-path: inset() which auto-adapts to any element size —
+         * no hardcoded dimensions needed. Each active element gets a ::before
+         * (main comet streak) + ::after (secondary spark).
+         * Streaks are elongated rectangles with gradient; filter: drop-shadow()
+         * rotates with the element via offset-rotate: auto, giving a proper
+         * trailing-glow comet effect in every direction.
+         * ─────────────────────────────────────────────────────────────────────── */
+
+        @keyframes orbitBorder {
+            from { offset-distance: 0%; }
+            to   { offset-distance: 100%; }
         }
+
+        @keyframes fragmentGlow {
+            0%, 100% { box-shadow: 0 0 8px 2px rgba(255,245,180,0.45), 0 0 18px 4px rgba(255,238,140,0.18); }
+            50%      { box-shadow: 0 0 14px 4px rgba(255,252,200,0.75), 0 0 28px 7px rgba(255,245,180,0.30); }
+        }
+
+        /* ── Daily Reward button ── */
+        .daily-claim-lobby-btn.has-reward {
+            position: relative;
+            overflow: clip;
+            overflow-clip-margin: 4px;  /* clip at outer border edge (4px border) */
+        }
+        .daily-claim-lobby-btn.has-reward::before,
+        .daily-claim-lobby-btn.has-reward::after {
+            content: '';
+            position: absolute;
+            width: 52px; height: 4px;
+            top: 0; left: 0;
+            border-radius: 4px;
+            background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.92) 70%, rgba(255,255,255,1.0) 100%);
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1.0)) drop-shadow(0 0 10px rgba(255,220,0,1.0)) drop-shadow(0 0 20px rgba(255,180,0,0.75));
+            offset-path: inset(2px round 5px);
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            transform: none;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .daily-claim-lobby-btn.has-reward::before { animation-delay: 0s; }
+        .daily-claim-lobby-btn.has-reward::after  { animation-delay: -1s; }
+
+        /* ── Upgrade stats button ── */
+        .menu-upgrade-stats {
+            position: relative;
+            overflow: clip;
+            overflow-clip-margin: 2px;
+        }
+        .menu-upgrade-stats::before,
+        .menu-upgrade-stats::after {
+            content: '';
+            position: absolute;
+            width: 26px; height: 3px;
+            top: 0; left: 0;
+            border-radius: 3px;
+            background: linear-gradient(to right, transparent 0%, rgba(200,255,220,0.4) 20%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,1.0) 100%);
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1.0)) drop-shadow(0 0 10px rgba(160,255,180,1.0)) drop-shadow(0 0 18px rgba(100,220,130,0.7));
+            offset-path: inset(1px round 5px);
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .menu-upgrade-stats::before { animation-delay: 0s; }
+        .menu-upgrade-stats::after  { animation-delay: -1s; }
+
+        /* ── Victory chest slot ── */
+        .victory-chest-slot.filled.chest-ready {
+            position: relative;
+            overflow: clip;
+            overflow-clip-margin: 2px;
+        }
+        .victory-chest-slot.filled.chest-ready::before,
+        .victory-chest-slot.filled.chest-ready::after {
+            content: '';
+            position: absolute;
+            width: 36px; height: 4px;
+            top: 0; left: 0;
+            border-radius: 4px;
+            background: linear-gradient(to right, transparent 0%, rgba(255,215,60,0.35) 20%, rgba(255,252,190,0.95) 70%, rgba(255,255,255,1.0) 100%);
+            filter: drop-shadow(0 0 4px rgba(255,248,190,1.0)) drop-shadow(0 0 10px rgba(255,210,0,1.0)) drop-shadow(0 0 20px rgba(255,170,0,0.7));
+            offset-path: inset(1px round 6px);
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .victory-chest-slot.filled.chest-ready::before { animation-delay: 0s; }
+        .victory-chest-slot.filled.chest-ready::after  { animation-delay: -1s; }
+
+        /* ── Fragment chest widget — pulsing glow (no bg to clip against) ── */
+        .fragment-chest-widget.ready {
+            border-radius: 8px;
+            position: relative;
+        }
+        .fragment-chest-widget.ready::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 11px;
+            background: transparent;
+            animation: fragmentGlow 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
         .daily-claim-toast {
             position: absolute;
             top: 80px;
@@ -8067,15 +8176,31 @@
             filter: grayscale(0.5);
         }
         .forge-btn.ready {
+            position: relative;
+            overflow: clip;
+            overflow-clip-margin: 2px;
             border-color: #ffd700;
             background: linear-gradient(135deg, #b8860b, #ffd700);
             color: #1a1a2e;
-            animation: forgeBtnPulse 1.5s ease-in-out infinite;
         }
-        @keyframes forgeBtnPulse {
-            0%, 100% { transform: translateY(0); filter: brightness(1); }
-            50% { transform: translateY(-3px); filter: brightness(1.12); }
+        .forge-btn.ready::before,
+        .forge-btn.ready::after {
+            content: '';
+            position: absolute;
+            width: 52px; height: 4px;
+            top: 0; left: 0;
+            border-radius: 4px;
+            background: linear-gradient(to right, transparent 0%, rgba(255,215,60,0.35) 20%, rgba(255,252,190,0.95) 70%, rgba(255,255,255,1.0) 100%);
+            filter: drop-shadow(0 0 4px rgba(255,248,190,1.0)) drop-shadow(0 0 10px rgba(255,210,0,1.0)) drop-shadow(0 0 20px rgba(255,170,0,0.7));
+            offset-path: inset(1px round 8px);
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            transform: none;
+            pointer-events: none;
+            z-index: 10;
         }
+        .forge-btn.ready::before { animation-delay: 0s; }
+        .forge-btn.ready::after  { animation-delay: -1s; }
         .forge-weapons-collected {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.35em;
@@ -8106,7 +8231,7 @@
         }
         .xp-boost-widget-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.42em;
+            font-size: 0.62em;
             color: #ffeb3b;
             text-align: center;
             margin-bottom: 6px;
@@ -8120,7 +8245,7 @@
         }
         .xp-boost-status-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.38em;
+            font-size: 0.55em;
             color: #aaa;
             line-height: 1.6;
             flex: 1;
@@ -8588,7 +8713,16 @@
             animation: lightningFlash var(--duration, 0.8s) ease-out forwards;
         }
 
-        .fury-lightning canvas {
+        /* Directional bolt (caster→target): no translate, pivot at element top-center */
+        .fury-lightning-bolt {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+            animation: lightningFlashBolt var(--duration, 0.5s) ease-out forwards;
+        }
+
+        .fury-lightning canvas,
+        .fury-lightning-bolt canvas {
             display: block;
         }
 
@@ -8604,6 +8738,12 @@
                 opacity: 0;
                 transform: translate(-50%, 0) rotate(var(--rot, 0deg)) scale(1.02);
             }
+        }
+
+        @keyframes lightningFlashBolt {
+            0%   { opacity: 1; transform: rotate(var(--rot, 0deg)) scale(1); }
+            50%  { opacity: 0.9; }
+            100% { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(1.02); }
         }
 
         /* Fury darkness overlay - también con agujero */
@@ -9252,7 +9392,6 @@
                         <span class="menu-character-arrow disabled" id="menu-arrow-right">▶</span>
                     </div>
                 </div>
-            </div>
             <div class="menu-character-info" id="menu-character-info">
                     <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
                         <div class="menu-exp-skills-row">
@@ -9264,7 +9403,7 @@
                                     <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
                                 </div>
                             </div>
-                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;">⬆️ UPGRADE</button>
+                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;"><span>▲</span><span>▲</span></button>
                             <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-stats-with-skill">
@@ -9315,10 +9454,11 @@
                         <button class="menu-delete-character" id="menu-delete-character">🗑️ DELETE</button>
                     </div>
             </div>
+            </div>
 
             <!-- Right Side - Daily, Chests, Battle buttons -->
             <div class="menu-buttons-bottom">
-                <div class="daily-claim-lobby-btn" id="daily-claim-btn">DAILY REWARD</div>
+                <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">DAILY REWARD</div>
                 <div class="victory-chest-container" id="victory-chest-container">
                     <div class="victory-chest-label">BATTLE CHESTS</div>
                     <div class="victory-chest-slots" id="victory-chest-slots"></div>
@@ -9340,6 +9480,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Mini-game screen — absolute overlay inside lobby-wrapper (exact 1600×720) -->
+        <div class="minigame-screen" id="minigame-screen">
+            <div class="minigame-title" id="minigame-title">MINI-GAME</div>
+            <div id="minigame-game-area" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:920px;"></div>
+            <button class="minigame-back-btn" id="minigame-back-btn">BACK</button>
         </div>
     </div>
 
@@ -9549,13 +9695,6 @@
             <div class="care-divider" id="care-content-divider"></div>
             <div id="care-content-area"></div>
         </div>
-    </div>
-
-    <!-- Mini-game screen -->
-    <div class="minigame-screen" id="minigame-screen">
-        <div class="minigame-title" id="minigame-title">MINI-GAME</div>
-        <div id="minigame-game-area" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:920px;"></div>
-        <button class="minigame-back-btn" id="minigame-back-btn">BACK</button>
     </div>
 
     <!-- All or Nothing Panel -->
@@ -9984,7 +10123,7 @@
                 </div>
                 <div class="forge-progress-text" id="forge-progress-text">0 / 10</div>
             </div>
-            <button class="forge-btn" id="forge-btn" disabled>FORGE WEAPON</button>
+            <button class="forge-btn btn-shine" id="forge-btn" disabled>FORGE WEAPON</button>
             <div class="forge-weapons-collected" id="forge-weapons-collected"></div>
         </div>
     </div>
@@ -9996,8 +10135,6 @@
         <div class="hud">
             <div class="player-info" id="player-hud-info" style="margin-right: 10px;">
                 <div class="player-name" id="player-name-display">PLAYER <span class="player-level" id="player-level-display">LVL 1</span></div>
-                <div id="player-element-badge" style="margin-bottom:2px;min-height:1em;"></div>
-                <div id="player-hud-powers"></div>
                 <div class="health-bar-container">
                     <div class="health-text" id="player-health-text">1000 / 1000</div>
                     <div class="health-bar" id="player-health" style="width: 100%;"></div>
@@ -10011,6 +10148,8 @@
                 </div>
                 <div class="stamina-text" id="player-stamina-text">ST 100</div>
                 <div class="player-stats-combat" id="player-stats-combat">
+                    <span id="player-element-badge"></span>
+                    <span id="player-hud-powers"></span>
                     <span>ATK: <span id="player-atk-display">35</span></span>
                     <span>DEF: <span id="player-def-display">35</span></span>
                     <span>STR: <span id="player-str-display">35</span></span>
@@ -10024,8 +10163,6 @@
 
             <div class="player-info" id="cpu-hud-info" style="margin-left: 10px;">
                 <div class="player-name" id="cpu-name-display" style="text-align:right;">CPU <span class="player-level" id="cpu-level-display">LVL 1</span></div>
-                <div id="cpu-element-badge" style="margin-bottom:2px;min-height:1em;text-align:right;"></div>
-                <div id="cpu-hud-powers" style="text-align:right;"></div>
                 <div class="health-bar-container">
                     <div class="health-text" id="cpu-health-text">1000 / 1000</div>
                     <div class="health-bar" id="cpu-health" style="width: 100%;"></div>
@@ -10043,6 +10180,8 @@
                     <span>DEF: <span id="cpu-def-display">35</span></span>
                     <span>STR: <span id="cpu-str-display">35</span></span>
                     <span>AGI: <span id="cpu-agi-display">35</span></span>
+                    <span id="cpu-hud-powers"></span>
+                    <span id="cpu-element-badge"></span>
                 </div>
             </div>
         </div>
@@ -11537,6 +11676,7 @@
         let currentCpuName = 'CPU';
         let currentCpuStats = { hp: 1000, attack: 25, strength: 25, agility: 25, defense: 25, tier: 0 };
         let hudEl = {}; // Cached HUD element references, populated by cacheHudElements()
+        let _fighterGroundY = {}; // Cached ground-level Y per fighter, set at battle start
 
         function closeChestOverlay() {
             const overlay = document.getElementById('chest-overlay');
@@ -14179,6 +14319,14 @@
                 cEl.style.left  = (game.cpu._homeX * _initScale) + 'px';
                 cEl.style.right = 'auto';
             }
+            // Cache ground-level Y for each fighter while they are at rest.
+            // Used by Earth Spike so the pillar always erupts from the floor
+            // regardless of whether the target is airborne when it fires.
+            _fighterGroundY = {};
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            _fighterGroundY.player = getCharacterFeetY('player');
+            _fighterGroundY.cpu    = getCharacterFeetY('cpu');
+
             let _comboCount = 1; // tracks hits in current combo sequence
             for (let _ei = 0; _ei < events.length; _ei++) {
                 const event = events[_ei];
@@ -14273,6 +14421,18 @@
                         break;
                     }
 
+                    case 'weapon_drop': {
+                        // Weapon tossed aside to free hands for fury power — no damage
+                        if (weaponState[event.fighter]) {
+                            weaponState[event.fighter].usedWeapons.push(event.weaponId);
+                            weaponState[event.fighter].equippedWeapon = null;
+                            updateWeaponDisplay(event.fighter);
+                            syncArmedIdle(event.fighter);
+                        }
+                        await sleep(120);
+                        break;
+                    }
+
                     case 'combo':
                         _comboCount++;
                         showComboHit(_comboCount);
@@ -14362,17 +14522,25 @@
                         if (event.from !== event.to) {
                             const movEl  = game[event.fighter].element;
                             const isBack = event.action === 'retreat';
-                            // Add .dashing BEFORE changing left so the CSS transition fires
-                            movEl.classList.add('dashing');
-                            void movEl.offsetWidth; // force reflow
+                            // Duration scales inversely with distance (encodes AGI + level):
+                            //   distServer 108px (AGI 15 lv1)  → ~210ms
+                            //   distServer 206px (AGI 68 lv1)  → ~182ms
+                            //   distServer 350px (mid level)   → ~143ms
+                            //   distServer 450px (AGI cap)     → ~120ms
+                            // High-level/high-AGI characters move faster visually.
+                            const distServer = Math.abs(event.to - event.from);
+                            const moveDur = Math.max(100, Math.round(240 - distServer * 0.31));
+                            // Set transition inline (bypasses the fixed .dashing class)
+                            movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
+                            void movEl.offsetWidth; // force reflow so transition fires
                             pEl.style.left  = (event.playerX * _mvScale) + 'px';
                             pEl.style.right = 'auto';
                             cEl.style.left  = (event.cpuX * _mvScale) + 'px';
                             cEl.style.right = 'auto';
                             animateRun(movEl, isBack, null);
-                            await sleep(160);
+                            await sleep(moveDur);
                             stopRunAnimation(movEl);
-                            movEl.classList.remove('dashing');
+                            movEl.style.transition = ''; // restore default
                         } else {
                             // No actual movement — just sync positions silently
                             pEl.style.left  = (event.playerX * _mvScale) + 'px';
@@ -14622,7 +14790,7 @@
                         else { clearInterval(defImg._shieldOverlayAnim); defImg._shieldOverlayAnim = null; }
                     }, 50);
                 }
-                fighterBody.classList.add('blocking');
+                // NOTE: .blocking CSS pushback is added on impact, not here
                 await sleep(100);
             }
 
@@ -14670,13 +14838,14 @@
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
                 playDodgeSound();
-                await sleep(jumpDodge ? 350 : 200);
+                await sleep(jumpDodge ? 420 : 200);
                 fighterBody.classList.remove('dodging');
                 fighterBody.classList.remove('jumping');
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
                 playBlockSound();
+                fighterBody.classList.add('blocking'); // pushback on impact
                 // Block fills fury for both fighters
                 if (!game[attacker].furyActive) {
                     game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 0.75);
@@ -17137,6 +17306,12 @@
             const zoom      = getGameZoom();
             const img       = el.querySelector('.character-png');
 
+            // FOOT_ADJUST: the sprite's lowest opaque pixel sits above the true floor.
+            // Causes: character-png (200px) is centred in the fighter element (220px)
+            // → 10px gap at bottom, plus sprites have a few transparent rows at the foot.
+            // +18px brings the scan result onto the actual ground platform.
+            const FOOT_ADJUST = 30;
+
             if (img && img.complete && img.naturalWidth > 0) {
                 const nw       = img.naturalWidth, nh = img.naturalHeight;
                 const cacheKey = nw + 'x' + nh;
@@ -17152,7 +17327,6 @@
                     ctx.drawImage(img, 0, 0);
                     const data = ctx.getImageData(0, 0, nw, nh).data;
 
-                    // -1 = canvas empty (drawImage failed silently on revoked blob)
                     let lastRow = -1;
                     outer: for (let y = nh - 1; y >= 0; y--) {
                         for (let x = 0; x < nw; x++) {
@@ -17165,29 +17339,26 @@
 
                     if (lastRow >= 0) {
                         const offset      = topGap + (lastRow + 1) * scale;
-                        _feetOffsetCache[cacheKey] = offset; // persist for later
+                        _feetOffsetCache[cacheKey] = offset;
                         const imgRect     = img.getBoundingClientRect();
                         const imgTopArena = (imgRect.top - arenaRect.top) / zoom;
-                        return imgTopArena + offset;
+                        return imgTopArena + offset + FOOT_ADJUST;
                     }
-                    // lastRow === -1: canvas empty (revoked blob) → try cache
                 } catch (_) { /* fall through to cache */ }
 
-                // Use cached offset from a previous successful scan
                 if (_feetOffsetCache[cacheKey] !== undefined) {
                     const imgRect     = img.getBoundingClientRect();
                     const imgTopArena = (imgRect.top - arenaRect.top) / zoom;
-                    return imgTopArena + _feetOffsetCache[cacheKey];
+                    return imgTopArena + _feetOffsetCache[cacheKey] + FOOT_ADJUST;
                 }
 
-                // Last resort: 62% estimate
                 const imgRect = img.getBoundingClientRect();
-                return (imgRect.top - arenaRect.top) / zoom + CSS_BOX * 0.62;
+                return (imgRect.top - arenaRect.top) / zoom + CSS_BOX * 0.62 + FOOT_ADJUST;
             }
 
             if (img) {
                 const imgRect = img.getBoundingClientRect();
-                return (imgRect.top - arenaRect.top) / zoom + 200 * 0.62;
+                return (imgRect.top - arenaRect.top) / zoom + 200 * 0.62 + FOOT_ADJUST;
             }
             const rect = el.getBoundingClientRect();
             return (rect.bottom - arenaRect.top) / zoom;
@@ -17481,7 +17652,6 @@
 
                         const fImg = new Image();
                         let fImgSrc = null;
-                        fImg.crossOrigin = 'anonymous';
                         fImg.onload = () => { fImgSrc = fImg; };
                         fImg.src = 'Assets/Player/Effects/Flamethrower.png';
                         if (fImg.complete && fImg.naturalWidth > 0) fImgSrc = fImg;
@@ -17615,11 +17785,12 @@
                             const lbAngle = Math.atan2(lbDy, lbDx);
                             const lbLen   = Math.sqrt(lbDx*lbDx + lbDy*lbDy);
                             const lbEl = document.createElement('div');
-                            lbEl.className = 'fury-lightning';
+                            lbEl.className = 'fury-lightning-bolt';
                             lbEl.appendChild(createLightningCanvas(50, lbLen, lbAngle));
-                            lbEl.style.left = cp.x + 'px';
+                            // Center the 50px-wide element on cp.x so pivot (25px from left) = caster center
+                            lbEl.style.left = (cp.x - 25) + 'px';
                             lbEl.style.top  = cp.y + 'px';
-                            lbEl.style.transformOrigin = 'center top';
+                            lbEl.style.transformOrigin = '25px 0px';
                             lbEl.style.setProperty('--rot', (lbAngle * 180 / Math.PI + 90) + 'deg');
                             lbEl.style.setProperty('--duration', '0.5s');
                             const lbHue = caster === 'cpu' ? selectedCpuHue : selectedPlayerHue;
@@ -17760,8 +17931,14 @@
                         const PILLAR_W    = 200;
                         const PILLAR_H    = 280;
                         const RISE_DUR    = 680;
-                        // Erupt from the ground at the target's feet level (same reference as Giant Rock).
-                        const groundY     = getCharacterFeetY(target);
+
+                        const targetElSp = game[target].element;
+                        const tImgSp     = targetElSp && targetElSp.querySelector('img');
+                        const isCpuSp    = target === 'cpu';
+
+                        // Always erupt from the cached rest-position ground level so the pillar
+                        // starts from the floor even when the target is airborne from a prior hit.
+                        const groundY = _fighterGroundY[target] ?? getCharacterFeetY(target);
 
                         // Ground rumble before rise
                         spawnParticles(tp.x, groundY, 8, '#8B5E3C', 55);
@@ -17775,9 +17952,6 @@
                         pillarWrap.appendChild(pillarImg);
                         arena.appendChild(pillarWrap);
 
-                        const targetElSp = game[target].element;
-                        const tImgSp     = targetElSp && targetElSp.querySelector('img');
-                        const isCpuSp    = target === 'cpu';
                         const launchDir  = caster === 'player' ? 1 : -1;
                         let   impactFired = false;
                         let   spinIv;
@@ -17788,12 +17962,15 @@
                             const ease = 1 - Math.pow(1 - t, 3);
                             pillarImg.style.transform = `translateY(${PILLAR_H * (1 - ease)}px)`;
 
-                            // Impact fires at ~35% rise — when the pillar top first touches the character
+                            // Impact fires at ~35% rise — when the pillar tip first reaches the character.
+                            // Tip Y at this moment = groundY - PILLAR_H * ease(0.35) ≈ groundY - 203.
                             if (t >= 0.35 && !impactFired) {
                                 impactFired = true;
                                 arenaShake();
-                                spawnImpact(tp.x, groundY, 90, '#8B5E3C');
-                                spawnParticles(tp.x, groundY, 16, '#a0826d', 100);
+                                const easeAt35 = 1 - Math.pow(1 - 0.35, 3); // ≈ 0.726
+                                const impactY  = groundY - PILLAR_H * easeAt35;
+                                spawnImpact(tp.x, impactY, 90, '#8B5E3C');
+                                spawnParticles(tp.x, impactY, 16, '#a0826d', 100);
 
                                 // Set hurt frame directly — do NOT use showHitEffect (it auto-resets the frame)
                                 // Frame stays until character stands back up
@@ -18245,8 +18422,7 @@
                     if (choice)  parts.push(`<span class="hud-power-pip" style="border:${borderStyle};color:${color};">${fp[choice].name}</span>`);
                 }
                 if (!parts.length) return '';
-                const align = isRight ? 'justify-content:flex-end;' : '';
-                return `<div class="hud-powers-row" style="${align}">${parts.join('')}</div>`;
+                return `<span class="hud-powers-row">${parts.join('')}</span>`;
             }
             const pPowers = document.getElementById('player-hud-powers');
             const cPowers = document.getElementById('cpu-hud-powers');
@@ -18372,43 +18548,68 @@
 
         function generateTrainingEvents(character, pMaxHp, cMaxHp) {
             const events = [];
-            const basicTypes = ['punch', 'kick'];
-            const weapons = (character.equippedWeapons || []).filter(id => WEAPONS[id]);
-            const allTypes = [...basicTypes, ...weapons];
-            const pEl = character.element;
-            let furyDone = false;
+            const rnd = () => Math.random();
+            const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
-            // Emit an initial advance so fighters close to melee range before first hit.
-            // Server coords (1600px space): gap = cpuX - (playerX + 220) = 950-(650+220) = 80 = MELEE_RANGE
+            const basicTypes = ['punch', 'kick', 'uppercut', 'headbutt'];
+            const weapons    = (character.equippedWeapons || []).filter(id => WEAPONS[id]);
+            const allTypes   = [...basicTypes, ...weapons];
+            const pEl        = character.element;
+            let furyDone     = false;
+
+            // Initial advance to melee range (server 1600px coords)
             events.push({ type: 'move', fighter: 'player', action: 'advance',
                 from: 128, to: 650, playerX: 650, cpuX: 950 });
 
             for (let i = 0; i < 30; i++) {
                 const attacker = i % 2 === 0 ? 'player' : 'cpu';
+                const defender = attacker === 'player' ? 'cpu' : 'player';
 
-                // At turn ~10 trigger player fury powers if they have an element
+                // Occasional repositioning to keep fighters dynamic
+                if (i > 0 && i % 6 === 0) {
+                    const moveAction = pick(['advance', 'retreat', 'stay']);
+                    const pX = 580 + Math.floor(rnd() * 120);
+                    const cX = 900 + Math.floor(rnd() * 100);
+                    events.push({ type: 'move', fighter: attacker, action: moveAction,
+                        from: attacker === 'player' ? 650 : 950,
+                        to:   attacker === 'player' ? pX  : cX,
+                        playerX: pX, cpuX: cX });
+                }
+
+                // Fury demo at turn ~10
                 if (attacker === 'player' && pEl && !furyDone && i >= 10) {
-                    events.push({ type: 'fury_update', fighter: 'player', active: true, changed: true });
+                    events.push({ type: 'fury_update', fighter: 'player', meter: 10, active: true, changed: true });
                     events.push({ type: 'log', message: '✨ FURY activated! (Training)', cssClass: 'log-critical' });
-                    const ptPow = PT_POWERS[pEl];
+                    const ptPow = PT_POWERS && PT_POWERS[pEl];
                     if (ptPow) {
                         for (const pk of ['p1', 'p2']) {
-                            events.push({ type: 'fury_power', caster: 'player', target: 'cpu', power: ptPow[pk].id, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp });
-                            events.push({ type: 'log', message: `Power: ${ptPow[pk].name}`, cssClass: 'log-critical' });
+                            if (ptPow[pk]) {
+                                events.push({ type: 'fury_power', caster: 'player', target: 'cpu',
+                                    power: ptPow[pk].id, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp });
+                            }
                         }
                     }
-                    events.push({ type: 'fury_update', fighter: 'player', active: false, changed: true });
+                    events.push({ type: 'fury_update', fighter: 'player', meter: 0, active: false, changed: true });
                     furyDone = true;
                     continue;
                 }
 
-                const attackType = allTypes[Math.floor(Math.random() * allTypes.length)];
+                // Randomize defense type for visual variety
+                const defRoll = rnd();
+                const defense = defRoll < 0.55 ? 'none' : defRoll < 0.80 ? 'dodge' : 'block';
+
                 events.push({
-                    type: 'attack', attacker, defender: attacker === 'player' ? 'cpu' : 'player',
-                    attackType, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp,
-                    hasFury: false, isBlock: false, isCrit: false, isMiss: false,
+                    type:       'attack',
+                    attacker,
+                    defender,
+                    attackType: pick(allTypes),
+                    defense,
+                    damage:     defense === 'none' ? Math.floor(rnd() * 15) + 5 : 0,
+                    playerHp:   pMaxHp,
+                    cpuHp:      cMaxHp,
+                    isCrit:     false,
+                    hasFury:    false,
                 });
-                events.push({ type: 'log', message: attacker === 'player' ? '[TRAINING] Practice hit' : '[TRAINING] NPC swings', cssClass: '' });
             }
             return events;
         }
@@ -19729,6 +19930,26 @@
                         }
                         saveCharacters();
                         updateInstinctDisplay(qlChar);
+                    }
+                }
+                // Weapon durability loss — applied per weapon used/thrown in battle
+                // Fury throws deal extra wear (weapon discarded forcefully mid-power)
+                {
+                    const NORMAL_DUR_LOSS = 3; // % lost per weapon used in battle
+                    const FURY_EXTRA_LOSS = 4; // additional % for fury throws (total 7%)
+                    const durChar = getSelectedCharacter();
+                    const furyThrown = new Set(lastBattleRewards.furyThrownWeapons || []);
+                    if (durChar && weaponState.player.usedWeapons.length > 0) {
+                        for (const wId of weaponState.player.usedWeapons) {
+                            const extra = furyThrown.has(wId) ? FURY_EXTRA_LOSS : 0;
+                            const current = getWeaponDurability(durChar, wId);
+                            setWeaponDurability(durChar, wId, current - NORMAL_DUR_LOSS - extra);
+                            if (getWeaponDurability(durChar, wId) <= 0) {
+                                log(wId + ' is broken!', 'log-warn');
+                                addNotification('🔧', (durChar.name || 'Fighter') + '\'s weapon broke!', 'weapon');
+                            }
+                        }
+                        saveCharacters();
                     }
                 }
                 lastBattleRewards = null;
@@ -21420,7 +21641,8 @@
                 }
 
                 // Process hurt sprite sheet (each frame is a different pose, picked randomly)
-                img._hurtFrames = await exf(img.dataset.hurt, 'hurt');
+                // Hurt.png is 4096x1024 → 4 frames of 1024x1024
+                img._hurtFrames = await exf(img.dataset.hurt, 'hurt', 4, 1);
 
                 // Process dodge sprite sheet
                 img._dodgeFrames = await exf(img.dataset.dodge, 'dodge');
@@ -22886,7 +23108,6 @@
             gameArea.innerHTML = '';
             titleEl.textContent = itemIcon + ' ' + itemName.toUpperCase();
             closeCarePanel();
-            document.getElementById('lobby-wrapper').style.display = 'none';
             mgScreen.classList.add('active');
 
             const _charImg  = document.getElementById('menu-character-img');
@@ -25231,7 +25452,6 @@
             if (_activeMinigameCleanup) { _activeMinigameCleanup(); _activeMinigameCleanup = null; }
             document.getElementById('minigame-game-area').innerHTML = '';
             document.getElementById('minigame-screen').classList.remove('active');
-            document.getElementById('lobby-wrapper').style.display = '';
             openCarePanel();
         });
 
