@@ -2331,27 +2331,27 @@
             flex-direction: row;
             align-items: stretch;
             width: 100%;
+            gap: 4px;
         }
         .stats-side-ext {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            min-width: 44px;
-            padding: 8px 4px;
-            background: rgba(10,8,6,0.72);
+            gap: 6px;
+            width: 76px;
+            flex-shrink: 0;
+            padding: 10px 6px;
+            background: rgba(10,8,6,0.82);
             border: 10px solid transparent;
             border-image-source: url('Assets/UI/iron-frame.png');
             border-image-slice: 15% fill;
             border-image-width: 10px;
             border-image-repeat: stretch;
-            filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+            box-sizing: border-box;
         }
-        .stats-side-left  { border-right: none; margin-right: -2px; }
-        .stats-side-right { border-left:  none; margin-left:  -2px; }
         /* when empty (no element), collapse cleanly */
-        .stats-side-ext:empty { min-width: 0; padding: 0; border: none; margin: 0; }
+        .stats-side-ext:empty { width: 0; padding: 0; border: none; }
 
         .elem-powers-col {
             display: flex;
