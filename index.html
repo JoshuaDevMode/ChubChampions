@@ -14777,7 +14777,6 @@
                         const cfDefFinalX = (event.defender === 'player' ? event.playerX : event.cpuX) * cfScale;
                         const cfDefCurX   = parseFloat(cfDefEl.style.left) || 0;
                         const cfDeltaX    = cfDefFinalX - cfDefCurX;
-                        const cfDefIsCpu  = event.defender === 'cpu';
                         const cfSpinDir   = cfDefIsCpu ? 1 : -1; // spin away from attacker
 
                         cfDefEl.style.transition = 'none';
