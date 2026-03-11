@@ -1848,6 +1848,17 @@
             letter-spacing: 2px;
         }
 
+        /* Combo finisher — defender tumbles backwards */
+        .combo-finisher-knockback {
+            animation: cfKnockbackTumble 400ms ease-out forwards;
+        }
+        @keyframes cfKnockbackTumble {
+            0%   { filter: brightness(2); }
+            30%  { transform: rotate(-18deg) translateY(-18px); filter: brightness(1.5); }
+            65%  { transform: rotate(-32deg) translateY(-6px); }
+            100% { transform: rotate(0deg) translateY(0); filter: brightness(1); }
+        }
+
         @keyframes victoryBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-30px); }
@@ -14556,6 +14567,75 @@
                         showComboHit(_comboCount);
                         await sleep(60);
                         break;
+
+                    case 'combo_finisher': {
+                        // ── 1. Flash "COMBO FINISHER!" text ─────────────────────────────
+                        document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
+                        const cfArena    = document.getElementById('arena');
+                        const cfAttEl    = game[event.attacker].element;
+                        const cfDefEl    = game[event.defender].element;
+                        const cfFlash    = document.createElement('div');
+                        cfFlash.className = 'battle-combo-counter';
+                        cfFlash.innerHTML =
+                            '<span class="combo-x" style="color:#ff4500;text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 24px #ff4500">FINISH!</span>' +
+                            '<span class="combo-label" style="color:#fff;letter-spacing:3px">COMBO FINISHER</span>';
+                        cfArena.appendChild(cfFlash);
+                        cfFlash.addEventListener('animationend', () => cfFlash.remove(), { once: true });
+
+                        // ── 2. Screen flash ──────────────────────────────────────────────
+                        const cfBg = document.createElement('div');
+                        cfBg.className = 'fury-power-screen-flash';
+                        cfBg.style.background = '#ff4500';
+                        cfArena.appendChild(cfBg);
+                        cfBg.addEventListener('animationend', () => cfBg.remove(), { once: true });
+
+                        // ── 3. Attacker dashes in for the kick ──────────────────────────
+                        const cfArenaW  = cfArena.offsetWidth;
+                        const cfScale   = cfArenaW / 1600;
+                        const _cfGap    = 100;
+                        const cfAtkLeftPx = event.attacker === 'player'
+                            ? (game.cpu._homeX - _cfGap) * cfScale
+                            : (game.player._homeX + _cfGap) * cfScale;
+                        cfAttEl.classList.add('dashing');
+                        cfAttEl.style.zIndex = '20';
+                        cfDefEl.style.zIndex = '10';
+                        cfAttEl.style.left  = cfAtkLeftPx + 'px';
+                        cfAttEl.style.right = 'auto';
+                        await sleep(180);
+
+                        // ── 4. Damage number ─────────────────────────────────────────────
+                        game.player.health = event.playerHp;
+                        game.cpu.health    = event.cpuHp;
+                        updateHealth('player');
+                        updateHealth('cpu');
+                        if (event.damage > 0) showDamage(event.defender, event.damage, false);
+
+                        // ── 5. Defender flies backward ───────────────────────────────────
+                        game.player._homeX = event.playerX;
+                        game.cpu._homeX    = event.cpuX;
+                        cfDefEl.classList.add('combo-finisher-knockback');
+                        cfDefEl.style.transition = 'left 380ms cubic-bezier(0.1,0.8,0.4,1)';
+                        void cfDefEl.offsetWidth;
+                        cfDefEl.style.left  = (event[event.defender === 'player' ? 'playerX' : 'cpuX'] * cfScale) + 'px';
+                        cfDefEl.style.right = 'auto';
+                        await sleep(420);
+                        cfDefEl.style.transition = '';
+                        cfDefEl.classList.remove('combo-finisher-knockback');
+
+                        // ── 6. Attacker returns to home ──────────────────────────────────
+                        cfAttEl.classList.remove('dashing');
+                        cfAttEl.style.transition = 'left 200ms ease-out';
+                        void cfAttEl.offsetWidth;
+                        const cfAttHome = (event.attacker === 'player' ? event.playerX : event.cpuX) * cfScale;
+                        cfAttEl.style.left  = cfAttHome + 'px';
+                        cfAttEl.style.right = 'auto';
+                        await sleep(220);
+                        cfAttEl.style.transition = '';
+
+                        _comboCount = 0;
+                        await sleep(300);
+                        break;
+                    }
 
                     case 'attack': {
                         // Separate real combos (preceded/followed by 'combo' event)
