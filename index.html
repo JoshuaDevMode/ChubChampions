@@ -8095,11 +8095,8 @@
 
         /* ── Upgrade stats button ── */
         .menu-upgrade-stats {
-            overflow: hidden;
-        }
-        .menu-upgrade-stats:hover {
             overflow: clip;
-            overflow-clip-margin: 6px;
+            overflow-clip-margin: 4px;
         }
         .menu-upgrade-stats::before,
         .menu-upgrade-stats::after {
@@ -8110,17 +8107,13 @@
             border-radius: 3px;
             background: linear-gradient(to right, transparent 0%, rgba(200,255,220,0.4) 20%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,1.0) 100%);
             filter: drop-shadow(0 0 4px rgba(255,255,255,1.0)) drop-shadow(0 0 10px rgba(160,255,180,1.0)) drop-shadow(0 0 18px rgba(100,220,130,0.7));
-            offset-path: inset(1px round 5px);
+            offset-path: inset(2px round 5px);
             offset-rotate: auto;
             animation: orbitBorder 2s linear infinite;
             transform: none;
             pointer-events: none;
             z-index: 10;
-            opacity: 0;
-            transition: opacity 0.15s;
         }
-        .menu-upgrade-stats:hover::before,
-        .menu-upgrade-stats:hover::after { opacity: 1; }
         .menu-upgrade-stats::before { animation-delay: 0s; }
         .menu-upgrade-stats::after  { animation-delay: -1s; }
 
