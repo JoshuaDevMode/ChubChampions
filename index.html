@@ -2207,6 +2207,28 @@
             text-shadow: 1px 1px 0 #000;
         }
 
+        /* Win Rate ring stat */
+        .menu-winrate-stat {
+            min-width: 54px;
+            padding: 3px 4px 4px;
+        }
+        .winrate-ring {
+            display: block;
+            margin: 0 auto;
+        }
+        .winrate-arc {
+            filter: drop-shadow(0 0 3px rgba(255,215,0,0.75)) drop-shadow(0 0 6px rgba(255,180,0,0.4));
+        }
+        .winrate-games {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            color: #aaa;
+            text-shadow: 1px 1px 0 #000;
+            line-height: 1.3;
+            text-align: center;
+            width: 100%;
+        }
+
         /* Stat-specific accent colors (HP, ATK, STR, AGI, DEF) — unified white */
         .menu-character-stat:nth-child(1) { border-bottom-color: rgba(255,255,255,0.25); }
         .menu-character-stat:nth-child(1) .menu-character-stat-label { color: #fff; }
@@ -2295,6 +2317,56 @@
         }
         .fury-power-btn.selected .fpb-desc { color: rgba(255,200,50,0.55); }
         .fury-passive-btn { flex: 0 0 auto; padding: 4px 8px; font-size: 0.50em; }
+
+        /* Element + powers vertical column (left of stats) */
+        .elem-powers-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 2px;
+        }
+        .elem-powers-icon {
+            font-size: 1.1em;
+            line-height: 1;
+            margin-bottom: 1px;
+        }
+        .power-pip {
+            width: 26px;
+            height: 22px;
+            border-radius: 5px;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            background: rgba(0,0,0,0.4);
+            color: rgba(255,255,255,0.25);
+            font-size: 0.58em;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            user-select: none;
+            line-height: 1;
+        }
+        .power-pip:hover:not(.pip-locked) {
+            filter: brightness(1.2);
+        }
+        .power-pip.pip-on {
+            background: rgba(34,197,94,0.18);
+            border-color: rgba(34,197,94,0.55);
+            color: #4ade80;
+        }
+        .power-pip.pip-off {
+            background: rgba(239,68,68,0.12);
+            border-color: rgba(239,68,68,0.4);
+            color: rgba(239,68,68,0.65);
+        }
+        .power-pip.pip-locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
 
         .menu-character-winrate {
             font-family: 'Fredoka', sans-serif;
@@ -2573,15 +2645,9 @@
             width: 26px;
             height: 32px;
             padding: 0;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            line-height: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1px;
             background: linear-gradient(180deg, #86efac 0%, #22c55e 40%, #16a34a 70%, #14532d 100%);
             border: 2px solid #052e16;
             border-radius: 5px;
@@ -2596,6 +2662,26 @@
                 0 4px 10px rgba(0,0,0,0.6),
                 0 2px 0 #052e16;
             margin-top: 0;
+            position: relative;
+        }
+        .menu-upgrade-stats .upgrade-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: #fff;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .menu-upgrade-stats:hover .upgrade-tooltip {
+            display: block;
         }
 
         .menu-upgrade-stats:hover {
@@ -7945,9 +8031,11 @@
 
         /* ── Upgrade stats button ── */
         .menu-upgrade-stats {
-            position: relative;
             overflow: clip;
             overflow-clip-margin: 2px;
+        }
+        .menu-upgrade-stats:hover {
+            overflow: visible;
         }
         .menu-upgrade-stats::before,
         .menu-upgrade-stats::after {
@@ -9403,12 +9491,14 @@
                                     <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
                                 </div>
                             </div>
-                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;"><span>▲</span><span>▲</span></button>
+                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;"><span style="display:inline-block;transform:rotate(-90deg);font-size:16px;line-height:1;">»</span><span class="upgrade-tooltip">Upgrade Stats</span><span id="upgrade-count-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:9px;font-family:'Fredoka',sans-serif;border-radius:99px;padding:0 4px;min-width:14px;text-align:center;line-height:14px;border:1px solid #000;"></span></button>
                             <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-stats-with-skill">
+                            <div class="elem-powers-col" id="elem-powers-col"></div>
                             <div class="menu-character-stats" id="menu-character-stats"></div>
                         </div>
+                        <!-- fury-power-row kept for legacy JS refs but hidden; pips replace it -->
                         <div class="fury-power-row" id="fury-power-row" style="display:none;">
                             <span class="fury-power-label">⚡ FURY:</span>
                             <button class="fury-power-btn fury-passive-btn selected" id="fury-passive-btn" onclick="toggleFuryPassive()">PASSIVE ✓</button>
@@ -11057,6 +11147,7 @@
         const _furyPassiveActive = {}; // true = passive ON (default)
 
         // Fury power unlock thresholds
+        const FURY_PASSIVE_UNLOCK_LEVEL = 5;
         const FURY_P1_UNLOCK_LEVEL = 10;
         const FURY_P2_UNLOCK_LEVEL = 20;
 
@@ -11073,18 +11164,17 @@
         function toggleFuryPassive() {
             const char = selectedCharacter;
             if (!char) return;
-            // Passive is locked ON when no active power is unlocked yet (level < 10)
-            if ((char.level || 1) < FURY_P1_UNLOCK_LEVEL) return;
-            const current = _furyPassiveActive[char.id] !== false; // default true
+            // Passive can only be toggled once unlocked (level >= 5)
+            if ((char.level || 1) < FURY_PASSIVE_UNLOCK_LEVEL) return;
+            const current = _furyPassiveActive[char.id] !== false;
             _furyPassiveActive[char.id] = !current;
             updateFuryPowerSelector(char);
         }
 
         function getFuryPassiveEnabled(character) {
-            // Passive is always ON if no active power is unlocked
-            if (!character) return true;
-            if ((character.level || 1) < FURY_P1_UNLOCK_LEVEL) return true;
-            return _furyPassiveActive[character.id] !== false; // default true
+            if (!character) return false;
+            if ((character.level || 1) < FURY_PASSIVE_UNLOCK_LEVEL) return false;
+            return _furyPassiveActive[character.id] !== false; // default true once unlocked
         }
 
         function updateFuryPowerSelector(character) {
@@ -11092,18 +11182,24 @@
             const p1Btn   = document.getElementById('fury-power-p1-btn');
             const p2Btn   = document.getElementById('fury-power-p2-btn');
             const passBtn = document.getElementById('fury-passive-btn');
+            const col     = document.getElementById('elem-powers-col');
             if (!row || !p1Btn || !p2Btn) return;
 
             const powers = FURY_POWERS_FRONTEND[character && character.element];
-            if (!powers) { row.style.display = 'none'; return; }
+            if (!powers) {
+                row.style.display = 'none';
+                if (col) col.innerHTML = '';
+                return;
+            }
 
             const elemD          = ELEMENT_DATA[character.element] || {};
             const color          = elemD.color || '#ffd700';
             const icon           = elemD.icon  || '⚡';
             const level          = character.level || 1;
-            const p1Unlocked     = level >= FURY_P1_UNLOCK_LEVEL;
-            const p2Unlocked     = level >= FURY_P2_UNLOCK_LEVEL;
-            const passiveLocked  = !p1Unlocked; // passive forced ON when no active available
+            const passiveUnlocked = level >= FURY_PASSIVE_UNLOCK_LEVEL;
+            const p1Unlocked      = level >= FURY_P1_UNLOCK_LEVEL;
+            const p2Unlocked      = level >= FURY_P2_UNLOCK_LEVEL;
+            const passiveLocked   = !passiveUnlocked;
             const passiveEnabled = getFuryPassiveEnabled(character);
             const choice         = getFuryPowerChoice(character); // respects level gating
 
@@ -11120,7 +11216,7 @@
                 passBtn.style.background   = passiveEnabled ? `rgba(${hexToRgb(color)},0.12)` : '';
                 passBtn.style.color        = passiveEnabled ? color : 'rgba(255,255,255,0.35)';
                 passBtn.style.borderColor  = passiveEnabled ? `rgba(${hexToRgb(color)},0.4)` : '';
-                passBtn.title = passiveLocked ? `Unlock active powers at Lvl ${FURY_P1_UNLOCK_LEVEL} to toggle` : '';
+                passBtn.title = passiveLocked ? `Unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}` : '';
             }
 
             // P1 button
@@ -11170,6 +11266,27 @@
                     btn.style.borderColor = '';
                 }
             });
+
+            // ── Left-column pips ─────────────────────────────────────────────
+            if (col) {
+                const passClass = passiveLocked ? 'pip-on pip-locked'
+                                : passiveEnabled ? 'pip-on' : 'pip-off';
+                const p1Class   = !p1Unlocked ? 'pip-locked'
+                                : choice === 'p1' ? 'pip-on' : 'pip-off';
+                const p2Class   = !p2Unlocked ? 'pip-locked'
+                                : choice === 'p2' ? 'pip-on' : 'pip-off';
+
+                const passTitle = passiveLocked ? `Passive unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}`
+                                : passiveEnabled ? 'Passive: ON — click to disable' : 'Passive: OFF — click to enable';
+                const p1Title   = p1Unlocked ? `${powers.p1.name}: ${powers.p1.desc}` : `${powers.p1.name} — unlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}`;
+                const p2Title   = p2Unlocked ? `${powers.p2.name}: ${powers.p2.desc}` : `${powers.p2.name} — unlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}`;
+
+                col.innerHTML = `
+                    <span class="elem-powers-icon" title="${icon} ${elemD.label || ''}" style="color:${color};">${icon}</span>
+                    <button class="power-pip ${passClass}" onclick="toggleFuryPassive()" title="${passTitle}">P</button>
+                    <button class="power-pip ${p1Class}" onclick="selectFuryPower('p1')" title="${p1Title}">1</button>
+                    <button class="power-pip ${p2Class}" onclick="selectFuryPower('p2')" title="${p2Title}">2</button>`;
+            }
         }
 
         function hexToRgb(hex) {
@@ -16066,12 +16183,8 @@
                 const lvBadge = document.getElementById('menu-char-lv-badge');
                 if (lvBadge) lvBadge.textContent = character.level >= MAX_LEVEL ? '★' : String(character.level);
 
-                // Win rate + games row
-                if (played > 0) {
-                    levelEl.innerHTML = `WIN RATE <span style="color:#4ade80;">${winRate}%</span> &nbsp;·&nbsp; ${played} GAMES`;
-                } else {
-                    levelEl.textContent = 'NO BATTLES YET';
-                }
+                // Win rate + games row (legacy label cleared — ring appears in stats block)
+                levelEl.textContent = '';
 
                 const elemD  = ELEMENT_DATA[character.element];
                 const elemBn = ELEMENT_BONUSES[character.element];
@@ -16090,6 +16203,21 @@
                                 ${tooltip}
                             </div>`;
                 })() : '';
+                const circ = 2 * Math.PI * 17; // r=17
+                const arcLen = circ * (winRate / 100);
+                const winRateBlock = `<div class="menu-character-stat menu-winrate-stat">
+                    <span class="menu-character-stat-label">WIN RATE</span>
+                    <svg class="winrate-ring" width="44" height="44" viewBox="0 0 44 44">
+                        <circle cx="22" cy="22" r="17" fill="none" stroke="#1c1c1c" stroke-width="4.5"/>
+                        <circle cx="22" cy="22" r="17" fill="none" stroke="#ffd700" stroke-width="4.5"
+                            stroke-dasharray="${arcLen.toFixed(2)} ${circ.toFixed(2)}"
+                            stroke-linecap="round" transform="rotate(-90 22 22)" class="winrate-arc"/>
+                        <text x="22" y="26" text-anchor="middle" fill="white" font-size="11"
+                            font-family="Fredoka, sans-serif" font-weight="600">${winRate}%</text>
+                    </svg>
+                    <span class="winrate-games">${played} played</span>
+                    <span class="winrate-games">${won} won</span>
+                </div>`;
                 statsEl.innerHTML = [
                     ['HP',  maxHp],
                     ['ATK', character.stats.attack],
@@ -16101,7 +16229,7 @@
                         <span class="menu-character-stat-label">${label}</span>
                         <span class="menu-character-stat-value">${val}</span>
                     </div>`
-                ).join('') + elemBox;
+                ).join('') + elemBox + winRateBlock;
 
                 if (character.level < MAX_LEVEL) {
                     expContainer.style.display = '';
@@ -16136,11 +16264,13 @@
                 // the character + arrows above don't shift when it appears/disappears.
                 const hasPendingUpgrades = pendingLevelUps.some(p => p.character && p.character.id === character.id);
                 upgradeBtn.style.display = ''; // always in layout when character is selected
+                const countBadge = document.getElementById('upgrade-count-badge');
                 if (hasPendingUpgrades) {
                     const count = pendingLevelUps.filter(p => p.character && p.character.id === character.id).length;
-                    upgradeBtn.textContent = count > 1 ? `⬆️ UPGRADE STATS (${count})` : '⬆️ UPGRADE STATS';
+                    if (countBadge) { countBadge.textContent = count > 1 ? count : ''; countBadge.style.display = count > 1 ? '' : 'none'; }
                     upgradeBtn.style.visibility = 'visible';
                 } else {
+                    if (countBadge) countBadge.style.display = 'none';
                     upgradeBtn.style.visibility = 'hidden';
                 }
             } else {
@@ -16152,6 +16282,8 @@
                 if (charBg) charBg.style.visibility = 'hidden';
                 levelEl.textContent = '';
                 statsEl.innerHTML = '';
+                const _col = document.getElementById('elem-powers-col');
+                if (_col) _col.innerHTML = '';
                 expContainer.style.display = 'none';
                 playBtn.disabled = true;
                 actionsContainer.style.display = 'none'; // Hide actions
