@@ -14629,11 +14629,16 @@
                         cfAttEl.style.left  = cfAtkLeftPx + 'px';
                         cfAttEl.style.right = 'auto';
 
-                        // ── Phase 0: defender gets lifted slightly (last combo hit launched them) ─
+                        // ── Phase 0: defender gets lifted + tilted diagonally ────────────
+                        const cfDefIsCpu = event.defender === 'cpu';
+                        // Lean away from attacker: cpu leans right (+65°), player leans left (−65°)
+                        const cfLiftAngle = cfDefIsCpu ? 65 : -65;
                         if (cfDefImg) {
                             cfDefImg._idleSrc = cfDefImg._idleSrc || cfDefImg.src;
                             const cfHurtF = cfDefImg._hurtFrames;
                             if (cfHurtF && cfHurtF.length) cfDefImg.src = cfHurtF[Math.floor(Math.random() * cfHurtF.length)];
+                            cfDefImg.style.transition = 'transform 200ms ease-out';
+                            cfDefImg.style.transform  = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${cfLiftAngle}deg)`;
                         }
                         cfDefEl.style.transition = 'transform 200ms ease-out';
                         void cfDefEl.offsetWidth;
@@ -18195,10 +18200,13 @@
                             if (t < 1) { requestAnimationFrame(animRise); return; }
                             wrapper.remove();
 
-                            // Phase 2: parabolic flight — set initial position before appending to avoid flash
-                            const fsx = cp.x + frontOffset * 2, fsy = casterFeetY - ROCK_SIZE / 2;
-                            const fex = tp.x, fey = targetFeetY - ROCK_SIZE / 2;
-                            const ARC = 260;
+                            // Phase 2: launch from the peak of Phase 1 — no positional snap
+                            // At end of Phase 1: wrapper left = riseEndX, rock translateY = 0 → top = casterFeetY - ROCK_SIZE
+                            const fsx = cp.x + frontOffset * 2;
+                            const fsy = casterFeetY - ROCK_SIZE;          // exact peak of the rise
+                            const fex = tp.x;
+                            const fey = targetFeetY - ROCK_SIZE;          // bottom of rock lands at target's feet
+                            const ARC = 80;                                // gentle arc from peak height
                             const flyRock = document.createElement('img');
                             flyRock.src = 'Assets/UI/rock_giant.png';
                             flyRock.style.cssText = `position:absolute;width:${ROCK_SIZE}px;height:${ROCK_SIZE}px;left:${fsx - ROCK_SIZE/2}px;top:${fsy}px;z-index:15;pointer-events:none;`;
