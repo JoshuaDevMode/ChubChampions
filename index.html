@@ -8448,82 +8448,87 @@
         .boost-modal-overlay.active { display: flex; }
         .boost-modal {
             background: none;
-            border: 35px solid transparent;
+            border: 38px solid transparent;
             border-image-source: url('/FightChub/assets/stone-frame-BKALqHrC.png');
             border-image-slice: 15% fill;
-            border-image-width: 35px;
+            border-image-width: 38px;
             border-image-repeat: stretch;
             box-sizing: border-box;
-            padding: 10px 16px;
-            max-width: 360px;
-            width: 90%;
+            padding: 14px 22px;
+            max-width: 500px;
+            width: 92%;
         }
         .boost-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
         .boost-modal-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.65em;
+            font-size: 1em;
             color: #ffeb3b;
-            text-shadow: 1px 1px 0 #000;
+            text-shadow: 1px 1px 0 #000, 0 0 12px rgba(255,235,59,0.4);
+            letter-spacing: 2px;
         }
         .boost-modal-close {
             color: #aaa;
-            font-size: 1.6em;
+            font-size: 1.8em;
             cursor: pointer;
             line-height: 1;
         }
         .boost-modal-close:hover { color: #fff; }
         .boost-modal-empty {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.42em;
+            font-size: 0.72em;
             color: #666;
             text-align: center;
-            padding: 20px 0;
+            padding: 24px 0;
             line-height: 1.8;
         }
         .boost-modal-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         .boost-modal-item {
-            background: rgba(255,235,59,0.07);
-            border: 2px solid rgba(255,235,59,0.3);
+            background: rgba(255,235,59,0.06);
+            border: 1px solid rgba(255,235,59,0.22);
+            border-bottom: 3px solid rgba(255,235,59,0.12);
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
         }
         .boost-modal-item-info {
             font-family: 'Fredoka', sans-serif;
         }
         .boost-item-mult {
-            font-size: 0.65em;
+            font-size: 0.9em;
             color: #ffeb3b;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(255,235,59,0.35);
         }
         .boost-item-battles {
-            font-size: 0.4em;
+            font-size: 0.62em;
             color: #aaa;
         }
         .boost-activate-btn {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.38em;
+            font-size: 0.62em;
             background: linear-gradient(180deg, #ffeb3b, #f9a825);
             border: none;
             border-radius: 6px;
             color: #000;
-            padding: 7px 10px;
+            padding: 10px 16px;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.15s;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         .boost-activate-btn:hover {
             filter: brightness(1.15);
@@ -8534,7 +8539,9 @@
         .chest-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95);
+            background:
+                radial-gradient(ellipse 55% 45% at 50% 55%, rgba(255,215,0,0.07) 0%, transparent 70%),
+                rgba(0,0,0,0.96);
             display: none;
             align-items: center;
             justify-content: center;
@@ -8582,6 +8589,15 @@
             align-items: center;
             text-align: center;
             animation: rewardAppear 0.8s ease-out forwards;
+            background: none;
+            border: 22px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
+            border-image-slice: 15% fill;
+            border-image-width: 22px;
+            border-image-repeat: stretch;
+            padding: 18px 44px 24px;
+            max-width: 500px;
+            width: 90%;
         }
 
         @keyframes rewardAppear {
@@ -8597,18 +8613,19 @@
 
         .reward-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 1.2em;
+            font-size: 1.5em;
             color: #ffd700;
-            text-shadow: 2px 2px 0 #000;
-            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #000, 0 0 18px rgba(255,215,0,0.5);
+            margin-bottom: 12px;
+            letter-spacing: 2px;
         }
 
         .reward-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 1.1em;
+            font-size: 1.35em;
             color: #fff;
             text-shadow: 2px 2px 0 #000;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
             display: flex;
             flex-direction: column;
             align-items: center;
