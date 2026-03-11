@@ -2705,6 +2705,13 @@
             margin-top: 0;
             position: relative;
         }
+        .menu-upgrade-stats .upgrade-arrow {
+            display: block;
+            font-size: 16px;
+            line-height: 1;
+            transform: rotate(-90deg);
+            /* Centering handled by button's flex align-items+justify-content */
+        }
         .menu-upgrade-stats .upgrade-tooltip {
             display: none;
             position: absolute;
@@ -8088,17 +8095,17 @@
 
         /* ── Upgrade stats button ── */
         .menu-upgrade-stats {
-            overflow: clip;
-            overflow-clip-margin: 2px;
+            overflow: hidden;
         }
         .menu-upgrade-stats:hover {
-            overflow: visible;
+            overflow: clip;
+            overflow-clip-margin: 6px;
         }
         .menu-upgrade-stats::before,
         .menu-upgrade-stats::after {
             content: '';
             position: absolute;
-            width: 26px; height: 3px;
+            width: 32px; height: 3px;
             top: 0; left: 0;
             border-radius: 3px;
             background: linear-gradient(to right, transparent 0%, rgba(200,255,220,0.4) 20%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,1.0) 100%);
@@ -8106,9 +8113,14 @@
             offset-path: inset(1px round 5px);
             offset-rotate: auto;
             animation: orbitBorder 2s linear infinite;
+            transform: none;
             pointer-events: none;
             z-index: 10;
+            opacity: 0;
+            transition: opacity 0.15s;
         }
+        .menu-upgrade-stats:hover::before,
+        .menu-upgrade-stats:hover::after { opacity: 1; }
         .menu-upgrade-stats::before { animation-delay: 0s; }
         .menu-upgrade-stats::after  { animation-delay: -1s; }
 
@@ -9567,7 +9579,7 @@
                                     <span class="menu-char-exp-text" id="menu-char-exp-text">0 / 100</span>
                                 </div>
                             </div>
-                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;"><span style="display:inline-block;transform:rotate(-90deg);font-size:16px;line-height:1;">»</span><span class="upgrade-tooltip">Upgrade Stats</span><span id="upgrade-count-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:9px;font-family:'Fredoka',sans-serif;border-radius:99px;padding:0 4px;min-width:14px;text-align:center;line-height:14px;border:1px solid #000;"></span></button>
+                            <button class="menu-upgrade-stats" id="menu-upgrade-stats" style="display:none;"><span class="upgrade-arrow">»</span><span class="upgrade-tooltip">Upgrade Stats</span><span id="upgrade-count-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:9px;font-family:'Fredoka',sans-serif;border-radius:99px;padding:0 4px;min-width:14px;text-align:center;line-height:14px;border:1px solid #000;"></span></button>
                             <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-stats-with-skill">
@@ -15012,9 +15024,10 @@
                             // Duration scales inversely with distance (encodes AGI + level):
                             //   distServer 108px (AGI 15 lv1)  → ~210ms
                             //   distServer 206px (AGI 68 lv1)  → ~182ms
-                            //   distServer 350px (mid level)   → ~143ms
-                            //   distServer 450px (AGI cap)     → ~120ms
-                            // High-level/high-AGI characters move faster visually.
+                            // CSS transition duration: distance-based so the fighter arrives on time.
+                            //   distServer 108px (AGI~15 slow) → ~207ms
+                            //   distServer 265px (AGI~100 mid) → ~158ms
+                            //   distServer 450px (AGI cap)     → ~100ms
                             const distServer = Math.abs(event.to - event.from);
                             const moveDur = Math.max(100, Math.round(240 - distServer * 0.31));
                             // Set transition inline (bypasses the fixed .dashing class)
@@ -15025,7 +15038,9 @@
                             const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
                             movEl.style.left  = _movTargetX + 'px';
                             movEl.style.right = 'auto';
-                            animateRun(movEl, isBack, null, moveDur);
+                            // Frame rate driven by AGI speed (px/turn), not distance — so a slow
+                            // character always animates slowly even over short distances.
+                            animateRun(movEl, isBack, null, event.speed);
                             await sleep(moveDur);
                             stopRunAnimation(movEl);
                             movEl.style.transition = ''; // restore default
@@ -19766,7 +19781,7 @@
             noise.stop(t + duration);
         }
 
-        function animateRun(fighterEl, reverse, weaponIdForRun, moveDur) {
+        function animateRun(fighterEl, reverse, weaponIdForRun, speed) {
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
@@ -19779,11 +19794,13 @@
             const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
             const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
 
-            // Scale frame cycling and footstep rate with movement speed:
-            //   moveDur≈100ms (fast sprint) → ~90ms frames / 65ms steps
-            //   moveDur≈240ms (slow walk)   → ~215ms frames / 155ms steps
-            const _frameMs = moveDur != null ? Math.max(65, Math.round(moveDur * 0.9)) : 250;
-            const _footMs  = moveDur != null ? Math.max(55, Math.round(moveDur * 0.65)) : 150;
+            // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn, 108–450):
+            //   speed 108 (AGI~15)  → ~265ms frames / 195ms steps  (slow, lumbering)
+            //   speed 265 (AGI~100) → ~171ms frames / 129ms steps  (medium)
+            //   speed 450 (AGI cap) →  65ms frames /  50ms steps   (snappy sprint)
+            // Without speed (attack run-ups): fixed 250ms / 150ms defaults.
+            const _frameMs = speed != null ? Math.max(65, Math.round(330 - speed * 0.59)) : 250;
+            const _footMs  = speed != null ? Math.max(50, Math.round(240 - speed * 0.42)) : 150;
 
             if (hasWeaponRun) {
                 // Weapon run: character in weapon-holding pose + weapon overlay
