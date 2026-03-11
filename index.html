@@ -13879,7 +13879,7 @@
             const resp = await fetch(BACKEND_URL + '/api/battle/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
-                body: JSON.stringify({ seed, player: P, cpu: C }),
+                body: JSON.stringify({ seed, player: P, cpu: C, playerId: playerSession?.playerId || 'dev' }),
             });
             if (!resp.ok) {
                 const err = await resp.text();
