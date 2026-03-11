@@ -2325,6 +2325,34 @@
         .fury-passive-btn { flex: 0 0 auto; padding: 4px 8px; font-size: 0.50em; }
 
         /* Element + powers vertical column (left of stats) */
+        /* ── Stats panel outer wrapper + lateral extensions ─────────────── */
+        .stats-panel-outer {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            width: 100%;
+        }
+        .stats-side-ext {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-width: 44px;
+            padding: 8px 4px;
+            background: rgba(10,8,6,0.72);
+            border: 10px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
+            border-image-slice: 15% fill;
+            border-image-width: 10px;
+            border-image-repeat: stretch;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+        }
+        .stats-side-left  { border-right: none; margin-right: -2px; }
+        .stats-side-right { border-left:  none; margin-left:  -2px; }
+        /* when empty (no element), collapse cleanly */
+        .stats-side-ext:empty { min-width: 0; padding: 0; border: none; margin: 0; }
+
         .elem-powers-col {
             display: flex;
             flex-direction: column;
@@ -9488,7 +9516,9 @@
                     </div>
                 </div>
             <div class="menu-character-info" id="menu-character-info">
-                    <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
+                    <div class="stats-panel-outer">
+                        <div class="stats-side-ext stats-side-left" id="elem-powers-col"></div>
+                        <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
                         <div class="menu-exp-skills-row">
                             <div class="menu-character-exp" id="menu-character-exp-container">
                                 <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
@@ -9502,7 +9532,6 @@
                             <button class="skills-icon-btn btn-shine" id="menu-skills-btn">SKILLS</button>
                         </div>
                         <div class="menu-stats-with-skill">
-                            <div class="elem-powers-col" id="elem-powers-col"></div>
                             <div class="menu-character-stats" id="menu-character-stats"></div>
                         </div>
                         <!-- fury-power-row kept for legacy JS refs but hidden; pips replace it -->
@@ -9545,7 +9574,9 @@
                                 <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
                             </div>
                         </div>
-                    </div>
+                    </div><!-- /menu-stats-panel -->
+                    <div class="stats-side-ext stats-side-right" id="winrate-side-ext"></div>
+                    </div><!-- /stats-panel-outer -->
                     <div class="menu-character-actions" id="menu-character-actions" style="display:none;">
                         <button class="menu-change-name" id="menu-change-name">✏️ CHANGE NAME</button>
                         <button class="menu-delete-character" id="menu-delete-character">🗑️ DELETE</button>
@@ -16403,38 +16434,7 @@
                 // Win rate + games row (legacy label cleared — ring appears in stats block)
                 levelEl.textContent = '';
 
-                const elemD  = ELEMENT_DATA[character.element];
-                const elemBn = ELEMENT_BONUSES[character.element];
-                const elemBox = elemD ? (() => {
-                    const tooltip = elemBn
-                        ? `<div class="elem-stat-tooltip" style="border-color:${elemD.color}33;">
-                               <div class="ett-name" style="color:${elemD.color};">${elemD.icon} ${elemD.label}</div>
-                               <div class="ett-row">${elemBn.base}</div>
-                               <div class="ett-fury">⚡ ${elemBn.fury}</div>
-                               <div class="ett-strong">▲ Strong vs ${elemBn.strong}</div>
-                               <div class="ett-weak">▼ Weak vs ${elemBn.weak}</div>
-                           </div>` : '';
-                    return `<div class="menu-character-stat menu-elem-stat" style="border-bottom-color:${elemD.color}66;">
-                                <span class="menu-character-stat-label" style="color:${elemD.color};">ELEMENT</span>
-                                <span class="menu-character-stat-value">${elemD.icon}</span>
-                                ${tooltip}
-                            </div>`;
-                })() : '';
-                const circ = 2 * Math.PI * 17; // r=17
-                const arcLen = circ * (winRate / 100);
-                const winRateBlock = `<div class="menu-character-stat menu-winrate-stat">
-                    <span class="menu-character-stat-label">WIN RATE</span>
-                    <svg class="winrate-ring" width="44" height="44" viewBox="0 0 44 44">
-                        <circle cx="22" cy="22" r="17" fill="none" stroke="#1c1c1c" stroke-width="4.5"/>
-                        <circle cx="22" cy="22" r="17" fill="none" stroke="#ffd700" stroke-width="4.5"
-                            stroke-dasharray="${arcLen.toFixed(2)} ${circ.toFixed(2)}"
-                            stroke-linecap="round" transform="rotate(-90 22 22)" class="winrate-arc"/>
-                        <text x="22" y="26" text-anchor="middle" fill="white" font-size="11"
-                            font-family="Fredoka, sans-serif" font-weight="600">${winRate}%</text>
-                    </svg>
-                    <span class="winrate-games">${played} played</span>
-                    <span class="winrate-games">${won} won</span>
-                </div>`;
+                // ── Stats grid (5 stats only — element + win rate are in side extensions) ─
                 statsEl.innerHTML = [
                     ['HP',  maxHp],
                     ['ATK', character.stats.attack],
@@ -16446,7 +16446,26 @@
                         <span class="menu-character-stat-label">${label}</span>
                         <span class="menu-character-stat-value">${val}</span>
                     </div>`
-                ).join('') + elemBox + winRateBlock;
+                ).join('');
+
+                // ── Right extension: win rate ring ───────────────────────────────────
+                const wrExt = document.getElementById('winrate-side-ext');
+                if (wrExt) {
+                    const circ   = 2 * Math.PI * 17;
+                    const arcLen = circ * (winRate / 100);
+                    wrExt.innerHTML = `
+                        <span style="font-family:'Fredoka',sans-serif;font-size:0.52em;color:#999;letter-spacing:1px;text-transform:uppercase;">WIN</span>
+                        <svg width="44" height="44" viewBox="0 0 44 44" style="display:block;">
+                            <circle cx="22" cy="22" r="17" fill="none" stroke="#1c1c1c" stroke-width="4.5"/>
+                            <circle cx="22" cy="22" r="17" fill="none" stroke="#ffd700" stroke-width="4.5"
+                                stroke-dasharray="${arcLen.toFixed(2)} ${circ.toFixed(2)}"
+                                stroke-linecap="round" transform="rotate(-90 22 22)"/>
+                            <text x="22" y="26" text-anchor="middle" fill="white" font-size="11"
+                                font-family="Fredoka, sans-serif" font-weight="600">${winRate}%</text>
+                        </svg>
+                        <span style="font-family:'Fredoka',sans-serif;font-size:0.52em;color:#777;text-align:center;line-height:1.3;">${played}<br>played</span>
+                        <span style="font-family:'Fredoka',sans-serif;font-size:0.52em;color:#4ade80;text-align:center;line-height:1.3;">${won}<br>won</span>`;
+                }
 
                 if (character.level < MAX_LEVEL) {
                     expContainer.style.display = '';
