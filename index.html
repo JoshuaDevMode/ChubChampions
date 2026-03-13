@@ -10537,7 +10537,45 @@
         </div>
     </div>
 
+<!-- Power Lab panel (visible only in power-test-mode) -->
+<div id="power-test-panel">
+    <div class="ptp-header">
+        <span class="ptp-title">⚗️ POWER LAB</span>
+        <button class="ptp-back-btn" onclick="exitPowerTestMode()">← MENU</button>
+    </div>
+    <div class="ptp-elements" id="ptp-elements"></div>
+    <div class="ptp-row">
+        <button class="ptp-bg-btn" onclick="cyclePowerTestBg(-1)">◀</button>
+        <span class="ptp-bg-name" id="ptp-bg-name">Apocalypse</span>
+        <button class="ptp-bg-btn" onclick="cyclePowerTestBg(1)">▶</button>
+    </div>
+    <div class="ptp-powers" id="ptp-powers"></div>
+</div>
+<!-- Settings panel — fixed overlay, visible from both lobby and arena -->
+<div class="settings-panel hidden" id="settings-panel">
+    <div class="settings-header">
+        <div class="settings-title">SOUND</div>
+        <span class="settings-close" id="settings-close">&times;</span>
+    </div>
+    <div class="volume-row">
+        <span class="volume-icon" id="volume-icon">&#128264;</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
+        <span class="volume-value" id="volume-value">100%</span>
+    </div>
+    <hr class="settings-divider">
+    <div class="settings-title">CAMERA</div>
+    <div class="settings-toggle-row">
+        <span class="settings-toggle-label">Follow Camera</span>
+        <label class="settings-toggle-switch">
+            <input type="checkbox" id="camera-toggle" checked>
+            <span class="settings-toggle-slider"></span>
+        </label>
+    </div>
+</div>
+
     <script>
+        const IS_MOBILE = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
         const ARENA_BACKGROUNDS = [
             'Assets/Background/Apocalypse.webp',
             'Assets/Background/Athena.webp',
@@ -10739,8 +10777,15 @@
         const _trimmedCache = {};
         let _globalVolume = 1.0;
 
-        async function trimAndPlay(src, volume) {
+        // Ensures AudioContext exists and is running. Sync callers fire-and-forget the resume;
+        // async callers can await _audioCtx.resume() explicitly if they need it before playing.
+        function _ensureAudioCtx() {
             if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+        }
+
+        async function trimAndPlay(src, volume) {
+            _ensureAudioCtx();
             if (_audioCtx.state === 'suspended') await _audioCtx.resume();
             const finalVol = volume * _globalVolume;
             if (_trimmedCache[src]) {
@@ -10784,8 +10829,7 @@
         }
 
         function playFinisherKickSound() {
-            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            _ensureAudioCtx();
             const src = KICK_SOUNDS[Math.floor(Math.random() * KICK_SOUNDS.length)];
             const vol = 0.65 * _globalVolume; // 0.5 * 1.3 = 30% louder than normal kick
 
@@ -10834,8 +10878,7 @@
         }
 
         function playWoodClick() {
-            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            _ensureAudioCtx();
             const now = _audioCtx.currentTime;
             const vol = 1.0 * _globalVolume;
 
@@ -10983,6 +11026,13 @@
             uppercut: 55,
             headbutt: 60
         };
+
+        // ── Combat constants ───────────────────────────────────────────────────────
+        const CRITICAL_CHANCE           = 0.05; // 5% base crit chance
+        const CRITICAL_MULTIPLIER       = 1.6;
+        const CRITICAL_MULTIPLIER_FURY  = 1.3;  // reduced crit multiplier during fury
+        const FURY_GAIN                 = 1.5;
+        const FURY_DURATION             = 7000; // 7 seconds
 
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
@@ -11250,6 +11300,14 @@
             champion_decisive_moment:'🎯', champion_master_synergy: '🔗', champion_presence:       '👑', champion_resonance:      '🌊',
         };
 
+        // ── Skill Index (O(1) lookup — built once from SKILL_TREE) ─────────────────
+        // SKILL_BRANCH_MAP: branchId → branch object
+        // SKILL_NODE_MAP:   'branchId_nodeId' → { branch, node }
+        const SKILL_BRANCH_MAP = new Map(SKILL_TREE.map(b => [b.id, b]));
+        const SKILL_NODE_MAP = new Map(
+            SKILL_TREE.flatMap(b => b.nodes.map(n => [b.id + '_' + n.id, { branch: b, node: n }]))
+        );
+
         // ── Skill Helper Functions ──────────────────────────────────────────────────
 
         // Key format: branchId + '_' + nodeId  e.g. 'warrior_heavy_blow'
@@ -11259,11 +11317,9 @@
         }
 
         function getSkillValue(character, branchId, nodeId) {
-            const branch = SKILL_TREE.find(b => b.id === branchId);
-            const node = branch && branch.nodes.find(n => n.id === nodeId);
-            if (!node) return 0;
-            const rank = getSkillRank(character, branchId, nodeId);
-            return node.values[rank] || 0;
+            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
+            if (!entry) return 0;
+            return entry.node.values[getSkillRank(character, branchId, nodeId)] || 0;
         }
 
         function isChampionUnlocked(character) {
@@ -11278,17 +11334,16 @@
 
         // Returns null if upgradeable, or a reason string if locked.
         function getNodeLockReason(character, branchId, nodeId) {
-            const branch = SKILL_TREE.find(b => b.id === branchId);
-            if (!branch) return 'Unknown branch';
-            const node = branch.nodes.find(n => n.id === nodeId);
-            if (!node) return 'Unknown node';
+            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
+            if (!entry) return branchId ? 'Unknown node' : 'Unknown branch';
+            const { branch, node } = entry;
             const rank = getSkillRank(character, branchId, nodeId);
             if (rank >= 10) return 'MAX';
             if (branchId === 'champion' && !isChampionUnlocked(character))
                 return 'Needs Rank 5 in 3 branches';
             // Opposite-branch T4 lock
             if (node.tier === 4 && branch.opposite) {
-                const opp = SKILL_TREE.find(b => b.id === branch.opposite);
+                const opp = SKILL_BRANCH_MAP.get(branch.opposite);
                 if (opp && opp.nodes.filter(n => n.tier === 4).some(n => getSkillRank(character, opp.id, n.id) > 0))
                     return opp.name + ' capstone active';
             }
@@ -11301,15 +11356,14 @@
             }
             // Prerequisite
             if (node.requires && getSkillRank(character, branchId, node.requires) < node.requiresRank) {
-                const req = branch.nodes.find(n => n.id === node.requires);
-                return 'Needs ' + (req ? req.name : node.requires) + ' R' + node.requiresRank;
+                const reqEntry = SKILL_NODE_MAP.get(branchId + '_' + node.requires);
+                return 'Needs ' + (reqEntry ? reqEntry.node.name : node.requires) + ' R' + node.requiresRank;
             }
             // Cross-node conflicts
             for (const c of (node.conflicts || [])) {
                 if (getSkillRank(character, c.branchId, c.nodeId) > 0) {
-                    const cb = SKILL_TREE.find(b => b.id === c.branchId);
-                    const cn = cb && cb.nodes.find(n => n.id === c.nodeId);
-                    return 'Conflicts with ' + (cn ? cn.name : c.nodeId);
+                    const cn = SKILL_NODE_MAP.get(c.branchId + '_' + c.nodeId);
+                    return 'Conflicts with ' + (cn ? cn.node.name : c.nodeId);
                 }
             }
             return null;
@@ -11317,20 +11371,18 @@
 
         function canUpgradeSkill(character, branchId, nodeId) {
             if (!character) return false;
-            const branch = SKILL_TREE.find(b => b.id === branchId);
-            const node = branch && branch.nodes.find(n => n.id === nodeId);
-            if (!node) return false;
+            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
+            if (!entry) return false;
             const rank = getSkillRank(character, branchId, nodeId);
             if (rank >= 10) return false;
             if (getNodeLockReason(character, branchId, nodeId)) return false;
-            const cost = SKILL_RANK_COSTS[rank + 1];
-            return (character.skillPoints || 0) >= cost;
+            return (character.skillPoints || 0) >= SKILL_RANK_COSTS[rank + 1];
         }
 
         async function upgradeSkill(character, branchId, nodeId) {
             if (!canUpgradeSkill(character, branchId, nodeId)) return false;
             try {
-                const res = await fetch(BACKEND_URL + '/api/skill/upgrade', {
+                const res = await fetchWithTimeout(BACKEND_URL + '/api/skill/upgrade', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, branchId, nodeId })
@@ -11610,6 +11662,7 @@
         // ===== PROGRESSION SYSTEM =====
         // Level tiers for chests (every 5 levels up to 100)
         const CHEST_LEVEL_TIERS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+        const MAX_WEAPON_SLOTS = 5; // absolute max equipped weapons per character
 
         // Weapon tiers organized by chest level (13 tiers)
         // Each tier contains one weapon, unlocked randomly from that tier
@@ -11657,7 +11710,8 @@
         let globalCharactersCreated = 0;
         let winStreak = 0;
         let shopItemCooldowns = {}; // { itemId: timestamp } — 24h cooldown per item
-        const MINIGAME_ITEM_IDS = ['punching_bag', 'jump_training'];
+        const SHOP_COOLDOWN        = 24 * 60 * 60 * 1000; // 24h cooldown per shop item
+        const MINIGAME_ITEM_IDS    = ['punching_bag', 'jump_training'];
         const MINIGAME_DAILY_LIMIT = 3;   // combined across both minigame items
         const ITEM_DAILY_LIMIT     = 2;   // per individual item for all other purchasable items
         let minigamePurchaseDate   = '';
@@ -12045,6 +12099,12 @@
         }
 
         function updateCurrencyUI() {
+            // Prune expired shop cooldowns to prevent unbounded localStorage growth
+            const _now = Date.now();
+            for (const id in shopItemCooldowns) {
+                if (_now - shopItemCooldowns[id] >= SHOP_COOLDOWN) delete shopItemCooldowns[id];
+            }
+
             const tokensEl = document.getElementById('currency-tokens');
             const fragmentsEl = document.getElementById('currency-fragments');
             const crystalsEl = document.getElementById('currency-crystals');
@@ -12278,7 +12338,7 @@
             const serverReward = await (async () => {
                 if (!playerSession) return null;
                 try {
-                    const r = await fetch(BACKEND_URL + '/api/economy/open-chest', {
+                    const r = await fetchWithTimeout(BACKEND_URL + '/api/economy/open-chest', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                         body: JSON.stringify({
@@ -13249,29 +13309,38 @@
             return character.stats.defense;
         }
 
+        // ===== WELLNESS / MORALE DECAY HELPERS =====
+
+        // Private: shared decay logic for any stat tracked by hours-since-last-timestamp.
+        // getRate(character, baseRate) → effective rate (allows conditional multipliers).
+        function _applyStatDecay(character, field, timestampField, baseRate, getRate) {
+            if (character[field] === undefined) return;
+            const now = Date.now();
+            const hoursElapsed = (now - (character[timestampField] || now)) / 3600000;
+            if (hoursElapsed <= 0) return;
+            const rate = getRate ? getRate(character, baseRate) : baseRate;
+            const decay = Math.floor(hoursElapsed * rate);
+            if (decay > 0) character[field] = Math.max(0, character[field] - decay);
+        }
+
+        // Private: loop all characters, apply decayFn, save if anything changed.
+        function _applyDecayAll(field, decayFn) {
+            let changed = false;
+            for (const c of characters) {
+                const before = c[field] ?? 100;
+                decayFn(c);
+                if ((c[field] ?? 100) !== before) changed = true;
+            }
+            if (changed) saveCharacters();
+        }
+
         // ===== WELLNESS SYSTEM HELPERS =====
         function applyWellnessDecay(character) {
-            if (character.wellness === undefined) return;
-            const now = Date.now();
-            const lastFed = character.lastFedTimestamp || now;
-            const hoursElapsed = (now - lastFed) / 3600000;
-            if (hoursElapsed > 0) {
-                const decay = Math.floor(hoursElapsed * WELLNESS_DECAY_PER_HOUR);
-                if (decay > 0) {
-                    character.wellness = Math.max(0, character.wellness - decay);
-                    // Don't reset lastFedTimestamp — decay accumulates until they feed
-                }
-            }
+            _applyStatDecay(character, 'wellness', 'lastFedTimestamp', WELLNESS_DECAY_PER_HOUR);
         }
 
         function applyWellnessDecayAll() {
-            let changed = false;
-            for (const c of characters) {
-                const before = c.wellness;
-                applyWellnessDecay(c);
-                if (c.wellness !== before) changed = true;
-            }
-            if (changed) saveCharacters();
+            _applyDecayAll('wellness', applyWellnessDecay);
         }
 
         function applyPostBattleWellnessLoss(character, wellnessLoss) {
@@ -13283,29 +13352,13 @@
 
         // ===== MORALE SYSTEM HELPERS =====
         function applyMoraleDecay(character) {
-            if (character.morale === undefined) return;
-            const now = Date.now();
-            const last = character.lastMoraleTimestamp || now;
-            const hoursElapsed = (now - last) / 3600000;
-            if (hoursElapsed > 0) {
-                let rate = MORALE_DECAY_PER_HOUR;
-                // Double decay if wellness is low
-                if ((character.wellness ?? 100) < 25) rate *= 2;
-                const decay = Math.floor(hoursElapsed * rate);
-                if (decay > 0) {
-                    character.morale = Math.max(0, character.morale - decay);
-                }
-            }
+            // Double decay rate if wellness is critically low
+            _applyStatDecay(character, 'morale', 'lastMoraleTimestamp', MORALE_DECAY_PER_HOUR,
+                (c, base) => (c.wellness ?? 100) < 25 ? base * 2 : base);
         }
 
         function applyMoraleDecayAll() {
-            let changed = false;
-            for (const c of characters) {
-                const before = c.morale;
-                applyMoraleDecay(c);
-                if ((c.morale ?? 100) !== before) changed = true;
-            }
-            if (changed) saveCharacters();
+            _applyDecayAll('morale', applyMoraleDecay);
         }
 
         function applyPostBattleMorale(character, won, winStreak) {
@@ -13326,22 +13379,26 @@
             return delta;
         }
 
-        async function boostMorale(character, itemId) {
-            const item = MORALE_ITEMS[itemId];
+        // Shared logic for using a wellness or morale inventory item against the backend.
+        // cfg fields: items, inventoryKey, statField, maxVal, maxMessage, endpoint,
+        //             responseKey, timestampKey, logTag, preSync?, afterApply?(character,item,data)
+        async function _useInventoryItem(character, itemId, cfg) {
+            const item = cfg.items[itemId];
             if (!item) { showNotice('Unknown item!'); return null; }
-            const idx = (character.moraleItems || []).indexOf(itemId);
+            const inv = character[cfg.inventoryKey] || [];
+            const idx = inv.indexOf(itemId);
             if (idx === -1) { showNotice("You don't have this item!"); return null; }
-            if (character.morale >= MORALE_MAX) { showNotice('Fighter is already at max morale!'); return null; }
+            if ((character[cfg.statField] ?? 100) >= cfg.maxVal) { showNotice(cfg.maxMessage); return null; }
+
+            if (cfg.preSync) {
+                try { await syncCharacterToBackend(character); } catch(_) {}
+            }
 
             try {
-                const resp = await fetch(BACKEND_URL + '/api/character/boost', {
+                const resp = await fetchWithTimeout(BACKEND_URL + cfg.endpoint, {
                     method: 'POST',
                     headers: await getAuthHeaders(),
-                    body: JSON.stringify({
-                        playerId: playerSession.playerId,
-                        characterId: character.id,
-                        itemId: itemId,
-                    }),
+                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId }),
                 });
                 if (resp.status === 401 || resp.status === 403) {
                     showNotice('Session expired. Please log in again.');
@@ -13351,66 +13408,46 @@
                 const data = await resp.json();
                 if (!data.ok) { showNotice(data.error || 'Failed to use item'); return null; }
 
-                character.moraleItems.splice(idx, 1);
-                character.morale = Math.min(MORALE_MAX, data.newMorale);
-                character.lastMoraleTimestamp = Date.now();
+                character[cfg.inventoryKey].splice(idx, 1);
+                character[cfg.statField] = Math.min(cfg.maxVal, data[cfg.responseKey]);
+                character[cfg.timestampKey] = Date.now();
+                if (cfg.afterApply) cfg.afterApply(character, item, data);
                 const xpResult = data.xpGained ? addExpToCharacter(character.id, data.xpGained) : { leveledUp: false };
                 saveCharacters();
-                return { newMorale: data.newMorale, xpGained: data.xpGained || 0, leveledUp: xpResult.leveledUp };
+                return { [cfg.responseKey]: data[cfg.responseKey], xpGained: data.xpGained || 0, leveledUp: xpResult.leveledUp };
             } catch (e) {
-                console.warn('[boost] error:', e);
+                console.warn(cfg.logTag + ' error:', e);
                 showNotice('Network error');
                 return null;
             }
         }
 
+        async function boostMorale(character, itemId) {
+            return _useInventoryItem(character, itemId, {
+                items: MORALE_ITEMS, inventoryKey: 'moraleItems', statField: 'morale',
+                maxVal: MORALE_MAX, maxMessage: 'Fighter is already at max morale!',
+                endpoint: '/api/character/boost', responseKey: 'newMorale',
+                timestampKey: 'lastMoraleTimestamp', logTag: '[boost]',
+            });
+        }
+
         async function feedCharacter(character, itemId) {
-            const item = WELLNESS_ITEMS[itemId];
-            if (!item) { showNotice('Unknown item!'); return null; }
-            const idx = (character.wellnessItems || []).indexOf(itemId);
-            if (idx === -1) { showNotice("You don't have this item!"); return null; }
-            if (character.wellness >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
-
-            // Ensure character exists in Supabase before calling feed
-            try { await syncCharacterToBackend(character); } catch(_) {}
-
-            // Call server endpoint
-            try {
-                const resp = await fetch(BACKEND_URL + '/api/character/feed', {
-                    method: 'POST',
-                    headers: await getAuthHeaders(),
-                    body: JSON.stringify({
-                        playerId: playerSession.playerId,
-                        characterId: character.id,
-                        itemId: itemId,
-                    }),
-                });
-                if (resp.status === 401 || resp.status === 403) {
-                    showNotice('Session expired. Please log in again.');
-                    setTimeout(() => { logoutPlayerSession(); }, 1800);
-                    return null;
-                }
-                const data = await resp.json();
-                if (!data.ok) { showNotice(data.error || 'Failed to use item'); return null; }
-
-                // Apply locally
-                character.wellnessItems.splice(idx, 1);
-                character.wellness = Math.min(WELLNESS_MAX, data.newWellness);
-                character.lastFedTimestamp = Date.now();
-                // Feeding also restores morale (amount depends on item)
-                const moraleBonus = item.moraleBonus ?? 2;
-                if (character.morale !== undefined) {
-                    character.morale = Math.min(MORALE_MAX, (character.morale || 0) + moraleBonus);
-                    character.lastMoraleTimestamp = Date.now();
-                }
-                const xpResult = addExpToCharacter(character.id, data.xpGained);
-                saveCharacters();
-                return { newWellness: data.newWellness, xpGained: data.xpGained, leveledUp: xpResult.leveledUp, moraleBonus };
-            } catch (e) {
-                console.warn('[feed] error:', e);
-                showNotice('Network error');
-                return null;
-            }
+            const moraleBonus = (WELLNESS_ITEMS[itemId] || {}).moraleBonus ?? 2;
+            const result = await _useInventoryItem(character, itemId, {
+                items: WELLNESS_ITEMS, inventoryKey: 'wellnessItems', statField: 'wellness',
+                maxVal: WELLNESS_MAX, maxMessage: 'Fighter is already at full condition!',
+                endpoint: '/api/character/feed', responseKey: 'newWellness',
+                timestampKey: 'lastFedTimestamp', logTag: '[feed]', preSync: true,
+                afterApply(character, item) {
+                    const mb = item.moraleBonus ?? 2;
+                    if (character.morale !== undefined) {
+                        character.morale = Math.min(MORALE_MAX, (character.morale || 0) + mb);
+                        character.lastMoraleTimestamp = Date.now();
+                    }
+                },
+            });
+            if (result) result.moraleBonus = moraleBonus;
+            return result;
         }
 
         function canFight(character) {
@@ -13469,7 +13506,7 @@
 
         async function fetchAndQueueLevelUp(character) {
             try {
-                const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
                     body: JSON.stringify({ action: 'get_options', characterId: character.id })
@@ -13597,7 +13634,7 @@
         async function syncStateFromServer() {
             if (!playerSession) return;
             try {
-                const resp = await fetch(BACKEND_URL + '/api/player/state', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/state', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({ playerId: playerSession.playerId }),
@@ -13692,7 +13729,7 @@
             if (!confirm('Delete your account? This cannot be undone. All characters and progress will be lost.')) return;
             document.getElementById('session-widget')?.classList.remove('sw-open');
             try {
-                await fetch(BACKEND_URL + '/api/player/delete', {
+                await fetchWithTimeout(BACKEND_URL + '/api/player/delete', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId }),
@@ -13942,6 +13979,16 @@
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
         const SYNC_SECRET  = 'fc_sync_lol'; // ← paste your SYNC_SECRET from Vercel env vars here
 
+        // Drop-in replacement for fetch() that aborts after `ms` milliseconds.
+        // Throws AbortError on timeout (same as a network error — callers with try/catch
+        // handle it automatically; callers without try/catch fail fast instead of hanging forever).
+        function fetchWithTimeout(url, options = {}, ms = 10000) {
+            const ctrl = new AbortController();
+            const tid  = setTimeout(() => ctrl.abort(), ms);
+            return fetch(url, { ...options, signal: ctrl.signal })
+                .finally(() => clearTimeout(tid));
+        }
+
         // ── Dev Battle ──────────────────────────────────────────────────────────
         // Call window.devBattle() from the browser console to watch a test battle.
         // Optional config: devBattle({ level:50, seed:1337, playerName:'Kira', cpuName:'Zael' })
@@ -13993,11 +14040,11 @@
 
             console.log(`[devBattle] seed=${seed}  ${P.name}(${P.element}) vs ${C.name}(${C.element})`);
 
-            const resp = await fetch(BACKEND_URL + '/api/battle/run', {
+            const resp = await fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                 body: JSON.stringify({ seed, player: P, cpu: C, playerId: 'dev' }),
-            });
+            }, 20000);
             if (!resp.ok) {
                 const err = await resp.text();
                 console.error('[devBattle] API error:', err);
@@ -14139,7 +14186,7 @@
             const walletAddr = await signer.getAddress();
 
             // 1. Get signed charData from backend
-            const sigResp = await fetch(BACKEND_URL + '/api/aon/sign-character', {
+            const sigResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                 body: JSON.stringify({
@@ -14190,7 +14237,7 @@
             const walletAddr = await signer.getAddress();
 
             // 1. Get signed charData from backend
-            const sigResp = await fetch(BACKEND_URL + '/api/aon/sign-character', {
+            const sigResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                 body: JSON.stringify({
@@ -14254,7 +14301,7 @@
 
         function syncPlayerToBackend() {
             if (!BACKEND_URL || !SYNC_SECRET || !playerSession) return;
-            fetch(BACKEND_URL + '/api/player/sync', {
+            fetchWithTimeout(BACKEND_URL + '/api/player/sync', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -14269,7 +14316,7 @@
 
         function syncCharacterToBackend(character) {
             if (!BACKEND_URL || !SYNC_SECRET) return Promise.resolve();
-            return fetch(BACKEND_URL + '/api/character/sync', {
+            return fetchWithTimeout(BACKEND_URL + '/api/character/sync', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -14327,7 +14374,7 @@
         async function fetchCharactersFromServer() {
             if (!playerSession || !BACKEND_URL || !SYNC_SECRET) return;
             try {
-                const resp = await fetch(BACKEND_URL + '/api/character/list', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/list', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({ playerId: playerSession.playerId }),
@@ -14389,7 +14436,7 @@
         async function spendOnServer(action, payload = {}) {
             if (!playerSession) return { ok: false, error: 'Not logged in' };
             try {
-                const resp = await fetch(BACKEND_URL + '/api/economy/spend', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/spend', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId, action, ...payload }),
@@ -14415,7 +14462,7 @@
         async function claimDailyOnServer(dayNum) {
             if (!playerSession) return { ok: false, error: 'Not logged in' };
             try {
-                const resp = await fetch(BACKEND_URL + '/api/economy/daily-claim', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/daily-claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
@@ -14544,7 +14591,7 @@
             };
 
             try {
-                const resp = await fetch(BACKEND_URL + '/api/battle/run', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
@@ -14556,7 +14603,7 @@
                         // AoN: include matchId so the server can track rounds server-side
                         ...(aonActive && _aonMatchId ? { aonMatchId: _aonMatchId } : {}),
                     }),
-                });
+                }, 20000);
 
                 if (!resp.ok) {
                     console.error('[server battle] API returned', resp.status);
@@ -14656,7 +14703,7 @@
                 clearInterval(countdownInterval);
                 overlay.remove();
                 if (pvpMatchId) {
-                    fetch(BACKEND_URL + '/api/matchmaking/cancel', {
+                    fetchWithTimeout(BACKEND_URL + '/api/matchmaking/cancel', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ matchId: pvpMatchId, playerId: playerSession.playerId }),
@@ -14667,7 +14714,7 @@
             // Join the queue
             let joinData;
             try {
-                const resp = await fetch(BACKEND_URL + '/api/matchmaking/join', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/matchmaking/join', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -14729,7 +14776,7 @@
             clearInterval(countdownInterval);
             if (!cancelled) {
                 if (pvpMatchId) {
-                    fetch(BACKEND_URL + '/api/matchmaking/cancel', {
+                    fetchWithTimeout(BACKEND_URL + '/api/matchmaking/cancel', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ matchId: pvpMatchId, playerId: playerSession.playerId }),
@@ -14741,6 +14788,260 @@
         }
 
         // Replays a server-computed event log with the existing animation system.
+        // ── Battle event sub-animators ───────────────────────────────────────────
+        // Each handles one event.type from animateBattleFromLog's switch.
+
+        async function _animateFuryPower(event) {
+            game.player.health = event.playerHp;
+            game.cpu.health    = event.cpuHp;
+            updateBothFighters();
+            // Determine element from power id prefix (e.g. 'fire_fireball' → 'fire')
+            const fpEl    = event.power.split('_')[0];
+            const fpElemD = ELEMENT_DATA[fpEl] || {};
+            const fpColor = fpElemD.color || '#ffd700';
+            // Derive display name: everything after the first underscore, title-cased
+            const fpName = event.power.split('_').slice(1).join(' ').replace(/\b\w/g, c => c.toUpperCase());
+            // Passive effects skip the name flash
+            const isPassive = event.power.includes('stone_skin') || event.power.includes('burn_aura') || event.power.includes('orb_active');
+            if (!isPassive) showFuryPowerFlash(event.caster, fpName, fpColor);
+
+            // Aerial counter (jump_fury)
+            if (event.aerial) {
+                playAerialCounterAnimation(event.caster, event.target, event.power, fpColor, event.targetDefense || 'none');
+                if (event.damage > 0) setTimeout(() => showDamage(event.target, event.damage, false), 740);
+                await sleep(1200);
+                return;
+            }
+
+            const _fpTargetEl = game[event.target]?.element;
+            // Store caster STR so the spike animation can use it
+            const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
+            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = _spikeCasterChar?.stats?.strength || 35;
+
+            // Earth spike: check if target is airborne at pillar impact moment
+            if (event.power.includes('earth_spike')) {
+                if (_fpTargetEl?._spikeAirborne) {
+                    const _impactAt       = performance.now() + 680 * 0.35;
+                    const _targetHeightPx = getSpikeTargetHeight(_fpTargetEl, _impactAt);
+                    if (_targetHeightPx > 280) {
+                        playFuryPowerAnimation(event.caster, event.target, 'earth_spike_miss', fpColor);
+                        await sleep(1200);
+                        return;
+                    }
+                    if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = _targetHeightPx;
+                } else {
+                    if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = 0;
+                }
+            }
+
+            playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
+            if (event.damage > 0) {
+                const fpHitDelay = event.power.includes('fireball')    ? 700
+                                 : event.power.includes('giant_rock')  ? 1500
+                                 : event.power.includes('earth_spike') ? 650
+                                 : event.power.includes('tsunami') || event.power.includes('tornado') ? 460
+                                 : 0;
+                if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
+                else showDamage(event.target, event.damage, false);
+            }
+            const fpSleepMs = isPassive                               ? 450
+                            : event.power.includes('sky_discharge')   ? 3800
+                            : event.power.includes('tsunami')         ? 1500
+                            : event.power.includes('water_bullets')   ? 3300
+                            : event.power.includes('fireball')        ? 2900
+                            : event.power.includes('giant_rock')      ? 3700
+                            : event.power.includes('earth_spike')     ? 3400
+                            : 980;
+            await sleep(fpSleepMs);
+        }
+
+        async function _animateMoveEvent(event) {
+            game.player._homeX = event.playerX;
+            game.cpu._homeX    = event.cpuX;
+            const pEl = game.player.element;
+            const cEl = game.cpu.element;
+            const _mvArenaW = document.getElementById('arena').offsetWidth;
+            const _mvScale  = _mvArenaW / 1600;
+            if (event.from !== event.to) {
+                const movEl  = game[event.fighter].element;
+                const isBack = event.action === 'retreat';
+                // Duration scales with distance (encodes AGI + level)
+                const distServer = Math.abs(event.to - event.from);
+                const moveDur    = Math.max(100, Math.round(240 - distServer * 0.31));
+                movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
+                void movEl.offsetWidth;
+                const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
+                movEl.style.left  = _movTargetX + 'px';
+                movEl.style.right = 'auto';
+                // Frame rate driven by AGI speed (px/turn), not distance
+                animateRun(movEl, isBack, null, event.speed);
+                await sleep(moveDur);
+                stopRunAnimation(movEl);
+                movEl.style.transition = '';
+            } else {
+                // No movement — just sync positions silently
+                pEl.style.left  = (event.playerX * _mvScale) + 'px';
+                pEl.style.right = 'auto';
+                cEl.style.left  = (event.cpuX * _mvScale) + 'px';
+                cEl.style.right = 'auto';
+            }
+            await sleep(20);
+        }
+
+        async function _animateComboFinisher(event) {
+            document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
+            const cfArena  = document.getElementById('arena');
+            const cfArenaW = cfArena.offsetWidth;
+            const cfScale  = cfArenaW / 1600;
+            const cfAttEl  = game[event.attacker].element;
+            const cfDefEl  = game[event.defender].element;
+            const cfAttImg = cfAttEl.querySelector('img.character-png');
+            const cfDefImg = cfDefEl.querySelector('img.character-png');
+            const cfIsCpu  = event.attacker === 'cpu';
+            const cfBaseXf = cfIsCpu ? 'scaleX(-1) ' : '';
+
+            cfAttEl.style.zIndex = '20';
+            cfDefEl.style.zIndex = '10';
+
+            // Attacker already at combat position — snap without transition
+            const _cfGap = 100;
+            const cfAtkLeftPx = event.attacker === 'player'
+                ? (game.cpu._homeX    - _cfGap) * cfScale
+                : (game.player._homeX + _cfGap) * cfScale;
+            cfAttEl.style.transition = 'none';
+            cfAttEl.style.left  = cfAtkLeftPx + 'px';
+            cfAttEl.style.right = 'auto';
+
+            // Phase 0: defender lifted + tilted
+            const cfDefIsCpu   = event.defender === 'cpu';
+            const cfLiftAngle  = cfDefIsCpu ? 65 : -65;
+            if (cfDefImg) {
+                cfDefImg._idleSrc = cfDefImg._idleSrc || cfDefImg.src;
+                const cfHurtF = cfDefImg._hurtFrames;
+                if (cfHurtF && cfHurtF.length) cfDefImg.src = cfHurtF[Math.floor(Math.random() * cfHurtF.length)];
+                cfDefImg.style.transition = 'transform 200ms ease-out';
+                cfDefImg.style.transform  = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${cfLiftAngle}deg)`;
+            }
+            cfDefEl.style.transition = 'transform 200ms ease-out';
+            void cfDefEl.offsetWidth;
+            cfDefEl.style.transform = 'translateY(-28px)';
+            await sleep(200);
+
+            // Phase 1: attacker mini jump arc + kick sprite at peak
+            cfAttEl.style.transition = 'none';
+            const cfKickFrames = cfAttImg?._kickFrames || [];
+            await new Promise(res => {
+                const t0   = performance.now();
+                const DUR  = 380;
+                const step = now => {
+                    const t  = Math.min((now - t0) / DUR, 1);
+                    const ty = -68 * Math.sin(Math.PI * t);
+                    cfAttEl.style.transform = `translateY(${ty}px)`;
+                    if (t >= 0.45 && cfAttImg) {
+                        if (cfKickFrames.length) cfAttImg.src = cfKickFrames[cfKickFrames.length - 1];
+                        cfAttImg.style.transition = 'transform 0.06s ease-out';
+                        cfAttImg.style.transform  = `${cfBaseXf}rotate(${cfIsCpu ? -38 : 38}deg)`;
+                    }
+                    if (t < 1) { requestAnimationFrame(step); return; }
+                    cfAttEl.style.transform = '';
+                    res();
+                };
+                requestAnimationFrame(step);
+            });
+
+            // Phase 2: impact
+            game.player.health = event.playerHp;
+            game.cpu.health    = event.cpuHp;
+            updateBothFighters();
+            if (event.damage > 0) showDamage(event.defender, event.damage, false);
+            playFinisherKickSound();
+
+            const cfBg = document.createElement('div');
+            cfBg.className = 'fury-power-screen-flash';
+            cfBg.style.background = '#ff4500';
+            cfArena.appendChild(cfBg);
+            cfBg.addEventListener('animationend', () => cfBg.remove(), { once: true });
+
+            const cfFlash = document.createElement('div');
+            cfFlash.className = 'battle-combo-counter';
+            cfFlash.innerHTML =
+                '<span class="combo-x" style="color:#ff4500;text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 24px #ff4500">FINISH!</span>' +
+                '<span class="combo-label" style="color:#fff;letter-spacing:3px">COMBO FINISHER</span>';
+            cfArena.appendChild(cfFlash);
+            cfFlash.addEventListener('animationend', () => cfFlash.remove(), { once: true });
+
+            if (cfAttImg) {
+                setTimeout(() => {
+                    cfAttImg.style.transition = 'transform 0.12s ease-in';
+                    cfAttImg.style.transform  = cfBaseXf ? cfBaseXf.trim() : '';
+                    setTimeout(() => {
+                        if (cfAttImg._idleSrc) cfAttImg.src = cfAttImg._idleSrc;
+                        cfAttImg.style.transform = '';
+                    }, 120);
+                }, 80);
+            }
+
+            // Phase 3: defender flies back with parabolic arc + spin
+            game.player._homeX = event.playerX;
+            game.cpu._homeX    = event.cpuX;
+            const cfDefFinalX = (event.defender === 'player' ? event.playerX : event.cpuX) * cfScale;
+            const cfDefCurX   = parseFloat(cfDefEl.style.left) || 0;
+            const cfDeltaX    = cfDefFinalX - cfDefCurX;
+            const cfSpinDir   = cfDefIsCpu ? 1 : -1;
+
+            cfDefEl.style.transition = 'none';
+            await new Promise(res => {
+                const t0   = performance.now();
+                const DUR  = 580;
+                const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                const step = now => {
+                    const t   = Math.min((now - t0) / DUR, 1);
+                    const tx  = cfDeltaX * ease(t);
+                    const ty  = -110 * Math.sin(Math.PI * t * 0.85);
+                    const rot = 360 * cfSpinDir * ease(t);
+                    cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
+                    if (cfDefImg) cfDefImg.style.transform = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${rot}deg)`;
+                    if (t < 1) { requestAnimationFrame(step); return; }
+                    cfDefEl.style.transform = '';
+                    cfDefEl.style.left  = cfDefFinalX + 'px';
+                    cfDefEl.style.right = 'auto';
+                    if (cfDefImg) cfDefImg.style.transform = cfDefIsCpu ? 'scaleX(-1)' : '';
+                    res();
+                };
+                requestAnimationFrame(step);
+            });
+
+            // Phase 4: landing impact
+            triggerArenaShake();
+            const cfBodyEl = cfDefEl.querySelector('.fighter-body') || cfDefEl;
+            const cfBodyR  = cfBodyEl.getBoundingClientRect();
+            const cfArenaR = cfArena.getBoundingClientRect();
+            const cfZoom   = getGameZoom();
+            spawnJumpShockwave(
+                (cfBodyR.left - cfArenaR.left) / cfZoom + (cfBodyR.width / cfZoom) / 2 - 11,
+                (cfBodyR.bottom - cfArenaR.top) / cfZoom - 25,
+                '#ff4500',
+            );
+            await sleep(120);
+            if (cfDefImg) {
+                setTimeout(() => {
+                    if (event.cpuHp > 0 && event.playerHp > 0 && cfDefImg._idleSrc)
+                        cfDefImg.src = cfDefImg._idleSrc;
+                }, 700);
+            }
+
+            // Phase 5: attacker returns home
+            cfAttEl.classList.remove('dashing');
+            cfAttEl.style.transition = 'left 220ms ease-out';
+            void cfAttEl.offsetWidth;
+            const cfAttHome = (event.attacker === 'player' ? event.playerX : event.cpuX) * cfScale;
+            cfAttEl.style.left  = cfAttHome + 'px';
+            cfAttEl.style.right = 'auto';
+            await sleep(240);
+            cfAttEl.style.transition = '';
+            await sleep(280);
+        }
+
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
             // Convert both fighters to left-based px positioning immediately.
             // CSS cannot transition from right:% or left:auto → left:Xpx, which would
@@ -14782,8 +15083,7 @@
                     case 'skill_effect': {
                         game.player.health = event.playerHp;
                         game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
+                        updateBothFighters();
                         const isHeal = event.value > 0;
                         if (isHeal) {
                             showHealText(event.fighter, event.value);
@@ -14797,8 +15097,7 @@
                     case 'consumable': {
                         game.player.health = event.playerHp;
                         game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
+                        updateBothFighters();
                         if (event.healAmount > 0) showHealText(event.fighter, event.healAmount);
                         if (event.staminaAmount > 0) {
                             // Stamina potion — update the bar visually
@@ -14847,8 +15146,7 @@
                     case 'weapon_throw': {
                         game.player.health = event.playerHp;
                         game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
+                        updateBothFighters();
                         const throwTarget = event.fighter === 'player' ? 'cpu' : 'player';
                         if (event.damage > 0) showDamage(throwTarget, event.damage, false);
                         // Clear equipped weapon and update display/idle
@@ -14880,172 +15178,10 @@
                         await sleep(60);
                         break;
 
-                    case 'combo_finisher': {
-                        document.querySelectorAll('.battle-combo-counter').forEach(e => e.remove());
-                        const cfArena  = document.getElementById('arena');
-                        const cfArenaW = cfArena.offsetWidth;
-                        const cfScale  = cfArenaW / 1600;
-                        const cfAttEl  = game[event.attacker].element;
-                        const cfDefEl  = game[event.defender].element;
-                        const cfAttImg = cfAttEl.querySelector('img.character-png');
-                        const cfDefImg = cfDefEl.querySelector('img.character-png');
-                        const cfIsCpu  = event.attacker === 'cpu';
-                        const cfBaseXf = cfIsCpu ? 'scaleX(-1) ' : '';
-
-                        cfAttEl.style.zIndex = '20';
-                        cfDefEl.style.zIndex = '10';
-
-                        // attacker is already at combat position from combo hits
-                        const _cfGap = 100;
-                        const cfAtkLeftPx = event.attacker === 'player'
-                            ? (game.cpu._homeX    - _cfGap) * cfScale
-                            : (game.player._homeX + _cfGap) * cfScale;
-                        cfAttEl.style.transition = 'none';
-                        cfAttEl.style.left  = cfAtkLeftPx + 'px';
-                        cfAttEl.style.right = 'auto';
-
-                        // ── Phase 0: defender gets lifted + tilted diagonally ────────────
-                        const cfDefIsCpu = event.defender === 'cpu';
-                        // Lean away from attacker: cpu leans right (+65°), player leans left (−65°)
-                        const cfLiftAngle = cfDefIsCpu ? 65 : -65;
-                        if (cfDefImg) {
-                            cfDefImg._idleSrc = cfDefImg._idleSrc || cfDefImg.src;
-                            const cfHurtF = cfDefImg._hurtFrames;
-                            if (cfHurtF && cfHurtF.length) cfDefImg.src = cfHurtF[Math.floor(Math.random() * cfHurtF.length)];
-                            cfDefImg.style.transition = 'transform 200ms ease-out';
-                            cfDefImg.style.transform  = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${cfLiftAngle}deg)`;
-                        }
-                        cfDefEl.style.transition = 'transform 200ms ease-out';
-                        void cfDefEl.offsetWidth;
-                        cfDefEl.style.transform = 'translateY(-28px)';
-                        await sleep(200);
-
-                        // ── Phase 1: attacker mini jump arc + kick sprite at peak ────────
-                        cfAttEl.style.transition = 'none';
-                        const cfKickFrames = cfAttImg?._kickFrames || [];
-                        await new Promise(res => {
-                            const t0   = performance.now();
-                            const DUR  = 380;
-                            const step = now => {
-                                const t  = Math.min((now - t0) / DUR, 1);
-                                const ty = -68 * Math.sin(Math.PI * t);
-                                cfAttEl.style.transform = `translateY(${ty}px)`;
-                                // At peak (~50%), switch to kick frame + rotation
-                                if (t >= 0.45 && cfAttImg) {
-                                    if (cfKickFrames.length) cfAttImg.src = cfKickFrames[cfKickFrames.length - 1];
-                                    cfAttImg.style.transition = 'transform 0.06s ease-out';
-                                    cfAttImg.style.transform  = `${cfBaseXf}rotate(${cfIsCpu ? -38 : 38}deg)`;
-                                }
-                                if (t < 1) { requestAnimationFrame(step); return; }
-                                cfAttEl.style.transform = '';
-                                res();
-                            };
-                            requestAnimationFrame(step);
-                        });
-
-                        // ── Phase 2: impact ───────────────────────────────────────────────
-                        game.player.health = event.playerHp;
-                        game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
-                        if (event.damage > 0) showDamage(event.defender, event.damage, false);
-                        playFinisherKickSound();
-
-                        // Screen flash
-                        const cfBg = document.createElement('div');
-                        cfBg.className = 'fury-power-screen-flash';
-                        cfBg.style.background = '#ff4500';
-                        cfArena.appendChild(cfBg);
-                        cfBg.addEventListener('animationend', () => cfBg.remove(), { once: true });
-
-                        // "COMBO FINISHER" text
-                        const cfFlash = document.createElement('div');
-                        cfFlash.className = 'battle-combo-counter';
-                        cfFlash.innerHTML =
-                            '<span class="combo-x" style="color:#ff4500;text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 24px #ff4500">FINISH!</span>' +
-                            '<span class="combo-label" style="color:#fff;letter-spacing:3px">COMBO FINISHER</span>';
-                        cfArena.appendChild(cfFlash);
-                        cfFlash.addEventListener('animationend', () => cfFlash.remove(), { once: true });
-
-                        // Restore attacker kick sprite rotation
-                        if (cfAttImg) {
-                            setTimeout(() => {
-                                cfAttImg.style.transition = 'transform 0.12s ease-in';
-                                cfAttImg.style.transform  = cfBaseXf ? cfBaseXf.trim() : '';
-                                setTimeout(() => {
-                                    if (cfAttImg._idleSrc) cfAttImg.src = cfAttImg._idleSrc;
-                                    cfAttImg.style.transform = '';
-                                }, 120);
-                            }, 80);
-                        }
-
-                        // ── Phase 3: defender flies back with parabolic arc + spin ────────
-                        game.player._homeX = event.playerX;
-                        game.cpu._homeX    = event.cpuX;
-                        const cfDefFinalX = (event.defender === 'player' ? event.playerX : event.cpuX) * cfScale;
-                        const cfDefCurX   = parseFloat(cfDefEl.style.left) || 0;
-                        const cfDeltaX    = cfDefFinalX - cfDefCurX;
-                        const cfSpinDir   = cfDefIsCpu ? 1 : -1; // spin away from attacker
-
-                        cfDefEl.style.transition = 'none';
-                        await new Promise(res => {
-                            const t0   = performance.now();
-                            const DUR  = 580;
-                            const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-                            const step = now => {
-                                const t   = Math.min((now - t0) / DUR, 1);
-                                const tx  = cfDeltaX * ease(t);
-                                const ty  = -110 * Math.sin(Math.PI * t * 0.85); // arc: up then crash
-                                const rot = 360 * cfSpinDir * ease(t);
-                                cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
-                                if (cfDefImg) cfDefImg.style.transform = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${rot}deg)`;
-                                if (t < 1) { requestAnimationFrame(step); return; }
-                                // Commit final position
-                                cfDefEl.style.transform = '';
-                                cfDefEl.style.left  = cfDefFinalX + 'px';
-                                cfDefEl.style.right = 'auto';
-                                if (cfDefImg) cfDefImg.style.transform = cfDefIsCpu ? 'scaleX(-1)' : '';
-                                res();
-                            };
-                            requestAnimationFrame(step);
-                        });
-
-                        // ── Phase 4: landing impact ───────────────────────────────────────
-                        triggerArenaShake();
-                        const cfBodyEl = cfDefEl.querySelector('.fighter-body') || cfDefEl;
-                        const cfBodyR  = cfBodyEl.getBoundingClientRect();
-                        const cfArenaR = cfArena.getBoundingClientRect();
-                        const cfZoom   = getGameZoom();
-                        spawnJumpShockwave(
-                            (cfBodyR.left - cfArenaR.left) / cfZoom + (cfBodyR.width / cfZoom) / 2 - 11,
-                            (cfBodyR.bottom - cfArenaR.top) / cfZoom - 25,
-                            '#ff4500',
-                        );
-                        await sleep(120);
-
-                        // Defender stays in hurt frame for 700ms (knocked down feel)
-                        // then restores idle unless they're dead
-                        if (cfDefImg) {
-                            setTimeout(() => {
-                                if (event.cpuHp > 0 && event.playerHp > 0 && cfDefImg._idleSrc)
-                                    cfDefImg.src = cfDefImg._idleSrc;
-                            }, 700);
-                        }
-
-                        // ── Phase 5: attacker returns home ────────────────────────────────
-                        cfAttEl.classList.remove('dashing');
-                        cfAttEl.style.transition = 'left 220ms ease-out';
-                        void cfAttEl.offsetWidth;
-                        const cfAttHome = (event.attacker === 'player' ? event.playerX : event.cpuX) * cfScale;
-                        cfAttEl.style.left  = cfAttHome + 'px';
-                        cfAttEl.style.right = 'auto';
-                        await sleep(240);
-                        cfAttEl.style.transition = '';
-
+                    case 'combo_finisher':
+                        await _animateComboFinisher(event);
                         _comboCount = 0;
-                        await sleep(280);
                         break;
-                    }
 
                     case 'attack': {
                         // Separate real combos (preceded/followed by 'combo' event)
@@ -15069,133 +15205,18 @@
                         break;
                     }
 
-                    case 'fury_power': {
-                        game.player.health = event.playerHp;
-                        game.cpu.health    = event.cpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
-                        // Determine element from power id prefix (e.g. 'fire_fireball' → 'fire')
-                        const fpEl    = event.power.split('_')[0];
-                        const fpElemD = ELEMENT_DATA[fpEl] || {};
-                        const fpColor = fpElemD.color || '#ffd700';
-                        // Derive display name: everything after the first underscore, title-cased
-                        const fpRawName = event.power.split('_').slice(1).join(' ');
-                        const fpName    = fpRawName.replace(/\b\w/g, c => c.toUpperCase());
-                        // Passive effects (stone_skin, burn_aura, orb_active) skip the name flash
-                        const isPassive = event.power.includes('stone_skin') || event.power.includes('burn_aura') || event.power.includes('orb_active');
-                        if (!isPassive) showFuryPowerFlash(event.caster, fpName, fpColor);
-
-                        // ── Aerial counter (jump_fury) ────────────────────────────────────────
-                        if (event.aerial) {
-                            playAerialCounterAnimation(event.caster, event.target, event.power, fpColor, event.targetDefense || 'none');
-                            // Show damage number when projectile arrives (~740ms)
-                            if (event.damage > 0) setTimeout(() => showDamage(event.target, event.damage, false), 740);
-                            await sleep(1200);
-                            break;
-                        }
-
-                        const _fpTargetEl = game[event.target]?.element;
-
-                        // Store caster STR on the target element so the spike animation can use it
-                        const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-                        if (_fpTargetEl) _fpTargetEl._spikeCasterStr = _spikeCasterChar?.stats?.strength || 35;
-
-                        // Check if spike hits: compute target height at pillar impact moment (~238ms from now).
-                        // If target is above PILLAR_H (280px) at that moment → miss.
-                        // If target is at or below PILLAR_H → rebound hit (pillar catches them mid-fall).
-                        if (event.power.includes('earth_spike')) {
-                            if (_fpTargetEl?._spikeAirborne) {
-                                const _impactAt       = performance.now() + 680 * 0.35;
-                                const _targetHeightPx = getSpikeTargetHeight(_fpTargetEl, _impactAt);
-                                if (_targetHeightPx > 280) {
-                                    // Pillar rises but can't reach the airborne target
-                                    playFuryPowerAnimation(event.caster, event.target, 'earth_spike_miss', fpColor);
-                                    await sleep(1200);
-                                    break;
-                                }
-                                // Rebound hit — pass catch height so animation reduces impulse
-                                if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = _targetHeightPx;
-                            } else {
-                                // Normal ground hit
-                                if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = 0;
-                            }
-                        }
-
-                        // Play element-specific visual effect
-                        playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
-                        if (event.damage > 0) {
-                            // Delay damage number slightly so projectile reaches first
-                            const fpHitDelay = event.power.includes('fireball')     ? 700
-                                             : event.power.includes('giant_rock')    ? 1500
-                                             : event.power.includes('earth_spike')  ? 650
-                                             : event.power.includes('tsunami') || event.power.includes('tornado') ? 460
-                                             : 0;
-                            if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
-                            else showDamage(event.target, event.damage, false);
-                        }
-                        const fpSleepMs = isPassive ? 450
-                                        : event.power.includes('sky_discharge')  ? 3800
-                                        : event.power.includes('tsunami')        ? 1500
-                                        : event.power.includes('water_bullets')  ? 3300
-                                        : event.power.includes('fireball')       ? 2900
-                                        : event.power.includes('giant_rock')     ? 3700
-                                        : event.power.includes('earth_spike')   ? 3400
-                                        : 980;
-                        await sleep(fpSleepMs);
+                    case 'fury_power':
+                        await _animateFuryPower(event);
                         break;
-                    }
 
-                    case 'move': {
-                        // Update home positions and animate fighter sliding to new location
-                        // _homeX stored in server coords (1600px space); scaled on use
-                        game.player._homeX = event.playerX;
-                        game.cpu._homeX    = event.cpuX;
-                        const pEl = game.player.element;
-                        const cEl = game.cpu.element;
-                        const _mvArenaW = document.getElementById('arena').offsetWidth;
-                        const _mvScale  = _mvArenaW / 1600;
-                        if (event.from !== event.to) {
-                            const movEl  = game[event.fighter].element;
-                            const isBack = event.action === 'retreat';
-                            // Duration scales inversely with distance (encodes AGI + level):
-                            //   distServer 108px (AGI 15 lv1)  → ~210ms
-                            //   distServer 206px (AGI 68 lv1)  → ~182ms
-                            // CSS transition duration: distance-based so the fighter arrives on time.
-                            //   distServer 108px (AGI~15 slow) → ~207ms
-                            //   distServer 265px (AGI~100 mid) → ~158ms
-                            //   distServer 450px (AGI cap)     → ~100ms
-                            const distServer = Math.abs(event.to - event.from);
-                            const moveDur = Math.max(100, Math.round(240 - distServer * 0.31));
-                            // Set transition inline (bypasses the fixed .dashing class)
-                            movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
-                            void movEl.offsetWidth; // force reflow so transition fires
-                            // Only move the fighter that's actually moving — setting the
-                            // stationary fighter would teleport it if its DOM pos drifted.
-                            const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
-                            movEl.style.left  = _movTargetX + 'px';
-                            movEl.style.right = 'auto';
-                            // Frame rate driven by AGI speed (px/turn), not distance — so a slow
-                            // character always animates slowly even over short distances.
-                            animateRun(movEl, isBack, null, event.speed);
-                            await sleep(moveDur);
-                            stopRunAnimation(movEl);
-                            movEl.style.transition = ''; // restore default
-                        } else {
-                            // No actual movement — just sync positions silently
-                            pEl.style.left  = (event.playerX * _mvScale) + 'px';
-                            pEl.style.right = 'auto';
-                            cEl.style.left  = (event.cpuX * _mvScale) + 'px';
-                            cEl.style.right = 'auto';
-                        }
-                        await sleep(20);
+                    case 'move':
+                        await _animateMoveEvent(event);
                         break;
-                    }
 
                     case 'game_over': {
                         game.player.health = finalPlayerHp;
                         game.cpu.health    = finalCpuHp;
-                        updateHealth('player');
-                        updateHealth('cpu');
+                        updateBothFighters();
                         game.inProgress = false;
                         game.gameOver   = true;
                         const loser = event.winner === 'player' ? 'cpu' : 'player';
@@ -15809,7 +15830,7 @@
             saveCharacters();
             // Sync deletion to Supabase
             if (playerSession && BACKEND_URL && SYNC_SECRET) {
-                fetch(BACKEND_URL + '/api/character/delete', {
+                fetchWithTimeout(BACKEND_URL + '/api/character/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({ playerId: playerSession.playerId, characterId: id }),
@@ -16207,9 +16228,7 @@
                     aonCpuStats = saved.aonCpuStats;
                 }
 
-                // Unlock audio
-                if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (_audioCtx.state === 'suspended') _audioCtx.resume();
+                _ensureAudioCtx(); // Unlock audio
 
                 // Show game container with loading screen
                 document.getElementById('game-container').style.display = '';
@@ -16265,8 +16284,7 @@
                 stats.cpu = saved.stats.cpu;
 
                 // Update all UI
-                updateHealth('player');
-                updateHealth('cpu');
+                updateBothFighters();
                 updateFuryBar('player');
                 updateFuryBar('cpu');
                 updateCombatHud(character);
@@ -16843,6 +16861,12 @@
             const arrowRight = document.getElementById('menu-arrow-right');
             const actionsContainer = document.getElementById('menu-character-actions');
             const upgradeBtn = document.getElementById('menu-upgrade-stats');
+            const charImg = document.getElementById('menu-character-img');
+            const charBg = document.querySelector('.menu-character-bg');
+            const lvBadge = document.getElementById('menu-char-lv-badge');
+            const wrExt = document.getElementById('winrate-side-ext');
+            const expText = document.getElementById('menu-char-exp-text');
+            const countBadge = document.getElementById('upgrade-count-badge');
 
             if (character) {
                 const maxHp = getCharacterMaxHp(character);
@@ -16851,8 +16875,6 @@
 
                 nameEl.textContent = character.name.toUpperCase();
                 statsPanel.style.display = ''; // Show wooden panel
-                const charImg = document.getElementById('menu-character-img');
-                const charBg = document.querySelector('.menu-character-bg');
                 if (charImg) charImg.style.visibility = '';
                 if (charBg) charBg.style.visibility = '';
                 const played = character.gamesPlayed || 0;
@@ -16860,7 +16882,6 @@
                 const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
 
                 // Level circle next to XP bar
-                const lvBadge = document.getElementById('menu-char-lv-badge');
                 if (lvBadge) lvBadge.textContent = character.level >= MAX_LEVEL ? '★' : String(character.level);
 
                 // Win rate + games row (legacy label cleared — ring appears in stats block)
@@ -16882,7 +16903,6 @@
                 ).join('');
 
                 // ── Right extension: win rate ring ───────────────────────────────────
-                const wrExt = document.getElementById('winrate-side-ext');
                 if (wrExt) {
                     const circ   = 2 * Math.PI * 17;
                     const arcLen = circ * (winRate / 100);
@@ -16903,7 +16923,6 @@
                 if (character.level < MAX_LEVEL) {
                     expContainer.style.display = '';
                     expBar.style.width = expPercent + '%';
-                    const expText = document.getElementById('menu-char-exp-text');
                     if (expText) expText.textContent = Math.floor(character.exp || 0) + ' / ' + expNeeded;
                 } else {
                     expContainer.style.display = 'none';
@@ -16933,7 +16952,6 @@
                 // the character + arrows above don't shift when it appears/disappears.
                 const hasPendingUpgrades = pendingLevelUps.some(p => p.character && p.character.id === character.id);
                 upgradeBtn.style.display = ''; // always in layout when character is selected
-                const countBadge = document.getElementById('upgrade-count-badge');
                 if (hasPendingUpgrades) {
                     const count = pendingLevelUps.filter(p => p.character && p.character.id === character.id).length;
                     if (countBadge) { countBadge.textContent = count > 1 ? count : ''; countBadge.style.display = count > 1 ? '' : 'none'; }
@@ -16945,8 +16963,6 @@
             } else {
                 nameEl.textContent = 'NO FIGHTER';
                 statsPanel.style.display = 'none'; // Hide wooden panel
-                const charImg = document.getElementById('menu-character-img');
-                const charBg = document.querySelector('.menu-character-bg');
                 if (charImg) charImg.style.visibility = 'hidden';
                 if (charBg) charBg.style.visibility = 'hidden';
                 levelEl.textContent = '';
@@ -16958,7 +16974,6 @@
                 actionsContainer.style.display = 'none'; // Hide actions
                 upgradeBtn.style.display = 'none';
                 upgradeBtn.style.visibility = '';
-                const wrExt = document.getElementById('winrate-side-ext');
                 if (wrExt) wrExt.innerHTML = '';
             }
 
@@ -17170,7 +17185,7 @@
 
             // Apply on server (server reads pending_levelup from DB, validates, writes new stats)
             try {
-                const resp = await fetch(BACKEND_URL + '/api/character/levelup', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
                     body: JSON.stringify({ action: 'apply', characterId: character.id, optionIndex: optIndex })
@@ -17260,9 +17275,7 @@
                 aonEntryFee: aonActive ? aonEntryFee : 0
             }));
             startBattleHeartbeat();
-            // Unlock audio
-            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            _ensureAudioCtx(); // Unlock audio
 
             // Apply character stats
             const maxHp = getCharacterMaxHp(character);
@@ -17310,8 +17323,7 @@
             cacheHudElements();
 
             // Update health bars
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
 
@@ -17361,7 +17373,7 @@
             _preBattleFetch = null;
             if (!trainingMode && !_pvpBattleResult && playerSession) {
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
-                _preBattleFetch = fetch(BACKEND_URL + '/api/battle/run', {
+                _preBattleFetch = fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
@@ -17398,7 +17410,7 @@
                         },
                         ...(aonActive && _aonMatchId ? { aonMatchId: _aonMatchId } : {}),
                     }),
-                });
+                }, 20000);
             }
 
             await startCountdown();
@@ -17599,12 +17611,6 @@
             arena.appendChild(textEl);
             textEl.addEventListener('animationend', () => textEl.remove(), { once: true });
         }
-
-        const CRITICAL_CHANCE = 0.05; // 5%
-        const CRITICAL_MULTIPLIER = 1.6;
-        const CRITICAL_MULTIPLIER_FURY = 1.3; // Reduced crit multiplier during fury
-        const FURY_GAIN = 1.5;
-        const FURY_DURATION = 7000; // 7 seconds
 
         function log(message, type = '') {
             const logEl = document.getElementById('game-log');
@@ -19351,6 +19357,8 @@
             hudEl[fighter + 'HealthText'].textContent = `${f.health} / ${f.maxHealth}`;
         }
 
+        function updateBothFighters() { updateHealth('player'); updateHealth('cpu'); }
+
         function updateCombatHud(character) {
             // Update player name and level
             const playerName = character ? character.name.toUpperCase() : 'PLAYER';
@@ -20219,8 +20227,7 @@
         }
 
         function playFootstep() {
-            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            _ensureAudioCtx();
             const t = _audioCtx.currentTime;
             const duration = 0.07 + Math.random() * 0.03;
             // Noise burst
@@ -21231,8 +21238,7 @@
             cacheHudElements();
 
             // Reset health bars
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
 
@@ -21382,7 +21388,7 @@
                 if (!roomId) { mm.remove(); aonActive = false; return; }
 
                 // Step 2 — Register room with backend so P2 can find it
-                await fetch(BACKEND_URL + '/api/aon/room/open', {
+                await fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
@@ -21565,7 +21571,7 @@
 
             try {
                 // 1. Fetch backend character signature (ed25519 over canonical char bytes)
-                const sigRes  = await fetch(BACKEND_URL + '/api/aon/sign-character-solana', {
+                const sigRes  = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character-solana', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({ characterId: character.id, walletAddress: pubkeyStr }),
@@ -21618,7 +21624,7 @@
                 await connection.confirmTransaction(txSig, 'confirmed');
 
                 // 7. Register with backend matchmaking (fire-and-forget)
-                fetch(BACKEND_URL + '/api/aon/room/open', {
+                fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
@@ -21673,7 +21679,7 @@
             // aonRoundsToWin is 1, 2, or 3 (how many round wins end the match).
             let startResp, startData;
             try {
-                startResp = await fetch(BACKEND_URL + '/api/aon/start', {
+                startResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/start', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({
@@ -21763,8 +21769,7 @@
             stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
             stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
             updateCombatHud(character);
@@ -21843,8 +21848,7 @@
             stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             cacheHudElements();
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
             updateCombatHud(character);
@@ -22037,8 +22041,7 @@
             stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             cacheHudElements();
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
             updateCombatHud(character);
@@ -22239,8 +22242,7 @@
             game.inProgress = false;
 
             // Reset health and fury bars
-            updateHealth('player');
-            updateHealth('cpu');
+            updateBothFighters();
             updateFuryBar('player');
             updateFuryBar('cpu');
 
@@ -22811,7 +22813,6 @@
         }
 
         // Responsive scaling using zoom (affects real layout)
-        const IS_MOBILE = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         let currentGameZoom = 1;
         const _cachedContainer = document.querySelector('.game-container');
@@ -23433,14 +23434,12 @@
             }
         }
 
-        const MAX_WEAPON_SLOTS = 5;
         function getMaxEquippedWeapons(level) {
             if (level < 5) return 0;
             return Math.min(5, 1 + Math.floor((level - 5) / 10));
         }
 
         // Populate inventory panel with weapons
-        const SHOP_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
 
         function getItemCooldownRemaining(id) {
             if (!shopItemCooldowns[id]) return 0;
@@ -23876,72 +23875,56 @@
 
         // ===== WELLNESS DISPLAY FUNCTIONS =====
 
+        // Private: renders a stat bar (wellness or morale) into a set of DOM elements.
+        // cfg: { field, defaultVal, getStatus, max, label,
+        //        containerId?, fillId, statusId, valueId }
+        function _updateStatBar(character, cfg) {
+            if (cfg.containerId) {
+                const container = document.getElementById(cfg.containerId);
+                if (!container) return;
+                if (!character) { container.style.display = 'none'; return; }
+                container.style.display = '';
+            } else {
+                if (!character) return;
+            }
+            const val    = character[cfg.field] ?? cfg.defaultVal;
+            const status = cfg.getStatus(val);
+            const pct    = Math.max(0, Math.min(100, val));
+            const fill   = document.getElementById(cfg.fillId);
+            if (fill) { fill.style.width = pct + '%'; fill.style.background = status.color; }
+            const statusEl = document.getElementById(cfg.statusId);
+            if (statusEl) { statusEl.textContent = cfg.label + status.label; statusEl.style.color = status.color; }
+            const valueEl = document.getElementById(cfg.valueId);
+            if (valueEl) valueEl.textContent = val + '/' + cfg.max;
+        }
+
         function updateWellnessDisplay(character) {
-            const container = document.getElementById('wellness-bar-container');
-            if (!container) return;
-            if (!character) { container.style.display = 'none'; return; }
-
-            container.style.display = '';
-            const w = character.wellness ?? 100;
-            const status = getWellnessStatus(w);
-            const pct = Math.max(0, Math.min(100, w));
-
-            document.getElementById('wellness-bar-fill').style.width = pct + '%';
-            document.getElementById('wellness-bar-fill').style.background = status.color;
-            document.getElementById('wellness-status-text').textContent = 'Wellness: ' + status.label;
-            document.getElementById('wellness-status-text').style.color = status.color;
-            document.getElementById('wellness-value-text').textContent = w + '/' + WELLNESS_MAX;
+            _updateStatBar(character, {
+                containerId: 'wellness-bar-container', field: 'wellness', defaultVal: 100,
+                getStatus: getWellnessStatus, max: WELLNESS_MAX, label: 'Wellness: ',
+                fillId: 'wellness-bar-fill', statusId: 'wellness-status-text', valueId: 'wellness-value-text',
+            });
         }
-
         function updateMoraleDisplay(character) {
-            const container = document.getElementById('morale-bar-container');
-            if (!container) return;
-            if (!character) { container.style.display = 'none'; return; }
-
-            container.style.display = '';
-            const m = character.morale ?? 100;
-            const status = getMoraleStatus(m);
-            const pct = Math.max(0, Math.min(100, m));
-
-            document.getElementById('morale-bar-fill').style.width = pct + '%';
-            document.getElementById('morale-bar-fill').style.background = status.color;
-            document.getElementById('morale-status-text').textContent = 'Morale: ' + status.label;
-            document.getElementById('morale-status-text').style.color = status.color;
-            document.getElementById('morale-value-text').textContent = m + '/' + MORALE_MAX;
+            _updateStatBar(character, {
+                containerId: 'morale-bar-container', field: 'morale', defaultVal: 100,
+                getStatus: getMoraleStatus, max: MORALE_MAX, label: 'Morale: ',
+                fillId: 'morale-bar-fill', statusId: 'morale-status-text', valueId: 'morale-value-text',
+            });
         }
-
         function updateCareWellnessDisplay(character) {
-            if (!character) return;
-            const w = character.wellness ?? 100;
-            const status = getWellnessStatus(w);
-            const pct = Math.max(0, Math.min(100, w));
-
-            const fill = document.getElementById('care-wellness-fill');
-            if (fill) {
-                fill.style.width = pct + '%';
-                fill.style.background = status.color;
-            }
-            const statusEl = document.getElementById('care-wellness-status');
-            if (statusEl) { statusEl.textContent = 'Wellness: ' + status.label; statusEl.style.color = status.color; }
-            const valueEl = document.getElementById('care-wellness-value');
-            if (valueEl) valueEl.textContent = w + '/' + WELLNESS_MAX;
+            _updateStatBar(character, {
+                field: 'wellness', defaultVal: 100, getStatus: getWellnessStatus,
+                max: WELLNESS_MAX, label: 'Wellness: ',
+                fillId: 'care-wellness-fill', statusId: 'care-wellness-status', valueId: 'care-wellness-value',
+            });
         }
-
         function updateCareMoraleDisplay(character) {
-            if (!character) return;
-            const m = character.morale ?? 100;
-            const status = getMoraleStatus(m);
-            const pct = Math.max(0, Math.min(100, m));
-
-            const fill = document.getElementById('care-morale-fill');
-            if (fill) {
-                fill.style.width = pct + '%';
-                fill.style.background = status.color;
-            }
-            const statusEl = document.getElementById('care-morale-status');
-            if (statusEl) { statusEl.textContent = 'Morale: ' + status.label; statusEl.style.color = status.color; }
-            const valueEl = document.getElementById('care-morale-value');
-            if (valueEl) valueEl.textContent = m + '/' + MORALE_MAX;
+            _updateStatBar(character, {
+                field: 'morale', defaultVal: 100, getStatus: getMoraleStatus,
+                max: MORALE_MAX, label: 'Morale: ',
+                fillId: 'care-morale-fill', statusId: 'care-morale-status', valueId: 'care-morale-value',
+            });
         }
 
         let careActiveTab     = 'food';      // 'food' | 'medical'
@@ -24136,7 +24119,7 @@
             if (character && mItem && playerSession) {
                 gameArea.innerHTML = '<div style="color:#555;font-family:\'Press Start 2P\',monospace;font-size:9px;text-align:center;padding:60px 20px">PREPARING...</div>';
                 try {
-                    const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
+                    const resp = await fetchWithTimeout(BACKEND_URL + '/api/minigame/start', {
                         method: 'POST',
                         headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                         body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId })
@@ -24154,7 +24137,7 @@
 
                 if (currentSessionToken && playerSession) {
                     try {
-                        const resp = await fetch(BACKEND_URL + '/api/minigame/complete', {
+                        const resp = await fetchWithTimeout(BACKEND_URL + '/api/minigame/complete', {
                             method: 'POST',
                             headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                             body: JSON.stringify({ playerId: playerSession.playerId, sessionToken: currentSessionToken, score: rawValue })
@@ -24198,7 +24181,7 @@
                     // Get retry session token from server
                     if (character && currentSessionToken && playerSession) {
                         try {
-                            const resp = await fetch(BACKEND_URL + '/api/minigame/start', {
+                            const resp = await fetchWithTimeout(BACKEND_URL + '/api/minigame/start', {
                                 method: 'POST',
                                 headers: { ...(await getAuthHeaders()), 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, itemId, parentToken: currentSessionToken })
@@ -25030,6 +25013,184 @@
         }
         // ───────────────────────────────────────────────────────
 
+        function _renderCareWellnessSection(character, area) {
+            // Food / Medical tabs
+            const tabRow = document.createElement('div');
+            tabRow.className = 'care-tabs';
+            tabRow.style.marginBottom = '8px';
+            ['food', 'medical'].forEach(tab => {
+                const t = document.createElement('div');
+                t.className = 'care-tab' + (careActiveTab === tab ? ' active' : '');
+                t.textContent = tab.toUpperCase();
+                t.addEventListener('click', () => { careActiveTab = tab; renderCarePanel(); });
+                tabRow.appendChild(t);
+            });
+            area.appendChild(tabRow);
+
+            // Items grid — shows ALL items for this tab (owned + purchasable)
+            const grid = document.createElement('div');
+            grid.className = 'care-items-grid';
+            const ownedItems = character.wellnessItems || [];
+            const counts = {};
+            ownedItems.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+            // food tab also shows 'special' items (e.g. happy_pill)
+            const tabItems = Object.entries(WELLNESS_ITEMS).filter(([, w]) =>
+                careActiveTab === 'food' ? (w.category === 'food' || w.category === 'special') : w.category === careActiveTab
+            );
+            const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
+            tabItems.forEach(([id, wItem]) => {
+                const count = counts[id] || 0;
+                const owned = count > 0;
+                const onCooldown = getItemCooldownRemaining(id) > 0;
+                const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
+                const canAfford = globalTokens >= wItem.price;
+
+                const card = document.createElement('div');
+                card.className = 'care-item' + (owned ? ' care-item-owned' : '') + (atMax ? ' empty' : '');
+                card.draggable = !atMax;
+                card.dataset.itemId = id;
+                card.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('careItemId', id);
+                    e.dataTransfer.effectAllowed = 'copy';
+                    card.classList.add('dragging');
+                });
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                let actionEl;
+                if (atMax) {
+                    actionEl = '<div class="care-item-cd-text">FULL</div>';
+                } else if (owned) {
+                    actionEl = '<div class="care-item-owned-badge">x' + count + ' ✓</div>';
+                } else if (onCooldown || atDailyLimit) {
+                    actionEl = '<div class="care-item-cd-text">LIMIT</div>';
+                } else {
+                    actionEl = '<button class="care-item-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + wItem.price + '</button>';
+                }
+
+                card.innerHTML =
+                    '<div class="care-item-icon">' + wItem.icon + '</div>' +
+                    '<div class="care-item-name">' + wItem.name + '</div>' +
+                    '<div class="care-item-restore">+' + wItem.wellnessRestore + '</div>' +
+                    (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
+                    actionEl;
+
+                const actionable = !atMax && (owned || (!onCooldown && canAfford && !atDailyLimit));
+                if (actionable) {
+                    card.addEventListener('click', async () => {
+                        const confirmed = await careBuyConfirm(wItem, owned);
+                        if (!confirmed) return;
+                        card.style.pointerEvents = 'none';
+                        card.style.opacity = '0.5';
+                        const result = owned
+                            ? await feedCharacter(character, id)
+                            : await buyAndFeedCharacter(character, id);
+                        if (result) {
+                            const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
+                            showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
+                            if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                        }
+                        renderCarePanel();
+                        updateWellnessDisplay(character);
+                        updateMoraleDisplay(character);
+                        updateLobbyCharacterDisplay();
+                    });
+                }
+                grid.appendChild(card);
+            });
+            area.appendChild(grid);
+        }
+
+        function _renderCareMoraleSection(character, area) {
+            const subtitle = document.createElement('div');
+            subtitle.className = 'care-section-subtitle';
+            subtitle.textContent = '⚡ ACTIVITIES — buy & use instantly';
+            area.appendChild(subtitle);
+
+            const list = document.createElement('div');
+            list.className = 'care-activities-list';
+
+            // Free passive: win a battle
+            const freeRow = document.createElement('div');
+            freeRow.className = 'care-activity-row care-activity-passive';
+            freeRow.innerHTML =
+                '<span class="care-activity-icon">⚔️</span>' +
+                '<div class="care-activity-info">' +
+                    '<div class="care-activity-name">Win a Battle</div>' +
+                    '<div class="care-activity-stats">+5 Morale &nbsp;·&nbsp; +15 on win streak (3+)</div>' +
+                '</div>' +
+                '<span class="care-activity-free-badge">FREE</span>';
+            list.appendChild(freeRow);
+
+            const atMax = (character.morale ?? 100) >= MORALE_MAX;
+            Object.keys(MORALE_ITEMS).forEach(id => {
+                const mItem = MORALE_ITEMS[id];
+                const isMinigame = MINIGAME_ITEM_IDS.includes(id);
+                const onCooldown = isMinigame ? false : getItemCooldownRemaining(id) > 0;
+                const canAfford = globalTokens >= mItem.price;
+                const ownedCount = (character.moraleItems || []).filter(i => i === id).length;
+                const atMaxStack = mItem.maxStack != null && ownedCount >= mItem.maxStack;
+                const atDailyLimit = isMinigame ? getMinigamePurchasesRemaining() <= 0 : getItemPurchasesRemaining(id) <= 0;
+                const disabled = atMax || onCooldown || !canAfford || atDailyLimit || atMaxStack;
+
+                const row = document.createElement('div');
+                row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
+
+                const isInteractive = !!mItem.interactive;
+                let rightEl;
+                if (atMax) {
+                    rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
+                } else if (atMaxStack) {
+                    rightEl = '<span class="care-activity-cooldown-text">' + ownedCount + '/' + mItem.maxStack + ' STACKED</span>';
+                } else if (atDailyLimit) {
+                    const limitLabel = isMinigame
+                        ? 'LIMIT ' + minigameDailyPurchases + '/' + MINIGAME_DAILY_LIMIT
+                        : 'LIMIT ' + (itemDailyPurchases[id] || 0) + '/' + ITEM_DAILY_LIMIT;
+                    rightEl = '<span class="care-activity-cooldown-text">' + limitLabel + '</span>';
+                } else {
+                    const btnLabel = isInteractive ? '🎮 PLAY (' + mItem.price + '🪙)' : '🪙 ' + mItem.price;
+                    rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>' + btnLabel + '</button>';
+                }
+
+                const testBtnHtml = isInteractive ? '<button class="care-activity-test-btn">🧪 TEST</button>' : '';
+                const moraleStatText = mItem.maxStack != null
+                    ? '5-' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP'
+                    : '+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP';
+                row.innerHTML =
+                    '<span class="care-activity-icon">' + mItem.icon + '</span>' +
+                    '<div class="care-activity-info">' +
+                        '<div class="care-activity-name">' + mItem.name + '</div>' +
+                        '<div class="care-activity-stats">' + moraleStatText + '</div>' +
+                    '</div>' +
+                    rightEl + testBtnHtml;
+
+                if (!disabled) {
+                    const btn = row.querySelector('.care-activity-buy-btn');
+                    if (btn) btn.addEventListener('click', async () => {
+                        const confirmed = await careBuyConfirm(
+                            { icon: mItem.icon, name: mItem.name, price: mItem.price },
+                            false
+                        );
+                        if (!confirmed) return;
+                        btn.disabled = true;
+                        btn.textContent = '...';
+                        const _buyRes = await buyAndBoostMorale(character, id);
+                        renderCarePanel();
+                        updateMoraleDisplay(character);
+                        updateLobbyCharacterDisplay();
+                        if (isInteractive && _buyRes !== null) {
+                            launchMinigame(id, mItem.icon, mItem.name, character);
+                        }
+                    });
+                }
+                if (isInteractive) {
+                    const testBtn = row.querySelector('.care-activity-test-btn');
+                    if (testBtn) testBtn.addEventListener('click', () => launchMinigame(id, mItem.icon, mItem.name));
+                }
+                list.appendChild(row);
+            });
+            area.appendChild(list);
+        }
+
         function renderCarePanel() {
             const character = getSelectedCharacter();
             if (!character) return;
@@ -25042,189 +25203,14 @@
             if (wCol) wCol.classList.toggle('active', careActiveSection === 'wellness');
             if (mCol) mCol.classList.toggle('active', careActiveSection === 'morale');
 
-            // Render content area
             const area = document.getElementById('care-content-area');
             if (!area) return;
             area.innerHTML = '';
 
             if (careActiveSection === 'wellness') {
-                // Food / Medical tabs
-                const tabRow = document.createElement('div');
-                tabRow.className = 'care-tabs';
-                tabRow.style.marginBottom = '8px';
-                ['food', 'medical'].forEach(tab => {
-                    const t = document.createElement('div');
-                    t.className = 'care-tab' + (careActiveTab === tab ? ' active' : '');
-                    t.textContent = tab.toUpperCase();
-                    t.addEventListener('click', () => { careActiveTab = tab; renderCarePanel(); });
-                    tabRow.appendChild(t);
-                });
-                area.appendChild(tabRow);
-
-                // Items grid — shows ALL items for this tab (owned + purchasable)
-                const grid = document.createElement('div');
-                grid.className = 'care-items-grid';
-                const ownedItems = character.wellnessItems || [];
-                const counts = {};
-                ownedItems.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
-                // food tab also shows 'special' items (e.g. happy_pill)
-                const tabItems = Object.entries(WELLNESS_ITEMS).filter(([, w]) =>
-                    careActiveTab === 'food' ? (w.category === 'food' || w.category === 'special') : w.category === careActiveTab
-                );
-                const atMax = (character.wellness ?? 100) >= WELLNESS_MAX;
-                tabItems.forEach(([id, wItem]) => {
-                    const count = counts[id] || 0;
-                    const owned = count > 0;
-                    const onCooldown = getItemCooldownRemaining(id) > 0;
-                    const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
-                    const canAfford = globalTokens >= wItem.price;
-
-                    const card = document.createElement('div');
-                    card.className = 'care-item' + (owned ? ' care-item-owned' : '') + (atMax ? ' empty' : '');
-                    card.draggable = !atMax;
-                    card.dataset.itemId = id;
-                    card.addEventListener('dragstart', e => {
-                        e.dataTransfer.setData('careItemId', id);
-                        e.dataTransfer.effectAllowed = 'copy';
-                        card.classList.add('dragging');
-                    });
-                    card.addEventListener('dragend', () => card.classList.remove('dragging'));
-
-                    let actionEl;
-                    if (atMax) {
-                        actionEl = '<div class="care-item-cd-text">FULL</div>';
-                    } else if (owned) {
-                        actionEl = '<div class="care-item-owned-badge">x' + count + ' ✓</div>';
-                    } else if (onCooldown || atDailyLimit) {
-                        actionEl = '<div class="care-item-cd-text">LIMIT</div>';
-                    } else {
-                        actionEl = '<button class="care-item-buy-btn"' + (!canAfford ? ' disabled' : '') + '>🪙 ' + wItem.price + '</button>';
-                    }
-
-                    card.innerHTML =
-                        '<div class="care-item-icon">' + wItem.icon + '</div>' +
-                        '<div class="care-item-name">' + wItem.name + '</div>' +
-                        '<div class="care-item-restore">+' + wItem.wellnessRestore + '</div>' +
-                        (wItem.xpGrant ? '<div class="care-item-xp">+' + wItem.xpGrant + ' XP</div>' : '') +
-                        actionEl;
-
-                    const actionable = !atMax && (owned || (!onCooldown && canAfford && !atDailyLimit));
-                    if (actionable) {
-                        card.addEventListener('click', async () => {
-                            const confirmed = await careBuyConfirm(wItem, owned);
-                            if (!confirmed) return;
-                            card.style.pointerEvents = 'none';
-                            card.style.opacity = '0.5';
-                            const result = owned
-                                ? await feedCharacter(character, id)
-                                : await buyAndFeedCharacter(character, id);
-                            if (result) {
-                                const moraleText = result.moraleBonus ? ' | +' + result.moraleBonus + ' Morale' : '';
-                                showNotice(wItem.icon + ' +' + wItem.wellnessRestore + ' Wellness | +' + result.xpGained + ' XP' + moraleText);
-                                if (result.leveledUp) addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                            }
-                            renderCarePanel();
-                            updateWellnessDisplay(character);
-                            updateMoraleDisplay(character);
-                            updateLobbyCharacterDisplay();
-                        });
-                    }
-                    grid.appendChild(card);
-                });
-                area.appendChild(grid);
-
+                _renderCareWellnessSection(character, area);
             } else {
-                // Morale activities — vertical list
-                const subtitle = document.createElement('div');
-                subtitle.className = 'care-section-subtitle';
-                subtitle.textContent = '⚡ ACTIVITIES — buy & use instantly';
-                area.appendChild(subtitle);
-
-                const list = document.createElement('div');
-                list.className = 'care-activities-list';
-
-                // Free passive: win a battle
-                const freeRow = document.createElement('div');
-                freeRow.className = 'care-activity-row care-activity-passive';
-                freeRow.innerHTML =
-                    '<span class="care-activity-icon">⚔️</span>' +
-                    '<div class="care-activity-info">' +
-                        '<div class="care-activity-name">Win a Battle</div>' +
-                        '<div class="care-activity-stats">+5 Morale &nbsp;·&nbsp; +15 on win streak (3+)</div>' +
-                    '</div>' +
-                    '<span class="care-activity-free-badge">FREE</span>';
-                list.appendChild(freeRow);
-
-                const atMax = (character.morale ?? 100) >= MORALE_MAX;
-                Object.keys(MORALE_ITEMS).forEach(id => {
-                    const mItem = MORALE_ITEMS[id];
-                    const isMinigame = MINIGAME_ITEM_IDS.includes(id);
-                    const cooldown = isMinigame ? 0 : getItemCooldownRemaining(id);
-                    const onCooldown = cooldown > 0;
-                    const canAfford = globalTokens >= mItem.price;
-                    const ownedCount = (character.moraleItems || []).filter(i => i === id).length;
-                    const atMaxStack = mItem.maxStack != null && ownedCount >= mItem.maxStack;
-                    const atDailyLimit = isMinigame ? getMinigamePurchasesRemaining() <= 0 : getItemPurchasesRemaining(id) <= 0;
-                    const disabled = atMax || onCooldown || !canAfford || atDailyLimit || atMaxStack;
-
-                    const row = document.createElement('div');
-                    row.className = 'care-activity-row' + (disabled ? ' cant-afford' : '');
-
-                    const isInteractive = !!mItem.interactive;
-                    let rightEl;
-                    if (atMax) {
-                        rightEl = '<span class="care-activity-cooldown-text">MORALE FULL</span>';
-                    } else if (atMaxStack) {
-                        rightEl = '<span class="care-activity-cooldown-text">' + ownedCount + '/' + mItem.maxStack + ' STACKED</span>';
-                    } else if (atDailyLimit) {
-                        const limitLabel = isMinigame
-                            ? 'LIMIT ' + minigameDailyPurchases + '/' + MINIGAME_DAILY_LIMIT
-                            : 'LIMIT ' + (itemDailyPurchases[id] || 0) + '/' + ITEM_DAILY_LIMIT;
-                        rightEl = '<span class="care-activity-cooldown-text">' + limitLabel + '</span>';
-                    } else {
-                        const btnLabel = isInteractive ? '🎮 PLAY (' + mItem.price + '🪙)' : '🪙 ' + mItem.price;
-                        rightEl = '<button class="care-activity-buy-btn"' + (!canAfford ? ' disabled' : '') + '>' + btnLabel + '</button>';
-                    }
-
-                    const testBtnHtml = isInteractive ? '<button class="care-activity-test-btn">🧪 TEST</button>' : '';
-                    const moraleStatText = mItem.maxStack != null
-                        ? '5-' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP'
-                        : '+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP';
-                    row.innerHTML =
-                        '<span class="care-activity-icon">' + mItem.icon + '</span>' +
-                        '<div class="care-activity-info">' +
-                            '<div class="care-activity-name">' + mItem.name + '</div>' +
-                            '<div class="care-activity-stats">' + moraleStatText + '</div>' +
-                        '</div>' +
-                        rightEl + testBtnHtml;
-
-                    if (!disabled) {
-                        const btn = row.querySelector('.care-activity-buy-btn');
-                        if (btn) btn.addEventListener('click', async () => {
-                            const confirmed = await careBuyConfirm(
-                                { icon: mItem.icon, name: mItem.name, price: mItem.price },
-                                false
-                            );
-                            if (!confirmed) return;
-                            btn.disabled = true;
-                            btn.textContent = '...';
-                            const _buyRes = await buyAndBoostMorale(character, id);
-                            renderCarePanel();
-                            updateMoraleDisplay(character);
-                            updateLobbyCharacterDisplay();
-                            if (isInteractive && _buyRes !== null) {
-                                launchMinigame(id, mItem.icon, mItem.name, character);
-                            }
-                        });
-                    }
-                    // TEST button always available for interactive items regardless of state
-                    if (isInteractive) {
-                        const testBtn = row.querySelector('.care-activity-test-btn');
-                        if (testBtn) testBtn.addEventListener('click', () => launchMinigame(id, mItem.icon, mItem.name)); // no character = test mode
-                    }
-                    list.appendChild(row);
-                });
-                area.appendChild(list);
+                _renderCareMoraleSection(character, area);
             }
         }
 
@@ -27079,41 +27065,5 @@
     <!-- React login gate (Privy auth — no redirect) -->
     <div id="privy-root"></div>
     <script type="module" src="/src/main.jsx"></script>
-
-    <!-- Power Lab panel (visible only in power-test-mode) -->
-    <div id="power-test-panel">
-        <div class="ptp-header">
-            <span class="ptp-title">⚗️ POWER LAB</span>
-            <button class="ptp-back-btn" onclick="exitPowerTestMode()">← MENU</button>
-        </div>
-        <div class="ptp-elements" id="ptp-elements"></div>
-        <div class="ptp-row">
-            <button class="ptp-bg-btn" onclick="cyclePowerTestBg(-1)">◀</button>
-            <span class="ptp-bg-name" id="ptp-bg-name">Apocalypse</span>
-            <button class="ptp-bg-btn" onclick="cyclePowerTestBg(1)">▶</button>
-        </div>
-        <div class="ptp-powers" id="ptp-powers"></div>
-    </div>
-<!-- Settings panel — fixed overlay, visible from both lobby and arena -->
-<div class="settings-panel hidden" id="settings-panel">
-    <div class="settings-header">
-        <div class="settings-title">SOUND</div>
-        <span class="settings-close" id="settings-close">&times;</span>
-    </div>
-    <div class="volume-row">
-        <span class="volume-icon" id="volume-icon">&#128264;</span>
-        <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
-        <span class="volume-value" id="volume-value">100%</span>
-    </div>
-    <hr class="settings-divider">
-    <div class="settings-title">CAMERA</div>
-    <div class="settings-toggle-row">
-        <span class="settings-toggle-label">Follow Camera</span>
-        <label class="settings-toggle-switch">
-            <input type="checkbox" id="camera-toggle" checked>
-            <span class="settings-toggle-slider"></span>
-        </label>
-    </div>
-</div>
 </body>
 </html>
