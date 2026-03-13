@@ -14684,10 +14684,15 @@
                 const _initScale  = _initArenaW / 1600;
                 const pEl = game.player.element;
                 const cEl = game.cpu.element;
+                pEl.style.transition = 'none';
+                cEl.style.transition = 'none';
                 pEl.style.left  = (game.player._homeX * _initScale) + 'px';
                 pEl.style.right = 'auto';
                 cEl.style.left  = (game.cpu._homeX * _initScale) + 'px';
                 cEl.style.right = 'auto';
+                void pEl.offsetWidth;
+                pEl.style.transition = '';
+                cEl.style.transition = '';
             }
             // Cache ground-level Y for each fighter while they are at rest.
             // Used by Earth Spike so the pillar always erupts from the floor
@@ -17161,8 +17166,6 @@
                 aonEntryFee: aonActive ? aonEntryFee : 0
             }));
             startBattleHeartbeat();
-            startArenaCamera();
-
             // Unlock audio
             if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (_audioCtx.state === 'suspended') _audioCtx.resume();
@@ -17186,13 +17189,21 @@
             game.gameOver = false;
             game.gameOverHandled = false;
             game.inProgress = false;
-            // Reset fighter positions to arena start
+            // Reset fighter positions to arena start — disable transitions first so
+            // the position reset doesn't animate from wherever cleanupFighters left them.
             game.player._homeX = 128;
             game.cpu._homeX    = 1252;
+            game.player.element.style.transition = 'none';
+            game.cpu.element.style.transition    = 'none';
             game.player.element.style.left  = '8%';
             game.player.element.style.right = '';
             game.cpu.element.style.right    = '8%';
             game.cpu.element.style.left     = '';
+            void game.player.element.offsetWidth; // force reflow before restoring transitions
+            game.player.element.style.transition = '';
+            game.cpu.element.style.transition    = '';
+            // Start camera now that _homeX and element positions are correct
+            startArenaCamera();
             // Reset stamina bars to full
             updateStaminaBar('player', 100, 100);
             updateStaminaBar('cpu',    100, 100);
