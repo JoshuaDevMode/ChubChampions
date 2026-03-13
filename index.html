@@ -1777,11 +1777,26 @@
         .settings-panel.hidden {
             display: none;
         }
-        .settings-btn-lobby {
-            position: absolute;
-            top: 12px;
-            right: 52px;
-            z-index: 60;
+        .lobby-settings-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.2s;
+            flex-shrink: 0;
+        }
+        .lobby-settings-btn:hover {
+            opacity: 1;
+            transform: rotate(30deg);
+        }
+        .lobby-settings-btn img {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
         .settings-header {
             display: flex;
@@ -9554,8 +9569,6 @@
         <div class="lobby-bg" id="lobby-bg"></div>
         <!-- Fullscreen button (mobile, lobby) -->
         <div class="fullscreen-btn-lobby" id="fullscreen-btn-lobby" title="Fullscreen" onclick="toggleFullscreen()">⛶</div>
-        <!-- Settings gear (lobby) -->
-        <div class="settings-btn settings-btn-lobby" id="settings-btn-lobby" title="Settings"><img src="/FightChub/assets/Settings-Icon-CLXl9vr2.png" alt="Settings"></div>
         <!-- Top Bar: full-width, outside menu-content -->
         <div class="lobby-currency-bar" id="lobby-currency-bar">
             <div class="top-nav-group">
@@ -9599,6 +9612,8 @@
                 </div>
                 <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('fightchub:showlogin'))">🎮 LOGIN</button>
             </div>
+            <!-- Settings gear -->
+            <button class="lobby-settings-btn" id="settings-btn-lobby" title="Settings"><img src="/FightChub/assets/Settings-Icon-CLXl9vr2.png" alt="⚙"></button>
         </div>
 
         <div class="menu-content">
