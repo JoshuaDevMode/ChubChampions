@@ -1843,6 +1843,62 @@
             cursor: pointer;
             border: 2px solid #000;
         }
+        .settings-divider {
+            border: none;
+            border-top: 1px solid #2a2a2a;
+            margin: 10px 0 8px;
+        }
+        .settings-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 2px;
+        }
+        .settings-toggle-label {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.55em;
+            color: #bbb;
+            letter-spacing: 0.5px;
+        }
+        .settings-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .settings-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .settings-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #333;
+            border-radius: 20px;
+            transition: background 0.25s;
+        }
+        .settings-toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background: #666;
+            border-radius: 50%;
+            transition: transform 0.25s, background 0.25s;
+        }
+        .settings-toggle-switch input:checked + .settings-toggle-slider {
+            background: #2a6b67;
+        }
+        .settings-toggle-switch input:checked + .settings-toggle-slider:before {
+            transform: translateX(16px);
+            background: #4ecdc4;
+        }
 
         @keyframes floatUp {
             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
@@ -10448,6 +10504,15 @@
                     <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
                     <span class="volume-value" id="volume-value">100%</span>
                 </div>
+                <hr class="settings-divider">
+                <div class="settings-title">CAMERA</div>
+                <div class="settings-toggle-row">
+                    <span class="settings-toggle-label">Follow Camera</span>
+                    <label class="settings-toggle-switch">
+                        <input type="checkbox" id="camera-toggle" checked>
+                        <span class="settings-toggle-slider"></span>
+                    </label>
+                </div>
             </div>
             <div id="arena-bg"></div>
             <div id="arena-world">
@@ -15155,6 +15220,7 @@
         // Only the #arena-world layer (fighters + fury effects) is scaled;
         // the HUD and overlays stay fixed in #arena.
         let _camZoom = 1.0, _camPanX = 0, _camRaf = null;
+        let _cameraEnabled = localStorage.getItem('fightchub_camera_enabled') !== 'false';
 
         function _camTick() {
             const arenaEl = document.getElementById('arena');
@@ -15225,6 +15291,33 @@
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) bgEl.style.transform = '';
             _camZoom = 1.0; _camPanX = 0;
+        }
+
+        // Smoothly lerps the camera back to the neutral state then stops the RAF.
+        // Used when the player disables the follow camera mid-battle.
+        function stopArenaCameraSmooth() {
+            if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
+            const worldEl = document.getElementById('arena-world');
+            const bgEl    = document.getElementById('arena-bg');
+            const DURATION = 350;
+            const startZoom = _camZoom, startPan = _camPanX;
+            const t0 = performance.now();
+            const ease = t => 1 - (1 - t) * (1 - t); // ease-out quad
+            function step(now) {
+                const t = Math.min((now - t0) / DURATION, 1);
+                const et = ease(t);
+                const z = startZoom + (1.0 - startZoom) * et;
+                const p = startPan  + (0   - startPan)  * et;
+                if (worldEl) worldEl.style.transform = `translateX(${p.toFixed(1)}px) scale(${z.toFixed(4)})`;
+                if (bgEl)    bgEl.style.transform    = `scale(${Math.max(1, z).toFixed(4)})`;
+                if (t < 1) { _camRaf = requestAnimationFrame(step); return; }
+                // Animation complete — clear transforms fully
+                if (worldEl) worldEl.style.transform = '';
+                if (bgEl)    bgEl.style.transform    = '';
+                _camRaf = null;
+            }
+            _camZoom = 1.0; _camPanX = 0;
+            _camRaf = requestAnimationFrame(step);
         }
         // ─────────────────────────────────────────────────────────────────────────
 
@@ -17202,7 +17295,7 @@
             game.player.element.style.transition = '';
             game.cpu.element.style.transition    = '';
             // Start camera now that _homeX and element positions are correct
-            startArenaCamera();
+            if (_cameraEnabled) startArenaCamera();
             // Reset stamina bars to full
             updateStaminaBar('player', 100, 100);
             updateStaminaBar('cpu',    100, 100);
@@ -23266,6 +23359,21 @@
             if (val === 0) icon.innerHTML = '&#128263;';
             else if (val < 50) icon.innerHTML = '&#128264;';
             else icon.innerHTML = '&#128266;';
+        });
+
+        // Camera toggle — persist preference and apply immediately if in battle
+        const _cameraToggleEl = document.getElementById('camera-toggle');
+        _cameraToggleEl.checked = _cameraEnabled;
+        _cameraToggleEl.addEventListener('change', () => {
+            _cameraEnabled = _cameraToggleEl.checked;
+            localStorage.setItem('fightchub_camera_enabled', _cameraEnabled ? 'true' : 'false');
+            if (game.inProgress) {
+                if (_cameraEnabled) {
+                    startArenaCamera();
+                } else {
+                    stopArenaCameraSmooth();
+                }
+            }
         });
         document.getElementById('volume-icon').addEventListener('click', () => {
             const slider = document.getElementById('volume-slider');
