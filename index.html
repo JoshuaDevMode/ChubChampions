@@ -1763,20 +1763,25 @@
         }
 
         .settings-panel {
-            position: absolute;
-            top: 28%;
+            position: fixed;
+            top: 56px;
             right: 10px;
-            background: rgba(0,0,0,0.85);
-            border: 2px solid #555;
-            border-radius: 8px;
-            padding: 12px 16px;
-            z-index: 25;
-            min-width: 200px;
-            transform: scale(var(--ui-scale, 1));
-            transform-origin: top right;
+            background: rgba(10,10,10,0.95);
+            border: 1px solid #3a3a3a;
+            border-radius: 10px;
+            padding: 14px 16px;
+            z-index: 9999;
+            min-width: 210px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.7);
         }
         .settings-panel.hidden {
             display: none;
+        }
+        .settings-btn-lobby {
+            position: absolute;
+            top: 12px;
+            right: 52px;
+            z-index: 60;
         }
         .settings-header {
             display: flex;
@@ -9549,6 +9554,8 @@
         <div class="lobby-bg" id="lobby-bg"></div>
         <!-- Fullscreen button (mobile, lobby) -->
         <div class="fullscreen-btn-lobby" id="fullscreen-btn-lobby" title="Fullscreen" onclick="toggleFullscreen()">⛶</div>
+        <!-- Settings gear (lobby) -->
+        <div class="settings-btn settings-btn-lobby" id="settings-btn-lobby" title="Settings"><img src="/FightChub/assets/Settings-Icon-CLXl9vr2.png" alt="Settings"></div>
         <!-- Top Bar: full-width, outside menu-content -->
         <div class="lobby-currency-bar" id="lobby-currency-bar">
             <div class="top-nav-group">
@@ -10494,26 +10501,6 @@
                     <span class="log-close" id="log-close">&times;</span>
                 </div>
                 <div class="game-log" id="game-log"></div>
-            </div>
-            <div class="settings-panel hidden" id="settings-panel">
-                <div class="settings-header">
-                    <div class="settings-title">SOUND</div>
-                    <span class="settings-close" id="settings-close">&times;</span>
-                </div>
-                <div class="volume-row">
-                    <span class="volume-icon" id="volume-icon">&#128264;</span>
-                    <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
-                    <span class="volume-value" id="volume-value">100%</span>
-                </div>
-                <hr class="settings-divider">
-                <div class="settings-title">CAMERA</div>
-                <div class="settings-toggle-row">
-                    <span class="settings-toggle-label">Follow Camera</span>
-                    <label class="settings-toggle-switch">
-                        <input type="checkbox" id="camera-toggle" checked>
-                        <span class="settings-toggle-slider"></span>
-                    </label>
-                </div>
             </div>
             <div id="arena-bg"></div>
             <div id="arena-world">
@@ -23345,12 +23332,25 @@
             }
         });
 
-        // Settings gear
-        document.getElementById('settings-btn').addEventListener('click', () => {
+        // Settings gear — both lobby and arena buttons toggle the same panel
+        function _toggleSettingsPanel() {
             document.getElementById('settings-panel').classList.toggle('hidden');
-        });
+        }
+        document.getElementById('settings-btn').addEventListener('click', _toggleSettingsPanel);
+        document.getElementById('settings-btn-lobby').addEventListener('click', _toggleSettingsPanel);
         document.getElementById('settings-close').addEventListener('click', () => {
             document.getElementById('settings-panel').classList.add('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('settings-panel');
+            if (!panel.classList.contains('hidden') &&
+                !panel.contains(e.target) &&
+                e.target.id !== 'settings-btn' &&
+                !document.getElementById('settings-btn').contains(e.target) &&
+                e.target.id !== 'settings-btn-lobby' &&
+                !document.getElementById('settings-btn-lobby').contains(e.target)) {
+                panel.classList.add('hidden');
+            }
         });
         document.getElementById('volume-slider').addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
@@ -27079,5 +27079,26 @@
         </div>
         <div class="ptp-powers" id="ptp-powers"></div>
     </div>
+<!-- Settings panel — fixed overlay, visible from both lobby and arena -->
+<div class="settings-panel hidden" id="settings-panel">
+    <div class="settings-header">
+        <div class="settings-title">SOUND</div>
+        <span class="settings-close" id="settings-close">&times;</span>
+    </div>
+    <div class="volume-row">
+        <span class="volume-icon" id="volume-icon">&#128264;</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
+        <span class="volume-value" id="volume-value">100%</span>
+    </div>
+    <hr class="settings-divider">
+    <div class="settings-title">CAMERA</div>
+    <div class="settings-toggle-row">
+        <span class="settings-toggle-label">Follow Camera</span>
+        <label class="settings-toggle-switch">
+            <input type="checkbox" id="camera-toggle" checked>
+            <span class="settings-toggle-slider"></span>
+        </label>
+    </div>
+</div>
 </body>
 </html>
