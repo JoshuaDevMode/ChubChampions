@@ -14868,9 +14868,11 @@
                 const isBack = event.action === 'retreat';
                 // Duration scales with distance (encodes AGI + level)
                 const distServer = Math.abs(event.to - event.from);
-                // Duration proportional to distance so long approaches look natural.
-                // Short combat steps stay snappy (≤100ms); large sweeps slow down visually.
-                const moveDur    = Math.max(100, Math.min(420, Math.round(distServer * 0.45)));
+                // Physics: time = distance / speed.
+                // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
+                // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
+                const pxPerTurn = event.speed || 180;
+                const moveDur   = Math.max(100, Math.min(500, Math.round(distServer / pxPerTurn * 220)));
                 movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                 void movEl.offsetWidth;
                 const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
