@@ -15393,9 +15393,7 @@
                     defImg._preDefenseSrc = defImg.src;
                     defImg.src = defImg._dodgeFrames[0];
                 }
-                if (jumpDodge) {
-                    fighterBody.classList.add('jumping');
-                } else {
+                if (!jumpDodge) {
                     fighterBody.classList.add('dodging');
                 }
                 await sleep(150);
@@ -15434,6 +15432,9 @@
             // Attack animation — skipped for jump attack (landing IS the hit)
             const animType = isWeaponAnim ? 'punch' : attackType;
             if (!event.jumpAttack) {
+                // Start jump at the same moment the attack fires so the defender is
+                // rising / at peak when the hit visually connects (~300ms into the anim)
+                if (jumpDodge) fighterBody.classList.add('jumping');
                 animateAttack(attackerEl, animType, 500, isWeaponAnim ? attackType : undefined);
                 await sleep(300);
             }
