@@ -15192,7 +15192,24 @@
         }
 
         function startArenaCamera() {
-            _camZoom = 1.0; _camPanX = 0;
+            // Compute correct starting values from actual fighter positions so
+            // the camera doesn't have to lerp from 1.0/0 on the first frames.
+            const arenaEl = document.getElementById('arena');
+            const W  = arenaEl ? arenaEl.offsetWidth : 800;
+            const sc = W / 1600;
+            const HW = 110 * sc;
+            const pX   = ((game.player?._homeX ?? 120)  * sc) + HW;
+            const cX   = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const gap  = Math.abs(cX - pX);
+            const midX = (pX + cX) / 2;
+            _camZoom = Math.min(1.55, W / Math.max(1, gap + 500));
+            _camPanX = (W / 2 - midX) * _camZoom;
+            // Apply immediately so the first painted frame is already correct
+            const worldEl = document.getElementById('arena-world');
+            if (worldEl) worldEl.style.transform =
+                `translateX(${_camPanX.toFixed(1)}px) scale(${_camZoom.toFixed(4)})`;
+            const bgEl = document.getElementById('arena-bg');
+            if (bgEl) bgEl.style.transform = `scale(${Math.max(1, _camZoom).toFixed(4)})`;
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
         }
