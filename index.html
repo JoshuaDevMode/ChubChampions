@@ -302,6 +302,28 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             contain: layout style;
         }
+        /* Camera-controlled world layer — fighters + fury effects zoom inside here.
+           HUD and overlays stay in #arena directly and are unaffected. */
+        #arena-world {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            transform-origin: 50% 100%;   /* zoom from ground center */
+            overflow: visible;
+            pointer-events: none;
+        }
+        #arena-world .fighter { pointer-events: auto; }
+        /* Background layer inside the world — zooms with the camera.
+           Slightly oversized (105%) to avoid edge gaps when panning sideways. */
+        #arena-bg {
+            position: absolute;
+            top: -2.5%; left: -2.5%;
+            width: 105%; height: 105%;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            pointer-events: none;
+        }
         .fighter {
             position: absolute;
             bottom: 35px;
@@ -9431,7 +9453,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/FightChub/assets/index-BU7ZQ_j2.js"></script>
+  <script type="module" crossorigin src="/FightChub/assets/index-4qdEUGH5.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -9979,6 +10001,10 @@
                         <span class="preview-stat-value" id="preview-def">--</span>
                     </div>
                     <div class="preview-stat">
+                        <span class="preview-stat-label">ENE</span>
+                        <span class="preview-stat-value" id="preview-ene">--</span>
+                    </div>
+                    <div class="preview-stat">
                         <span class="preview-stat-label">ELEMENT</span>
                         <span id="preview-element">--</span>
                     </div>
@@ -10002,7 +10028,7 @@
                             <div class="elem-guide-icon">💧</div>
                             <div class="elem-guide-name">WATER</div>
                             <div class="elem-guide-passive">+1.5% HP Regen / turn</div>
-                            <div class="elem-guide-fury">+4% in Fury</div>
+                            <div class="elem-guide-fury">scales with ⚡ENE</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Fire</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Lightning</div>
@@ -10032,7 +10058,7 @@
                             <div class="elem-guide-icon">🌪️</div>
                             <div class="elem-guide-name">WIND</div>
                             <div class="elem-guide-passive">+4% Dodge Chance</div>
-                            <div class="elem-guide-fury">+12% in Fury</div>
+                            <div class="elem-guide-fury">scales with ⚡ENE</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Earth</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Fire</div>
@@ -10082,6 +10108,10 @@
                             <span class="levelup-stat-label">HP</span>
                             <span class="levelup-stat-value" id="levelup-current-hp">1000</span>
                         </div>
+                        <div class="levelup-stat-row">
+                            <span class="levelup-stat-label">ENE</span>
+                            <span class="levelup-stat-value" id="levelup-current-ene">0</span>
+                        </div>
                     </div>
                     <div class="levelup-stats-arrow">→</div>
                     <div class="levelup-stats-col levelup-stats-preview">
@@ -10110,6 +10140,11 @@
                             <span class="levelup-stat-label">HP</span>
                             <span class="levelup-stat-value" id="levelup-preview-hp">--</span>
                             <span class="levelup-stat-diff" id="levelup-diff-hp"></span>
+                        </div>
+                        <div class="levelup-stat-row">
+                            <span class="levelup-stat-label">ENE</span>
+                            <span class="levelup-stat-value" id="levelup-preview-ene">--</span>
+                            <span class="levelup-stat-diff" id="levelup-diff-ene"></span>
                         </div>
                     </div>
                 </div>
@@ -10414,6 +10449,8 @@
                     <span class="volume-value" id="volume-value">100%</span>
                 </div>
             </div>
+            <div id="arena-world">
+            <div id="arena-bg"></div>
             <div class="fighter" id="player">
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/FightChub/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
@@ -10429,6 +10466,7 @@
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                 </div>
             </div>
+            </div><!-- #arena-world -->
         </div>
     </div>
 
@@ -10443,6 +10481,8 @@
         (function() {
             const bg = ARENA_BACKGROUNDS[Math.floor(Math.random() * ARENA_BACKGROUNDS.length)];
             document.getElementById('arena').style.backgroundImage = 'url(' + bg + ')';
+            const _bgEl = document.getElementById('arena-bg');
+            if (_bgEl) _bgEl.style.backgroundImage = 'url(' + bg + ')';
         })();
 
         // CPU color pattern - different hue rotations for variety
@@ -11251,11 +11291,11 @@
             lightning: { icon: '⚡', label: 'Lightning', color: '#ffd740', glow: 'rgba(255,215,64,0.5)'  },
         };
         const ELEMENT_BONUSES = {
-            fire:      { base: '+4% damage',          fury: '+12% in Fury',  strong: 'Wind',      weak: 'Water'     },
-            water:     { base: '+1.5% HP regen/turn', fury: '+4% in Fury',   strong: 'Fire',      weak: 'Lightning' },
-            lightning: { base: '+5% crit chance',     fury: '+14% in Fury',  strong: 'Water',     weak: 'Earth'     },
-            earth:     { base: '-4% enemy defense',   fury: '+12% in Fury',  strong: 'Lightning', weak: 'Wind'      },
-            wind:      { base: '+4% dodge chance',    fury: '+12% in Fury',  strong: 'Earth',     weak: 'Fire'      },
+            fire:      { base: '+4% damage',             fury: '+12% in Fury',        strong: 'Wind',      weak: 'Water'     },
+            water:     { base: '+1.5% HP regen/turn',    fury: 'scales with ENE',     strong: 'Fire',      weak: 'Lightning' },
+            lightning: { base: '+5% crit chance',        fury: '+14% in Fury',        strong: 'Water',     weak: 'Earth'     },
+            earth:     { base: '-4% enemy defense',      fury: '+12% in Fury',        strong: 'Lightning', weak: 'Wind'      },
+            wind:      { base: '+4% dodge chance',       fury: 'scales with ENE',     strong: 'Earth',     weak: 'Fire'      },
         };
 
         // Fury active power definitions (mirrors backend FURY_POWERS constant)
@@ -13346,10 +13386,12 @@
 
             character.stats.attack += option.atk;
             if (!character.stats.strength) character.stats.strength = 0;
-            if (!character.stats.agility) character.stats.agility = 0;
-            character.stats.strength += option.str || 0;
-            character.stats.agility += option.agi || 0;
-            character.stats.defense += option.def;
+            if (!character.stats.agility)  character.stats.agility  = 0;
+            if (!character.stats.energy)   character.stats.energy   = 0;
+            character.stats.strength += option.str    || 0;
+            character.stats.agility  += option.agi    || 0;
+            character.stats.defense  += option.def;
+            character.stats.energy   += option.energy || 0;
             if (!character.maxHp) character.maxHp = BASE_HP;
             character.maxHp += option.hp || 0;
             // Award 1 skill point per level up
@@ -14405,6 +14447,7 @@
                     strength: character.stats.strength || 35,
                     agility:  character.stats.agility  || 35,
                     defense:  character.stats.defense  || 35,
+                    energy:   character.stats.energy   || 0,
                 },
                 maxHp:               getCharacterMaxHp(character),
                 skills:              character.skills             || {},
@@ -14979,6 +15022,33 @@
                             break;
                         }
 
+                        const _fpTargetEl = game[event.target]?.element;
+
+                        // Store caster STR on the target element so the spike animation can use it
+                        const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
+                        if (_fpTargetEl) _fpTargetEl._spikeCasterStr = _spikeCasterChar?.stats?.strength || 35;
+
+                        // Check if spike hits: compute target height at pillar impact moment (~238ms from now).
+                        // If target is above PILLAR_H (280px) at that moment → miss.
+                        // If target is at or below PILLAR_H → rebound hit (pillar catches them mid-fall).
+                        if (event.power.includes('earth_spike')) {
+                            if (_fpTargetEl?._spikeAirborne) {
+                                const _impactAt       = performance.now() + 680 * 0.35;
+                                const _targetHeightPx = getSpikeTargetHeight(_fpTargetEl, _impactAt);
+                                if (_targetHeightPx > 280) {
+                                    // Pillar rises but can't reach the airborne target
+                                    playFuryPowerAnimation(event.caster, event.target, 'earth_spike_miss', fpColor);
+                                    await sleep(1200);
+                                    break;
+                                }
+                                // Rebound hit — pass catch height so animation reduces impulse
+                                if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = _targetHeightPx;
+                            } else {
+                                // Normal ground hit
+                                if (_fpTargetEl) _fpTargetEl._spikeCatchHeight = 0;
+                            }
+                        }
+
                         // Play element-specific visual effect
                         playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
                         if (event.damage > 0) {
@@ -15075,8 +15145,64 @@
             a.addEventListener('animationend', () => a.classList.remove('fp-arena-shake'), { once: true });
         }
 
+        // ── Arena follow-camera ───────────────────────────────────────────────────
+        // Zooms in as fighters approach, keeping both centered.
+        // Only the #arena-world layer (fighters + fury effects) is scaled;
+        // the HUD and overlays stay fixed in #arena.
+        let _camZoom = 1.0, _camPanX = 0, _camRaf = null;
+
+        function _camTick() {
+            const arenaEl = document.getElementById('arena');
+            const worldEl = document.getElementById('arena-world');
+            if (!arenaEl || !worldEl) { _camRaf = requestAnimationFrame(_camTick); return; }
+
+            const W  = arenaEl.offsetWidth;
+            const sc = W / 1600;                     // server → frontend scale
+            const HW = 110 * sc;                     // half of 220px fighter div, scaled
+            const pX = ((game.player?._homeX ?? 120) * sc) + HW;
+            const cX = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const midX = (pX + cX) / 2;
+            const gap  = Math.abs(cX - pX);
+
+            // Reduce max zoom when any fighter is airborne to avoid clipping jumps at top
+            const anyAirborne = !!(
+                document.querySelector('#player .fighter-body.jumping, #player .fighter-body.jump-attack-arc') ||
+                document.querySelector('#cpu .fighter-body.jumping, #cpu .fighter-body.jump-attack-arc') ||
+                game.player?.element?._spikeAirborne ||
+                game.cpu?.element?._spikeAirborne
+            );
+            const maxZoom = anyAirborne ? 1.15 : 1.55;
+
+            // Zoom so both fighters + padding fit the view; cap at maxZoom
+            const targetZoom = Math.min(maxZoom, W / Math.max(1, gap + 500));
+            // Pan to keep midpoint horizontally centered
+            // (transform-origin: 50% 100% → world point midX maps to W/2 after zoom+pan)
+            const targetPanX = (W / 2 - midX) * targetZoom;
+
+            _camZoom += (targetZoom - _camZoom) * 0.07;   // smooth lerp
+            _camPanX += (targetPanX - _camPanX) * 0.07;
+
+            worldEl.style.transform =
+                `translateX(${_camPanX.toFixed(1)}px) scale(${_camZoom.toFixed(4)})`;
+            _camRaf = requestAnimationFrame(_camTick);
+        }
+
+        function startArenaCamera() {
+            _camZoom = 1.0; _camPanX = 0;
+            if (_camRaf) cancelAnimationFrame(_camRaf);
+            _camRaf = requestAnimationFrame(_camTick);
+        }
+
+        function stopArenaCamera() {
+            if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
+            const worldEl = document.getElementById('arena-world');
+            if (worldEl) worldEl.style.transform = '';
+            _camZoom = 1.0; _camPanX = 0;
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         function spawnJumpShockwave(x, y, color) {
-            const arena = document.getElementById('arena');
+            const arena = document.getElementById('arena-world') || document.getElementById('arena');
             // Two expanding circular rings, second one delayed
             [0, 90].forEach(delay => {
                 const r = document.createElement('div');
@@ -15150,6 +15276,14 @@
                 const isCpuAtt     = attacker === 'cpu';
                 const baseXform    = isCpuAtt ? 'scaleX(-1) ' : '';
 
+                // Run speed scales with AGI (approach), arc speed scales with STR (jump power)
+                const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (cpuChar?.stats?.agility  || 35);
+                const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (cpuChar?.stats?.strength || 35);
+                const jaRunSpd  = 1 + Math.min(0.5, (jaAgi - 35) * 0.004); // AGI 35=1.0x → AGI 160=1.5x
+                const jaArcSpd  = 1 + Math.min(0.5, (jaStr - 35) * 0.004); // STR 35=1.0x → STR 160=1.5x
+                const jaRunMs   = Math.round(280 / jaRunSpd);  // 280ms → ~187ms at high AGI
+                const jaArcMs   = Math.round(860 / jaArcSpd);  // 860ms → ~573ms at high STR
+
                 // Save idle src
                 if (jaImg) jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
 
@@ -15176,7 +15310,7 @@
                     const r0 = performance.now();
                     const easeOut = t => 1 - (1 - t) * (1 - t);
                     const runStep = now => {
-                        const t = Math.min((now - r0) / 280, 1);
+                        const t = Math.min((now - r0) / jaRunMs, 1);
                         attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
                         if (t < 1) { requestAnimationFrame(runStep); return; }
                         attackerEl.style.transition = 'none'; // freeze left/right so commit doesn't trigger CSS transition
@@ -15198,7 +15332,7 @@
                 const atkCx  = runTarget + atkW / 2;
                 const deltaX = defCx - atkCx;
 
-                const peakMs = 860 * 0.36;
+                const peakMs = jaArcMs * 0.36;
                 let peakDone = false;
                 const peakTmr = setTimeout(() => {
                     if (!peakDone && jaImg && jaPeakFrames.length > 0) {
@@ -15213,7 +15347,7 @@
                 await new Promise(res => {
                     const t0 = performance.now();
                     const step = now => {
-                        const t  = Math.min((now - t0) / 860, 1);
+                        const t  = Math.min((now - t0) / jaArcMs, 1);
                         const tx = deltaX * jaEase(t);
                         const ty = -185   * Math.sin(Math.PI * t);
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
@@ -15330,6 +15464,40 @@
                 stats[attacker].hits        = (stats[attacker].hits        || 0) + 1;
                 stats[attacker].totalDamage = (stats[attacker].totalDamage || 0) + damage;
                 if (isCrit) stats[attacker].criticals = (stats[attacker].criticals || 0) + 1;
+                // Knockdown: the attacker (now the defender in this event) shows hurt frame
+                if (event.knockdown) {
+                    const kdEl  = game[defender].element;
+                    const kdImg = kdEl?.querySelector('img.character-png');
+                    if (kdImg && kdImg._hurtFrames?.length > 0) {
+                        kdImg._preKdSrc = kdImg.src;
+                        kdImg.src = kdImg._hurtFrames[0];
+                        setTimeout(() => { if (kdImg._preKdSrc) kdImg.src = kdImg._preKdSrc; }, 600);
+                    } else {
+                        kdEl?.querySelector('.fighter-body')?.classList.add('taking-damage');
+                        setTimeout(() => kdEl?.querySelector('.fighter-body')?.classList.remove('taking-damage'), 600);
+                    }
+                    // Sync home positions (knockback already animated by prior kick event)
+                    if (event.playerX !== undefined) {
+                        game.player._homeX = event.playerX;
+                        game.cpu._homeX    = event.cpuX;
+                    }
+                }
+                // Anti-air knockback: push the aerial attacker (defender in event) to new position
+                if (event.knockbackPx && event.knockbackPx > 0 && event.playerX !== undefined) {
+                    const kbEl = game[defender].element;
+                    if (kbEl) {
+                        const _kbArenaW = document.getElementById('arena').offsetWidth;
+                        const _kbScale  = _kbArenaW / 1600;
+                        const _kbTargetX = (defender === 'player' ? event.playerX : event.cpuX) * _kbScale;
+                        game.player._homeX = event.playerX;
+                        game.cpu._homeX    = event.cpuX;
+                        kbEl.style.transition = 'left 220ms ease-out';
+                        void kbEl.offsetWidth;
+                        kbEl.style.left  = _kbTargetX + 'px';
+                        kbEl.style.right = 'auto';
+                        setTimeout(() => { kbEl.style.transition = ''; }, 240);
+                    }
+                }
                 await sleep(300);
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
@@ -16293,6 +16461,10 @@
                                 <span class="character-slot-stat-value">${character.stats.defense}</span>
                                 DEF
                             </div>
+                            <div class="character-slot-stat">
+                                <span class="character-slot-stat-value">${character.stats.energy || 0}</span>
+                                ENE
+                            </div>
                         </div>
                         <div class="character-slot-exp">
                             <div class="character-slot-exp-bar" style="width: ${expPercent}%"></div>
@@ -16370,6 +16542,7 @@
                     tempNewCharacter.stats.agility  = srv.agi;
                     tempNewCharacter.stats.defense  = srv.def;
                     tempNewCharacter.maxHp          = srv.hp;
+                    tempNewCharacter.stats.energy   = srv.energy || 0;
                 } else {
                     // First time opening — ask server to generate and store stats
                     const result = await spendOnServer('generate_stats');
@@ -16380,6 +16553,7 @@
                         tempNewCharacter.stats.agility  = srv.agi;
                         tempNewCharacter.stats.defense  = srv.def;
                         tempNewCharacter.maxHp          = srv.hp;
+                        tempNewCharacter.stats.energy   = srv.energy || 0;
                         serverPendingStats = result.stats;
                     }
                 }
@@ -16406,6 +16580,7 @@
             document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
             document.getElementById('preview-agi').textContent = tempNewCharacter.stats.agility;
             document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
+            document.getElementById('preview-ene').textContent = tempNewCharacter.stats.energy || 0;
             // Reroll button: 2 free for first character, paid (🪙30) otherwise
             const rerollBtn = document.getElementById('btn-reroll-stats');
             const FREE_REROLLS = 2;
@@ -16466,12 +16641,13 @@
             // Use server-generated stats (hidden bias archetypes for variety)
             const srv = result.stats;
             const newStats = srv
-                ? { attack: srv.atk, strength: srv.str, agility: srv.agi, defense: srv.def, hp: srv.hp }
+                ? { attack: srv.atk, strength: srv.str, agility: srv.agi, defense: srv.def, hp: srv.hp, energy: srv.energy || 0 }
                 : generateBalancedStats();
-            tempNewCharacter.stats.attack = newStats.attack;
+            tempNewCharacter.stats.attack  = newStats.attack;
             tempNewCharacter.stats.strength = newStats.strength;
             tempNewCharacter.stats.agility = newStats.agility;
             tempNewCharacter.stats.defense = newStats.defense;
+            tempNewCharacter.stats.energy  = newStats.energy || 0;
             // Do NOT override player's chosen element
 
             // Recalculate HP based on new stats
@@ -16509,6 +16685,7 @@
                 tempNewCharacter.stats.agility  = srv.agi;
                 tempNewCharacter.stats.defense  = srv.def;
                 tempNewCharacter.maxHp          = srv.hp;
+                tempNewCharacter.stats.energy   = srv.energy || 0;
                 // Do NOT override element — player's choice is authoritative
             }
 
@@ -16566,13 +16743,14 @@
                 // Win rate + games row (legacy label cleared — ring appears in stats block)
                 levelEl.textContent = '';
 
-                // ── Stats grid (5 stats only — element + win rate are in side extensions) ─
+                // ── Stats grid (6 stats — element + win rate are in side extensions) ─
                 statsEl.innerHTML = [
                     ['HP',  maxHp],
                     ['ATK', character.stats.attack],
                     ['STR', character.stats.strength || 0],
                     ['AGI', character.stats.agility  || 0],
                     ['DEF', character.stats.defense],
+                    ['ENE', character.stats.energy   || 0],
                 ].map(([label, val]) =>
                     `<div class="menu-character-stat">
                         <span class="menu-character-stat-label">${label}</span>
@@ -16719,7 +16897,9 @@
             document.getElementById('levelup-current-str').textContent = currentStr;
             document.getElementById('levelup-current-agi').textContent = currentAgi;
             document.getElementById('levelup-current-def').textContent = currentDef;
-            document.getElementById('levelup-current-hp').textContent = currentHp;
+            document.getElementById('levelup-current-hp').textContent  = currentHp;
+            const currentEneDisplay = document.getElementById('levelup-current-ene');
+            if (currentEneDisplay) currentEneDisplay.textContent = character.stats.energy || 0;
 
             // Reset preview to default
             document.getElementById('levelup-preview-atk').textContent = '--';
@@ -16771,33 +16951,38 @@
             const currentStr = character.stats.strength || 0;
             const currentAgi = character.stats.agility || 0;
             const currentDef = character.stats.defense;
-            const currentHp = getCharacterMaxHp(character);
+            const currentHp  = getCharacterMaxHp(character);
+            const currentEne = character.stats.energy || 0;
 
             const newAtk = currentAtk + selectedLevelUpOption.atk;
             const newStr = currentStr + (selectedLevelUpOption.str || 0);
             const newAgi = currentAgi + (selectedLevelUpOption.agi || 0);
             const newDef = currentDef + selectedLevelUpOption.def;
-            const newHp = currentHp + (selectedLevelUpOption.hp || 0);
+            const newHp  = currentHp  + (selectedLevelUpOption.hp  || 0);
+            const newEne = currentEne + (selectedLevelUpOption.energy || 0);
 
             // Update preview display
             document.getElementById('levelup-preview-atk').textContent = newAtk;
             document.getElementById('levelup-preview-str').textContent = newStr;
             document.getElementById('levelup-preview-agi').textContent = newAgi;
             document.getElementById('levelup-preview-def').textContent = newDef;
-            document.getElementById('levelup-preview-hp').textContent = newHp;
+            document.getElementById('levelup-preview-hp').textContent  = newHp;
+            document.getElementById('levelup-preview-ene').textContent = newEne;
 
             // Show diffs
             const diffAtk = selectedLevelUpOption.atk;
             const diffStr = selectedLevelUpOption.str || 0;
             const diffAgi = selectedLevelUpOption.agi || 0;
             const diffDef = selectedLevelUpOption.def;
-            const diffHp = selectedLevelUpOption.hp || 0;
+            const diffHp  = selectedLevelUpOption.hp  || 0;
+            const diffEne = selectedLevelUpOption.energy || 0;
 
             const diffAtkEl = document.getElementById('levelup-diff-atk');
             const diffStrEl = document.getElementById('levelup-diff-str');
             const diffAgiEl = document.getElementById('levelup-diff-agi');
             const diffDefEl = document.getElementById('levelup-diff-def');
-            const diffHpEl = document.getElementById('levelup-diff-hp');
+            const diffHpEl  = document.getElementById('levelup-diff-hp');
+            const diffEneEl = document.getElementById('levelup-diff-ene');
 
             diffAtkEl.textContent = `+${diffAtk}`;
             diffAtkEl.className = 'levelup-stat-diff positive';
@@ -16813,6 +16998,11 @@
 
             diffHpEl.textContent = `+${diffHp}`;
             diffHpEl.className = 'levelup-stat-diff positive';
+
+            if (diffEneEl) {
+                diffEneEl.textContent = diffEne > 0 ? `+${diffEne}` : '—';
+                diffEneEl.className = diffEne > 0 ? 'levelup-stat-diff positive' : 'levelup-stat-diff';
+            }
 
             // Enable apply button
             const applyBtn = document.getElementById('levelup-apply-btn');
@@ -16868,6 +17058,7 @@
                     character.stats.agility  = data.newStats.agi;
                     character.stats.defense  = data.newStats.def;
                     character.maxHp          = data.newStats.hp;
+                    if (data.newStats.energy !== undefined) character.stats.energy = data.newStats.energy;
                     // Award skill point
                     character.skillPoints = (character.skillPoints || 0) + 1;
                     saveCharacters();
@@ -16944,6 +17135,7 @@
                 aonEntryFee: aonActive ? aonEntryFee : 0
             }));
             startBattleHeartbeat();
+            startArenaCamera();
 
             // Unlock audio
             if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -17795,6 +17987,30 @@
         // hit a revoked URL can still return the correct position.
         const _feetOffsetCache = {};
 
+        // Returns the current upward offset (px) of a spike-airborne character at a given timestamp.
+        // 0 = on the ground. Uses stored launch data to approximate the parabolic trajectory.
+        function getSpikeTargetHeight(el, atTime) {
+            if (!el || !el._spikeAirborne) return 0;
+            const elapsed    = atTime - el._spikeLaunchTime;
+            const launchH    = el._spikelaunchHeight || 300;
+            const airborneMs = el._spikeAirborneMs  || 700;
+            const riseMs     = airborneMs * 0.4;
+            const fallMs     = 420;
+            if (elapsed <= 0)                        return 0;
+            if (elapsed < riseMs) {
+                // Rising: ease-out approximation
+                const t = elapsed / riseMs;
+                return launchH * (1 - Math.pow(1 - t, 2));
+            }
+            if (elapsed < airborneMs)                return launchH;  // at peak
+            if (elapsed < airborneMs + fallMs) {
+                // Falling: ease-in approximation (cubic-bezier(0.4,0,1,1))
+                const t = (elapsed - airborneMs) / fallMs;
+                return launchH * (1 - t * t);
+            }
+            return 0;
+        }
+
         // Returns the Y position (unscaled arena coords) of the lowest drawn pixel
         // in the character sprite — i.e. where the feet actually touch the ground.
         function getCharacterFeetY(fighterKey) {
@@ -17991,17 +18207,21 @@
         }
 
         function playFuryPowerAnimation(caster, target, power, color) {
-            const arena = document.getElementById('arena');
-            if (!arena || !game[caster] || !game[target]) return;
-            const zoom      = getGameZoom();
-            const arenaRect = arena.getBoundingClientRect();
+            const arenaEl = document.getElementById('arena');
+            // Fury effects go into the camera world layer so they zoom with fighters
+            const arena   = document.getElementById('arena-world') || arenaEl;
+            if (!arenaEl || !game[caster] || !game[target]) return;
 
+            // World-space position of fighter center (arena-world coordinate space).
+            // Uses el.style.left which is set by the positioning code and is already in
+            // arena-world coordinates — no getBoundingClientRect needed.
             function getCenter(fighter) {
-                const el   = game[fighter].element;
-                const rect = el.getBoundingClientRect();
+                const H  = arenaEl.offsetHeight;
+                const el = game[fighter].element;
+                const wx = parseFloat(el.style.left || '0') + 110; // left + half fighter width
                 return {
-                    x: (rect.left - arenaRect.left) / zoom + (rect.width  / zoom) / 2,
-                    y: (rect.top  - arenaRect.top)  / zoom + (rect.height / zoom) / 2 - 20,
+                    x: wx,
+                    y: H - 35 - 90,  // ground level - bottom offset - approx chest height
                 };
             }
 
@@ -18081,14 +18301,20 @@
             switch (el) {
                 case 'fire':
                     if (power.includes('fireball')) {
-                        const fbFromLeft  = caster === 'player';
-                        const FB_TRAVEL   = 680;  // ms to reach target
-                        const FB_INTERVAL = 920;  // ms between fireballs
-                        const fbFlip      = fbFromLeft ? 1 : -1;
-                        const fbImgH      = 46;   // half-height offset (image ~92px tall)
-                        const fbImgW      = 41;   // half-width  offset (image ~82px wide)
+                        const isMiss     = power.includes('_miss');
+                        const fbFromLeft = caster === 'player';
+                        const FB_TRAVEL  = isMiss ? 900 : 680;  // miss travels a bit slower
+                        const FB_INTERVAL = 920;                 // ms between fireballs (normal only)
+                        const fbFlip     = fbFromLeft ? 1 : -1;
+                        const fbImgH     = 46;   // half-height offset
+                        const fbImgW     = 41;   // half-width  offset
+                        // Max range in frontend px (700 server coords → scaled)
+                        const arenaScale = arena.offsetWidth / 1600;
+                        const maxRangePx = 700 * arenaScale;
+                        const groundY    = arena.offsetHeight * 0.82; // approx ground level
 
-                        for (let fi = 0; fi < 3; fi++) {
+                        const fbCount = isMiss ? 1 : 3;
+                        for (let fi = 0; fi < fbCount; fi++) {
                             setTimeout(() => {
                                 const fb = document.createElement('img');
                                 fb.src   = 'Assets/Player/Effects/Fireball.png';
@@ -18097,33 +18323,44 @@
                                 const fbStartY = cp.y - fbImgH;
                                 fb.style.left = fbStartX + 'px';
                                 fb.style.top  = fbStartY + 'px';
-                                // Flip for CPU→player (going left)
                                 fb.style.setProperty('--flip', fbFlip);
                                 fb.style.animation = 'fp-fireball-wobble 0.32s ease-in-out infinite';
                                 arena.appendChild(fb);
 
-                                // Travel toward target (stop there — no off-screen continuation)
-                                const fbEndX  = tp.x - fbImgW;
-                                const fbEndY  = tp.y - fbImgH;
-                                const fbTStart = performance.now();
+                                // Miss: travel to max-range point and drop to ground
+                                // Normal: travel to target with parabolic arc
+                                const fbEndX    = isMiss
+                                    ? fbStartX + (fbFromLeft ? maxRangePx : -maxRangePx)
+                                    : tp.x - fbImgW;
+                                const fbEndY    = isMiss ? groundY - fbImgH : tp.y - fbImgH;
+                                // Arc height proportional to horizontal distance (rises then returns)
+                                const arcHeight = Math.abs(fbEndX - fbStartX) * (isMiss ? 0.07 : 0.12);
+                                const fbTStart  = performance.now();
 
                                 const animFb = (now) => {
-                                    const t = Math.min((now - fbTStart) / FB_TRAVEL, 1);
+                                    const t   = Math.min((now - fbTStart) / FB_TRAVEL, 1);
+                                    const arc = -arcHeight * 4 * t * (1 - t); // parabola: negative = upward
                                     fb.style.left = (fbStartX + (fbEndX - fbStartX) * t) + 'px';
-                                    fb.style.top  = (fbStartY + (fbEndY - fbStartY) * t) + 'px';
+                                    fb.style.top  = (fbStartY + (fbEndY - fbStartY) * t + arc) + 'px';
                                     if (t < 1) { requestAnimationFrame(animFb); return; }
-                                    // Arrived at target — dissolve from impact side
                                     fb.style.animation = `fb-dissolve-${fbFromLeft ? 'right' : 'left'} 0.32s ease-in forwards`;
                                     fb.addEventListener('animationend', () => fb.remove(), { once: true });
                                 };
                                 requestAnimationFrame(animFb);
 
-                                // Impact effects at target
+                                // Impact effects
                                 setTimeout(() => {
-                                    spawnImpact(tp.x, tp.y, 65, '#ff5500', 0);
-                                    spawnParticles(tp.x, tp.y, fi === 0 ? 14 : 8, '#ff4400', 55);
-                                    spawnRing(tp.x, tp.y, 50, '#ff6600', 0);
-                                    if (fi === 0) showHitEffect(target, 'normal');
+                                    if (isMiss) {
+                                        // Dust/ember puff on ground at max range — no hit on target
+                                        const missHitX = fbFromLeft ? cp.x + maxRangePx : cp.x - maxRangePx;
+                                        spawnParticles(missHitX, groundY, 8, '#bb6600', 30);
+                                        spawnRing(missHitX, groundY, 30, '#884400', 0);
+                                    } else {
+                                        spawnImpact(tp.x, tp.y, 65, '#ff5500', 0);
+                                        spawnParticles(tp.x, tp.y, fi === 0 ? 14 : 8, '#ff4400', 55);
+                                        spawnRing(tp.x, tp.y, 50, '#ff6600', 0);
+                                        if (fi === 0) showHitEffect(target, 'normal');
+                                    }
                                 }, FB_TRAVEL);
                             }, fi * FB_INTERVAL);
                         }
@@ -18409,26 +18646,77 @@
                                     }
                                 }
 
-                                // Phase 4: target falls to ground (1 s on ground)
-                                // Rotate tImg around center (like tsunami) so character stays at correct Y level.
+                                // Phase 4: target launched backwards + falls to ground
                                 const targetEl  = game[target].element;
                                 const tImgGR    = targetEl && targetEl.querySelector('img');
+                                const isCpuGR   = target === 'cpu';
+                                const rotDirGR  = caster === 'player' ? -90 : 90;
+
+                                // Knockback: slide target to server-computed new position
+                                const _grArenaW = document.getElementById('arena').offsetWidth;
+                                const _grScale  = _grArenaW / 1600;
+                                const _grNewX   = (target === 'player' ? event.playerX : event.cpuX) ?? null;
+                                if (_grNewX !== null && _grNewX !== undefined) {
+                                    game.player._homeX = event.playerX;
+                                    game.cpu._homeX    = event.cpuX;
+                                }
+                                // Animate target sliding to new server position
+                                if (_grNewX !== null && _grNewX !== undefined) {
+                                    const _grDestPx = _grNewX * _grScale;
+                                    targetEl.style.transition = 'left 0.38s cubic-bezier(0.2,0,0.6,1)';
+                                    void targetEl.offsetWidth;
+                                    targetEl.style.left  = _grDestPx + 'px';
+                                    targetEl.style.right = 'auto';
+                                } else {
+                                    // Fallback visual only (no server position)
+                                    const _grCasterChar = caster === 'player' ? getSelectedCharacter() : currentCpuStats;
+                                    const _grStr        = _grCasterChar?.stats?.strength || 35;
+                                    const _grKbPx       = Math.min(250, Math.floor(_grStr * 2));
+                                    const _grKbDir      = caster === 'player' ? 1 : -1;
+                                    targetEl.style.transition = 'transform 0.38s cubic-bezier(0.2,0,0.6,1)';
+                                    targetEl.style.transform  = `translateX(${_grKbDir * _grKbPx}px)`;
+                                }
+
                                 if (tImgGR) {
-                                    const isCpuGR  = target === 'cpu';
-                                    const rotDirGR = caster === 'player' ? -90 : 90;
                                     tImgGR.style.transformOrigin = 'center center';
                                     tImgGR.style.transition      = 'transform 0.12s cubic-bezier(0.4,0,1,1)';
                                     tImgGR.style.transform       = `scaleX(${isCpuGR ? -1 : 1}) rotate(${rotDirGR}deg)`;
-                                    setTimeout(() => {
+                                }
+                                setTimeout(() => {
+                                    // Clear any leftover visual transform (position already committed via left:px)
+                                    targetEl.style.transition = '';
+                                    targetEl.style.transform  = '';
+                                    if (tImgGR) {
                                         tImgGR.style.transition      = 'transform 0.35s ease-out';
                                         tImgGR.style.transform       = '';
                                         tImgGR.style.transformOrigin = '';
-                                    }, 1000);
-                                }
+                                    }
+                                }, 1000);
                             }
                             requestAnimationFrame(animFly);
                         }
                         requestAnimationFrame(animRise);
+                    } else if (power === 'earth_spike_miss') {
+                        // ── Earth Spike miss — target was airborne, pillar rises but hits nothing ──
+                        const groundYM = _fighterGroundY[target] ?? getCharacterFeetY(target);
+                        spawnParticles(tp.x, groundYM, 6, '#8B5E3C', 40);
+                        const missWrap = document.createElement('div');
+                        missWrap.style.cssText = `position:absolute;left:${tp.x - 100}px;top:${groundYM - 280}px;width:200px;height:280px;overflow:hidden;z-index:14;pointer-events:none;`;
+                        const missImg = document.createElement('img');
+                        missImg.src = 'Assets/UI/rock_pillar.png';
+                        missImg.style.cssText = 'width:200px;height:280px;position:absolute;top:0;left:0;transform:translateY(280px);';
+                        missWrap.appendChild(missImg);
+                        arena.appendChild(missWrap);
+                        const missStart = performance.now();
+                        const MISS_DUR  = 500;
+                        function animMissRise(ts) {
+                            const t    = Math.min((ts - missStart) / MISS_DUR, 1);
+                            const ease = 1 - Math.pow(1 - t, 3);
+                            missImg.style.transform = `translateY(${280 * (1 - ease)}px)`;
+                            if (t < 1) { requestAnimationFrame(animMissRise); return; }
+                            setTimeout(() => missWrap.remove(), 400);
+                        }
+                        requestAnimationFrame(animMissRise);
                     } else if (power.includes('earth_spike')) {
                         // ── Earth Spike — rock pillar erupts at target's feet ──────────────
                         const PILLAR_W    = 200;
@@ -18438,22 +18726,59 @@
                         const targetElSp = game[target].element;
                         const tImgSp     = targetElSp && targetElSp.querySelector('img');
                         const isCpuSp    = target === 'cpu';
+                        // Cancel any in-flight spike animation on this target (stun resets to last hit only)
+                        if (targetElSp._spikeTimeouts) {
+                            targetElSp._spikeTimeouts.forEach(id => clearTimeout(id));
+                        }
+                        targetElSp._spikeTimeouts = [];
+                        targetElSp._spikeAirborne = false;
+
+                        // Rebound hit: target was falling when pillar caught them.
+                        // Snap to catch height — downward momentum reduces the new launch impulse.
+                        const catchHeight = targetElSp._spikeCatchHeight || 0;
+                        targetElSp._spikeCatchHeight = 0;
+                        if (catchHeight > 0) {
+                            targetElSp.style.transition = 'none';
+                            targetElSp.style.transform  = `translateY(-${Math.round(catchHeight)}px)`;
+                            void targetElSp.offsetWidth;
+                            // Keep image spin state as-is (character was already spinning)
+                        } else {
+                            // Ground hit — start clean
+                            targetElSp.style.transition = 'none';
+                            targetElSp.style.transform  = '';
+                            if (tImgSp) { tImgSp.style.transition = ''; tImgSp.style.transform = ''; tImgSp.style.transformOrigin = ''; }
+                            void targetElSp.offsetWidth;
+                        }
 
                         // Always erupt from the cached rest-position ground level so the pillar
                         // starts from the floor even when the target is airborne from a prior hit.
                         const groundY = _fighterGroundY[target] ?? getCharacterFeetY(target);
+                        // Use cached ground Y for tp so spam spikes always originate from floor,
+                        // not from whatever height the target is at due to a prior spike launch.
+                        const tpSp = { x: tp.x, y: groundY };
 
                         // Ground rumble before rise
-                        spawnParticles(tp.x, groundY, 8, '#8B5E3C', 55);
+                        spawnParticles(tpSp.x, groundY, 8, '#8B5E3C', 55);
 
                         // Clip wrapper: pillar rises from ground (overflow:hidden = cut effect)
                         const pillarWrap = document.createElement('div');
-                        pillarWrap.style.cssText = `position:absolute;left:${tp.x - PILLAR_W/2}px;top:${groundY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
+                        pillarWrap.style.cssText = `position:absolute;left:${tpSp.x - PILLAR_W/2}px;top:${groundY - PILLAR_H}px;width:${PILLAR_W}px;height:${PILLAR_H}px;overflow:hidden;z-index:14;pointer-events:none;`;
                         const pillarImg = document.createElement('img');
                         pillarImg.src = 'Assets/UI/rock_pillar.png';
                         pillarImg.style.cssText = `width:${PILLAR_W}px;height:${PILLAR_H}px;position:absolute;top:0;left:0;transform:translateY(${PILLAR_H}px);`;
                         pillarWrap.appendChild(pillarImg);
                         arena.appendChild(pillarWrap);
+
+                        // Launch height scales with caster STR — always above PILLAR_H so a
+                        // second spike while airborne physically can't reach the target.
+                        const _casterStr  = targetElSp._spikeCasterStr || 35;
+                        const _strBonus   = Math.max(40, Math.floor(_casterStr * 1.2));
+                        // Rebound hit: downward momentum opposes the pillar — reduce impulse by 35%
+                        const launchHeight = catchHeight > 0
+                            ? Math.round(catchHeight + _strBonus * 0.65)
+                            : PILLAR_H + _strBonus;
+                        // Airborne time scales with height: taller launch = longer stun
+                        const airborneMs   = Math.max(400, Math.round(launchHeight * 1.8));
 
                         const launchDir  = caster === 'player' ? 1 : -1;
                         let   impactFired = false;
@@ -18472,17 +18797,21 @@
                                 arenaShake();
                                 const easeAt35 = 1 - Math.pow(1 - 0.35, 3); // ≈ 0.726
                                 const impactY  = groundY - PILLAR_H * easeAt35;
-                                spawnImpact(tp.x, impactY, 90, '#8B5E3C');
-                                spawnParticles(tp.x, impactY, 16, '#a0826d', 100);
+                                spawnImpact(tpSp.x, impactY, 90, '#8B5E3C');
+                                spawnParticles(tpSp.x, impactY, 16, '#a0826d', 100);
 
                                 // Set hurt frame directly — do NOT use showHitEffect (it auto-resets the frame)
                                 // Frame stays until character stands back up
                                 if (tImgSp && tImgSp._hurtFrames && tImgSp._hurtFrames.length > 0)
                                     tImgSp.src = tImgSp._hurtFrames[Math.floor(Math.random() * tImgSp._hurtFrames.length)];
 
-                                // tEl moves straight up (translateY only — no rotation on wrapper)
-                                targetElSp.style.transition = 'transform 0.36s cubic-bezier(0.1,0,0.3,1)';
-                                targetElSp.style.transform  = 'translateY(-300px)';
+                                // tEl moves straight up — height based on caster STR
+                                targetElSp._spikeAirborne    = true;
+                                targetElSp._spikeLaunchTime  = performance.now();
+                                targetElSp._spikelaunchHeight = launchHeight;
+                                targetElSp._spikeAirborneMs  = airborneMs;
+                                targetElSp.style.transition  = `transform ${Math.round(airborneMs * 0.4)}ms cubic-bezier(0.1,0,0.3,1)`;
+                                targetElSp.style.transform   = `translateY(-${launchHeight}px)`;
 
                                 // tImg spins around its center during the upward travel
                                 if (tImgSp) {
@@ -18498,10 +18827,11 @@
 
                                 // Stop spinning exactly when launch transition ends (peak height)
                                 // Character holds that rotation angle while at peak and during fall
-                                setTimeout(() => { clearInterval(spinIv); }, 360);
+                                const _spT0 = setTimeout(() => { clearInterval(spinIv); }, Math.round(airborneMs * 0.4));
+                                targetElSp._spikeTimeouts.push(_spT0);
 
-                                // After 700ms airborne → fall back + snap to lying down
-                                setTimeout(() => {
+                                // After airborneMs → fall back + snap to lying down
+                                const _spT1 = setTimeout(() => {
                                     // tEl falls back to original position
                                     targetElSp.style.transition = 'transform 0.42s cubic-bezier(0.4,0,1,1)';
                                     targetElSp.style.transform  = '';
@@ -18514,7 +18844,8 @@
                                     setTimeout(() => pillarWrap.remove(), 180);
 
                                     // Stand back up after 1s on ground — restore idle frame on stand-up
-                                    setTimeout(() => {
+                                    const _spT2 = setTimeout(() => {
+                                        targetElSp._spikeAirborne = false;
                                         targetElSp.style.transition = '';
                                         if (tImgSp) {
                                             tImgSp.style.transition = 'transform 0.35s ease-out';
@@ -18526,7 +18857,9 @@
                                             }, 350);
                                         }
                                     }, 1000);
-                                }, 700);
+                                    targetElSp._spikeTimeouts.push(_spT2);
+                                }, airborneMs);
+                                targetElSp._spikeTimeouts.push(_spT1);
                             }
 
                             if (t < 1) requestAnimationFrame(animPillarRise);
@@ -19204,10 +19537,15 @@
             document.getElementById('lobby-wrapper').style.display  = '';
             const bg = ARENA_BACKGROUNDS[Math.floor(Math.random() * ARENA_BACKGROUNDS.length)];
             document.getElementById('arena').style.backgroundImage = 'url(' + bg + ')';
+            const _bgEl2 = document.getElementById('arena-bg');
+            if (_bgEl2) _bgEl2.style.backgroundImage = 'url(' + bg + ')';
         }
 
         function _ptUpdateBg() {
-            document.getElementById('arena').style.backgroundImage = 'url(' + ARENA_BACKGROUNDS[_powerTestBgIndex] + ')';
+            const _bgUrl = 'url(' + ARENA_BACKGROUNDS[_powerTestBgIndex] + ')';
+            document.getElementById('arena').style.backgroundImage = _bgUrl;
+            const _bgEl3 = document.getElementById('arena-bg');
+            if (_bgEl3) _bgEl3.style.backgroundImage = _bgUrl;
             const n = document.getElementById('ptp-bg-name');
             if (n) n.textContent = PT_BG_NAMES[_powerTestBgIndex];
             const sat = document.querySelector('.fury-saturator');
@@ -21723,6 +22061,7 @@
             // Returning to lobby properly - clear forfeit flag
             localStorage.removeItem('fightchub_battle_active');
             stopBattleHeartbeat();
+            stopArenaCamera();
             clearActiveHots();
 
             // Clear match timer if running
