@@ -313,14 +313,15 @@
             pointer-events: none;
         }
         #arena-world .fighter { pointer-events: auto; }
-        /* Background layer inside the world — zooms with the camera.
-           Slightly oversized (105%) to avoid edge gaps when panning sideways. */
+        /* Background layer — sits behind #arena-world, zooms with the camera
+           (scale only, no translate) so it always covers the arena. */
         #arena-bg {
             position: absolute;
-            top: -2.5%; left: -2.5%;
-            width: 105%; height: 105%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
+            transform-origin: 50% 100%;
             z-index: 0;
             pointer-events: none;
         }
@@ -10449,8 +10450,8 @@
                     <span class="volume-value" id="volume-value">100%</span>
                 </div>
             </div>
-            <div id="arena-world">
             <div id="arena-bg"></div>
+            <div id="arena-world">
             <div class="fighter" id="player">
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/FightChub/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
@@ -15184,6 +15185,9 @@
 
             worldEl.style.transform =
                 `translateX(${_camPanX.toFixed(1)}px) scale(${_camZoom.toFixed(4)})`;
+            // Background scales but never translates — always covers the arena
+            const bgEl = document.getElementById('arena-bg');
+            if (bgEl) bgEl.style.transform = `scale(${Math.max(1, _camZoom).toFixed(4)})`;
             _camRaf = requestAnimationFrame(_camTick);
         }
 
@@ -15197,6 +15201,8 @@
             if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
             const worldEl = document.getElementById('arena-world');
             if (worldEl) worldEl.style.transform = '';
+            const bgEl = document.getElementById('arena-bg');
+            if (bgEl) bgEl.style.transform = '';
             _camZoom = 1.0; _camPanX = 0;
         }
         // ─────────────────────────────────────────────────────────────────────────
@@ -16835,6 +16841,8 @@
                 actionsContainer.style.display = 'none'; // Hide actions
                 upgradeBtn.style.display = 'none';
                 upgradeBtn.style.visibility = '';
+                const wrExt = document.getElementById('winrate-side-ext');
+                if (wrExt) wrExt.innerHTML = '';
             }
 
             // Update arrows
