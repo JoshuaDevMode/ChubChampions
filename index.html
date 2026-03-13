@@ -14503,6 +14503,7 @@
         let _aonMatchId = 0;
 
         async function startServerBattle(character) {
+            game.inProgress = true;
             // PvP: result was pre-computed during matchmaking — replay it directly
             if (_pvpBattleResult) {
                 const { result, rewards } = _pvpBattleResult;
@@ -14867,7 +14868,9 @@
                 const isBack = event.action === 'retreat';
                 // Duration scales with distance (encodes AGI + level)
                 const distServer = Math.abs(event.to - event.from);
-                const moveDur    = Math.max(100, Math.round(240 - distServer * 0.31));
+                // Duration proportional to distance so long approaches look natural.
+                // Short combat steps stay snappy (≤100ms); large sweeps slow down visually.
+                const moveDur    = Math.max(100, Math.min(420, Math.round(distServer * 0.45)));
                 movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                 void movEl.offsetWidth;
                 const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
