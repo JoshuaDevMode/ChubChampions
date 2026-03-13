@@ -23953,7 +23953,7 @@
         let _invDragSource   = null; // 'inventory' | 'equipped'
 
         // ─────────── LOBBY SPRITE PRE-LOADER ───────────────────
-        let _lobbySpritesLoaded = false;
+        var _lobbySpritesLoaded = false; // var avoids TDZ — called before this line via hoisted function
 
 
         function _lloProgress(percent, text) {
