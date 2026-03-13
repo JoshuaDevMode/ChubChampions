@@ -14497,6 +14497,10 @@
 
         // Rewards returned by the last server battle (chest tier, streak tokens)
         let lastBattleRewards = null;
+        // Character that is currently (or was last) battling — set by startGameWithCharacter.
+        // Used by showGameOver / showResultsDraw so stats go to the right character
+        // regardless of which character is selected in the lobby.
+        let _activeBattleCharacter = null;
         // PvP: pre-computed battle result set by findPvpMatch before startGameWithCharacter
         let _pvpBattleResult   = null;
         let _preBattleFetch   = null; // Fetch started during countdown to hide server latency
@@ -14873,7 +14877,7 @@
                 // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
                 // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
                 const pxPerTurn = event.speed || 180;
-                const moveDur   = Math.max(100, Math.min(500, Math.round(distServer / pxPerTurn * 220)));
+                const moveDur   = Math.max(120, Math.min(600, Math.round(distServer / pxPerTurn * 300)));
                 movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                 void movEl.offsetWidth;
                 const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
@@ -17274,6 +17278,7 @@
         });
 
         async function startGameWithCharacter(character) {
+            _activeBattleCharacter = character;
             // Mark battle as active for forfeit detection
             localStorage.setItem('fightchub_battle_active', JSON.stringify({
                 timestamp: Date.now(),
@@ -17317,9 +17322,11 @@
             game.cpu.element.style.transition    = '';
             // Start camera now that _homeX and element positions are correct
             if (_cameraEnabled) startArenaCamera();
-            // Reset stamina bars to full
-            updateStaminaBar('player', 100, 100);
-            updateStaminaBar('cpu',    100, 100);
+            // Reset stamina to full and start progressive fill animation
+            _staminaTarget.player  = 100; _staminaDisplay.player  = 100;
+            _staminaTarget.cpu     = 100; _staminaDisplay.cpu     = 100;
+            _staminaRenderBars();
+            startStaminaAnim();
 
             // Reset stats
             stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
@@ -20170,14 +20177,58 @@
             hudEl[fighter + 'FuryText'].textContent = `${Math.floor(f.fury)}/${f.maxFury}`;
         }
 
+        // ── Progressive stamina fill ─────────────────────────────────────────────
+        // Target = real value from server events. Display fills toward target at
+        // STAMINA_FILL_RATE st/sec. Drops are applied instantly (no lag on cost).
+        const _staminaTarget  = { player: 100, cpu: 100 };
+        const _staminaDisplay = { player: 100, cpu: 100 };
+        const STAMINA_FILL_RATE = 6; // visual fill speed in stamina units/second
+        let   _staminaRafId   = null;
+
+        function _staminaRenderBars() {
+            for (const f of ['player', 'cpu']) {
+                const bar  = document.getElementById(f + '-stamina');
+                const text = document.getElementById(f + '-stamina-text');
+                if (!bar || !text) continue;
+                const v = _staminaDisplay[f];
+                bar.style.width = Math.max(0, Math.min(100, v)) + '%';
+                bar.classList.toggle('exhausted', v <= 0);
+                text.textContent = 'ST ' + Math.round(v);
+            }
+        }
+
+        function _staminaAnimTick() {
+            const step = STAMINA_FILL_RATE / 60; // units per frame at ~60fps
+            let dirty = false;
+            for (const f of ['player', 'cpu']) {
+                const t = _staminaTarget[f], d = _staminaDisplay[f];
+                if (d < t) {
+                    _staminaDisplay[f] = Math.min(t, d + step);
+                    dirty = true;
+                }
+            }
+            if (dirty) _staminaRenderBars();
+            _staminaRafId = requestAnimationFrame(_staminaAnimTick);
+        }
+
+        function startStaminaAnim()  {
+            if (_staminaRafId) return;
+            _staminaRafId = requestAnimationFrame(_staminaAnimTick);
+        }
+        function stopStaminaAnim() {
+            if (_staminaRafId) { cancelAnimationFrame(_staminaRafId); _staminaRafId = null; }
+        }
+
         function updateStaminaBar(fighter, stamina, maxStamina) {
-            const bar  = document.getElementById(fighter + '-stamina');
-            const text = document.getElementById(fighter + '-stamina-text');
-            if (!bar || !text) return;
             const pct = Math.max(0, Math.min(100, (stamina / maxStamina) * 100));
-            bar.style.width = pct + '%';
-            bar.classList.toggle('exhausted', stamina <= 0);
-            text.textContent = 'ST ' + Math.round(stamina);
+            const prev = _staminaTarget[fighter] ?? 100;
+            _staminaTarget[fighter] = pct;
+            if (pct < prev) {
+                // Stamina spent — snap display down immediately so the cost is visible
+                _staminaDisplay[fighter] = pct;
+                _staminaRenderBars();
+            }
+            // If pct >= prev (regen), the RAF animation fills it progressively
         }
 
         function showEffect(x, y, emoji) {
@@ -20957,8 +21008,9 @@
             const result = winner === 'player' ? 'win' : 'loss';
             addMatchToHistory(result, game.player.health, game.cpu.health, stats.player, stats.cpu);
 
-            // Track per-character match stats
-            const charForStats = getSelectedCharacter();
+            // Track per-character match stats — use _activeBattleCharacter so stats
+            // always go to the fighter who played, not the currently-selected one.
+            const charForStats = _activeBattleCharacter || getSelectedCharacter();
             if (charForStats) {
                 charForStats.gamesPlayed = (charForStats.gamesPlayed || 0) + 1;
                 if (winner === 'player') {
@@ -21023,7 +21075,7 @@
             addMatchToHistory('draw', game.player.health, game.cpu.health, stats.player, stats.cpu);
 
             // Track per-character match stats (draw counts as game played, not won)
-            const charForStats = getSelectedCharacter();
+            const charForStats = _activeBattleCharacter || getSelectedCharacter();
             if (charForStats) {
                 charForStats.gamesPlayed = (charForStats.gamesPlayed || 0) + 1;
                 saveCharacters();
@@ -22202,6 +22254,7 @@
             localStorage.removeItem('fightchub_battle_active');
             stopBattleHeartbeat();
             stopArenaCamera();
+            stopStaminaAnim();
             clearActiveHots();
 
             // Clear match timer if running
