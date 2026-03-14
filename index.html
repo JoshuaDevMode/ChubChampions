@@ -14061,12 +14061,14 @@
                 agility: C.stats.agility, defense: C.stats.defense, level, tier: 3,
             };
 
-            // Use the selected character's sprite/visual but with dev stats,
-            // so the player fighter looks like their real character.
+            // Use the selected character's sprite but fully override all combat stats
+            // so the battle reflects the dev character, not the real one.
             const visual = getSelectedCharacter();
             const battlePlayer = visual
-                ? { ...visual, level: P.level, maxHp: P.maxHp, skills: P.skills,
-                    element: P.element, furyPowerChoice: P.furyPowerChoice, name: P.name }
+                ? { ...visual, name: P.name, level: P.level, maxHp: P.maxHp,
+                    stats: P.stats, skills: P.skills,
+                    element: P.element, furyPowerChoice: P.furyPowerChoice,
+                    wellness: P.wellness, morale: P.morale, adaptability: P.adaptability }
                 : P;
 
             _pvpBattleResult = { result, rewards: null };
@@ -15525,11 +15527,15 @@
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
+                // Override .dashing !important transition to scale with AGI
+                const _approachMs = Math.round(400 * atkMult);
+                attackerEl.style.setProperty('transition', `left ${_approachMs}ms ease-out, right ${_approachMs}ms ease-out`, 'important');
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
-                await sleep(300);
+                await sleep(Math.round(300 * atkMult));
                 stopRunAnimation(attackerEl);
+                attackerEl.style.removeProperty('transition');
                 playFootstep();
             }
 
@@ -15718,10 +15724,13 @@
                 // Return to current home position (server coords scaled to real arena width)
                 const _retScale = _arenaW / 1600;
                 const _retHomeX = (game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
+                const _returnMs = Math.round(400 * atkMult);
+                attackerEl.style.setProperty('transition', `left ${_returnMs}ms ease-out, right ${_returnMs}ms ease-out`, 'important');
                 attackerEl.style.left  = _retHomeX + 'px';
                 attackerEl.style.right = 'auto';
-                await sleep(350);
+                await sleep(Math.round(350 * atkMult));
                 stopRunAnimation(attackerEl);
+                attackerEl.style.removeProperty('transition');
             }
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
