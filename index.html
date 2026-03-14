@@ -15374,6 +15374,9 @@
         // isLSFirst/Follow: Light Step follow-up (old midpoint run behavior)
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
+            // AGI-based attack speed: scale animation durations by attacker's AGI.
+            // Backend sends attackDuration (150–620ms). Base reference = 500ms (neutral fighter).
+            const atkMult = event.attackDuration ? event.attackDuration / 500 : 1.0;
 
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
@@ -15581,8 +15584,8 @@
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
                 if (jumpDodge) fighterBody.classList.add('jumping');
-                animateAttack(attackerEl, animType, 500, isWeaponAnim ? attackType : undefined);
-                await sleep(300);
+                animateAttack(attackerEl, animType, Math.round(500 * atkMult), isWeaponAnim ? attackType : undefined);
+                await sleep(Math.round(300 * atkMult));
             }
 
             // Apply result
@@ -15725,7 +15728,7 @@
             defenderEl.style.zIndex = '';
             startIdleBlink(defenderEl);
             startIdleBlink(attackerEl);
-            await sleep(isComboFirst ? 80 : 500);
+            await sleep(isComboFirst ? 80 : Math.round(500 * atkMult));
         }
 
         // ===== WEAPON DURABILITY HELPERS =====
