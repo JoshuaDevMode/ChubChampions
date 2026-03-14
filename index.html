@@ -15394,6 +15394,10 @@
             stopIdleBlink(attackerEl);
             stopIdleBlink(defenderEl);
             attackerEl.classList.add('dashing');
+            // Override .dashing !important transition globally for all movement branches in this attack
+            const _movMs = Math.round(400 * atkMult);
+            attackerEl.style.setProperty('transition', `left ${_movMs}ms ease-out, right ${_movMs}ms ease-out`, 'important');
+            void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
             const isWeaponAnim = !!WEAPONS[attackType];
@@ -15528,15 +15532,11 @@
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
-                // Override .dashing !important transition to scale with AGI
-                const _approachMs = Math.round(400 * atkMult);
-                attackerEl.style.setProperty('transition', `left ${_approachMs}ms ease-out, right ${_approachMs}ms ease-out`, 'important');
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
                 stopRunAnimation(attackerEl);
-                attackerEl.style.removeProperty('transition');
                 playFootstep();
             }
 
@@ -15661,7 +15661,7 @@
                         setTimeout(() => { kbEl.style.transition = ''; }, 240);
                     }
                 }
-                await sleep(300);
+                await sleep(Math.round(300 * Math.max(0.35, atkMult)));
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
@@ -15725,14 +15725,12 @@
                 // Return to current home position (server coords scaled to real arena width)
                 const _retScale = _arenaW / 1600;
                 const _retHomeX = (game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
-                const _returnMs = Math.round(400 * atkMult);
-                attackerEl.style.setProperty('transition', `left ${_returnMs}ms ease-out, right ${_returnMs}ms ease-out`, 'important');
                 attackerEl.style.left  = _retHomeX + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(350 * atkMult));
                 stopRunAnimation(attackerEl);
-                attackerEl.style.removeProperty('transition');
             }
+            attackerEl.style.removeProperty('transition');
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
             defenderEl.style.zIndex = '';
