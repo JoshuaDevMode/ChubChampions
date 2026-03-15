@@ -15381,8 +15381,8 @@
 
             // Reduce max zoom when any fighter is airborne to avoid clipping jumps at top
             const anyAirborne = !!(
-                document.querySelector('#player .fighter-body.jumping, #player .fighter-body.jump-attack-arc') ||
-                document.querySelector('#cpu .fighter-body.jumping, #cpu .fighter-body.jump-attack-arc') ||
+                document.querySelector('#player .fighter-body[data-jumping], #player .fighter-body.jump-attack-arc') ||
+                document.querySelector('#cpu .fighter-body[data-jumping], #cpu .fighter-body.jump-attack-arc') ||
                 game.player?.element?._spikeAirborne ||
                 game.cpu?.element?._spikeAirborne
             );
@@ -15704,8 +15704,19 @@
                 if (jumpDodge) {
                     const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (cpuChar?.stats?.agility || 68);
                     const _jumpH  = Math.min(600, Math.round(240 + _defAgi * 0.4));
-                    fighterBody.style.setProperty('--jump-h', `-${_jumpH}px`);
-                    fighterBody.classList.add('jumping');
+                    const _hitMs  = Math.round(300 * atkMult);
+                    const _rise   = Math.max(150, _hitMs);
+                    const _hold   = Math.max(80,  Math.round(_hitMs * 0.25));
+                    const _fall   = Math.max(150, Math.round(_hitMs * 0.8));
+                    const _total  = _rise + _hold + _fall;
+                    fighterBody.dataset.jumping = '1';
+                    fighterBody._jumpAnim = fighterBody.animate([
+                        { transform: 'translateY(0)',              offset: 0 },
+                        { transform: `translateY(-${_jumpH}px)`,  offset: _rise / _total },
+                        { transform: `translateY(-${_jumpH}px)`,  offset: (_rise + _hold) / _total },
+                        { transform: 'translateY(0)',              offset: 1 },
+                    ], { duration: _total, easing: 'ease-in-out', fill: 'forwards' });
+                    fighterBody._jumpLandMs = _hold + _fall;
                 }
                 animateAttack(attackerEl, animType, Math.round(500 * atkMult), isWeaponAnim ? attackType : undefined);
                 await sleep(Math.round(300 * atkMult));
@@ -15782,9 +15793,10 @@
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
                 playDodgeSound();
-                await sleep(jumpDodge ? 420 : 200);
+                await sleep(jumpDodge ? (fighterBody._jumpLandMs || 300) : 200);
                 fighterBody.classList.remove('dodging');
-                fighterBody.classList.remove('jumping');
+                if (fighterBody._jumpAnim) { fighterBody._jumpAnim.cancel(); fighterBody._jumpAnim = null; }
+                delete fighterBody.dataset.jumping;
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
