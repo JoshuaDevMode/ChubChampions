@@ -887,8 +887,8 @@
 
         @keyframes jumpUp {
             0%   { transform: translateY(0); }
-            30%  { transform: translateY(-340px); }
-            70%  { transform: translateY(-340px); }
+            30%  { transform: translateY(var(--jump-h, -340px)); }
+            70%  { transform: translateY(var(--jump-h, -340px)); }
             100% { transform: translateY(0); }
         }
 
@@ -15621,7 +15621,7 @@
                     const step = now => {
                         const t  = Math.min((now - t0) / jaArcMs, 1);
                         const tx = deltaX * jaEase(t);
-                        const ty = -185   * Math.sin(Math.PI * t);
+                        const ty = -Math.max(280, Math.min(450, Math.round(180 + jaStr * 0.27))) * Math.sin(Math.PI * t);
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
                         if (t < 1) { requestAnimationFrame(step); return; }
                         attackerEl.style.transform = '';
@@ -15700,7 +15700,12 @@
             if (!event.jumpAttack) {
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
-                if (jumpDodge) fighterBody.classList.add('jumping');
+                if (jumpDodge) {
+                    const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (cpuChar?.stats?.agility || 68);
+                    const _jumpH  = Math.min(600, Math.round(240 + _defAgi * 0.4));
+                    fighterBody.style.setProperty('--jump-h', `-${_jumpH}px`);
+                    fighterBody.classList.add('jumping');
+                }
                 animateAttack(attackerEl, animType, Math.round(500 * atkMult), isWeaponAnim ? attackType : undefined);
                 await sleep(Math.round(300 * atkMult));
             }
