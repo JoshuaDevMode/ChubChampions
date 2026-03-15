@@ -20404,13 +20404,13 @@
             const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
             const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
 
-            // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn, 108–450):
-            //   speed 108 (AGI~15)  → ~265ms frames / 195ms steps  (slow, lumbering)
-            //   speed 265 (AGI~100) → ~171ms frames / 129ms steps  (medium)
-            //   speed 450 (AGI cap) →  65ms frames /  50ms steps   (snappy sprint)
+            // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn):
+            //   speed  62 (AGI~15)  → ~293ms frames / ~214ms steps  (slow, lumbering)
+            //   speed 265 (AGI~200) → ~215ms frames / ~158ms steps  (medium)
+            //   speed 655 (AGI~800) →  65ms frames /   50ms steps   (snappy sprint, floor)
             // Without speed (attack run-ups): fixed 250ms / 150ms defaults.
-            const _frameMs = speed != null ? Math.max(65, Math.round(330 - speed * 0.59)) : 250;
-            const _footMs  = speed != null ? Math.max(50, Math.round(240 - speed * 0.42)) : 150;
+            const _frameMs = speed != null ? Math.max(65, Math.round(317 - speed * 0.385)) : 250;
+            const _footMs  = speed != null ? Math.max(50, Math.round(231 - speed * 0.277)) : 150;
 
             if (hasWeaponRun) {
                 // Weapon run: character in weapon-holding pose + weapon overlay
