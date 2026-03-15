@@ -15551,9 +15551,9 @@
                 // Run speed scales with AGI (approach), arc speed scales with STR (jump power)
                 const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (cpuChar?.stats?.agility  || 35);
                 const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (cpuChar?.stats?.strength || 35);
-                const jaRunSpd  = 1 + Math.min(0.5, (jaAgi - 35) * 0.004); // AGI 35=1.0x → AGI 160=1.5x
+                const jaRunSpd  = 1 + Math.min(0.8, (jaAgi - 35) * 0.00155); // AGI 35=1.0x → AGI 550=1.8x
                 const jaArcSpd  = 1 + Math.min(0.5, (jaStr - 35) * 0.004); // STR 35=1.0x → STR 160=1.5x
-                const jaRunMs   = Math.round(280 / jaRunSpd);  // 280ms → ~187ms at high AGI
+                const jaRunMs   = Math.round(280 / jaRunSpd);  // 280ms → ~156ms at high AGI
                 const jaArcMs   = Math.round(860 / jaArcSpd);  // 860ms → ~573ms at high STR
 
                 // Save idle src
