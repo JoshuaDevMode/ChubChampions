@@ -5628,7 +5628,7 @@
 
         /* ─── Left Stats Column ─────────────────────────────────── */
         .skills-stats-col {
-            flex: 0 0 220px;
+            flex: 0 0 260px;
             display: flex;
             flex-direction: column;
             background: rgba(0,0,0,0.45);
@@ -5641,7 +5641,7 @@
         }
         .ssc-header {
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
+            font-size: 12px;
             letter-spacing: 0.1em;
             color: rgba(255,200,60,0.9);
             padding: 13px 14px 9px;
@@ -5650,7 +5650,7 @@
         }
         .ssc-group-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
+            font-size: 10px;
             letter-spacing: 0.18em;
             color: rgba(255,255,255,0.25);
             padding: 8px 12px 3px;
@@ -5665,15 +5665,15 @@
         }
         .ssc-cstat.ssc-zero { opacity: 0.3; }
         .ssc-cstat.ssc-nonzero { background: rgba(255,255,255,0.05); }
-        .ssc-cstat-icon { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; line-height: 1; }
-        .ssc-cstat-label { font-family: 'Fredoka', sans-serif; font-size: 7px; color: rgba(255,255,255,0.55); flex: 1; line-height: 1.4; }
-        .ssc-cstat-val { font-family: 'Fredoka', sans-serif; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+        .ssc-cstat-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; line-height: 1; }
+        .ssc-cstat-label { font-family: 'Fredoka', sans-serif; font-size: 10px; color: rgba(255,255,255,0.55); flex: 1; line-height: 1.4; }
+        .ssc-cstat-val { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 700; flex-shrink: 0; }
         .ssc-cstat.ssc-zero .ssc-cstat-val { color: rgba(255,255,255,0.22); }
         .ssc-cstat.ssc-nonzero .ssc-cstat-val { color: #ffd700; text-shadow: 0 0 6px rgba(255,215,0,0.4); }
-        .ssc-base-row { display: flex; align-items: center; gap: 7px; padding: 4px 10px 4px 8px; margin: 2px 6px; }
-        .ssc-base-name { font-family: 'Fredoka', sans-serif; font-size: 7px; color: rgba(255,255,255,0.55); flex: 1; }
-        .ssc-base-num { font-family: 'Fredoka', sans-serif; font-size: 9px; font-weight: 700; color: #a0c8ff; flex-shrink: 0; min-width: 28px; text-align: right; }
-        .ssc-base-fx { font-family: 'Fredoka', sans-serif; font-size: 6px; color: rgba(255,215,0,0.55); flex-shrink: 0; min-width: 44px; text-align: right; line-height: 1.4; }
+        .ssc-base-row { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 8px; margin: 2px 6px; }
+        .ssc-base-name { font-family: 'Fredoka', sans-serif; font-size: 10px; color: rgba(255,255,255,0.55); flex: 1; }
+        .ssc-base-num { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 700; color: #a0c8ff; flex-shrink: 0; min-width: 32px; text-align: right; }
+        .ssc-base-fx { font-family: 'Fredoka', sans-serif; font-size: 9px; color: rgba(255,215,0,0.55); flex-shrink: 0; min-width: 50px; text-align: right; line-height: 1.4; }
         .ssc-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 7px 10px 4px; }
 
         /* ─── Mini Node Icons ───────────────────────────────────── */
@@ -5734,13 +5734,16 @@
         .skills-map-col {
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .skills-map-col::-webkit-scrollbar { width: 4px; }
         .skills-map-col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
         .skills-detail-col {
-            flex: 0 0 250px;
+            flex: 0 0 260px;
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
@@ -5784,58 +5787,46 @@
         .snd-upgrade-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); cursor: not-allowed; }
         .snd-maxed    { text-align: center; padding: 10px; color: #ffd700; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
 
-        /* Map layout */
-        .skill-map-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 100%;
+        /* ── Unified skill canvas ──────────────────────────────── */
+        .sm-bg-zone {
+            position: absolute; pointer-events: none; z-index: 0; border-radius: 8px;
         }
-        .skill-map-row {
-            display: flex;
-            align-items: flex-start;
-            width: 100%;
+        .sm-cf-badge {
+            position: absolute; z-index: 3;
+            width: 40px; height: 40px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 2px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            background: rgba(6,4,12,0.92);
+            transition: all 0.3s;
+            color: rgba(255,255,255,0.45);
         }
-        .skill-map-free-row {
-            display: flex;
-            justify-content: center;
-            padding-top: 5px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            margin-top: 2px;
+        .sm-cf-badge.sm-cf-active {
+            border-color: rgba(220,50,50,0.75);
+            background: rgba(70,0,0,0.95);
+            color: rgba(255,90,90,0.9);
+            box-shadow: 0 0 14px rgba(200,30,30,0.6);
+            animation: sm-pulse 1.6s ease-in-out infinite;
         }
-        .skill-map-champ-row {
-            display: flex;
-            justify-content: center;
-            padding-top: 5px;
-            border-top: 1px solid rgba(255,215,0,0.12);
-            margin-top: 2px;
+        @keyframes sm-pulse {
+            0%,100% { box-shadow: 0 0 8px rgba(200,30,30,0.5); }
+            50%      { box-shadow: 0 0 20px rgba(230,50,50,0.85); }
         }
+        .sm-row-sep {
+            position: absolute; left: 4%; right: 4%; height: 1px;
+            background: rgba(255,255,255,0.05); pointer-events: none; z-index: 0;
+        }
+        .sm-champ-sep { background: rgba(255,215,0,0.1); }
+        .sm-champ-label {
+            position: absolute; left: 0; right: 0; text-align: center;
+            font-family: 'Fredoka', sans-serif; font-size: 7.5px; letter-spacing: 0.09em;
+            pointer-events: none; z-index: 3;
+        }
+        .sm-champ-locked { color: rgba(160,160,160,0.35); }
+        .sm-champ-open   { color: rgba(255,215,0,0.7); text-shadow: 0 0 10px rgba(255,215,0,0.4); }
 
-        .skill-branch-cluster {
-            flex: 1;
-            background: rgba(0,0,0,0.45);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 12px 10px 10px;
-            min-width: 0;
-            transition: border-color 0.18s, box-shadow 0.18s;
-        }
-        .skill-branch-cluster:hover    { border-color: var(--bc); }
-        .skill-branch-cluster.cluster-locked { opacity: 0.35; }
-        .skill-branch-cluster.champ-cluster  { width: 50%; flex: none; }
-        .skill-branch-cluster.free-cluster   { width: 35%; flex: none; }
-
-        .branch-cluster-hdr {
-            font-family: 'Fredoka', sans-serif;
-            font-size: 8px;
-            letter-spacing: 0.1em;
-            text-align: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            text-shadow: 0 0 10px var(--bc);
-        }
-
+        /* legacy stubs kept so nothing else breaks */
         .branch-mini-tree   { display: flex; flex-direction: column; align-items: center; }
         .mini-tree-row      { display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
         .mini-node-gap      { flex: 1; }
@@ -5851,7 +5842,7 @@
         .mini-node {
             width: 44px;
             height: 44px;
-            border-radius: 8px;
+            border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.2);
             background: rgba(12,10,20,0.95);
             display: flex;
@@ -5871,6 +5862,20 @@
         .mini-node.mn-maxed            { background: var(--bc); border-color: var(--bc); color: #000; font-size: 14px; box-shadow: 0 0 12px var(--bc); }
         .mini-node.mn-locked           { border-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.07); cursor: not-allowed; background: rgba(8,6,12,0.95); }
         .mini-node.mn-locked:hover     { transform: none; box-shadow: none; }
+        .mini-node.mn-path-locked {
+            opacity: 0.2;
+            filter: grayscale(1);
+            cursor: not-allowed;
+        }
+        .mini-node.mn-path-locked::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 45%, rgba(255,80,80,0.5) 45%, rgba(255,80,80,0.5) 55%, transparent 55%);
+            border-radius: inherit;
+            pointer-events: none;
+        }
+        .mn-conn-highlight .mini-node  { box-shadow: 0 0 14px var(--bc), 0 0 6px var(--bc) inset !important; border-color: var(--bc) !important; }
         .mini-node-label {
             font-size: 7px;
             color: rgba(255,255,255,0.45);
@@ -5895,17 +5900,35 @@
         .mini-conn-r   { width:44px; border-right:1px solid rgba(249,115,22,0.6); flex-shrink:0; }
         .mini-conn-gap { flex:1; }
 
-        /* Conflict strip */
-        .skill-conflict-strip {
-            width: 38px; flex-shrink: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding-top: 32px; gap: 4px;
+        /* Diamond merge connector (T2 → center T3) */
+        .mini-merge-wrap { display:flex; width:60%; height:14px; margin:2px 0; }
+        .mini-merge-l { flex:1; border-right:1px solid rgba(249,115,22,0.6); border-top:1px solid rgba(249,115,22,0.6); border-radius:5px 0 0 0; }
+        .mini-merge-r { flex:1; border-left:1px solid rgba(249,115,22,0.6); border-top:1px solid rgba(249,115,22,0.6); border-radius:0 5px 0 0; }
+        .mini-tree-row.row-center { justify-content:center; }
+        .mini-conn-center { width:1px; height:10px; background:rgba(249,115,22,0.6); margin:2px auto; }
+
+        /* Conflict strip stubs (no longer used) */
+        .skill-conflict-strip { display: none; }
+
+        /* ── Skill node color classes ──────────────────── */
+        .mini-node[style*='--bc: #e74c3c'] { box-shadow: 0 0 6px #e74c3c40; }
+        .mini-node[style*='--bc: #3498db'] { box-shadow: 0 0 6px #3498db40; }
+        .mini-node[style*='--bc: #2ecc71'] { box-shadow: 0 0 6px #2ecc7140; }
+        .mini-node[style*='--bc: #f1c40f'] { box-shadow: 0 0 6px #f1c40f40; }
+        .mini-node.mn-active[style*='--bc: #e74c3c'] { box-shadow: 0 0 10px #e74c3c80; }
+        .mini-node.mn-active[style*='--bc: #3498db'] { box-shadow: 0 0 10px #3498db80; }
+        .mini-node.mn-active[style*='--bc: #2ecc71'] { box-shadow: 0 0 10px #2ecc7180; }
+        .mini-node.mn-active[style*='--bc: #f1c40f'] { box-shadow: 0 0 10px #f1c40f80; }
+
+        /* ── Liquid flow animation on active connections ── */
+        @keyframes sk-flow {
+            from { stroke-dashoffset: 24; }
+            to   { stroke-dashoffset: 0; }
         }
-        .conflict-line { width:2px; height:24px; background:rgba(255,255,255,0.1); border-radius:1px; transition:background 0.3s; }
-        .conflict-line.ca { background: rgba(220,50,50,0.75); box-shadow: 0 0 6px rgba(220,50,50,0.4); }
-        .conflict-icon { font-size:15px; color:rgba(255,255,255,0.2); transition:all 0.3s; line-height:1; }
-        .conflict-icon.ca { color:rgba(255,80,80,1); text-shadow:0 0 10px rgba(255,0,0,0.7); }
+        .sk-conn-active {
+            stroke-dasharray: 8 4;
+            animation: sk-flow 1.4s linear infinite;
+        }
 
         .inventory-container {
             display: flex;
@@ -11054,15 +11077,27 @@
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
         const CONSUMABLE_TRIGGER_HP = 0.25;
         const BATTLE_CONSUMABLES = {
-            small_potion:   { name: 'Small Potion', category: 'potion', healPercent: 0.22,               icon: '🧪', price: 12 },
-            big_potion:     { name: 'Big Potion',   category: 'potion', healPercent: 0.28, hotTicks: 6,  icon: '⚗️', price: 16 },
-            stamina_potion: { name: 'Energy Drink', category: 'potion', staminaRestore: 0.50,            icon: '⚡', price: 14 },
+            // ── Original potions ──────────────────────────────────────
+            small_potion:    { name: 'Small Potion',   category: 'potion', healPercent: 0.22,                        icon: '🧪', price: 12 },
+            big_potion:      { name: 'Big Potion',     category: 'potion', healPercent: 0.28, hotTicks: 6,           icon: '⚗️', price: 16 },
+            stamina_potion:  { name: 'Energy Drink',   category: 'potion', staminaRestore: 0.50,                     icon: '⚡', price: 14 },
+            // ── New instant heal ──────────────────────────────────────
+            minor_life_vial: { name: 'Minor Life Vial',category: 'potion', healPercent: 0.15,                        icon: '💊', price: 10 },
+            major_life_vial: { name: 'Major Life Vial',category: 'potion', healPercent: 0.40,                        icon: '🔴', price: 24 },
+            // ── New buff consumables ──────────────────────────────────
+            war_tonic:       { name: 'War Tonic',      category: 'buff',   dmgBoost: 0.20, buffTurns: 5,             icon: '⚔️', price: 18 },
+            stamina_brew:    { name: 'Stamina Brew',   category: 'buff',   staminaRegen: 0.12, buffTurns: 4,         icon: '💨', price: 15 },
+            fury_shard:      { name: 'Fury Shard',     category: 'buff',   furyBoost: 0.40,                          icon: '🔥', price: 20 },
+            iron_skin:       { name: 'Iron Skin',      category: 'buff',   defBoost: 0.25, buffTurns: 5,             icon: '🛡️', price: 18 },
+            mending_herb:    { name: 'Mending Herb',   category: 'buff',   hotPercent: 0.06, hotTicks: 8,            icon: '🌿', price: 14 },
         };
         // Legacy alias — battle engine still references CONSUMABLES for heal logic
         const CONSUMABLES = BATTLE_CONSUMABLES;
         const CONSUMABLE_MIN_LEVEL = 5;
         const CONSUMABLE_SHOP_PRICES = {
             small_potion: 12, big_potion: 16, stamina_potion: 14,
+            minor_life_vial: 10, major_life_vial: 24,
+            war_tonic: 18, stamina_brew: 15, fury_shard: 20, iron_skin: 18, mending_herb: 14,
         };
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
@@ -11129,6 +11164,10 @@
             if (level < 5) return 0;
             return Math.min(5, 1 + Math.floor((level - 5) / 10));
         }
+        function getMaxConsumableSlots(character) {
+            const brewRank = getSkillRank(character, 'alchemist', 'brew_master');
+            return 2 + brewRank; // base 2 + up to 5 extra from skill tree
+        }
         // Chest drops: wellness items (food/medical) + battle consumables (potions)
         const CONSUMABLE_DROP_TABLES = {
             bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
@@ -11139,253 +11178,308 @@
         };
 
         // ===== SKILL TREE SYSTEM =====
-        // Cost to go from rank N-1 to rank N: [0,1,1,2,2,3,3,4,4,5,5]
-        // Total to max one node: 30 points
-        const SKILL_RANK_COSTS = [0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+        // Cost to go from rank N-1 to rank N (index = target rank)
+        // Total to max one node (R1→R5): 1+2+4+7+12 = 26 points
+        const SKILL_RANK_COSTS = [0, 1, 2, 4, 7, 12];
 
-        // ── Skill Tree ─────────────────────────────────────────────────────────────
-        // Tree structure: each branch has 7 nodes arranged in 4 tiers.
-        // Tier 1 = root (always available). Tier 2 = path split (left|right).
-        // Tier 3-4 = locked behind tier 2-3 of same path.
-        // Opposite branches: Warrior↔Phantom, Guardian↔Vampirism, Mastery↔Intimidation.
-        // Reaching a Tier 4 capstone locks Tier 4 of the opposite branch.
-        // Cross-node conflicts: riposte↔counterattack, poison↔curse.
+        // ── SKILL TREE — Binary tree, 2 roots (attack + defense), 30 nodes, 5 ranks ──
+        // Node key format: tree + '_' + id  (e.g. 'attack_power_strike')
+        // parent: nodeId within same tree (null for root)
+        // exclusiveWith: full key 'tree_nodeId' of sibling (null if not exclusive)
+        const SKILL_NODES = [
+          // ── ATTACK TREE ──────────────────────────────────────────────────────────────
+          // L0 — root
+          { tree:'attack',  id:'power_strike',   name:'Power Strike',   depth:0, x:235, y:72,
+            parent:null,             exclusiveWith:null,
+            desc:'Increases base attack damage on every hit.',
+            values:[0,0.05,0.10,0.17,0.26,0.38], unit:'% atk' },
+          // L1 — both available (non-exclusive)
+          { tree:'attack',  id:'heavy_blow',     name:'Heavy Blow',     depth:1, x:120, y:190,
+            parent:'power_strike',   exclusiveWith:null,
+            desc:'Raw physical force — multiplies damage per hit.',
+            values:[0,0.06,0.12,0.20,0.30,0.44], unit:'% dmg' },
+          { tree:'attack',  id:'gaze',           name:'Gaze',           depth:1, x:350, y:190,
+            parent:'power_strike',   exclusiveWith:null,
+            desc:'Tactical precision — increases critical hit chance and reduces stamina cost of attacks.',
+            values:[0,0.04,0.08,0.13,0.20,0.28], unit:'% crit',
+            values2:[0,0.03,0.06,0.10,0.15,0.22], unit2:'% ST cost reduce' },
+          // L2 — exclusive within branch (pick one per parent)
+          { tree:'attack',  id:'crusher',        name:'Crusher',        depth:2, x:68,  y:308,
+            parent:'heavy_blow',     exclusiveWith:'attack_berserker',
+            desc:'Each hit ignores a % of the enemy\'s defense.',
+            values:[0,0.07,0.13,0.22,0.33,0.46], unit:'% ignore DEF' },
+          { tree:'attack',  id:'berserker',      name:'Berserker',      depth:2, x:172, y:308,
+            parent:'heavy_blow',     exclusiveWith:'attack_crusher',
+            desc:'Damage scales with missing HP — the lower your HP, the harder you hit.',
+            values:[0,0.05,0.10,0.16,0.24,0.35], unit:'% per 10%HP lost' },
+          { tree:'attack',  id:'bleed',          name:'Bleed',          depth:2, x:298, y:308,
+            parent:'gaze',           exclusiveWith:'attack_expose',
+            desc:'Attacks apply bleed stacks that deal damage each turn.',
+            values:[0,0.04,0.08,0.13,0.20,0.28], unit:'% atk/turn per stack' },
+          { tree:'attack',  id:'expose',         name:'Expose',         depth:2, x:402, y:308,
+            parent:'gaze',           exclusiveWith:'attack_bleed',
+            desc:'Critical hits reduce enemy defense for N turns.',
+            values:[0,1,2,3,4,5], unit:'turns' },
+          // L3 — exclusive within branch
+          { tree:'attack',  id:'shatter',        name:'Shatter',        depth:3, x:42,  y:418,
+            parent:'crusher',        exclusiveWith:'attack_execute',
+            desc:'Crusher hits permanently reduce enemy armor (up to 5 stacks).',
+            values:[0,0.03,0.05,0.08,0.12,0.17], unit:'% armor/stack' },
+          { tree:'attack',  id:'execute',        name:'Execute',        depth:3, x:94,  y:418,
+            parent:'crusher',        exclusiveWith:'attack_shatter',
+            desc:'Deal massive bonus damage when the enemy is below 30% HP.',
+            values:[0,0.12,0.22,0.36,0.54,0.76], unit:'% bonus dmg' },
+          { tree:'attack',  id:'bloodrage',      name:'Bloodrage',      depth:3, x:146, y:418,
+            parent:'berserker',      exclusiveWith:'attack_death_wish',
+            desc:'Lifesteal on every hit — strongest lifesteal in the tree.',
+            values:[0,0.08,0.14,0.22,0.32,0.46], unit:'% lifesteal' },
+          { tree:'attack',  id:'death_wish',     name:'Death Wish',     depth:3, x:198, y:418,
+            parent:'berserker',      exclusiveWith:'attack_bloodrage',
+            desc:'Below 25% HP: massively amplify damage, ignore your own defense.',
+            values:[0,0.18,0.30,0.46,0.66,0.90], unit:'% dmg boost' },
+          { tree:'attack',  id:'hemorrhage',     name:'Hemorrhage',     depth:3, x:272, y:418,
+            parent:'bleed',          exclusiveWith:'attack_rend',
+            desc:'Bleed stacks multiply — each new stack doubles the last tick.',
+            values:[0,1,2,3,4,5], unit:'max stacks' },
+          { tree:'attack',  id:'rend',           name:'Rend',           depth:3, x:324, y:418,
+            parent:'bleed',          exclusiveWith:'attack_hemorrhage',
+            desc:'Bleed also reduces enemy attack power.',
+            values:[0,0.05,0.09,0.14,0.21,0.30], unit:'% atk reduce' },
+          { tree:'attack',  id:'rupture',        name:'Rupture',        depth:3, x:376, y:418,
+            parent:'expose',         exclusiveWith:'attack_lifetap',
+            desc:'Crits against Exposed enemies deal extra damage.',
+            values:[0,0.14,0.25,0.38,0.55,0.76], unit:'% crit bonus' },
+          { tree:'attack',  id:'lifetap',        name:'Lifetap',        depth:3, x:428, y:418,
+            parent:'expose',         exclusiveWith:'attack_rupture',
+            desc:'Lifesteal against Exposed enemies.',
+            values:[0,0.06,0.11,0.17,0.25,0.35], unit:'% lifesteal' },
 
-        const SKILL_TREE = [
-          { id: 'warrior', name: 'Warrior', color: '#e74c3c', opposite: 'phantom', nodes: [
-            { id: 'heavy_blow',     name: 'Heavy Blow',     tier: 1, path: null,    requires: null,          requiresRank: 0, conflicts: [],
-              desc: 'Flat damage bonus per turn',              values: [0,0.015,0.03,0.05,0.07,0.09,0.11,0.13,0.15,0.17,0.20], unit: '% dmg' },
-            { id: 'critical',       name: 'Critical Strike', tier: 2, path: 'left',  requires: 'heavy_blow',  requiresRank: 3, conflicts: [],
-              desc: 'Bonus critical hit chance',               values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% crit' },
-            { id: 'penetration',    name: 'Armor Pierce',    tier: 2, path: 'right', requires: 'heavy_blow',  requiresRank: 3, conflicts: [],
-              desc: 'Ignores % of enemy DEF',                  values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% pen' },
-            { id: 'berserker',      name: 'Berserker',       tier: 3, path: 'left',  requires: 'critical',    requiresRank: 2, conflicts: [],
-              desc: 'Damage bonus when HP < 40%',              values: [0,0.04,0.07,0.10,0.14,0.18,0.22,0.26,0.30,0.34,0.38], unit: '% dmg' },
-            { id: 'rising_fury',    name: 'Rising Fury',     tier: 3, path: 'right', requires: 'penetration', requiresRank: 2, conflicts: [],
-              desc: 'Gains damage each turn (max 8 stacks)',   values: [0,0.008,0.012,0.016,0.020,0.024,0.028,0.030,0.032,0.034,0.036], unit: '% per turn' },
-            { id: 'crusher',        name: 'Crusher',         tier: 4, path: 'left',  requires: 'berserker',   requiresRank: 3, conflicts: [],
-              desc: 'Critical hits stun enemy 1 turn',         values: [0,0.04,0.08,0.12,0.16,0.20,0.25,0.30,0.35,0.40,0.50], unit: '% chance' },
-            { id: 'combat_mastery', name: 'Combat Mastery',  tier: 4, path: 'right', requires: 'rising_fury', requiresRank: 3, conflicts: [],
-              desc: 'Gain damage stacks on dodge',             values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per stack' },
-          ]},
-          { id: 'guardian', name: 'Guardian', color: '#3498db', opposite: 'vampirism', nodes: [
-            { id: 'iron_hide',   name: 'Iron Hide',   tier: 1, path: null,    requires: null,       requiresRank: 0, conflicts: [],
-              desc: 'Bonus max HP',                            values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% HP' },
-            { id: 'endurance',   name: 'Endurance',   tier: 2, path: 'left',  requires: 'iron_hide', requiresRank: 3, conflicts: [],
-              desc: 'Flat incoming damage reduction',          values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% reduce' },
-            { id: 'block',       name: 'Block',       tier: 2, path: 'right', requires: 'iron_hide', requiresRank: 3, conflicts: [],
-              desc: 'Bonus block chance',                      values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% block' },
-            { id: 'thorns',      name: 'Thorns',      tier: 3, path: 'left',  requires: 'endurance', requiresRank: 2, conflicts: [],
-              desc: 'Reflect % of damage back',               values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% reflect' },
-            { id: 'fortitude',   name: 'Fortitude',   tier: 3, path: 'right', requires: 'block',    requiresRank: 2, conflicts: [],
-              desc: 'Regenerate % max HP per turn',            values: [0,0.005,0.01,0.015,0.02,0.025,0.03,0.035,0.04,0.045,0.05], unit: '% regen' },
-            { id: 'riposte',     name: 'Riposte',     tier: 4, path: 'left',  requires: 'thorns',   requiresRank: 3, conflicts: [{ branchId: 'phantom', nodeId: 'counterattack' }],
-              desc: 'After being hit, deal stored dmg',        values: [0,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.60], unit: '% stored' },
-            { id: 'last_breath', name: 'Last Breath', tier: 4, path: 'right', requires: 'fortitude', requiresRank: 3, conflicts: [],
-              desc: 'Survive fatal blow at 1 HP (once)',       values: [0,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90,1.00], unit: '% chance' },
-          ]},
-          { id: 'phantom', name: 'Phantom', color: '#2ecc71', opposite: 'warrior', nodes: [
-            { id: 'reflexes',      name: 'Reflexes',      tier: 1, path: null,    requires: null,           requiresRank: 0, conflicts: [],
-              desc: 'Bonus dodge chance',                      values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% dodge' },
-            { id: 'light_step',    name: 'Light Step',    tier: 2, path: 'left',  requires: 'reflexes',     requiresRank: 3, conflicts: [],
-              desc: 'Chance to attack twice',                  values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% double' },
-            { id: 'counterattack', name: 'Counterattack', tier: 2, path: 'right', requires: 'reflexes',     requiresRank: 3, conflicts: [{ branchId: 'guardian', nodeId: 'riposte' }],
-              desc: 'Counter on dodge (% of base dmg)',        values: [0,0.10,0.20,0.30,0.40,0.50,0.55,0.60,0.65,0.70,0.80], unit: '% counter' },
-            { id: 'first_strike',  name: 'First Strike',  tier: 3, path: 'left',  requires: 'light_step',  requiresRank: 2, conflicts: [],
-              desc: 'Chance to interrupt enemy turn',          values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% chance' },
-            { id: 'phantasm',      name: 'Phantasm',      tier: 3, path: 'right', requires: 'counterattack', requiresRank: 2, conflicts: [],
-              desc: 'After dodge, next N turns auto-dodge',    values: [0,0,0,1,1,1,2,2,2,3,3], unit: 'turns' },
-            { id: 'acceleration',  name: 'Acceleration',  tier: 4, path: 'left',  requires: 'first_strike', requiresRank: 3, conflicts: [],
-              desc: 'Gain damage bonus each successive dodge', values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per dodge' },
-            { id: 'shadow',        name: 'Shadow',        tier: 4, path: 'right', requires: 'phantasm',     requiresRank: 3, conflicts: [],
-              desc: 'Every N hits taken, auto-dodge',          values: [0,0,10,9,8,7,6,5,5,4,4], unit: 'hits' },
-          ]},
-          { id: 'vampirism', name: 'Vampirism', color: '#9b59b6', opposite: 'guardian', nodes: [
-            { id: 'bloodthirst',  name: 'Bloodthirst',  tier: 1, path: null,    requires: null,          requiresRank: 0, conflicts: [],
-              desc: 'Lifesteal % of damage dealt',             values: [0,0.012,0.020,0.028,0.036,0.045,0.055,0.065,0.075,0.085,0.10], unit: '% steal' },
-            { id: 'fangs',        name: 'Fangs',        tier: 2, path: 'left',  requires: 'bloodthirst', requiresRank: 3, conflicts: [],
-              desc: 'Crits lifesteal extra',                   values: [0,0.04,0.08,0.12,0.16,0.20,0.23,0.26,0.29,0.32,0.38], unit: '% extra' },
-            { id: 'drain',        name: 'Drain',        tier: 2, path: 'right', requires: 'bloodthirst', requiresRank: 3, conflicts: [],
-              desc: 'Regen % max HP per turn',                 values: [0,0.004,0.008,0.012,0.016,0.02,0.024,0.028,0.032,0.036,0.04], unit: '% regen' },
-            { id: 'curse',        name: 'Curse',        tier: 3, path: 'left',  requires: 'fangs',       requiresRank: 2, conflicts: [{ branchId: 'intimidation', nodeId: 'poison' }],
-              desc: 'Enemy loses % max HP per turn',           values: [0,0.005,0.01,0.015,0.02,0.025,0.03,0.035,0.04,0.045,0.05], unit: '% drain' },
-            { id: 'dark_embrace', name: 'Dark Embrace', tier: 3, path: 'right', requires: 'drain',       requiresRank: 2, conflicts: [],
-              desc: 'Deal bonus dmg when enemy < 30%',         values: [0,0.04,0.08,0.12,0.16,0.20,0.23,0.26,0.29,0.32,0.35], unit: '% bonus' },
-            { id: 'absorption',   name: 'Absorption',   tier: 4, path: 'left',  requires: 'curse',       requiresRank: 3, conflicts: [],
-              desc: 'Lifesteal x multiplier vs low HP',        values: [0,1.1,1.2,1.4,1.5,1.7,1.8,1.9,2.0,2.1,2.3], unit: 'x mult' },
-            { id: 'immortality',  name: 'Immortality',  tier: 4, path: 'right', requires: 'dark_embrace', requiresRank: 3, conflicts: [],
-              desc: 'Revive at % HP once per battle',          values: [0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50], unit: '% HP' },
-          ]},
-          { id: 'intimidation', name: 'Intimidation', color: '#e67e22', opposite: 'mastery', nodes: [
-            { id: 'gaze',       name: 'Gaze',       tier: 1, path: null,    requires: null,     requiresRank: 0, conflicts: [],
-              desc: 'Enemy ATK debuff at battle start',        values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% debuff' },
-            { id: 'bleed',      name: 'Bleed',      tier: 2, path: 'left',  requires: 'gaze',   requiresRank: 3, conflicts: [],
-              desc: 'Hits inflict bleed (% per turn)',         values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% bleed' },
-            { id: 'fracture',   name: 'Fracture',   tier: 2, path: 'right', requires: 'gaze',   requiresRank: 3, conflicts: [],
-              desc: 'Hits reduce enemy DEF (stacking)',        values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per stack' },
-            { id: 'poison',     name: 'Poison',     tier: 3, path: 'left',  requires: 'bleed',  requiresRank: 2, conflicts: [{ branchId: 'vampirism', nodeId: 'curse' }],
-              desc: 'Enemy loses % max HP per turn',          values: [0,0.005,0.01,0.015,0.02,0.025,0.03,0.035,0.04,0.045,0.05], unit: '% drain' },
-            { id: 'paralysis',  name: 'Paralysis',  tier: 3, path: 'right', requires: 'fracture', requiresRank: 2, conflicts: [],
-              desc: 'Chance to skip enemy turn',              values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% chance' },
-            { id: 'weaken',     name: 'Weaken',     tier: 4, path: 'left',  requires: 'poison', requiresRank: 3, conflicts: [],
-              desc: 'Hits reduce enemy ATK (stacking)',       values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per stack' },
-            { id: 'domination', name: 'Domination', tier: 4, path: 'right', requires: 'paralysis', requiresRank: 3, conflicts: [],
-              desc: 'Damage bonus per active debuff (max 3)', values: [0,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10,0.12], unit: '% per debuff' },
-          ]},
-          { id: 'alchemy', name: 'Alchemy', color: '#1abc9c', opposite: null, nodes: [
-            { id: 'herbalism',      name: 'Herbalism',      tier: 1, path: null,    requires: null,         requiresRank: 0, conflicts: [],
-              desc: 'Consumables heal more',                   values: [0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50], unit: '% bonus heal' },
-            { id: 'instinct',       name: 'Instinct',       tier: 2, path: 'left',  requires: 'herbalism',  requiresRank: 3, conflicts: [],
-              desc: 'Consumable triggers at higher HP',        values: [0,0.28,0.31,0.34,0.37,0.40,0.43,0.46,0.49,0.52,0.55], unit: 'HP threshold' },
-            { id: 'extra_dose',     name: 'Extra Dose',     tier: 2, path: 'right', requires: 'herbalism',  requiresRank: 3, conflicts: [],
-              desc: 'Chance consumable is not consumed',       values: [0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50], unit: '% chance' },
-            { id: 'adrenaline',     name: 'Adrenaline',     tier: 3, path: 'left',  requires: 'instinct',   requiresRank: 2, conflicts: [],
-              desc: 'After heal, gain damage bonus 2 turns',   values: [0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50], unit: '% dmg' },
-            { id: 'metabolism',     name: 'Metabolism',     tier: 3, path: 'right', requires: 'extra_dose', requiresRank: 2, conflicts: [],
-              desc: 'After heal, gain regen 3 turns',          values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% regen/turn' },
-            { id: 'purity',         name: 'Purity',         tier: 4, path: 'left',  requires: 'adrenaline', requiresRank: 3, conflicts: [],
-              desc: 'Healing removes debuffs',                 values: [0,1,1,1,2,2,2,3,3,4,4], unit: 'debuffs cleared' },
-            { id: 'hidden_reserve', name: 'Hidden Reserve', tier: 4, path: 'right', requires: 'metabolism', requiresRank: 3, conflicts: [],
-              desc: 'Consumable auto-uses on death',           values: [0,1,1,2,2,2,3,3,3,4,4], unit: 'max uses' },
-          ]},
-          { id: 'mastery', name: 'Mastery', color: '#f39c12', opposite: 'intimidation', nodes: [
-            { id: 'grip',            name: 'Grip',            tier: 1, path: null,    requires: null,             requiresRank: 0, conflicts: [],
-              desc: 'Bonus crit chance with weapons',          values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% crit' },
-            { id: 'familiarity',     name: 'Familiarity',     tier: 2, path: 'left',  requires: 'grip',           requiresRank: 3, conflicts: [],
-              desc: 'Weapon attacks deal more damage',         values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% dmg' },
-            { id: 'steel_strength',  name: 'Steel Strength',  tier: 2, path: 'right', requires: 'grip',           requiresRank: 3, conflicts: [],
-              desc: 'Damage scales with weapon tier',          values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% per tier' },
-            { id: 'weapon_instinct', name: 'Weapon Instinct', tier: 3, path: 'left',  requires: 'familiarity',    requiresRank: 2, conflicts: [],
-              desc: 'Weapon attacks add true damage',          values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% max HP true dmg' },
-            { id: 'disarm',          name: 'Disarm',          tier: 3, path: 'right', requires: 'steel_strength', requiresRank: 2, conflicts: [],
-              desc: 'Chance to disarm enemy 1 turn',           values: [0,0.04,0.08,0.12,0.16,0.20,0.24,0.28,0.32,0.36,0.40], unit: '% chance' },
-            { id: 'discipline',      name: 'Discipline',      tier: 4, path: 'left',  requires: 'weapon_instinct', requiresRank: 3, conflicts: [],
-              desc: 'Reduce dmg taken if enemy attacked last turn', values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% reduce' },
-            { id: 'master_armorer',  name: 'Master Armorer',  tier: 4, path: 'right', requires: 'disarm',         requiresRank: 3, conflicts: [],
-              desc: 'Every 5 weapon hits, gain big dmg bonus 1 turn', values: [0,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.60], unit: '% bonus' },
-          ]},
-          { id: 'champion', name: 'Champion', color: '#f1c40f', opposite: null, locked: true, nodes: [
-            { id: 'awakening',       name: 'Awakening',       tier: 1, path: null,    requires: null,              requiresRank: 0, conflicts: [],
-              desc: 'Bonus damage per invested branch',         values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per branch' },
-            { id: 'iron_will',       name: 'Iron Will',       tier: 2, path: 'left',  requires: 'awakening',       requiresRank: 3, conflicts: [],
-              desc: 'After losing >30% HP in one hit, gain dmg buff', values: [0,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.60], unit: '% buff' },
-            { id: 'aura',            name: 'Aura',            tier: 2, path: 'right', requires: 'awakening',       requiresRank: 3, conflicts: [],
-              desc: 'Passive damage reduction aura',            values: [0,0.02,0.04,0.06,0.08,0.10,0.11,0.12,0.13,0.14,0.15], unit: '% reduce' },
-            { id: 'decisive_moment', name: 'Decisive Moment', tier: 3, path: 'left',  requires: 'iron_will',       requiresRank: 2, conflicts: [],
-              desc: 'Scaling crit bonus when HP < 50%',         values: [0,0.03,0.06,0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.30], unit: '% crit' },
-            { id: 'master_synergy',  name: 'Master Synergy',  tier: 3, path: 'right', requires: 'aura',            requiresRank: 2, conflicts: [],
-              desc: 'Bonus damage per branch with rank 5+',     values: [0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20], unit: '% per branch' },
-            { id: 'presence',        name: 'Presence',        tier: 4, path: 'left',  requires: 'decisive_moment', requiresRank: 3, conflicts: [],
-              desc: 'All damage multiplier',                    values: [0,1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,1.10], unit: 'x mult' },
-            { id: 'resonance',       name: 'Resonance',       tier: 4, path: 'right', requires: 'master_synergy',  requiresRank: 3, conflicts: [],
-              desc: 'Each invested branch echoes effects',      values: [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10], unit: '% echo' },
-          ]},
+          // ── DEFENSE TREE ─────────────────────────────────────────────────────────────
+          // L0 — root
+          { tree:'defense', id:'iron_hide',      name:'Iron Hide',      depth:0, x:705, y:72,
+            parent:null,             exclusiveWith:null,
+            desc:'Increases base damage reduction on all incoming hits.',
+            values:[0,0.05,0.10,0.17,0.26,0.38], unit:'% dmg reduction' },
+          // L1 — both available
+          { tree:'defense', id:'fortify',        name:'Fortify',        depth:1, x:590, y:190,
+            parent:'iron_hide',      exclusiveWith:null,
+            desc:'Flat damage reduction — reduces all incoming damage by %.',
+            values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% flat reduce' },
+          { tree:'defense', id:'resilience',     name:'Resilience',     depth:1, x:820, y:190,
+            parent:'iron_hide',      exclusiveWith:null,
+            desc:'Increases maximum HP and passively regenerates stamina each turn.',
+            values:[0,0.06,0.12,0.20,0.30,0.44], unit:'% max HP',
+            values2:[0,0.006,0.012,0.020,0.030,0.044], unit2:'% max ST/turn' },
+          // L2 — exclusive
+          { tree:'defense', id:'bulwark',        name:'Bulwark',        depth:2, x:538, y:308,
+            parent:'fortify',        exclusiveWith:'defense_counter',
+            desc:'Damage reduction scales higher the more HP you have remaining.',
+            values:[0,0.05,0.09,0.14,0.21,0.30], unit:'% bonus DR at full HP' },
+          { tree:'defense', id:'counter',        name:'Counter',        depth:2, x:642, y:308,
+            parent:'fortify',        exclusiveWith:'defense_bulwark',
+            desc:'Chance to automatically counterattack after blocking a hit.',
+            values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% counter chance' },
+          { tree:'defense', id:'regeneration',   name:'Regeneration',   depth:2, x:768, y:308,
+            parent:'resilience',     exclusiveWith:'defense_lifesteal',
+            desc:'Passively recover % of max HP each turn.',
+            values:[0,0.012,0.022,0.035,0.052,0.074], unit:'% HP/turn' },
+          { tree:'defense', id:'lifesteal',      name:'Lifesteal',      depth:2, x:872, y:308,
+            parent:'resilience',     exclusiveWith:'defense_regeneration',
+            desc:'Heal % of all damage dealt.',
+            values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% lifesteal' },
+          // L3 — exclusive
+          { tree:'defense', id:'unbreakable',    name:'Unbreakable',    depth:3, x:512, y:418,
+            parent:'bulwark',        exclusiveWith:'defense_thorns',
+            desc:'Damage reduction increases as HP drops — peaks when near death.',
+            values:[0,0.06,0.11,0.17,0.25,0.36], unit:'% bonus DR' },
+          { tree:'defense', id:'thorns',         name:'Thorns',         depth:3, x:564, y:418,
+            parent:'bulwark',        exclusiveWith:'defense_unbreakable',
+            desc:'Reflect % of incoming damage back to the attacker.',
+            values:[0,0.09,0.16,0.25,0.36,0.50], unit:'% reflect' },
+          { tree:'defense', id:'riposte',        name:'Riposte',        depth:3, x:616, y:418,
+            parent:'counter',        exclusiveWith:'defense_counter_strike',
+            desc:'Counter hit deals a burst equal to % of the blocked damage.',
+            values:[0,0.35,0.60,0.90,1.30,1.80], unit:'% burst' },
+          { tree:'defense', id:'counter_strike', name:'Counter Strike', depth:3, x:668, y:418,
+            parent:'counter',        exclusiveWith:'defense_riposte',
+            desc:'After a counterattack, your next offensive hit deals bonus damage.',
+            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% bonus' },
+          { tree:'defense', id:'second_wind',    name:'Second Wind',    depth:3, x:742, y:418,
+            parent:'regeneration',   exclusiveWith:'defense_endurance',
+            desc:'Once per battle, burst-heal when dropping below 25% HP.',
+            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% max HP healed' },
+          { tree:'defense', id:'endurance',      name:'Endurance',      depth:3, x:794, y:418,
+            parent:'regeneration',   exclusiveWith:'defense_second_wind',
+            desc:'Regen rate doubles when below 50% HP.',
+            values:[0,1,1,2,2,3], unit:'x multiplier' },
+          { tree:'defense', id:'vampiric',       name:'Vampiric',       depth:3, x:846, y:418,
+            parent:'lifesteal',      exclusiveWith:'defense_blood_armor',
+            desc:'Lifesteal scales with missing HP — much stronger when wounded.',
+            values:[0,0.05,0.09,0.14,0.20,0.28], unit:'% bonus/10%HP' },
+          { tree:'defense', id:'blood_armor',    name:'Blood Armor',    depth:3, x:898, y:418,
+            parent:'lifesteal',      exclusiveWith:'defense_vampiric',
+            desc:'Lifesteal also generates a temporary absorption shield.',
+            values:[0,0.25,0.40,0.60,0.85,1.20], unit:'% dmg as shield' },
+
+          // ── ALCHEMIST TREE ───────────────────────────────────────────────────────────
+          // L0 — root
+          { tree:'alchemist', id:'brew_master',  name:'Brew Master',  depth:0, x:1130, y:72,
+            parent:null,           exclusiveWith:null,
+            desc:'Increases the maximum number of consumables you can bring into battle (+1 slot per rank).',
+            values:[0,1,2,3,4,5], unit:'extra slots' },
+          // L1 — both available
+          { tree:'alchemist', id:'potency',      name:'Potency',      depth:1, x:1055, y:190,
+            parent:'brew_master',  exclusiveWith:null,
+            desc:'All consumable effects (heal, buff strength) are more powerful.',
+            values:[0,0.08,0.15,0.24,0.34,0.46], unit:'% stronger' },
+          { tree:'alchemist', id:'duration',     name:'Duration',     depth:1, x:1205, y:190,
+            parent:'brew_master',  exclusiveWith:null,
+            desc:'Timed buff consumables last extra turns.',
+            values:[0,1,2,3,4,5], unit:'extra turns' },
+          // L2 — exclusive
+          { tree:'alchemist', id:'amplify',      name:'Amplify',      depth:2, x:1012, y:308,
+            parent:'potency',      exclusiveWith:'alchemist_quick_dose',
+            desc:'Further amplifies consumable potency — stacks with Potency.',
+            values:[0,0.05,0.10,0.16,0.24,0.34], unit:'% extra boost' },
+          { tree:'alchemist', id:'quick_dose',   name:'Quick Dose',   depth:2, x:1098, y:308,
+            parent:'potency',      exclusiveWith:'alchemist_amplify',
+            desc:'Consumables used in battle have reduced cooldown between uses.',
+            values:[0,1,1,2,2,3], unit:'turns cooldown reduce' },
+          { tree:'alchemist', id:'extended',     name:'Extended',     depth:2, x:1162, y:308,
+            parent:'duration',     exclusiveWith:'alchemist_compound',
+            desc:'Timed buffs last significantly longer — doubles the Duration bonus.',
+            values:[0,1,2,3,4,5], unit:'extra turns (×2 Duration)' },
+          { tree:'alchemist', id:'compound',     name:'Compound',     depth:2, x:1248, y:308,
+            parent:'duration',     exclusiveWith:'alchemist_extended',
+            desc:'Using a consumable while a buff is already active stacks the effect instead of replacing it.',
+            values:[0,1,1,2,2,3], unit:'max stacks' },
         ];
 
         // ── Skill Node Icons ────────────────────────────────────────────────────────
         const SKILL_ICONS = {
-            warrior_heavy_blow:      '💥', warrior_critical:        '🎯', warrior_penetration:     '🔱',
-            warrior_berserker:       '😤', warrior_rising_fury:     '🔥', warrior_crusher:         '⚒️', warrior_combat_mastery:  '⚡',
-            guardian_iron_hide:      '🛡️', guardian_endurance:      '💪', guardian_block:          '🪬',
-            guardian_thorns:         '🌵', guardian_fortitude:      '❤️', guardian_riposte:        '⚔️', guardian_last_breath:    '💨',
-            phantom_reflexes:        '👁️', phantom_light_step:      '🌬️', phantom_counterattack:   '↩️',
-            phantom_first_strike:    '⚡', phantom_phantasm:        '👻', phantom_acceleration:    '🏃', phantom_shadow:          '🌑',
-            vampirism_bloodthirst:   '🩸', vampirism_fangs:         '🦷', vampirism_drain:         '🌀',
-            vampirism_curse:         '💜', vampirism_dark_embrace:  '🌙', vampirism_absorption:    '⬛', vampirism_immortality:   '♾️',
-            intimidation_gaze:       '👀', intimidation_bleed:      '🔴', intimidation_fracture:   '💢',
-            intimidation_poison:     '☠️', intimidation_paralysis:  '⚡', intimidation_weaken:     '📉', intimidation_domination: '👊',
-            alchemy_herbalism:       '🌿', alchemy_instinct:        '💊', alchemy_extra_dose:      '⚗️',
-            alchemy_adrenaline:      '💉', alchemy_metabolism:      '🔄', alchemy_purity:          '✨', alchemy_hidden_reserve:  '🧪',
-            champion_awakening:      '🌟', champion_iron_will:      '💎', champion_aura:           '🔆',
-            champion_decisive_moment:'🎯', champion_master_synergy: '🔗', champion_presence:       '👑', champion_resonance:      '🌊',
+          'attack_power_strike':  '⚔️',
+          'attack_heavy_blow':    '🔨',
+          'attack_gaze':          '🎯',
+          'attack_crusher':       '💥',
+          'attack_berserker':     '😤',
+          'attack_bleed':         '🩸',
+          'attack_expose':        '👁️',
+          'attack_shatter':       '💢',
+          'attack_execute':       '☠️',
+          'attack_bloodrage':     '🔴',
+          'attack_death_wish':    '💀',
+          'attack_hemorrhage':    '🫀',
+          'attack_rend':          '🗡️',
+          'attack_rupture':       '⚡',
+          'attack_lifetap':       '💚',
+          'defense_iron_hide':    '🛡️',
+          'defense_fortify':      '🏰',
+          'defense_resilience':   '❤️',
+          'defense_bulwark':      '⬛',
+          'defense_counter':      '↩️',
+          'defense_regeneration': '🌿',
+          'defense_lifesteal':    '🩸',
+          'defense_unbreakable':  '💎',
+          'defense_thorns':       '🌵',
+          'defense_riposte':      '⚡',
+          'defense_counter_strike':'⚔️',
+          'defense_second_wind':  '💨',
+          'defense_endurance':    '🏋️',
+          'defense_vampiric':     '🧛',
+          'defense_blood_armor':  '🔴',
+          'alchemist_brew_master': '⚗️',
+          'alchemist_potency':     '✨',
+          'alchemist_duration':    '⏳',
+          'alchemist_amplify':     '💥',
+          'alchemist_quick_dose':  '⚡',
+          'alchemist_extended':    '🔮',
+          'alchemist_compound':    '🧬',
         };
 
-        // ── Skill Index (O(1) lookup — built once from SKILL_TREE) ─────────────────
-        // SKILL_BRANCH_MAP: branchId → branch object
-        // SKILL_NODE_MAP:   'branchId_nodeId' → { branch, node }
-        const SKILL_BRANCH_MAP = new Map(SKILL_TREE.map(b => [b.id, b]));
-        const SKILL_NODE_MAP = new Map(
-            SKILL_TREE.flatMap(b => b.nodes.map(n => [b.id + '_' + n.id, { branch: b, node: n }]))
-        );
+        // SKILL_NODE_MAP: 'tree_nodeId' → node (for O(1) lookup)
+        const SKILL_NODE_MAP = new Map(SKILL_NODES.map(n => [n.tree + '_' + n.id, n]));
 
         // ── Skill Helper Functions ──────────────────────────────────────────────────
 
-        // Key format: branchId + '_' + nodeId  e.g. 'warrior_heavy_blow'
-        function getSkillRank(character, branchId, nodeId) {
+        // Key format: tree + '_' + nodeId  e.g. 'attack_power_strike'
+        function getSkillRank(character, tree, nodeId) {
             if (!character || !character.skills) return 0;
-            return character.skills[branchId + '_' + nodeId] || 0;
+            return character.skills[tree + '_' + nodeId] || 0;
         }
 
-        function getSkillValue(character, branchId, nodeId) {
-            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
-            if (!entry) return 0;
-            return entry.node.values[getSkillRank(character, branchId, nodeId)] || 0;
+        function getSkillValue(character, tree, nodeId) {
+            const node = SKILL_NODE_MAP.get(tree + '_' + nodeId);
+            if (!node) return 0;
+            return node.values[getSkillRank(character, tree, nodeId)] || 0;
         }
 
         function isChampionUnlocked(character) {
-            if (!character) return false;
-            let count = 0;
-            for (const branch of SKILL_TREE) {
-                if (branch.id === 'champion') continue;
-                if (branch.nodes.some(n => getSkillRank(character, branch.id, n.id) >= 5)) count++;
-            }
-            return count >= 3;
+            // Champion redesign pending — always locked for now
+            return false;
         }
 
-        // Returns null if upgradeable, or a reason string if locked.
-        function getNodeLockReason(character, branchId, nodeId) {
-            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
-            if (!entry) return branchId ? 'Unknown node' : 'Unknown branch';
-            const { branch, node } = entry;
-            const rank = getSkillRank(character, branchId, nodeId);
-            if (rank >= 10) return 'MAX';
-            if (branchId === 'champion' && !isChampionUnlocked(character))
-                return 'Needs Rank 5 in 3 branches';
-            // Opposite-branch T4 lock
-            if (node.tier === 4 && branch.opposite) {
-                const opp = SKILL_BRANCH_MAP.get(branch.opposite);
-                if (opp && opp.nodes.filter(n => n.tier === 4).some(n => getSkillRank(character, opp.id, n.id) > 0))
-                    return opp.name + ' capstone active';
+        // MAX_SKILL_NODES: max number of distinct nodes a character can have active (rank > 0)
+        const MAX_SKILL_NODES = 12;
+
+        function countActiveNodes(character) {
+            if (!character || !character.skills) return 0;
+            return SKILL_NODES.filter(n => getSkillRank(character, n.tree, n.id) > 0).length;
+        }
+
+        function getNodeLockReason(character, tree, nodeId) {
+            const key  = tree + '_' + nodeId;
+            const node = SKILL_NODE_MAP.get(key);
+            if (!node) return 'Unknown node';
+
+            const rank = getSkillRank(character, tree, nodeId);
+            if (rank >= 5) return 'MAX';
+
+            // Node cap
+            if (rank === 0 && countActiveNodes(character) >= MAX_SKILL_NODES)
+                return 'Node limit (' + MAX_SKILL_NODES + '/' + MAX_SKILL_NODES + ')';
+
+            // Exclusive sibling: if the sibling has any rank, this path is locked
+            if (node.exclusiveWith) {
+                const exKey    = node.exclusiveWith; // full key e.g. 'attack_berserker'
+                const firstUnd = exKey.indexOf('_');
+                const exTree   = exKey.slice(0, firstUnd);
+                const exNode   = exKey.slice(firstUnd + 1);
+                if (getSkillRank(character, exTree, exNode) > 0) return 'Path not taken';
             }
-            // Path lock at T2
-            if (node.tier === 2 && node.path) {
-                const oppPath = node.path === 'left' ? 'right' : 'left';
-                const oppT2 = branch.nodes.find(n => n.tier === 2 && n.path === oppPath);
-                if (oppT2 && getSkillRank(character, branchId, oppT2.id) > 0)
-                    return oppT2.name + ' path chosen';
-            }
-            // Prerequisite
-            if (node.requires && getSkillRank(character, branchId, node.requires) < node.requiresRank) {
-                const reqEntry = SKILL_NODE_MAP.get(branchId + '_' + node.requires);
-                return 'Needs ' + (reqEntry ? reqEntry.node.name : node.requires) + ' R' + node.requiresRank;
-            }
-            // Cross-node conflicts
-            for (const c of (node.conflicts || [])) {
-                if (getSkillRank(character, c.branchId, c.nodeId) > 0) {
-                    const cn = SKILL_NODE_MAP.get(c.branchId + '_' + c.nodeId);
-                    return 'Conflicts with ' + (cn ? cn.node.name : c.nodeId);
+
+            // Parent requirement: must have rank >= 1 in parent
+            if (node.parent) {
+                if (getSkillRank(character, tree, node.parent) < 1) {
+                    const parentNode = SKILL_NODE_MAP.get(tree + '_' + node.parent);
+                    return 'Requires ' + (parentNode ? parentNode.name : node.parent) + ' R1';
                 }
             }
+
+            // Skill points
+            const cost = SKILL_RANK_COSTS[rank + 1] ?? Infinity;
+            if ((character.skillPoints || 0) < cost)
+                return 'Need ' + cost + ' pts';
+
             return null;
         }
 
-        function canUpgradeSkill(character, branchId, nodeId) {
+        function canUpgradeSkill(character, tree, nodeId) {
             if (!character) return false;
-            const entry = SKILL_NODE_MAP.get(branchId + '_' + nodeId);
+            const entry = SKILL_NODE_MAP.get(tree + '_' + nodeId);
             if (!entry) return false;
-            const rank = getSkillRank(character, branchId, nodeId);
-            if (rank >= 10) return false;
-            if (getNodeLockReason(character, branchId, nodeId)) return false;
+            const rank = getSkillRank(character, tree, nodeId);
+            if (rank >= 5) return false;
+            if (getNodeLockReason(character, tree, nodeId)) return false;
             return (character.skillPoints || 0) >= SKILL_RANK_COSTS[rank + 1];
         }
 
-        async function upgradeSkill(character, branchId, nodeId) {
-            if (!canUpgradeSkill(character, branchId, nodeId)) return false;
+        async function upgradeSkill(character, tree, nodeId) {
+            if (!canUpgradeSkill(character, tree, nodeId)) return false;
             try {
                 const res = await fetchWithTimeout(BACKEND_URL + '/api/skill/upgrade', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
-                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, branchId, nodeId })
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, branchId: tree, nodeId })
                 });
                 const data = await res.json();
                 if (!data.ok) { showToast(data.error || 'Upgrade failed'); return false; }
@@ -13295,8 +13389,8 @@
 
         function getCharacterMaxHp(character) {
             const base = character.maxHp || BASE_HP;
-            // Guardian: Iron Hide - bonus max HP from skill
-            const ironHideBonus = getSkillValue(character, 'guardian', 'iron_hide');
+            // Defense: Iron Hide - bonus max HP from skill
+            const ironHideBonus = getSkillValue(character, 'defense', 'iron_hide');
             if (ironHideBonus > 0) return Math.round(base * (1 + ironHideBonus));
             return base;
         }
@@ -13933,21 +14027,11 @@
                     }
                     // Migrate: convert old index-based skill keys (warrior_0) → nodeId-based (warrior_heavy_blow)
                     if (c.skills) {
-                        const oldFmt = /^([a-z]+)_(\d)$/;
-                        const keys = Object.keys(c.skills);
-                        for (const key of keys) {
-                            const m = oldFmt.exec(key);
-                            if (m) {
-                                const branchId = m[1], idx = parseInt(m[2]);
-                                const branch = SKILL_TREE.find(b => b.id === branchId);
-                                if (branch && branch.nodes[idx]) {
-                                    const newKey = branchId + '_' + branch.nodes[idx].id;
-                                    if (newKey !== key) {
-                                        c.skills[newKey] = (c.skills[newKey] || 0) + (c.skills[key] || 0);
-                                        delete c.skills[key];
-                                        needsSave = true;
-                                    }
-                                }
+                        // Remove orphaned keys not present in SKILL_NODES
+                        for (const key of Object.keys(c.skills)) {
+                            if (!SKILL_NODE_MAP.has(key)) {
+                                delete c.skills[key];
+                                needsSave = true;
                             }
                         }
                     }
@@ -14011,10 +14095,10 @@
                 stats: { attack: 300, strength: 350, agility: pAgi, defense: 300, hp: 0, energy: 0 },
                 maxHp: 5000,
                 skills: {
-                    warrior_heavy_blow: 6, warrior_berserker: 5,
-                    warrior_combat_mastery: 4, warrior_penetration: 3,
-                    guardian_endurance: 4, guardian_iron_hide: 3,
-                    guardian_thorns: 3, mastery_familiarity: 2,
+                    warrior_heavy_strike: 6, warrior_battle_hardened: 5,
+                    warrior_berserker: 4, warrior_escalation: 3,
+                    sentinel_iron_hide: 3, sentinel_fortitude: 3,
+                    sentinel_thorns: 2,
                 },
                 equippedConsumables: ['big_potion', 'big_potion'],
                 equippedWeapons: ['tier_morning_star', 'tier_sledgehammer', 'tier_mace'],
@@ -14029,9 +14113,9 @@
                 stats: { attack: 300, strength: 200, agility: cAgi, defense: 100, hp: 0, energy: 0 },
                 maxHp: 4500,
                 skills: {
-                    phantom_reflexes: 5, phantom_light_step: 5,
-                    phantom_acceleration: 4, phantom_first_strike: 4,
-                    warrior_critical: 3, vampirism_bloodthirst: 3,
+                    phantom_efficiency: 5, phantom_nimble: 5,
+                    phantom_counter_strike: 4, phantom_momentum: 3,
+                    predator_bloodthirst: 3, elemental_fervor: 2,
                 },
                 equippedConsumables: ['big_potion', 'stamina_potion'],
                 equippedWeapons: ['tier_katana', 'tier_spear', 'tier_knife'],
@@ -14108,21 +14192,21 @@
         ];
 
         // ── Pack character data for contract call ─────────────────────────────
-        // NOTE: warrior crusher=index4, rising_fury=index5 (on-chain ordering,
-        //       matches BattleSkillsLib._applySkill — swapped vs frontend SKILL_TREE array)
+        // NOTE: on-chain branch/node indices must match the deployed BattleSkillsLib contract.
+        //       Update these when re-deploying contracts with the new skill tree.
         const ONCHAIN_BRANCH_ID = {
-            warrior: 0, guardian: 1, phantom: 2, vampirism: 3,
-            intimidation: 4, alchemy: 5, mastery: 6, champion: 7,
+            warrior: 0, sentinel: 1, phantom: 2, elemental: 3,
+            predator: 4, tactician: 5, vitality: 6, champion: 7,
         };
         const ONCHAIN_NODE_INDEX = {
-            warrior:      { heavy_blow: 0, critical: 1, penetration: 2, berserker: 3, crusher: 4, rising_fury: 5, combat_mastery: 6 },
-            guardian:     { iron_hide: 0, endurance: 1, block: 2, thorns: 3, fortitude: 4, riposte: 5, last_breath: 6 },
-            phantom:      { reflexes: 0, light_step: 1, counterattack: 2, first_strike: 3, phantasm: 4, acceleration: 5, shadow: 6 },
-            vampirism:    { bloodthirst: 0, fangs: 1, drain: 2, curse: 3, dark_embrace: 4, absorption: 5, immortality: 6 },
-            intimidation: { gaze: 0, bleed: 1, fracture: 2, poison: 3, paralysis: 4, weaken: 5, domination: 6 },
-            alchemy:      { herbalism: 0, instinct: 1, extra_dose: 2, adrenaline: 3, metabolism: 4, purity: 5, hidden_reserve: 6 },
-            mastery:      { grip: 0, familiarity: 1, steel_strength: 2, weapon_instinct: 3, disarm: 4, discipline: 5, master_armorer: 6 },
-            champion:     { awakening: 0, iron_will: 1, aura: 2, decisive_moment: 3, master_synergy: 4, presence: 5, resonance: 6 },
+            warrior:   { heavy_strike: 0, rend: 1, battle_hardened: 2, berserker: 3, escalation: 4 },
+            sentinel:  { iron_hide: 0, shield_mastery: 1, fortitude: 2, thorns: 3, riposte: 4 },
+            phantom:   { efficiency: 0, nimble: 1, counter_strike: 2, momentum: 3, phantasm: 4 },
+            elemental: { fervor: 0, ignition: 1, channeling: 2, overcharge: 3, ascendance: 4 },
+            predator:  { bloodthirst: 0, fangs: 1, life_drain: 2, dark_embrace: 3, immortality: 4 },
+            tactician: { gaze: 0, bleed: 1, open_wound: 2, weaken: 3, domination: 4 },
+            vitality:  { herbalism: 0, instinct: 1, extra_dose: 2, purity: 3, adrenaline: 4 },
+            champion:  { awakening: 0, aura: 1, decisive_moment: 2, synergy: 3, apex: 4 },
         };
         const ONCHAIN_WEAPON_ID      = { bat: 0, knife: 1, mace: 2, sword: 3, axe: 4, shield: 5 };
         const ONCHAIN_CONSUMABLE_ID  = { apple: 0, banana: 1, chicken: 2, steak: 3, small_potion: 4, big_potion: 5, bandage: 6, herb: 7 };
@@ -14573,7 +14657,7 @@
                 },
                 maxHp:               getCharacterMaxHp(character),
                 skills:              character.skills             || {},
-                equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
+                equippedConsumables: (character.equippedConsumables || []).slice(0, getMaxConsumableSlots(character)),
                 equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
                 adaptability:        character.adaptability || 0,
                 qTable:              character.qTable       || {},
@@ -14863,6 +14947,12 @@
             await sleep(fpSleepMs);
         }
 
+        // Returns true when the player fighter is on the left side of the arena.
+        // After a crossover this flips, so all direction-dependent animations use this.
+        function _playerIsOnLeft() {
+            return (game.player._homeX ?? 128) < (game.cpu._homeX ?? 1252);
+        }
+
         async function _animateMoveEvent(event) {
             game.player._homeX = event.playerX;
             game.cpu._homeX    = event.cpuX;
@@ -14871,8 +14961,11 @@
             const _mvArenaW = document.getElementById('arena').offsetWidth;
             const _mvScale  = _mvArenaW / 1600;
             if (event.from !== event.to) {
-                const movEl  = game[event.fighter].element;
-                const isBack = event.action === 'retreat';
+                const movEl     = game[event.fighter].element;
+                const movingLeft = event.to < event.from;
+                // isBack = sprite faces opposite its natural forward direction.
+                // Player natural = right; CPU natural = left.
+                const isBack = event.fighter === 'player' ? movingLeft : !movingLeft;
                 // Duration scales with distance (encodes AGI + level)
                 const distServer = Math.abs(event.to - event.from);
                 // Physics: time = distance / speed.
@@ -15425,7 +15518,7 @@
                 await sleep(50);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, !_playerIsOnLeft(), isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(190);
@@ -15436,7 +15529,9 @@
                 const jaPeakFrames = jaImg?.['_' + attackType + 'Frames'] || [];
                 const rotAngle     = attackType === 'kick' ? 45 : 35;
                 const isCpuAtt     = attacker === 'cpu';
-                const baseXform    = isCpuAtt ? 'scaleX(-1) ' : '';
+                // baseXform preserves the attacker's facing direction at jump peak.
+                // After crossover the roles flip, so we derive from _playerIsOnLeft().
+                const baseXform    = (_playerIsOnLeft() === (attacker === 'player')) ? '' : 'scaleX(-1) ';
 
                 // Run speed scales with AGI (approach), arc speed scales with STR (jump power)
                 const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (cpuChar?.stats?.agility  || 35);
@@ -15461,7 +15556,7 @@
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
                 // ── Phase 1: run to screen center (≈280ms) ───────────────────
-                animateRun(attackerEl, false, null);
+                animateRun(attackerEl, !_playerIsOnLeft(), null);
                 const r0Rect    = attackerEl.getBoundingClientRect();
                 const r0Left    = (r0Rect.left - arenaRect.left) / zoom;
                 const r0W       = r0Rect.width / zoom;
@@ -15532,7 +15627,7 @@
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, !_playerIsOnLeft(), isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
@@ -15702,21 +15797,21 @@
                 await sleep(60);
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
-                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, _playerIsOnLeft(), isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _midLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(210);
                 stopRunAnimation(attackerEl);
             } else {
                 // Last hit (or solo attack): run back to starting corner
-                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, _playerIsOnLeft(), isWeaponAnim ? attackType : null);
                 // Deferred rotation reset after jump attack — flip when starting return run
                 if (attackerEl._jumpReturn) {
                     const { img: jImg, isCpu: jIsCpu } = attackerEl._jumpReturn;
                     delete attackerEl._jumpReturn;
                     if (jImg) {
                         jImg.style.transition = 'transform 0.12s ease-out';
-                        jImg.style.transform = jIsCpu ? 'scaleX(-1)' : '';
+                        jImg.style.transform = (jIsCpu === _playerIsOnLeft()) ? 'scaleX(-1)' : '';
                         setTimeout(() => { jImg.style.transition = ''; }, 150);
                     }
                     // Force reflow so .dashing transition is computed before left/right changes
@@ -17212,13 +17307,15 @@
                 });
                 const data = await resp.json();
                 if (data.ok && data.newStats) {
-                    // Update local character from server response
+                    // Update local character from server response (server is authoritative)
                     character.stats.attack   = data.newStats.atk;
                     character.stats.strength = data.newStats.str;
                     character.stats.agility  = data.newStats.agi;
                     character.stats.defense  = data.newStats.def;
                     character.maxHp          = data.newStats.hp;
                     if (data.newStats.energy !== undefined) character.stats.energy = data.newStats.energy;
+                    // Sync level from server (prevents desync if local level++ ran before/after)
+                    if (data.newLevel) character.level = data.newLevel;
                     // Award skill point
                     character.skillPoints = (character.skillPoints || 0) + 1;
                     saveCharacters();
@@ -17413,7 +17510,7 @@
                             },
                             maxHp:               getCharacterMaxHp(character),
                             skills:              character.skills             || {},
-                            equippedConsumables: (character.equippedConsumables || []).slice(0, 2),
+                            equippedConsumables: (character.equippedConsumables || []).slice(0, getMaxConsumableSlots(character)),
                             equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
                             element:             character.element             || undefined,
                             adaptability:        character.adaptability        || 0,
@@ -17657,50 +17754,28 @@
         }
 
 
-        // Applies attacker skill bonuses shared between player and CPU.
-        // attackerGame / defenderGame are game.player or game.cpu objects.
+        // NOTE: these functions are stubs only — actual skill calculations run server-side.
         function applyAttackSkillBonuses(damage, skills, state, attackerGame, defenderGame, attackType) {
             if (!skills) return damage;
-            if (skills.heavyBlowBonus) damage *= (1 + skills.heavyBlowBonus);
-            if (skills.penetration) damage *= (1 + skills.penetration * 0.5);
-            if (skills.berserkerBonus && attackerGame.health < attackerGame.maxHealth * 0.40)
+            if (skills.heavyStrikeBonus) damage *= (1 + skills.heavyStrikeBonus);
+            if (skills.rendPct && state.rendStacks) damage *= (1 + state.rendStacks * skills.rendPct);
+            if (skills.berserkerBonus && attackerGame.health < attackerGame.maxHealth * 0.50)
                 damage *= (1 + skills.berserkerBonus);
-            if (skills.risingFuryPerTurn && state.risingFuryStacks)
-                damage *= (1 + state.risingFuryStacks * skills.risingFuryPerTurn);
-            if (skills.combatMasteryPerStack && state.combatMasteryStacks)
-                damage *= (1 + state.combatMasteryStacks * skills.combatMasteryPerStack);
-            if (skills.accelerationPerDodge && state.accelerationStacks)
-                damage *= (1 + state.accelerationStacks * skills.accelerationPerDodge);
-            if (skills.familiarityBonus && attackType && WEAPONS[attackType])
-                damage *= (1 + skills.familiarityBonus);
-            if (skills.steelStrengthPerTier && attackType && WEAPONS[attackType])
-                damage *= (1 + (WEAPONS[attackType].tier || 0) * skills.steelStrengthPerTier);
-            if (skills.masterArmorerBonus && state.masterArmorerActive)
-                damage *= (1 + skills.masterArmorerBonus);
-            if (skills.dominationPct) {
-                const debuffs = (
-                    (state.bleedStacks && state.bleedStacks.length > 0 ? 1 : 0) +
-                    (state.fractureStacks > 0 ? 1 : 0) +
-                    (state.weakenStacks > 0 ? 1 : 0)
-                );
-                if (debuffs > 0) damage *= (1 + debuffs * skills.dominationPct);
-            }
-            if (skills.darkEmbraceBonus && defenderGame.health < defenderGame.maxHealth * 0.30)
+            if (skills.escalationPerTurn && state.escalationStacks)
+                damage *= (1 + state.escalationStacks * skills.escalationPerTurn);
+            if (skills.momentumPerDodge && state.momentumStacks)
+                damage *= (1 + state.momentumStacks * skills.momentumPerDodge);
+            if (skills.darkEmbraceBonus && attackerGame.health < attackerGame.maxHealth * 0.50)
                 damage *= (1 + skills.darkEmbraceBonus);
             if (skills.adrenalineBonus && state.adrenalineActive > 0)
                 damage *= (1 + skills.adrenalineBonus);
-            if (skills.presenceMultiplier && skills.presenceMultiplier > 1)
-                damage *= skills.presenceMultiplier;
-            if (skills.ironWillBonus && state.ironWillActive > 0)
-                damage *= (1 + skills.ironWillBonus);
             return damage;
         }
 
-        // Applies defender skill bonuses (damage reduction) shared between player and CPU.
         function applyDefenseSkillBonuses(damage, skills, state) {
             if (!skills) return damage;
-            if (skills.endurance) damage *= (1 - skills.endurance);
-            if (skills.auraChampion) damage *= (1 - skills.auraChampion);
+            if (skills.battleHardenedPct) damage *= (1 - skills.battleHardenedPct);
+            if (skills.auraBonus) damage *= (1 - skills.auraBonus);
             if (skills.weakenPct && state.weakenStacks > 0)
                 damage *= (1 - Math.min(0.50, state.weakenStacks * skills.weakenPct));
             return damage;
@@ -17722,10 +17797,9 @@
         let currentCpuCharacter = null;
 
         function getCpuBuildBranches(cpuStats) {
-            const atk = cpuStats.attack || 0, def = cpuStats.defense || 0, spd = cpuStats.speed || 0;
-            if (atk >= def && atk >= spd) return ['warrior', 'intimidation'];
-            if (def >= atk && def >= spd) return ['guardian', 'vampirism'];
-            return ['phantom', 'warrior'];
+            const atk = cpuStats.attack || 0, def = cpuStats.defense || 0;
+            if (atk >= def) return ['attack', 'defense'];
+            return ['defense', 'attack'];
         }
 
         function generateCpuSkillsForBattle(cpuStats) {
@@ -17734,17 +17808,18 @@
             const cpu = { skills: {}, level };
             if (skillPoints === 0) return cpu;
             const primaryBranches = getCpuBuildBranches(cpuStats);
-            const maxRank = 10;
+            const maxRank = 5;
             let pointsLeft = skillPoints;
             let spent = true;
             while (pointsLeft > 0 && spent) {
                 spent = false;
                 for (const branchId of primaryBranches) {
                     if (pointsLeft <= 0) break;
-                    const branch = SKILL_TREE.find(b => b.id === branchId);
-                    if (!branch) continue;
-                    for (let nodeIdx = 0; nodeIdx < branch.nodes.length && pointsLeft > 0; nodeIdx++) {
-                        const key = branchId + '_' + nodeIdx;
+                    const branchNodes = SKILL_NODES.filter(n => n.tree === branchId);
+                    if (!branchNodes.length) continue;
+                    for (const nd of branchNodes) {
+                        if (pointsLeft <= 0) break;
+                        const key = branchId + '_' + nd.id;
                         const currentRank = cpu.skills[key] || 0;
                         if (currentRank >= maxRank) continue;
                         const cost = SKILL_RANK_COSTS[currentRank + 1] || 5;
@@ -17764,87 +17839,56 @@
             if (!character) { cpuBattleSkills = {}; return; }
             const sv = (b, n) => getSkillValue(character, b, n);
             cpuBattleSkills = {
-                heavyBlowBonus:        sv('warrior',      'heavy_blow'),
-                critBonus:             sv('warrior',      'critical'),
-                penetration:           sv('warrior',      'penetration'),
-                berserkerBonus:        sv('warrior',      'berserker'),
-                crusherChance:         sv('warrior',      'crusher'),
-                risingFuryPerTurn:     sv('warrior',      'rising_fury'),
-                combatMasteryPerStack: sv('warrior',      'combat_mastery'),
-                ironHideHpBonus:       sv('guardian',     'iron_hide'),
-                endurance:             sv('guardian',     'endurance'),
-                blockBonus:            sv('guardian',     'block'),
-                thornsReflect:         sv('guardian',     'thorns'),
-                fortitudeRegen:        sv('guardian',     'fortitude'),
-                ripostePct:            sv('guardian',     'riposte'),
-                lastBreathChance:      sv('guardian',     'last_breath'),
-                reflexesBonus:         sv('phantom',      'reflexes'),
-                lightStepChance:       sv('phantom',      'light_step'),
-                counterattackStrength: sv('phantom',      'counterattack'),
-                firstStrikeChance:     sv('phantom',      'first_strike'),
-                phantasmTurns:         sv('phantom',      'phantasm'),
-                accelerationPerDodge:  sv('phantom',      'acceleration'),
-                shadowInterval:        sv('phantom',      'shadow'),
-                bloodthirstRate:       sv('vampirism',    'bloodthirst'),
-                fangsMultiplier:       sv('vampirism',    'fangs'),
-                drainRegen:            sv('vampirism',    'drain'),
-                cursePct:              sv('vampirism',    'curse'),
-                darkEmbraceBonus:      sv('vampirism',    'dark_embrace'),
-                absorptionMultiplier:  sv('vampirism',    'absorption'),
-                immortalityHpPct:      sv('vampirism',    'immortality'),
-                gazeDebuff:            sv('intimidation', 'gaze'),
-                bleedPct:              sv('intimidation', 'bleed'),
-                fracturePct:           sv('intimidation', 'fracture'),
-                poisonPct:             sv('intimidation', 'poison'),
-                paralysisChance:       sv('intimidation', 'paralysis'),
-                weakenPct:             sv('intimidation', 'weaken'),
-                dominationPct:         sv('intimidation', 'domination'),
-                herbalismBonus:        sv('alchemy',      'herbalism'),
-                instinctThreshold:     sv('alchemy',      'instinct') || CONSUMABLE_TRIGGER_HP,
-                extraDoseChance:       sv('alchemy',      'extra_dose'),
-                adrenalineBonus:       sv('alchemy',      'adrenaline'),
-                metabolismBonus:       sv('alchemy',      'metabolism'),
-                purityCount:           sv('alchemy',      'purity'),
-                hiddenReserveMax:      sv('alchemy',      'hidden_reserve'),
-                gripCrit:              sv('mastery',      'grip'),
-                familiarityBonus:      sv('mastery',      'familiarity'),
-                steelStrengthPerTier:  sv('mastery',      'steel_strength'),
-                weaponInstinctBonus:   sv('mastery',      'weapon_instinct'),
-                disarmChance:          sv('mastery',      'disarm'),
-                disciplineReduction:   sv('mastery',      'discipline'),
-                masterArmorerBonus:    sv('mastery',      'master_armorer'),
-                // Champion not available to CPU
-                awakeningPerBranch:  0,
-                ironWillBonus:       0,
-                auraChampion:        0,
-                decisiveMomentCrit:  0,
-                masterSynergyPct:    0,
-                presenceMultiplier:  1.0,
-                resonancePct:        0,
+                // ATTACK TREE
+                powerStrikeBonus:       sv('attack',  'power_strike'),
+                heavyBlowBonus:         sv('attack',  'heavy_blow'),
+                gazeCritBonus:          sv('attack',  'gaze'),
+                crusherIgnoreDef:       sv('attack',  'crusher'),
+                berserkerBonus:         sv('attack',  'berserker'),
+                bleedPct:               sv('attack',  'bleed'),
+                exposeTurns:            sv('attack',  'expose'),
+                shatterArmor:           sv('attack',  'shatter'),
+                executeBonus:           sv('attack',  'execute'),
+                bloodrageLifesteal:     sv('attack',  'bloodrage'),
+                deathWishBonus:         sv('attack',  'death_wish'),
+                hemorrhageMax:          sv('attack',  'hemorrhage'),
+                rendAtkReduce:          sv('attack',  'rend'),
+                ruptureCritBonus:       sv('attack',  'rupture'),
+                lifetapPct:             sv('attack',  'lifetap'),
+                // DEFENSE TREE
+                ironHideDmgReduce:      sv('defense', 'iron_hide'),
+                fortifyReduce:          sv('defense', 'fortify'),
+                resilienceHp:           sv('defense', 'resilience'),
+                bulwarkDR:              sv('defense', 'bulwark'),
+                counterChance:          sv('defense', 'counter'),
+                regenPerTurn:           sv('defense', 'regeneration'),
+                lifestealPct:           sv('defense', 'lifesteal'),
+                unbreakableDR:          sv('defense', 'unbreakable'),
+                thornsReflect:          sv('defense', 'thorns'),
+                riposteBurst:           sv('defense', 'riposte'),
+                counterStrikeBonus:     sv('defense', 'counter_strike'),
+                secondWindHeal:         sv('defense', 'second_wind'),
+                enduranceMulti:         sv('defense', 'endurance'),
+                vampiricBonus:          sv('defense', 'vampiric'),
+                bloodArmorShield:       sv('defense', 'blood_armor'),
+                // Legacy keys (zeroed — old system removed)
+                awakeningPerBranch: 0, auraBonus: 0, decisiveMomentCrit: 0, synergyPct: 0, apexBonus: 0,
             };
         }
 
         function initCpuSkillState() {
             cpuSkillState = {
-                risingFuryStacks: 0,
-                combatMasteryStacks: 0,
-                accelerationStacks: 0,
-                shadowCounter: 0,
+                rendStacks: 0,
+                escalationStacks: 0,
+                momentumStacks: 0,
                 phantasmActive: 0,
-                lastBreathUsed: false,
                 immortalityUsed: false,
-                hiddenReserveUsed: 0,
                 riposteAccum: 0,
                 bleedStacks: [],
-                fractureStacks: 0,
                 weakenStacks: 0,
+                openWoundTurns: 0,
+                bloodthirstLastTurn: -99,
                 adrenalineActive: 0,
-                metabolismActive: 0,
-                ironWillActive: 0,
-                weaponHitCount: 0,
-                masterArmorerActive: false,
-                playerDisarmedTurns: 0,
-                playerParalyzedTurns: 0,
                 gazeApplied: false,
             };
         }
@@ -17889,6 +17933,16 @@
                 case 'HP threshold':      return 'at ' + pct + '% HP';
                 case 'debuffs cleared':   return 'clears ' + value;
                 case 'max uses':          return 'max ' + value + ' uses';
+                case '% bonus fury':      return '+' + pct + '% fury';
+                case '% power dmg':       return '+' + pct + '% power';
+                case '% less blocked dmg':return '-' + pct + '% blocked';
+                case '% maxHP/turn':      return pct + '% steal/t';
+                case '% ATK debuff':      return '-' + pct + '% ATK';
+                case 'max stacks':        return value + ' stacks max';
+                case 'fury/hit':          return '+' + value + ' fury/hit';
+                case '% per buff type':   return pct + '%/buff';
+                case '% multiplier':      return pct + '% mult';
+                case '% max ST':          return pct + '% ST/dodge';
                 default:                  return String(value);
             }
         }
@@ -17899,15 +17953,19 @@
             }
             let html = '<div class="stt-header">' + label + '</div>';
             let hasAny = false;
-            SKILL_TREE.forEach(branch => {
+            const treeOrder = ['attack','defense'];
+            for (const treeId of treeOrder) {
                 const active = [];
-                branch.nodes.forEach((node) => {
-                    const rank = getSkillRank(character, branch.id, node.id);
-                    if (rank > 0) active.push({ node, rank, value: node.values[rank] });
-                });
+                for (const nd of SKILL_NODES) {
+                    if (nd.tree !== treeId) continue;
+                    const rank = getSkillRank(character, nd.tree, nd.id);
+                    if (rank > 0) active.push({ node: nd, rank, value: nd.values[rank] });
+                }
                 if (active.length > 0) {
                     hasAny = true;
-                    html += '<div class="stt-branch-header" style="color:' + branch.color + '">— ' + branch.name.toUpperCase() + ' —</div>';
+                    const treeCol = treeId === 'attack' ? '#e74c3c' : '#3498db';
+                    const treeLabel = treeId === 'attack' ? 'ATTACK' : 'DEFENSE';
+                    html += '<div class="stt-branch-header" style="color:' + treeCol + '">— ' + treeLabel + ' —</div>';
                     active.forEach(({ node, rank, value }) => {
                         const valStr = formatSkillValue(value, node.unit);
                         html += '<div class="stt-node">' +
@@ -17917,7 +17975,7 @@
                             '</div>';
                     });
                 }
-            });
+            }
             if (!hasAny) html += '<div class="stt-no-skills">No active skills</div>';
             return html;
         }
@@ -20882,38 +20940,45 @@
             // Track battle for progression (only if within daily limit)
             if (withinDailyLimit) {
                 const character = getSelectedCharacter();
-                if (winner === 'player') {
-                    // Win EXP
-                    if (character && character.level < MAX_LEVEL) {
-                        lastExpGained = Math.floor(Math.random() * (EXP_PER_WIN_MAX - EXP_PER_WIN_MIN + 1)) + EXP_PER_WIN_MIN;
-                        const hadBoost = xpBoostBattlesLeft > 0;
-                        const boostMult = xpBoostMultiplier;
-                        const result = addExpToCharacter(character.id, lastExpGained);
-                        if (hadBoost) {
-                            lastExpGained = Math.floor(lastExpGained * boostMult);
-                        }
-                        log(`+${lastExpGained} EXP gained!${hadBoost ? ' ⚡ BOOSTED' : ''}`, 'log-fury');
+                if (character && character.level < MAX_LEVEL) {
+                    // Use server-authoritative EXP if available (prevents client-side exploit).
+                    // Fall back to local random only for dev/offline runs where server isn't called.
+                    const serverExp = lastBattleRewards?.expGained;
+                    const serverLeveledUp = lastBattleRewards?.leveledUp;
 
-                        if (result.leveledUp) {
+                    if (serverExp !== undefined) {
+                        // Server path: pass raw serverExp to addExpToCharacter so it applies
+                        // the boost once (for the local progress bar display only).
+                        // lastExpGained is set to the boosted value for the results screen.
+                        const hadBoost = xpBoostBattlesLeft > 0;
+                        addExpToCharacter(character.id, serverExp); // handles boost internally
+                        lastExpGained = hadBoost ? Math.floor(serverExp * xpBoostMultiplier) : serverExp;
+                        const label = winner === 'player' ? 'EXP gained!' : 'EXP gained (defeat)';
+                        const style = winner === 'player' ? 'log-fury' : 'log-info';
+                        log(`+${lastExpGained} ${label}${hadBoost ? ' ⚡ BOOSTED' : ''}`, style);
+
+                        if (serverLeveledUp) {
                             addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                             fetchAndQueueLevelUp(character);
                         }
-                    }
-                } else {
-                    // Loss EXP (reduced)
-                    if (character && character.level < MAX_LEVEL) {
-                        lastExpGained = Math.floor(Math.random() * (EXP_PER_LOSS_MAX - EXP_PER_LOSS_MIN + 1)) + EXP_PER_LOSS_MIN;
-                        const hadBoost = xpBoostBattlesLeft > 0;
-                        const boostMult = xpBoostMultiplier;
-                        const result = addExpToCharacter(character.id, lastExpGained);
-                        if (hadBoost) {
-                            lastExpGained = Math.floor(lastExpGained * boostMult);
-                        }
-                        log(`+${lastExpGained} EXP gained (defeat)${hadBoost ? ' ⚡ BOOSTED' : ''}`, 'log-info');
-
-                        if (result.leveledUp) {
-                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                            fetchAndQueueLevelUp(character);
+                    } else {
+                        // Offline/dev fallback: local random (no server to validate)
+                        if (winner === 'player') {
+                            lastExpGained = Math.floor(Math.random() * (EXP_PER_WIN_MAX - EXP_PER_WIN_MIN + 1)) + EXP_PER_WIN_MIN;
+                            const result = addExpToCharacter(character.id, lastExpGained);
+                            log(`+${lastExpGained} EXP gained!`, 'log-fury');
+                            if (result.leveledUp) {
+                                addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                                fetchAndQueueLevelUp(character);
+                            }
+                        } else {
+                            lastExpGained = Math.floor(Math.random() * (EXP_PER_LOSS_MAX - EXP_PER_LOSS_MIN + 1)) + EXP_PER_LOSS_MIN;
+                            const result = addExpToCharacter(character.id, lastExpGained);
+                            log(`+${lastExpGained} EXP gained (defeat)`, 'log-info');
+                            if (result.leveledUp) {
+                                addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                                fetchAndQueueLevelUp(character);
+                            }
                         }
                     }
                 }
@@ -22174,15 +22239,24 @@
                 const character = getSelectedCharacter();
                 if (character && character.level < MAX_LEVEL && aonDailyWins < DAILY_AON_LIMIT) {
                     if (playerWon) aonDailyWins++;
-                    if (playerWon) {
-                        lastAonExp = Math.floor(Math.random() * (AON_EXP_PER_WIN_MAX - AON_EXP_PER_WIN_MIN + 1)) + AON_EXP_PER_WIN_MIN;
+                    const serverExp = lastBattleRewards?.expGained;
+                    if (serverExp !== undefined) {
+                        addExpToCharacter(character.id, serverExp);
+                        lastAonExp = serverExp;
+                        if (lastBattleRewards?.leveledUp) {
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            fetchAndQueueLevelUp(character);
+                        }
                     } else {
-                        lastAonExp = Math.floor(Math.random() * (AON_EXP_PER_LOSS_MAX - AON_EXP_PER_LOSS_MIN + 1)) + AON_EXP_PER_LOSS_MIN;
-                    }
-                    const result = addExpToCharacter(character.id, lastAonExp);
-                    if (result.leveledUp) {
-                        addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
-                        fetchAndQueueLevelUp(character);
+                        // Offline/dev fallback
+                        lastAonExp = playerWon
+                            ? Math.floor(Math.random() * (AON_EXP_PER_WIN_MAX - AON_EXP_PER_WIN_MIN + 1)) + AON_EXP_PER_WIN_MIN
+                            : Math.floor(Math.random() * (AON_EXP_PER_LOSS_MAX - AON_EXP_PER_LOSS_MIN + 1)) + AON_EXP_PER_LOSS_MIN;
+                        const result = addExpToCharacter(character.id, lastAonExp);
+                        if (result.leveledUp) {
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                            fetchAndQueueLevelUp(character);
+                        }
                     }
                 }
             }
@@ -23592,6 +23666,16 @@
                         : '<div class="shop-item-price">🪙 ' + price + '</div>';
                     const statLabel = cons.staminaRestore
                         ? '+' + Math.round(cons.staminaRestore * 100) + '% ST'
+                        : cons.dmgBoost
+                        ? '+' + Math.round(cons.dmgBoost * 100) + '% DMG (' + (cons.buffTurns || 0) + ' turns)'
+                        : cons.staminaRegen
+                        ? '+' + Math.round(cons.staminaRegen * 100) + '% ST regen (' + (cons.buffTurns || 0) + ' turns)'
+                        : cons.furyBoost
+                        ? '+' + Math.round(cons.furyBoost * 100) + '% Fury'
+                        : cons.defBoost
+                        ? '+' + Math.round(cons.defBoost * 100) + '% DEF (' + (cons.buffTurns || 0) + ' turns)'
+                        : cons.hotPercent
+                        ? '+' + Math.round(cons.hotPercent * 100) + '% HP/turn (HoT)'
                         : '+' + Math.round((cons.healPercent || 0) * 100) + '% HP' + hotLabel;
                     item.innerHTML = '<div class="shop-item-icon">' + cons.icon + '</div>' +
                         '<div class="shop-item-name">' + cons.name + '</div>' +
@@ -25454,7 +25538,7 @@
                     const cons = CONSUMABLES[character.equippedConsumables[i]];
                     slot.className += ' filled';
                     slot.textContent = cons.icon;
-                    slot.title = cons.name + ' (' + Math.round(cons.healPercent * 100) + '% HP)';
+                    slot.title = cons.name + (cons.healPercent ? ' (+' + Math.round(cons.healPercent * 100) + '% HP)' : cons.dmgBoost ? ' (+' + Math.round(cons.dmgBoost * 100) + '% DMG)' : cons.defBoost ? ' (+' + Math.round(cons.defBoost * 100) + '% DEF)' : cons.furyBoost ? ' (+' + Math.round(cons.furyBoost * 100) + '% Fury)' : cons.hotPercent ? ' (HoT)' : cons.staminaRestore ? ' (+ST)' : '');
                     const cId = character.equippedConsumables[i];
                     slot.addEventListener('click', () => {
                         unequipConsumable(cId);
@@ -25478,9 +25562,9 @@
                 counts[id] = (counts[id] || 0) + 1;
             });
 
-            // Battle consumables only (potions) — wellness items are in the CARE panel
-            const categories = ['potion'];
-            const categoryNames = { potion: '🧪 Potions' };
+            // Battle consumables (potions + buffs) — wellness items are in the CARE panel
+            const categories = ['potion', 'buff'];
+            const categoryNames = { potion: '🧪 Potions', buff: '⚗️ Buffs' };
 
             categories.forEach(cat => {
                 const items = Object.keys(counts).filter(id => BATTLE_CONSUMABLES[id] && BATTLE_CONSUMABLES[id].category === cat);
@@ -25491,14 +25575,24 @@
                     const qty = counts[consId];
                     const equippedCount = character.equippedConsumables ? character.equippedConsumables.filter(e => e === consId).length : 0;
                     const isEquipped = equippedCount > 0;
-                    const canEquip = character.equippedConsumables.length < getMaxEquippedConsumables(character.level);
+                    const canEquip = character.equippedConsumables.length < getMaxConsumableSlots(character);
+
+                    const consStatLine = cons.healPercent
+                        ? '+' + Math.round(cons.healPercent * 100) + '% HP' + (cons.hotTicks ? ' (HoT)' : '')
+                        : cons.staminaRestore ? '+' + Math.round(cons.staminaRestore * 100) + '% ST'
+                        : cons.dmgBoost ? '+' + Math.round(cons.dmgBoost * 100) + '% DMG'
+                        : cons.staminaRegen ? '+' + Math.round(cons.staminaRegen * 100) + '% ST regen'
+                        : cons.furyBoost ? '+' + Math.round(cons.furyBoost * 100) + '% Fury'
+                        : cons.defBoost ? '+' + Math.round(cons.defBoost * 100) + '% DEF'
+                        : cons.hotPercent ? '+' + Math.round(cons.hotPercent * 100) + '% HP/turn'
+                        : '';
 
                     const card = document.createElement('div');
                     card.className = 'inventory-consumable-card' + (isEquipped ? ' equipped' : '');
                     card.innerHTML = `
                         <div class="inv-cons-icon">${cons.icon}</div>
                         <div class="inv-cons-name">${cons.name}</div>
-                        <div class="inv-cons-heal">+${Math.round(cons.healPercent * 100)}% HP</div>
+                        <div class="inv-cons-heal">${consStatLine}</div>
                         <div class="inv-cons-qty">x${qty}</div>
                         ${isEquipped ? '<button class="inv-cons-btn inv-cons-btn-unequip">UNEQUIP</button>' : ''}
                         ${!isEquipped && canEquip ? '<button class="inv-cons-btn inv-cons-btn-equip">EQUIP</button>' : ''}
@@ -25527,7 +25621,7 @@
                 return;
             }
             if (!character.equippedConsumables) character.equippedConsumables = [];
-            if (character.equippedConsumables.length >= getMaxEquippedConsumables(character.level)) return;
+            if (character.equippedConsumables.length >= getMaxConsumableSlots(character)) return;
             if (!character.consumables.includes(consId)) return;
             character.equippedConsumables.push(consId);
             saveCharacters();
@@ -25546,7 +25640,7 @@
         }
 
         // ===== SKILL TREE UI =====
-        let currentSkillBranchId = 'warrior';
+        let currentSkillBranchId = 'attack';
 
         function renderSkillTree(character) {
             if (!character) return;
@@ -25559,13 +25653,7 @@
             const el = document.getElementById('skills-stats-col');
             if (!el || !character) return;
 
-            const getVal = (branchId, nodeId) => {
-                const branch = SKILL_TREE.find(b => b.id === branchId);
-                if (!branch) return 0;
-                const node = branch.nodes.find(n => n.id === nodeId);
-                if (!node) return 0;
-                return node.values[getSkillRank(character, branchId, nodeId)] || 0;
-            };
+            const getVal = (branchId, nodeId) => getSkillValue(character, branchId, nodeId);
 
             // ── CHARACTER BASE STATS section ─────────────────────────────
             const cs = character.stats || {};
@@ -25605,20 +25693,21 @@
 
             // ── SKILL BONUSES section ─────────────────────────────────────
             const skillStats = [
-                { group: 'OFFENSE', icon: '💥', label: 'DMG BONUS',    val: getVal('warrior','heavy_blow') },
-                { group: 'OFFENSE', icon: '🎯', label: 'CRIT CHANCE',  val: getVal('warrior','critical') + getVal('mastery','grip') + getVal('champion','decisive_moment') },
-                { group: 'OFFENSE', icon: '🔱', label: 'ARMOR PIERCE', val: getVal('warrior','penetration') },
-                { group: 'OFFENSE', icon: '🌬️', label: 'DOUBLE ATK',   val: getVal('phantom','light_step') },
-                { group: 'OFFENSE', icon: '⚒️', label: 'STUN CHANCE',  val: getVal('warrior','crusher') },
-                { group: 'DEFENSE', icon: '👁️', label: 'DODGE',        val: getVal('phantom','reflexes') },
-                { group: 'DEFENSE', icon: '🪬', label: 'BLOCK',        val: getVal('guardian','block') },
-                { group: 'DEFENSE', icon: '💪', label: 'DMG REDUCE',   val: getVal('guardian','endurance') + getVal('champion','aura') },
-                { group: 'DEFENSE', icon: '🌵', label: 'THORNS',       val: getVal('guardian','thorns') },
-                { group: 'DEFENSE', icon: '🩸', label: 'LIFE STEAL',   val: getVal('vampirism','bloodthirst') },
-                { group: 'STATUS',  icon: '❤️', label: 'HP REGEN',     val: getVal('guardian','fortitude') + getVal('vampirism','drain') },
-                { group: 'STATUS',  icon: '🔴', label: 'BLEED',        val: getVal('intimidation','bleed') },
-                { group: 'STATUS',  icon: '👀', label: 'ATK DEBUFF',   val: getVal('intimidation','gaze') },
-                { group: 'STATUS',  icon: '⚡', label: 'PARALYSIS',    val: getVal('intimidation','paralysis') },
+                { group: 'ATTACK',  icon: '⚔️', label: 'POWER STRIKE',  val: getVal('attack','power_strike') },
+                { group: 'ATTACK',  icon: '🔨', label: 'HEAVY BLOW',    val: getVal('attack','heavy_blow') },
+                { group: 'ATTACK',  icon: '🎯', label: 'GAZE (CRIT)',   val: getVal('attack','gaze') },
+                { group: 'ATTACK',  icon: '💥', label: 'CRUSHER',       val: getVal('attack','crusher') },
+                { group: 'ATTACK',  icon: '😤', label: 'BERSERKER',     val: getVal('attack','berserker') },
+                { group: 'ATTACK',  icon: '🩸', label: 'BLEED',         val: getVal('attack','bleed') },
+                { group: 'DEFENSE', icon: '🛡️', label: 'IRON HIDE',     val: getVal('defense','iron_hide') },
+                { group: 'DEFENSE', icon: '🏰', label: 'FORTIFY',       val: getVal('defense','fortify') },
+                { group: 'DEFENSE', icon: '❤️', label: 'RESILIENCE HP', val: getVal('defense','resilience') },
+                { group: 'DEFENSE', icon: '🌿', label: 'REGEN',         val: getVal('defense','regeneration') },
+                { group: 'DEFENSE', icon: '🩸', label: 'LIFESTEAL',     val: getVal('defense','lifesteal') },
+                { group: 'DEFENSE', icon: '🌵', label: 'THORNS',        val: getVal('defense','thorns') },
+                { group: 'ALCHEMIST', icon: '⚗️', label: 'BREW MASTER',   val: getVal('alchemist','brew_master') },
+                { group: 'ALCHEMIST', icon: '✨', label: 'POTENCY',       val: getVal('alchemist','potency') },
+                { group: 'ALCHEMIST', icon: '⏳', label: 'DURATION',      val: getVal('alchemist','duration') },
             ];
 
             let lastGroup = null;
@@ -25639,330 +25728,354 @@
             el.innerHTML = html;
         }
 
-        // ── Skill Map — Mu Online visual style ──────────────────────────────────
+        // ── Skill Map — binary tree (attack + defense) ──────────────────────────────
         function renderSkillMap(character) {
             const contentEl = document.getElementById('skills-branch-content');
             contentEl.innerHTML = '';
 
-            const map = document.createElement('div');
-            map.className = 'skill-map-wrap';
+            const ns = 'http://www.w3.org/2000/svg';
+            const CW = 1320, CH = 470;
 
-            // Conflict pairs: left branch vs right branch
-            const pairs = [
-                ['warrior',  'phantom'],
-                ['guardian', 'vampirism'],
-                ['mastery',  'intimidation'],
-            ];
+            const canvas = document.createElement('div');
+            canvas.style.cssText = 'position:relative;width:' + CW + 'px;height:' + CH + 'px;';
 
-            pairs.forEach((pair, idx) => {
-                const leftBranch  = SKILL_TREE.find(b => b.id === pair[0]);
-                const rightBranch = SKILL_TREE.find(b => b.id === pair[1]);
+            // ── SVG layer (connections) ──────────────────────────────────────────────
+            const svg = document.createElementNS(ns, 'svg');
+            svg.setAttribute('width', CW);
+            svg.setAttribute('height', CH);
+            svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:1;';
 
-                const row = document.createElement('div');
-                row.className = 'skill-map-row';
+            // Draw tree divider (attack | defense)
+            const divider = document.createElementNS(ns, 'line');
+            divider.setAttribute('x1', 470); divider.setAttribute('y1', 20);
+            divider.setAttribute('x2', 470); divider.setAttribute('y2', CH - 30);
+            divider.setAttribute('stroke', 'rgba(255,255,255,0.07)');
+            divider.setAttribute('stroke-width', '1');
+            divider.setAttribute('stroke-dasharray', '4,4');
+            svg.appendChild(divider);
 
-                if (leftBranch)  row.appendChild(buildBranchCluster(character, leftBranch));
-                row.appendChild(buildConflictStrip(character, leftBranch, rightBranch));
-                if (rightBranch) row.appendChild(buildBranchCluster(character, rightBranch));
+            // Tree labels
+            function makeTreeLabel(label, x, col) {
+                const txt = document.createElementNS(ns, 'text');
+                txt.setAttribute('x', x); txt.setAttribute('y', 22);
+                txt.setAttribute('text-anchor', 'middle');
+                txt.setAttribute('font-family', 'Fredoka,sans-serif');
+                txt.setAttribute('font-size', '13');
+                txt.setAttribute('font-weight', '600');
+                txt.setAttribute('letter-spacing', '0.10em');
+                txt.setAttribute('fill', col);
+                txt.setAttribute('opacity', '0.55');
+                txt.textContent = label;
+                svg.appendChild(txt);
+            }
+            makeTreeLabel('ATTACK',   235, '#e74c3c');
+            makeTreeLabel('DEFENSE',  705, '#3498db');
 
-                    map.appendChild(row);
+            // Second divider (defense | alchemist)
+            const divider2 = document.createElementNS(ns, 'line');
+            divider2.setAttribute('x1', 960); divider2.setAttribute('y1', 20);
+            divider2.setAttribute('x2', 960); divider2.setAttribute('y2', CH - 30);
+            divider2.setAttribute('stroke', 'rgba(255,255,255,0.07)');
+            divider2.setAttribute('stroke-width', '1');
+            divider2.setAttribute('stroke-dasharray', '4,4');
+            svg.appendChild(divider2);
+            makeTreeLabel('ALCHEMIST', 1140, '#2ecc71');
+
+            // Draw parent→child connection lines
+            for (const node of SKILL_NODES) {
+                if (!node.parent) continue;
+                const parentNode = SKILL_NODE_MAP.get(node.tree + '_' + node.parent);
+                if (!parentNode) continue;
+
+                const pRank = getSkillRank(character, node.tree, node.parent);
+                const cRank = getSkillRank(character, node.tree, node.id);
+                const locked = getNodeLockReason(character, node.tree, node.id) === 'Path not taken';
+                const active = pRank > 0 && cRank > 0;
+                const reachable = pRank > 0 && !locked;
+
+                const col = node.tree === 'attack' ? '#e74c3c' : node.tree === 'alchemist' ? '#2ecc71' : '#3498db';
+                const opacity = locked ? 0.05 : reachable ? (active ? 0.7 : 0.25) : 0.12;
+
+                const line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', parentNode.x); line.setAttribute('y1', parentNode.y);
+                line.setAttribute('x2', node.x);       line.setAttribute('y2', node.y);
+                line.setAttribute('stroke', col);
+                line.setAttribute('stroke-width', active ? '3' : '1.5');
+                line.setAttribute('opacity', opacity);
+                svg.appendChild(line);
+            }
+
+            canvas.appendChild(svg);
+
+            // ── Node elements ────────────────────────────────────────────────────────
+            for (const node of SKILL_NODES) {
+                buildMiniNode(character, node, canvas);
+            }
+
+            // ── Bottom stats bar ─────────────────────────────────────────────────────
+            const activeNodes = countActiveNodes(character);
+            const remPts      = character.skillPoints ?? 0;
+            const totalPts    = (character.level ?? 1) - 1;
+            const totDiv = document.createElement('div');
+            totDiv.style.cssText = 'position:absolute;left:0;right:0;top:444px;display:flex;justify-content:center;align-items:center;gap:20px;pointer-events:none;z-index:3;';
+            const nodeLimitColor = activeNodes >= MAX_SKILL_NODES ? '#e74c3c' : 'rgba(255,255,255,0.6)';
+            const ptsColor = remPts === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)';
+            totDiv.innerHTML =
+                '<span style="color:' + nodeLimitColor + ';font-size:11px;font-weight:600;letter-spacing:.05em">✦ ' + activeNodes + '/' + MAX_SKILL_NODES + ' nodes</span>' +
+                '<span style="color:rgba(255,255,255,0.3);font-size:10px;padding:0 2px">|</span>' +
+                '<span style="font-size:11px;color:' + ptsColor + ';letter-spacing:.04em">' + remPts + '/' + totalPts + ' pts remaining</span>';
+            canvas.appendChild(totDiv);
+
+            // Wrap in scroll container
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'width:100%;overflow-x:auto;overflow-y:hidden;';
+            wrapper.appendChild(canvas);
+            contentEl.appendChild(wrapper);
+
+            // ── Guide panel ──────────────────────────────────────────────────────────
+            const guide = document.createElement('div');
+            guide.style.cssText = 'margin-top:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-family:Fredoka,sans-serif;';
+            guide.innerHTML = [
+                '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;user-select:none;" id="skill-guide-toggle">',
+                '  <span style="font-size:13px;color:rgba(255,255,255,0.5);">ℹ</span>',
+                '  <span style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.08em;">HOW THE SKILL TREE WORKS</span>',
+                '  <span id="skill-guide-arrow" style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:auto;">▼</span>',
+                '</div>',
+                '<div id="skill-guide-body" style="display:none;">',
+                '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;">',
+                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">TWO TREES</div>',
+                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Start with <span style="color:#e74c3c">ATTACK</span> and/or <span style="color:#3498db">DEFENSE</span> roots — both are free to invest in. Go deep into one, mix both, or balance them.</div></div>',
+                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">EXCLUSIVE CHOICES</div>',
+                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">From depth 2 onward, sibling nodes are exclusive — choosing one permanently locks the other in that branch. Choose carefully.</div></div>',
+                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">RANKS (1–5)</div>',
+                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Each node has 5 ranks. Costs: R1=1 · R2=2 · R3=4 · R4=7 · R5=12 pts. Maxing a node = 26 pts total.</div></div>',
+                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">POINTS</div>',
+                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Points = Level − 1 (99 at max level). Max 12 active nodes. No color restrictions — build freely.</div></div>',
+                '  </div>',
+                '</div>',
+            ].join('');
+            contentEl.appendChild(guide);
+            const toggleEl = guide.querySelector('#skill-guide-toggle');
+            const bodyEl   = guide.querySelector('#skill-guide-body');
+            const arrowEl  = guide.querySelector('#skill-guide-arrow');
+            toggleEl.addEventListener('click', () => {
+                const open = bodyEl.style.display !== 'none';
+                bodyEl.style.display = open ? 'none' : 'block';
+                arrowEl.textContent  = open ? '▼' : '▲';
             });
-
-            // Alchemy — free branch, own row
-            const alchemy = SKILL_TREE.find(b => b.id === 'alchemy');
-            if (alchemy) {
-                const alRow = document.createElement('div');
-                alRow.className = 'skill-map-free-row';
-                const alCl = buildBranchCluster(character, alchemy);
-                alCl.classList.add('free-cluster');
-                alRow.appendChild(alCl);
-                map.appendChild(alRow);
-            }
-
-            // Champion at the bottom center
-            const champ = SKILL_TREE.find(b => b.id === 'champion');
-            if (champ) {
-                const champRow = document.createElement('div');
-                champRow.className = 'skill-map-champ-row';
-                const cl = buildBranchCluster(character, champ);
-                cl.classList.add('champ-cluster');
-                if (!isChampionUnlocked(character)) cl.classList.add('cluster-locked');
-                champRow.appendChild(cl);
-                map.appendChild(champRow);
-            }
-
-            contentEl.appendChild(map);
         }
 
-        function buildBranchCluster(character, branch) {
-            const isChamp  = branch.id === 'champion';
-            const isLocked = isChamp && !isChampionUnlocked(character);
+        function buildMiniNode(character, node, canvas) {
+            const rank     = getSkillRank(character, node.tree, node.id);
+            const maxRank  = 5;
+            const lockMsg  = getNodeLockReason(character, node.tree, node.id);
+            const isMaxed  = rank >= maxRank;
+            const isLocked = !!lockMsg && lockMsg !== 'MAX';
+            const isPathLocked = lockMsg === 'Path not taken';
 
-            const cluster = document.createElement('div');
-            cluster.className = 'skill-branch-cluster' + (isLocked ? ' cluster-locked' : '');
-            cluster.style.setProperty('--bc', branch.color);
+            const col = node.tree === 'attack' ? '#e74c3c' : '#3498db';
 
-            const hdr = document.createElement('div');
-            hdr.className = 'branch-cluster-hdr';
-            hdr.style.color = isLocked ? '#444' : branch.color;
-            hdr.textContent = (isLocked ? '🔒 ' : '') + branch.name.toUpperCase();
-            cluster.appendChild(hdr);
+            // Radius shrinks slightly for deeper nodes
+            const R = node.depth === 0 ? 27 : node.depth === 1 ? 24 : node.depth === 2 ? 21 : 18;
 
-            const tree = document.createElement('div');
-            tree.className = 'branch-mini-tree';
+            const el = document.createElement('div');
+            el.dataset.tree   = node.tree;
+            el.dataset.nodeId = node.id;
+            el.style.cssText =
+                'position:absolute;' +
+                'left:' + (node.x - R) + 'px;' +
+                'top:'  + (node.y - R) + 'px;' +
+                'width:' + (R * 2) + 'px;height:' + (R * 2) + 'px;' +
+                'border-radius:50%;cursor:pointer;' +
+                'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+                'font-family:Fredoka,sans-serif;z-index:2;' +
+                'transition:transform 0.12s,box-shadow 0.12s;' +
+                'box-sizing:border-box;';
 
-            // T1 — root node
-            const t1 = branch.nodes.find(n => n.tier === 1);
-            if (t1) {
-                const r = document.createElement('div');
-                r.className = 'mini-tree-row';
-                r.appendChild(buildMiniNode(character, branch, t1, isLocked));
-                tree.appendChild(r);
+            if (isPathLocked) {
+                el.style.cssText +=
+                    'background:rgba(20,20,20,0.7);' +
+                    'border:1.5px solid rgba(255,255,255,0.05);' +
+                    'opacity:0.18;filter:grayscale(1);';
+            } else if (rank > 0) {
+                el.style.cssText +=
+                    'background:' + col + ';' +
+                    'border:2px solid ' + col + ';' +
+                    'box-shadow:0 0 10px ' + col + '55;';
+            } else if (!isLocked) {
+                el.style.cssText +=
+                    'background:rgba(30,30,30,0.9);' +
+                    'border:1.5px solid ' + col + '88;';
+            } else {
+                el.style.cssText +=
+                    'background:rgba(20,20,20,0.8);' +
+                    'border:1.5px solid rgba(255,255,255,0.1);' +
+                    'opacity:0.45;';
             }
 
-            // Fork connector T1 → T2
-            const fork = document.createElement('div');
-            fork.className = 'mini-fork-wrap';
-            fork.innerHTML = '<div class="mini-fork-l"></div><div class="mini-fork-r"></div>';
-            tree.appendChild(fork);
+            const icon = SKILL_ICONS[node.tree + '_' + node.id] || '✦';
+            const iconSize = R >= 27 ? '18px' : R >= 24 ? '16px' : R >= 21 ? '14px' : '12px';
+            const rankSize = R >= 24 ? '10px' : '9px';
 
-            // T2 → T3 → T4
-            for (let tier = 2; tier <= 4; tier++) {
-                const lNode = branch.nodes.find(n => n.tier === tier && n.path === 'left');
-                const rNode = branch.nodes.find(n => n.tier === tier && n.path === 'right');
+            el.innerHTML =
+                '<span style="font-size:' + iconSize + ';line-height:1;' + (isPathLocked ? 'filter:grayscale(1)' : '') + '">' + icon + '</span>' +
+                (rank > 0 ? '<span style="font-size:' + rankSize + ';color:rgba(255,255,255,0.95);margin-top:2px;font-weight:700">R' + rank + '</span>' : '');
 
-                const row = document.createElement('div');
-                row.className = 'mini-tree-row';
-                if (lNode) row.appendChild(buildMiniNode(character, branch, lNode, isLocked));
-                const gap = document.createElement('div'); gap.className = 'mini-node-gap';
-                row.appendChild(gap);
-                if (rNode) row.appendChild(buildMiniNode(character, branch, rNode, isLocked));
-                tree.appendChild(row);
+            el.addEventListener('mouseenter', () => { if (!isPathLocked) el.style.transform = 'scale(1.15)'; });
+            el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
+            el.addEventListener('click', () => { if (!isPathLocked) showNodeDetail(character, node.tree, node.id); });
 
-                if (tier < 4) {
-                    const conn = document.createElement('div');
-                    conn.className = 'mini-conn-row';
-                    conn.innerHTML = '<div class="mini-conn-l"></div><div class="mini-conn-gap"></div><div class="mini-conn-r"></div>';
-                    tree.appendChild(conn);
-                }
+            canvas.appendChild(el);
+
+            // Node name label below node
+            if (!isPathLocked) {
+                const lbl = document.createElement('div');
+                lbl.style.cssText =
+                    'position:absolute;' +
+                    'left:' + (node.x - 40) + 'px;' +
+                    'top:'  + (node.y + R + 3) + 'px;' +
+                    'width:80px;text-align:center;' +
+                    'font-family:Fredoka,sans-serif;font-size:9px;' +
+                    'color:rgba(255,255,255,' + (rank > 0 ? '0.8' : '0.4') + ');' +
+                    'letter-spacing:.03em;pointer-events:none;z-index:3;line-height:1.3;';
+                lbl.textContent = node.name;
+                canvas.appendChild(lbl);
             }
-
-            cluster.appendChild(tree);
-            return cluster;
         }
 
-        function buildMiniNode(character, branch, node, forceLocked) {
-            const rank       = getSkillRank(character, branch.id, node.id);
-            const maxRank    = 10;
-            const lockReason = forceLocked ? 'Branch locked' : getNodeLockReason(character, branch.id, node.id);
-            const isLocked   = !!lockReason && lockReason !== 'MAX';
-            const isMaxed    = rank >= maxRank;
-
-            const icon = SKILL_ICONS[branch.id + '_' + node.id] || '•';
-
-            const dot = document.createElement('div');
-            dot.className = 'mini-node ' + (isMaxed ? 'mn-maxed' : isLocked ? 'mn-locked' : rank > 0 ? 'mn-active' : 'mn-empty');
-            dot.style.setProperty('--bc', branch.color);
-            dot.dataset.branchId = branch.id;
-            dot.dataset.nodeId   = node.id;
-            dot.innerHTML = '<span class="mn-icon">' + icon + '</span>';
-
-            const badge = document.createElement('div');
-            badge.className = 'mn-rank-badge' +
-                (isMaxed ? ' mn-badge-maxed' : rank === 0 ? ' mn-badge-empty' : '');
-            badge.style.setProperty('--bc', branch.color);
-            badge.textContent = isMaxed ? '★' : String(rank);
-
-            const label = document.createElement('div');
-            label.className = 'mini-node-label';
-            label.style.color = isLocked ? 'rgba(255,255,255,0.1)' : (rank > 0 ? branch.color : 'rgba(255,255,255,0.45)');
-            label.textContent = node.name;
-
-            const wrap = document.createElement('div');
-            wrap.className = 'mini-node-wrap';
-            wrap.appendChild(dot);
-            wrap.appendChild(badge);
-            wrap.appendChild(label);
-
-            // Hover tooltip
-            wrap.addEventListener('mouseenter', () => {
-                const tt = document.getElementById('skill-tooltip');
-                if (!tt) return;
-                const curRank = getSkillRank(character, branch.id, node.id);
-                const fmtV = v => {
-                    if (v == null) return '—';
-                    if (node.unit && node.unit.includes('%')) return (v * 100).toFixed(1) + '%';
-                    if (node.unit && node.unit.startsWith('x')) return v.toFixed(2) + 'x';
-                    return String(v);
-                };
-                const dotsHtml = Array.from({length: 10}, (_, i) =>
-                    '<span class="stt-dot' + (i < curRank ? ' on" style="background:' + branch.color + '"' : '"') + '></span>'
-                ).join('');
-                tt.style.display = 'flex';
-                tt.innerHTML =
-                    '<div class="stt-head">' +
-                    '<span class="stt-icon">' + icon + '</span>' +
-                    '<span class="stt-name" style="color:' + branch.color + '">' + node.name + '</span>' +
-                    '</div>' +
-                    '<div class="stt-desc">' + node.desc + '</div>' +
-                    '<div class="stt-rank-dots">' + dotsHtml + '</div>' +
-                    (curRank > 0 ? '<div class="stt-val">' + fmtV(node.values[curRank]) + ' ' + (node.unit || '') + '</div>' : '');
-                const rect = wrap.getBoundingClientRect();
-                const ttW = 230;
-                const left = rect.right + 8 + ttW > window.innerWidth ? rect.left - ttW - 8 : rect.right + 8;
-                tt.style.left = left + 'px';
-                tt.style.top  = Math.min(rect.top, window.innerHeight - 200) + 'px';
-            });
-            wrap.addEventListener('mouseleave', () => {
-                const tt = document.getElementById('skill-tooltip');
-                if (tt) tt.style.display = 'none';
-            });
-
-            if (!forceLocked) {
-                wrap.addEventListener('click', e => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.mini-node.mn-selected').forEach(el => el.classList.remove('mn-selected'));
-                    dot.classList.add('mn-selected');
-                    showNodeDetail(character, branch, node);
-                });
-            }
-            return wrap;
-        }
-
-        function buildConflictStrip(character, leftBranch, rightBranch) {
-            const strip = document.createElement('div');
-            strip.className = 'skill-conflict-strip';
-            if (!leftBranch || !rightBranch) return strip;
-
-            // Active if either branch has any capstone investment
-            const leftCap   = leftBranch.nodes.find(n => n.tier === 4);
-            const rightCap  = rightBranch.nodes.find(n => n.tier === 4);
-            const leftHas   = leftCap  && getSkillRank(character, leftBranch.id,  leftCap.id)  > 0;
-            const rightHas  = rightCap && getSkillRank(character, rightBranch.id, rightCap.id) > 0;
-            const active    = leftHas || rightHas;
-
-            strip.innerHTML =
-                `<div class="conflict-line${active?' ca':''}"></div>` +
-                `<div class="conflict-icon${active?' ca':''}">⚔</div>` +
-                `<div class="conflict-line${active?' ca':''}"></div>`;
-            return strip;
-        }
-
-        function showNodeDetail(character, branch, node) {
+        function showNodeDetail(character, tree, nodeId) {
             const detailEl = document.getElementById('skills-node-detail');
             if (!detailEl) return;
 
-            const rank       = getSkillRank(character, branch.id, node.id);
-            const maxRank    = 10;
-            const isMaxed    = rank >= maxRank;
-            const lockReason = getNodeLockReason(character, branch.id, node.id);
-            const isLocked   = !!lockReason && lockReason !== 'MAX';
-            const canUp      = canUpgradeSkill(character, branch.id, node.id);
-            const cost       = isMaxed ? null : SKILL_RANK_COSTS[rank + 1];
+            const node = SKILL_NODE_MAP.get(tree + '_' + nodeId);
+            if (!node) return;
 
-            const fmtV = v => {
+            const rank       = getSkillRank(character, tree, nodeId);
+            const maxRank    = 5;
+            const isMaxed    = rank >= maxRank;
+            const lockReason = getNodeLockReason(character, tree, nodeId);
+            const isLocked   = !!lockReason && lockReason !== 'MAX';
+            const canUp      = canUpgradeSkill(character, tree, nodeId);
+            const cost       = isMaxed ? null : SKILL_RANK_COSTS[rank + 1];
+            const col        = tree === 'attack' ? '#e74c3c' : tree === 'alchemist' ? '#2ecc71' : '#3498db';
+            const treeLabel  = tree === 'attack' ? 'ATTACK' : tree === 'alchemist' ? 'ALCHEMIST' : 'DEFENSE';
+
+            const fmtV = (v, unit) => {
                 if (v == null) return '?';
-                if (node.unit && node.unit.includes('%')) return (v * 100).toFixed(1) + '%';
-                if (node.unit && node.unit.startsWith('x')) return v.toFixed(2) + 'x';
+                if (unit && unit.includes('%')) return (v * 100).toFixed(1) + '%';
+                if (unit && unit.startsWith('x')) return v.toFixed(2) + 'x';
                 return v;
             };
             const curVal  = node.values[rank];
             const nextVal = rank < maxRank ? node.values[rank + 1] : null;
-
-            const conflictNames = (node.conflicts || []).map(c => {
-                const cb = SKILL_TREE.find(b => b.id === c.branchId);
-                const cn = cb?.nodes.find(n => n.id === c.nodeId);
-                return cn ? cn.name : c.nodeId;
-            });
+            const curVal2  = node.values2 ? node.values2[rank] : null;
+            const nextVal2 = node.values2 && rank < maxRank ? node.values2[rank + 1] : null;
 
             detailEl.innerHTML = '';
-            detailEl.style.setProperty('--bc', branch.color);
+            detailEl.style.setProperty('--bc', col);
 
-            const dotsHtml = Array.from({length: 10}, (_, i) =>
-                `<span class="snd-dot${i < rank ? ' filled' : ''}" style="${i < rank ? 'background:' + branch.color : ''}"></span>`
+            const dotsHtml = Array.from({length: 5}, (_, i) =>
+                '<span class="snd-dot' + (i < rank ? ' filled' : '') + '" style="' + (i < rank ? 'background:' + col : '') + '"></span>'
             ).join('');
 
-            let html = `
-                <div class="snd-branch" style="color:${branch.color}">${branch.name.toUpperCase()} · TIER ${node.tier}</div>
-                <div class="snd-name" style="color:${branch.color}">${node.name}</div>
-                <div class="snd-dots">${dotsHtml}</div>
-                <div class="snd-desc">${node.desc}</div>
-                <div class="snd-val-box">
-                    <div class="snd-val-row">
-                        <span class="snd-val-cur">Current</span>
-                        <span style="color:rgba(255,255,255,0.8); font-weight:700">${rank === 0 ? '—' : fmtV(curVal) + ' ' + (node.unit||'')}</span>
-                    </div>
-                    ${!isMaxed ? `<div class="snd-val-row" style="margin-top:4px">
-                        <span class="snd-val-cur">Next rank</span>
-                        <span class="snd-val-next">${fmtV(nextVal)} ${node.unit||''}</span>
-                    </div>` : `<div class="snd-val-row" style="margin-top:4px"><span class="snd-val-cur">Value</span><span class="snd-val-max">★ ${fmtV(curVal)} ${node.unit||''} MAX</span></div>`}
-                </div>
-                ${isLocked ? `<div class="snd-lock">🔒 ${lockReason}</div>` : ''}
-                ${conflictNames.length ? `<div class="snd-conflict">⚔ Conflicts with: ${conflictNames.join(', ')}</div>` : ''}
-            `;
+            let html =
+                '<div class="snd-branch" style="color:' + col + '">' + treeLabel + ' · DEPTH ' + node.depth + '</div>' +
+                '<div class="snd-name" style="color:' + col + '">' + node.name + '</div>' +
+                '<div class="snd-dots">' + dotsHtml + '</div>' +
+                '<div class="snd-desc">' + node.desc + '</div>' +
+                '<div class="snd-val-box">' +
+                    '<div class="snd-val-row">' +
+                        '<span class="snd-val-cur">Current</span>' +
+                        '<span style="color:rgba(255,255,255,0.8);font-weight:700">' + (rank === 0 ? '—' : fmtV(curVal, node.unit) + ' ' + (node.unit||'')) + '</span>' +
+                    '</div>' +
+                    (!isMaxed
+                        ? '<div class="snd-val-row" style="margin-top:4px"><span class="snd-val-cur">Next rank</span><span class="snd-val-next">' + fmtV(nextVal, node.unit) + ' ' + (node.unit||'') + '</span></div>'
+                        : '<div class="snd-val-row" style="margin-top:4px"><span class="snd-val-cur">Value</span><span class="snd-val-max">R5 ' + fmtV(curVal, node.unit) + ' ' + (node.unit||'') + ' MAX</span></div>'
+                    ) +
+                    (node.values2
+                        ? '<div class="snd-val-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px">' +
+                              '<span class="snd-val-cur" style="color:rgba(100,200,255,0.7)">+ ' + (node.unit2||'') + '</span>' +
+                              '<span style="color:rgba(100,200,255,0.9);font-weight:700">' + (rank === 0 ? '—' : fmtV(curVal2, node.unit2) + ' ' + (node.unit2||'')) + '</span>' +
+                          '</div>' +
+                          (!isMaxed
+                              ? '<div class="snd-val-row" style="margin-top:3px"><span class="snd-val-cur" style="color:rgba(100,200,255,0.5)">Next</span><span style="color:rgba(100,200,255,0.7);font-weight:700">' + fmtV(nextVal2, node.unit2) + ' ' + (node.unit2||'') + '</span></div>'
+                              : '')
+                        : '') +
+                '</div>' +
+                (isLocked ? '<div class="snd-lock">🔒 ' + lockReason + '</div>' : '');
 
             if (isMaxed) {
-                html += `<div class="snd-maxed">★ MAXED OUT ★</div>`;
+                html += '<div class="snd-maxed">★ MAXED OUT ★</div>';
             } else if (!isLocked) {
-                html += `
-                    <div class="snd-footer">
-                        <span class="snd-cost">${cost} pt${cost !== 1 ? 's' : ''}</span>
-                        <button class="snd-upgrade-btn"${canUp ? '' : ' disabled'}>+ UPGRADE</button>
-                    </div>
-                `;
+                html +=
+                    '<div class="snd-footer">' +
+                        '<span class="snd-cost">' + cost + ' pt' + (cost !== 1 ? 's' : '') + '</span>' +
+                        '<button class="snd-upgrade-btn"' + (canUp ? '' : ' disabled') + '>+ UPGRADE</button>' +
+                    '</div>';
             }
 
             detailEl.innerHTML = html;
-            detailEl.style.setProperty('--bc', branch.color);
+            detailEl.style.setProperty('--bc', col);
 
             const btn = detailEl.querySelector('.snd-upgrade-btn');
             if (btn) {
                 btn.addEventListener('click', async () => {
-                    const ok = await upgradeSkill(character, branch.id, node.id);
+                    // If this is a choice node and the sibling hasn't been chosen yet, confirm
+                    if (node.exclusiveWith && rank === 0) {
+                        const exKey = node.exclusiveWith;
+                        const firstUnd = exKey.indexOf('_');
+                        const exBranch = exKey.slice(0, firstUnd);
+                        const exNodeId = exKey.slice(firstUnd + 1);
+                        const sibRank = getSkillRank(character, exBranch, exNodeId);
+                        if (sibRank === 0) {
+                            const sibling = SKILL_NODE_MAP.get(exKey);
+                            const sibName = sibling ? sibling.name : exNodeId;
+                            const confirmed = confirm('Choose ' + node.name + '?\n\nThis permanently locks out ' + sibName + ' for this character.');
+                            if (!confirmed) return;
+                        }
+                    }
+                    const ok = await upgradeSkill(character, tree, nodeId);
                     if (ok) {
                         renderSkillTree(character);
-                        showNodeDetail(character, branch, node);
+                        showNodeDetail(character, tree, nodeId);
                     }
                 });
             }
         }
 
-        // ── Visual skill tree: 4-tier tree with path splits ────────────────────────
-        function buildSkillNodeCard(character, branch, node) {
-            const rank = getSkillRank(character, branch.id, node.id);
-            const maxRank = 10;
+        // ── Visual skill node card (legacy card view — kept for compatibility) ────────
+        function buildSkillNodeCard(character, node) {
+            const tree = node.tree;
+            const rank = getSkillRank(character, tree, node.id);
+            const maxRank = 5;
             const isMaxed = rank >= maxRank;
-            const lockReason = getNodeLockReason(character, branch.id, node.id);
+            const lockReason = getNodeLockReason(character, tree, node.id);
             const isLocked = !!lockReason && lockReason !== 'MAX';
-            const canUpgrade = canUpgradeSkill(character, branch.id, node.id);
+            const canUpgrade = canUpgradeSkill(character, tree, node.id);
             const cost = isMaxed ? null : SKILL_RANK_COSTS[rank + 1];
+            const branchColor = tree === 'attack' ? '#e74c3c' : tree === 'alchemist' ? '#2ecc71' : '#3498db';
 
             const card = document.createElement('div');
             const stateClass = isMaxed ? ' sn-maxed' : isLocked ? ' sn-locked' : rank > 0 ? ' sn-active' : '';
-            card.className = 'skill-node sn-tier' + node.tier + stateClass;
-            if (node.tier === 4) card.classList.add('sn-capstone');
+            card.className = 'skill-node sn-depth' + node.depth + stateClass;
+            card.style.setProperty('--bc', branchColor);
 
-            // Glow color from branch
-            card.style.setProperty('--bc', branch.color);
-
-            // Name + rank
             const header = document.createElement('div');
             header.className = 'skill-node-header';
             const nameEl = document.createElement('span');
             nameEl.className = 'skill-node-name';
-            nameEl.style.color = isLocked ? '#666' : branch.color;
+            nameEl.style.color = isLocked ? '#666' : branchColor;
             nameEl.textContent = node.name;
             const rankEl = document.createElement('span');
             rankEl.className = 'skill-node-rank' + (isMaxed ? ' maxed-rank' : '');
-            rankEl.textContent = isMaxed ? 'MAX' : 'R' + rank + '/10';
+            rankEl.textContent = isMaxed ? 'MAX' : 'R' + rank + '/5';
             header.appendChild(nameEl);
             header.appendChild(rankEl);
             card.appendChild(header);
 
-            // Rank dots (10 dots)
             const dotsEl = document.createElement('div');
             dotsEl.className = 'skill-rank-dots';
-            dotsEl.style.setProperty('--branch-color', branch.color);
+            dotsEl.style.setProperty('--branch-color', branchColor);
             for (let d = 0; d < maxRank; d++) {
                 const dot = document.createElement('div');
                 dot.className = 'skill-rank-dot' + (d < rank ? ' filled' : '');
@@ -25970,13 +26083,11 @@
             }
             card.appendChild(dotsEl);
 
-            // Description
             const descEl = document.createElement('div');
             descEl.className = 'skill-node-desc';
             descEl.textContent = node.desc;
             card.appendChild(descEl);
 
-            // Value display
             const fmtVal = (v) => {
                 if (v === undefined || v === null) return '?';
                 if (node.unit && (node.unit.includes('%') || node.unit.includes('x'))) {
@@ -25998,7 +26109,6 @@
             }
             card.appendChild(valEl);
 
-            // Lock reason badge
             if (isLocked) {
                 const lockEl = document.createElement('div');
                 lockEl.className = 'skill-lock-reason';
@@ -26006,19 +26116,6 @@
                 card.appendChild(lockEl);
             }
 
-            // Conflict badge
-            if (node.conflicts && node.conflicts.length > 0) {
-                const cfBranch = SKILL_TREE.find(b => b.id === node.conflicts[0].branchId);
-                const cfNode = cfBranch && cfBranch.nodes.find(n => n.id === node.conflicts[0].nodeId);
-                if (cfNode) {
-                    const cfEl = document.createElement('div');
-                    cfEl.className = 'skill-conflict-badge';
-                    cfEl.textContent = '✕ ' + cfNode.name;
-                    card.appendChild(cfEl);
-                }
-            }
-
-            // Footer: upgrade button
             if (!isMaxed && !isLocked) {
                 const footer = document.createElement('div');
                 footer.className = 'skill-node-footer';
@@ -26029,7 +26126,7 @@
                 btn.className = 'skill-upgrade-btn';
                 btn.textContent = '+ UPGRADE';
                 btn.disabled = !canUpgrade;
-                btn.dataset.branchId = branch.id;
+                btn.dataset.tree = tree;
                 btn.dataset.nodeId = node.id;
                 footer.appendChild(costEl);
                 footer.appendChild(btn);
@@ -26040,84 +26137,9 @@
         }
 
         function renderSkillBranchContent(character, branchId) {
-            const branch = SKILL_TREE.find(b => b.id === branchId);
-            if (!branch) return;
-            const contentEl = document.getElementById('skills-branch-content');
-            contentEl.innerHTML = '';
-
-            // Champion lock banner
-            const isBranchLocked = branchId === 'champion' && !isChampionUnlocked(character);
-            if (isBranchLocked) {
-                const banner = document.createElement('div');
-                banner.className = 'skill-branch-lock-msg';
-                banner.textContent = 'CHAMPION LOCKED — Requires Rank 5 in any node of 3 different branches';
-                contentEl.appendChild(banner);
-            }
-
-            // Branch opposite info
-            if (branch.opposite) {
-                const oppBranch = SKILL_TREE.find(b => b.id === branch.opposite);
-                if (oppBranch) {
-                    const infoEl = document.createElement('div');
-                    infoEl.className = 'skill-opposite-info';
-                    infoEl.innerHTML = '<span style="color:' + branch.color + '">' + branch.name + '</span> capstone locks <span style="color:' + oppBranch.color + '">' + oppBranch.name + '</span> capstone';
-                    contentEl.appendChild(infoEl);
-                }
-            }
-
-            // Visual tree layout
-            const tree = document.createElement('div');
-            tree.className = 'skill-tree-layout';
-
-            // Tier 1: root (always single node, path=null)
-            const rootNode = branch.nodes.find(n => n.tier === 1);
-            if (rootNode) {
-                const tier1Row = document.createElement('div');
-                tier1Row.className = 'skill-tree-row tier1-row';
-                tier1Row.appendChild(buildSkillNodeCard(character, branch, rootNode));
-                tree.appendChild(tier1Row);
-            }
-
-            // Fork connector: root → T2
-            const fork = document.createElement('div');
-            fork.className = 'skill-tree-fork';
-            fork.innerHTML = '<div class="fork-line-left"></div><div class="fork-line-right"></div>';
-            tree.appendChild(fork);
-
-            // Tiers 2, 3, 4 each have left + right nodes
-            for (let tier = 2; tier <= 4; tier++) {
-                const leftNode  = branch.nodes.find(n => n.tier === tier && n.path === 'left');
-                const rightNode = branch.nodes.find(n => n.tier === tier && n.path === 'right');
-
-                const row = document.createElement('div');
-                row.className = 'skill-tree-row tier' + tier + '-row';
-
-                const leftWrap = document.createElement('div');
-                leftWrap.className = 'skill-tree-side left-side';
-                if (leftNode) leftWrap.appendChild(buildSkillNodeCard(character, branch, leftNode));
-                row.appendChild(leftWrap);
-
-                const divider = document.createElement('div');
-                divider.className = 'skill-tree-divider';
-                row.appendChild(divider);
-
-                const rightWrap = document.createElement('div');
-                rightWrap.className = 'skill-tree-side right-side';
-                if (rightNode) rightWrap.appendChild(buildSkillNodeCard(character, branch, rightNode));
-                row.appendChild(rightWrap);
-
-                tree.appendChild(row);
-
-                // Connector between tiers (not after last tier)
-                if (tier < 4) {
-                    const conn = document.createElement('div');
-                    conn.className = 'skill-tree-straight-connectors';
-                    conn.innerHTML = '<div class="straight-left"></div><div class="straight-right"></div>';
-                    tree.appendChild(conn);
-                }
-            }
-
-            contentEl.appendChild(tree);
+            // Flat graph: renderSkillBranchContent is superseded by renderSkillMap.
+            // This stub prevents errors if called from legacy paths.
+            renderSkillMap(character);
         }
 
         // Skills panel close hides popup too
@@ -26129,7 +26151,7 @@
         document.getElementById('menu-skills-btn').addEventListener('click', () => {
             const char = getSelectedCharacter();
             if (!char) return;
-            currentSkillBranchId = 'warrior';
+            currentSkillBranchId = 'attack';
             renderSkillTree(char);
             document.getElementById('skills-panel').classList.add('active');
         });
