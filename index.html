@@ -14922,7 +14922,7 @@
             const _fpTargetEl = game[event.target]?.element;
             // Store caster STR so the spike animation can use it
             const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = (_spikeCasterChar?.stats?.strength ?? _spikeCasterChar?.strength) || 35;
+            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = (event.caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (currentCpuStats?.strength || 35));
 
             // Earth spike: check if target is airborne at pillar impact moment
             if (event.power.includes('earth_spike')) {
@@ -15485,9 +15485,6 @@
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
             const playerChar = characters.find(c => c.id === selectedCharacterId) ?? null;
-            // currentCpuCharacter is a full char object when set; fall back to wrapping
-            // currentCpuStats so that cpuChar?.stats?.agility always resolves correctly.
-            const cpuChar = currentCpuCharacter ?? (currentCpuStats ? { stats: currentCpuStats } : null);
             // AGI-based attack speed: scale animation durations by attacker's AGI.
             // Backend sends attackDuration (150–620ms). Base reference = 500ms (neutral fighter).
             const atkMult = event.attackDuration ? event.attackDuration / 500 : 1.0;
@@ -15552,8 +15549,8 @@
                 const baseXform    = (_playerIsOnLeft() === (attacker === 'player')) ? '' : 'scaleX(-1) ';
 
                 // Run speed scales with AGI (approach), arc speed scales with STR (jump power)
-                const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (cpuChar?.stats?.agility  || 35);
-                const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (cpuChar?.stats?.strength || 35);
+                const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (currentCpuStats?.agility  || 35);
+                const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (currentCpuStats?.strength || 35);
                 const jaRunSpd  = 1 + Math.min(0.8, (jaAgi - 35) * 0.00155); // AGI 35=1.0x → AGI 550=1.8x
                 const jaArcSpd  = 1 + Math.min(0.5, (jaStr - 35) * 0.004); // STR 35=1.0x → STR 160=1.5x
                 const jaRunMs   = Math.round(280 / jaRunSpd);  // 280ms → ~156ms at high AGI
@@ -15704,7 +15701,7 @@
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
                 if (jumpDodge) {
-                    const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (cpuChar?.stats?.agility || 68);
+                    const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (currentCpuStats?.agility || 68);
                     const _jumpH  = Math.min(600, Math.round(240 + _defAgi * 0.4));
                     const _hitMs  = Math.round(300 * atkMult);
                     const _rise   = Math.max(150, _hitMs);
@@ -18971,8 +18968,7 @@
                                     targetEl.style.right = 'auto';
                                 } else {
                                     // Fallback visual only (no server position)
-                                    const _grCasterChar = caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-                                    const _grStr        = (_grCasterChar?.stats?.strength ?? _grCasterChar?.strength) || 35;
+                                    const _grStr = caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (currentCpuStats?.strength || 35);
                                     const _grKbPx       = Math.min(250, Math.floor(_grStr * 2));
                                     const _grKbDir      = caster === 'player' ? 1 : -1;
                                     targetEl.style.transition = 'transform 0.38s cubic-bezier(0.2,0,0.6,1)';
