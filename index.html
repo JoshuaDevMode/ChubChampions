@@ -12869,110 +12869,12 @@
                 return;
             }
 
-            if (tier.singleReward) {
-                // Bronze, Silver, Gold: only ONE reward (weights per tier)
-                const SINGLE_REWARD_WEIGHTS = {
-                    bronze:  { tokens: 70, fragments: 0,  xpBoost: 0,  consumable: 30 },
-                    silver:  { tokens: 50, fragments: 25, xpBoost: 0,  consumable: 25 },
-                    gold:    { tokens: 50, fragments: 25, xpBoost: 22, consumable: 16 }
-                };
-                const weights = SINGLE_REWARD_WEIGHTS[tierId];
-                let pool = [];
-                if (weights.tokens > 0) pool.push({ type: 'tokens', weight: weights.tokens });
-                if (weights.fragments > 0 && tier.fragments > 0) pool.push({ type: 'fragments', weight: weights.fragments });
-                if (weights.xpBoost > 0 && tier.xpMult > 0 && pendingXpBoosts.length < 3) pool.push({ type: 'xpBoost', weight: weights.xpBoost });
-                const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                if (weights.consumable > 0 && dropTable && character) pool.push({ type: 'consumable', weight: weights.consumable });
-
-                const totalWeight = pool.reduce((s, p) => s + p.weight, 0);
-                let roll = Math.random() * totalWeight;
-                let picked = pool[0];
-                for (const p of pool) {
-                    roll -= p.weight;
-                    if (roll <= 0) { picked = p; break; }
-                }
-
-                if (picked.type === 'tokens') {
-                    const tokenAmount = Array.isArray(tier.tokens) ? Math.floor(Math.random() * (tier.tokens[1] - tier.tokens[0] + 1)) + tier.tokens[0] : tier.tokens;
-                    globalTokens += tokenAmount;
-                    rewardLines.push('+' + tokenAmount + ' 🪙');
-                } else if (picked.type === 'fragments') {
-                    globalFragments += tier.fragments;
-                    rewardLines.push('+' + tier.fragments + ' ' + FRAG_ICON_HTML);
-                } else if (picked.type === 'xpBoost') {
-                    pendingXpBoosts.push({ mult: tier.xpMult, battles: XP_BOOST_DURATION });
-                    rewardLines.push('⚡ x' + tier.xpMult + ' XP BOOST earned!');
-                } else if (picked.type === 'consumable') {
-                    const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                    const cPool = dropTable.pool;
-                    const cId = cPool[Math.floor(Math.random() * cPool.length)];
-                    if (WELLNESS_ITEMS[cId]) {
-                        if (!character.wellnessItems) character.wellnessItems = [];
-                        character.wellnessItems.push(cId);
-                        const wItem = WELLNESS_ITEMS[cId];
-                        rewardLines.push(wItem.icon + ' ' + wItem.name);
-                    } else {
-                        character.consumables.push(cId);
-                        const cons = BATTLE_CONSUMABLES[cId] || { icon: '?', name: cId };
-                        rewardLines.push(cons.icon + ' ' + cons.name);
-                    }
-                    saveCharacters();
-                }
-            } else {
-                // Epic, Legendary: multiple rewards
-                const tokenAmount = Array.isArray(tier.tokens) ? Math.floor(Math.random() * (tier.tokens[1] - tier.tokens[0] + 1)) + tier.tokens[0] : tier.tokens;
-                globalTokens += tokenAmount;
-                globalFragments += tier.fragments;
-                rewardLines.push('+' + tokenAmount + ' 🪙');
-                if (tier.fragments > 0) rewardLines.push('+' + tier.fragments + ' ' + FRAG_ICON_HTML);
-
-                if (pendingXpBoosts.length < 3) {
-                    if (tierId === 'legendary') {
-                        const boostMult = Math.random() < 0.5 ? 1.5 : 2.5;
-                        pendingXpBoosts.push({ mult: boostMult, battles: XP_BOOST_DURATION });
-                        rewardLines.push('⚡ x' + boostMult + ' XP BOOST earned!');
-                    } else if (tier.xpMult > 0) {
-                        pendingXpBoosts.push({ mult: tier.xpMult, battles: XP_BOOST_DURATION });
-                        rewardLines.push('⚡ x' + tier.xpMult + ' XP BOOST earned!');
-                    }
-                }
-
-                const dropTable = CONSUMABLE_DROP_TABLES[tierId];
-                if (dropTable && character) {
-                    let droppedConsumables = [];
-                    if (dropTable.guaranteed) {
-                        droppedConsumables.push(dropTable.guaranteed);
-                    }
-                    if (Math.random() < dropTable.chance) {
-                        const pool = dropTable.pool.filter(c => c !== dropTable.guaranteed);
-                        if (pool.length > 0) {
-                            droppedConsumables.push(pool[Math.floor(Math.random() * pool.length)]);
-                        }
-                    }
-                    droppedConsumables.forEach(cId => {
-                        if (WELLNESS_ITEMS[cId]) {
-                            if (!character.wellnessItems) character.wellnessItems = [];
-                            character.wellnessItems.push(cId);
-                            const wItem = WELLNESS_ITEMS[cId];
-                            rewardLines.push(wItem.icon + ' ' + wItem.name);
-                        } else {
-                            character.consumables.push(cId);
-                            const cons = BATTLE_CONSUMABLES[cId] || { icon: '?', name: cId };
-                            rewardLines.push(cons.icon + ' ' + cons.name);
-                        }
-                    });
-                    if (droppedConsumables.length > 0) saveCharacters();
-                }
-            }
-
-            rewardIcon.innerHTML = '<img src="' + tier.img + '" style="width:120px;height:120px;object-fit:contain;">';
+            // No serverReward means the server request failed — show error, give nothing.
+            rewardIcon.innerHTML = '❌';
             rewardIcon.style.animation = 'rewardAppear 0.5s ease-out forwards';
-            rewardText.style.color = tier.color;
-            rewardText.textContent = tier.name + ' CHEST';
-            rewardName.innerHTML = rewardLines.map(r => '<div class="reward-line">' + r + '</div>').join('');
-
-            saveProgression();
-            updateCurrencyUI();
+            rewardText.style.color = '#ff4444';
+            rewardText.textContent = 'CHEST ERROR';
+            rewardName.innerHTML = '<div class="reward-line">Could not open chest.<br>Please try again.</div>';
         }
 
         function renderDailyClaimGrid() {
@@ -13046,25 +12948,18 @@
             if (globalFragments < cost) return;
 
             const result = await spendOnServer('fragment_chest');
-            if (!result.ok) { showNotice(result.error || 'Not enough fragments!'); return; }
+            if (!result.ok || !result.weaponId) { showNotice(result.error || 'Failed to open chest'); return; }
             globalFragmentChestsOpened++;
 
-            // Find a weapon from WEAPON_TIERS that isn't unlocked
-            let allTierWeapons = [];
+            // Server selected the weapon — look up its data from WEAPON_TIERS
+            let newWeapon = null;
             for (const tier of CHEST_LEVEL_TIERS) {
-                const weapons = WEAPON_TIERS[tier];
-                if (weapons) {
-                    weapons.forEach(w => allTierWeapons.push(w));
-                }
+                if (!WEAPON_TIERS[tier]) continue;
+                const found = WEAPON_TIERS[tier].find(w => w.id === result.weaponId);
+                if (found) { newWeapon = found; break; }
             }
-
-            let lockedWeapons = allTierWeapons.filter(w => !globalUnlockedWeapons.includes(w.id));
-            if (lockedWeapons.length === 0) {
-                lockedWeapons = allTierWeapons; // All owned, give random
-            }
-
-            const newWeapon = lockedWeapons[Math.floor(Math.random() * lockedWeapons.length)];
-            const isNewWeapon = !globalUnlockedWeapons.includes(newWeapon.id);
+            if (!newWeapon) { showNotice('Unknown weapon received from server'); return; }
+            const isNewWeapon = result.isNew === true;
 
             // Use the existing chest overlay for fragment chest (same animation)
             const overlay = document.getElementById('chest-overlay');
