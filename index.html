@@ -18620,8 +18620,8 @@
                         // Extend end a bit past target so dodge looks natural
                         const OVERSHOOT  = fromLeft ? 70 : -70;
                         const endX   = fromLeft ? tp.x - flameW * 0.85 + OVERSHOOT : tp.x - flameW * 0.15 + OVERSHOOT;
-                        const startY = cp.y - flameH * 0.5;
-                        const endY   = tp.y - flameH * 0.5;
+                        const startY = cp.y - flameH * 0.5 - 20;
+                        const endY   = tp.y - flameH * 0.5 - 20;
                         flameCanvas.style.left = startX + 'px';
                         flameCanvas.style.top  = startY + 'px';
                         flameCanvas.style.zIndex = '10';
@@ -18663,8 +18663,8 @@
                                 const iw = fImgSrc.naturalWidth, ih = fImgSrc.naturalHeight;
                                 if (!fromLeft) {
                                     fCtx.save();
-                                    fCtx.scale(-1, 1);
-                                    fCtx.translate(-flameW, 0);
+                                    fCtx.scale(-1, -1);
+                                    fCtx.translate(-flameW, -flameH);
                                     for (let y = 0; y < flameH; y += sliceH) {
                                         const xOff = Math.sin(y * freq + elapsed * 0.007) * amp;
                                         const srcY = Math.round(y * ih / flameH);
@@ -18673,12 +18673,16 @@
                                     }
                                     fCtx.restore();
                                 } else {
+                                    fCtx.save();
+                                    fCtx.scale(1, -1);
+                                    fCtx.translate(0, -flameH);
                                     for (let y = 0; y < flameH; y += sliceH) {
                                         const xOff = Math.sin(y * freq + elapsed * 0.007) * amp;
                                         const srcY = Math.round(y * ih / flameH);
                                         const srcH = Math.max(1, Math.round(sliceH * ih / flameH));
                                         fCtx.drawImage(fImgSrc, 0, srcY, iw, srcH, xOff, y, flameW, sliceH);
                                     }
+                                    fCtx.restore();
                                 }
 
                                 // "<" shaped fade: only after reaching target, erases tail→tip
