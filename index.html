@@ -16928,8 +16928,20 @@
         }
 
         async function executeReroll(rerollCost) {
+            // Disable button immediately to prevent double-click race condition
+            const rerollBtn = document.getElementById('btn-reroll-stats');
+            rerollBtn.disabled = true;
+            rerollBtn.textContent = '🎲 ROLLING...';
+
             const result = await spendOnServer('reroll', { element: tempNewCharacter.element });
-            if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
+            if (!result.ok) {
+                showNotice(result.error || 'Not enough tokens!');
+                // Re-enable button on failure
+                const { freeRemaining: fr2, nextCost: nc2 } = getRerollButtonState();
+                rerollBtn.disabled = false;
+                rerollBtn.textContent = fr2 > 0 ? '🎲 REROLL FREE (' + fr2 + ')' : '🎲 REROLL 🪙' + nc2;
+                return;
+            }
             if (result.stats) serverPendingStats = result.stats;
             // Use server-generated stats (hidden bias archetypes for variety)
             const srv = result.stats;
@@ -16953,25 +16965,16 @@
             document.getElementById('preview-def').textContent = newStats.defense;
             document.getElementById('preview-ene').textContent = newStats.energy || 0;
 
-            // Sync counters from server response (authoritative)
+            // Sync counters — simple increment is reliable regardless of cost table size
             const fr = result.freeRemaining ?? 0;
             const nc = result.nextCost       ?? 0;
-            if (typeof result.freeRemaining === 'number') {
-                const freeAlloc = globalCharactersCreated === 0 ? 2 : globalCharactersCreated === 1 ? 3 : 3;
-                globalTotalFreeRerollsUsed = freeAlloc - fr;
-            }
-            if (typeof result.nextCost === 'number' && fr === 0) {
-                // Back-compute paid count from cost table
-                const REROLL_COST_TABLE = [25, 35, 50, 70, 100, 140, 195, 270, 375, 525];
-                const idx = REROLL_COST_TABLE.indexOf(nc);
-                if (idx >= 0) globalTotalPaidRerolls = idx;
-            }
+            if (rerollCost === 0) globalTotalFreeRerollsUsed++;
+            else globalTotalPaidRerolls++;
 
             rerollsUsed++;
-            saveTempChar();    // persist rolled stats
+            saveTempChar();
             saveProgression();
 
-            const rerollBtn = document.getElementById('btn-reroll-stats');
             rerollBtn.disabled = false;
             rerollBtn.textContent = fr > 0 ? '🎲 REROLL FREE (' + fr + ')' : '🎲 REROLL 🪙' + nc;
         }
