@@ -426,6 +426,17 @@
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
+        /* After a crossover: player moved to right side, CPU to left side.
+           #player.facing-flipped → character faces left (scaleX(-1)).
+           #cpu.facing-flipped    → character faces right (overrides the default scaleX(-1)). */
+        #player.facing-flipped .character-png,
+        #player.facing-flipped .weapon-idle-overlay {
+            transform: scaleX(-1);
+        }
+        #cpu.facing-flipped .character-png {
+            transform: scaleX(1);
+        }
+
         /* Fury Aura */
         .fury-orb {
             position: absolute;
@@ -14966,6 +14977,16 @@
             return (game.player._homeX ?? 128) < (game.cpu._homeX ?? 1252);
         }
 
+        // Syncs the idle sprite facing direction to match current positions.
+        // Must be called after any move that could cause a crossover.
+        // Uses CSS class 'facing-flipped' on fighter divs — no inline style, so
+        // during-animation inline transforms still override it freely.
+        function _syncFacingDirection() {
+            const onLeft = _playerIsOnLeft();
+            game.player.element.classList.toggle('facing-flipped', !onLeft);
+            game.cpu.element.classList.toggle('facing-flipped', !onLeft);
+        }
+
         async function _animateMoveEvent(event) {
             game.player._homeX = event.playerX;
             game.cpu._homeX    = event.cpuX;
@@ -15003,6 +15024,8 @@
                 cEl.style.left  = (event.cpuX * _mvScale) + 'px';
                 cEl.style.right = 'auto';
             }
+            // Update idle sprite facing after every move (handles crossover flips)
+            _syncFacingDirection();
             await sleep(20);
         }
 
@@ -15016,16 +15039,20 @@
             const cfAttImg = cfAttEl.querySelector('img.character-png');
             const cfDefImg = cfDefEl.querySelector('img.character-png');
             const cfIsCpu  = event.attacker === 'cpu';
-            const cfBaseXf = cfIsCpu ? 'scaleX(-1) ' : '';
+            // Facing direction is position-based, not identity-based — handles crossover
+            const cfBaseXf    = (_playerIsOnLeft() === (event.attacker === 'cpu')) ? 'scaleX(-1) ' : '';
+            const cfDefBaseXf = (_playerIsOnLeft() === (event.defender === 'cpu')) ? 'scaleX(-1) ' : '';
 
             cfAttEl.style.zIndex = '20';
             cfDefEl.style.zIndex = '10';
 
             // Attacker already at combat position — snap without transition
             const _cfGap = 100;
+            // After crossover the approach side flips (same logic as _atkGapSign in the main attack path).
+            const _cfGapSign  = _playerIsOnLeft() ? -1 : 1;
             const cfAtkLeftPx = event.attacker === 'player'
-                ? (game.cpu._homeX    - _cfGap) * cfScale
-                : (game.player._homeX + _cfGap) * cfScale;
+                ? (game.cpu._homeX    + _cfGapSign * _cfGap) * cfScale
+                : (game.player._homeX - _cfGapSign * _cfGap) * cfScale;
             cfAttEl.style.transition = 'none';
             cfAttEl.style.left  = cfAtkLeftPx + 'px';
             cfAttEl.style.right = 'auto';
@@ -15038,7 +15065,7 @@
                 const cfHurtF = cfDefImg._hurtFrames;
                 if (cfHurtF && cfHurtF.length) cfDefImg.src = cfHurtF[Math.floor(Math.random() * cfHurtF.length)];
                 cfDefImg.style.transition = 'transform 200ms ease-out';
-                cfDefImg.style.transform  = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${cfLiftAngle}deg)`;
+                cfDefImg.style.transform  = `${cfDefBaseXf}rotate(${cfLiftAngle}deg)`;
             }
             cfDefEl.style.transition = 'transform 200ms ease-out';
             void cfDefEl.offsetWidth;
@@ -15118,12 +15145,13 @@
                     const ty  = -110 * Math.sin(Math.PI * t * 0.85);
                     const rot = 360 * cfSpinDir * ease(t);
                     cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
-                    if (cfDefImg) cfDefImg.style.transform = `${cfDefIsCpu ? 'scaleX(-1) ' : ''}rotate(${rot}deg)`;
+                    if (cfDefImg) cfDefImg.style.transform = `${cfDefBaseXf}rotate(${rot}deg)`;
                     if (t < 1) { requestAnimationFrame(step); return; }
                     cfDefEl.style.transform = '';
                     cfDefEl.style.left  = cfDefFinalX + 'px';
                     cfDefEl.style.right = 'auto';
-                    if (cfDefImg) cfDefImg.style.transform = cfDefIsCpu ? 'scaleX(-1)' : '';
+                    // Clear inline style — CSS facing-flipped class handles idle facing correctly
+                    if (cfDefImg) cfDefImg.style.transform = '';
                     res();
                 };
                 requestAnimationFrame(step);
@@ -15368,13 +15396,16 @@
             const worldEl = document.getElementById('arena-world');
             if (!arenaEl || !worldEl) { _camRaf = requestAnimationFrame(_camTick); return; }
 
-            const W  = arenaEl.offsetWidth;
-            const sc = W / 1600;                     // server → frontend scale
-            const HW = 110 * sc;                     // half of 220px fighter div, scaled
-            const pX = ((game.player?._homeX ?? 120) * sc) + HW;
-            const cX = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
-            const midX = (pX + cX) / 2;
-            const gap  = Math.abs(cX - pX);
+            const W   = arenaEl.offsetWidth;
+            const sc  = W / 1600;
+            const HW  = 110 * sc;
+            const pX  = ((game.player?._homeX ?? 120)  * sc) + HW;
+            const cX  = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const gap = Math.abs(cX - pX);
+            // Midpoint between fighters as a percentage of the arena width.
+            // Using this as transform-origin means scale(Z) zooms in ON the fighters,
+            // so they stay in place while everything grows around them — no translateX needed.
+            const midXPct = Math.max(5, Math.min(95, ((pX + cX) / 2) / W * 100));
 
             // Reduce max zoom when any fighter is airborne to avoid clipping jumps at top
             const anyAirborne = !!(
@@ -15385,42 +15416,41 @@
             );
             const maxZoom = anyAirborne ? 1.15 : 1.55;
 
-            // Zoom so both fighters + padding fit the view; cap at maxZoom
             const targetZoom = Math.min(maxZoom, W / Math.max(1, gap + 500));
-            // Pan to keep midpoint horizontally centered
-            // (transform-origin: 50% 100% → world point midX maps to W/2 after zoom+pan)
-            const targetPanX = (W / 2 - midX) * targetZoom;
+            _camZoom += (targetZoom - _camZoom) * 0.07;
+            // Lerp origin X toward fighters' midpoint so it tracks smoothly
+            _camPanX += (midXPct - _camPanX) * 0.07;
 
-            _camZoom += (targetZoom - _camZoom) * 0.07;   // smooth lerp
-            _camPanX += (targetPanX - _camPanX) * 0.07;
-
-            worldEl.style.transform =
-                `translateX(${_camPanX.toFixed(1)}px) scale(${_camZoom.toFixed(4)})`;
-            // Background scales but never translates — always covers the arena
+            const origin = `${_camPanX.toFixed(2)}% 100%`;
+            const zStr   = _camZoom.toFixed(4);
+            worldEl.style.transformOrigin = origin;
+            worldEl.style.transform       = `scale(${zStr})`;
             const bgEl = document.getElementById('arena-bg');
-            if (bgEl) bgEl.style.transform = `scale(${Math.max(1, _camZoom).toFixed(4)})`;
+            if (bgEl) {
+                bgEl.style.transformOrigin = origin;
+                bgEl.style.transform       = `scale(${zStr})`;
+            }
             _camRaf = requestAnimationFrame(_camTick);
         }
 
         function startArenaCamera() {
-            // Compute correct starting values from actual fighter positions so
-            // the camera doesn't have to lerp from 1.0/0 on the first frames.
+            // Snap to correct starting values so the first frame is already correct.
             const arenaEl = document.getElementById('arena');
             const W  = arenaEl ? arenaEl.offsetWidth : 800;
             const sc = W / 1600;
             const HW = 110 * sc;
-            const pX   = ((game.player?._homeX ?? 120)  * sc) + HW;
-            const cX   = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
-            const gap  = Math.abs(cX - pX);
-            const midX = (pX + cX) / 2;
+            const pX  = ((game.player?._homeX ?? 120)  * sc) + HW;
+            const cX  = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const gap = Math.abs(cX - pX);
             _camZoom = Math.min(1.55, W / Math.max(1, gap + 500));
-            _camPanX = (W / 2 - midX) * _camZoom;
-            // Apply immediately so the first painted frame is already correct
+            // _camPanX repurposed as origin X percentage (fighters' midpoint)
+            _camPanX = Math.max(5, Math.min(95, ((pX + cX) / 2) / W * 100));
+            const origin  = `${_camPanX.toFixed(2)}% 100%`;
+            const zStr    = _camZoom.toFixed(4);
             const worldEl = document.getElementById('arena-world');
-            if (worldEl) worldEl.style.transform =
-                `translateX(${_camPanX.toFixed(1)}px) scale(${_camZoom.toFixed(4)})`;
+            if (worldEl) { worldEl.style.transformOrigin = origin; worldEl.style.transform = `scale(${zStr})`; }
             const bgEl = document.getElementById('arena-bg');
-            if (bgEl) bgEl.style.transform = `scale(${Math.max(1, _camZoom).toFixed(4)})`;
+            if (bgEl)    { bgEl.style.transformOrigin = origin;    bgEl.style.transform    = `scale(${zStr})`; }
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -15428,10 +15458,10 @@
         function stopArenaCamera() {
             if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
             const worldEl = document.getElementById('arena-world');
-            if (worldEl) worldEl.style.transform = '';
-            const bgEl = document.getElementById('arena-bg');
-            if (bgEl) bgEl.style.transform = '';
-            _camZoom = 1.0; _camPanX = 0;
+            const bgEl    = document.getElementById('arena-bg');
+            if (worldEl) { worldEl.style.transform = ''; worldEl.style.transformOrigin = ''; }
+            if (bgEl)    { bgEl.style.transform    = ''; bgEl.style.transformOrigin    = ''; }
+            _camZoom = 1.0; _camPanX = 50;
         }
 
         // Smoothly lerps the camera back to the neutral state then stops the RAF.
@@ -15441,23 +15471,25 @@
             const worldEl = document.getElementById('arena-world');
             const bgEl    = document.getElementById('arena-bg');
             const DURATION = 350;
-            const startZoom = _camZoom, startPan = _camPanX;
+            const startZoom = _camZoom;
             const t0 = performance.now();
             const ease = t => 1 - (1 - t) * (1 - t); // ease-out quad
+            // Keep the current origin during the zoom-out so fighters stay anchored
+            const origin = `${_camPanX.toFixed(2)}% 100%`;
+            if (worldEl) worldEl.style.transformOrigin = origin;
+            if (bgEl)    bgEl.style.transformOrigin    = origin;
             function step(now) {
                 const t = Math.min((now - t0) / DURATION, 1);
-                const et = ease(t);
-                const z = startZoom + (1.0 - startZoom) * et;
-                const p = startPan  + (0   - startPan)  * et;
-                if (worldEl) worldEl.style.transform = `translateX(${p.toFixed(1)}px) scale(${z.toFixed(4)})`;
-                if (bgEl)    bgEl.style.transform    = `scale(${Math.max(1, z).toFixed(4)})`;
+                const z = startZoom + (1.0 - startZoom) * ease(t);
+                const zStr = z.toFixed(4);
+                if (worldEl) worldEl.style.transform = `scale(${zStr})`;
+                if (bgEl)    bgEl.style.transform    = `scale(${zStr})`;
                 if (t < 1) { _camRaf = requestAnimationFrame(step); return; }
-                // Animation complete — clear transforms fully
-                if (worldEl) worldEl.style.transform = '';
-                if (bgEl)    bgEl.style.transform    = '';
+                if (worldEl) { worldEl.style.transform = ''; worldEl.style.transformOrigin = ''; }
+                if (bgEl)    { bgEl.style.transform    = ''; bgEl.style.transformOrigin    = ''; }
                 _camRaf = null;
             }
-            _camZoom = 1.0; _camPanX = 0;
+            _camZoom = 1.0; _camPanX = 50;
             _camRaf = requestAnimationFrame(step);
         }
         // ─────────────────────────────────────────────────────────────────────────
@@ -15518,9 +15550,12 @@
             // Attack position: overlap attacker 120px into defender's div (120px sprite overlap → ~5px visible contact)
             // _ATCK_GAP = FIGHTER_WIDTH(220) - 120 = 100; physical gap = _ATCK_GAP - 220 = -120px overlap
             const _ATCK_GAP = 100;
+            // After a crossover player._homeX > cpu._homeX, so the approach side flips.
+            // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
+            const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
             const _atkLeftPx = attacker === 'player'
-                ? (game.cpu._homeX    - _ATCK_GAP) * _scale   // player runs toward CPU
-                : (game.player._homeX + _ATCK_GAP) * _scale;  // cpu runs toward player (right edge)
+                ? (game.cpu._homeX    + _atkGapSign * _ATCK_GAP) * _scale
+                : (game.player._homeX - _atkGapSign * _ATCK_GAP) * _scale;
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
@@ -17499,6 +17534,9 @@
             // the position reset doesn't animate from wherever cleanupFighters left them.
             game.player._homeX = 128;
             game.cpu._homeX    = 1252;
+            // Reset crossover facing — player starts on left, CSS defaults apply
+            game.player.element.classList.remove('facing-flipped');
+            game.cpu.element.classList.remove('facing-flipped');
             game.player.element.style.transition = 'none';
             game.cpu.element.style.transition    = 'none';
             game.player.element.style.left  = '8%';
