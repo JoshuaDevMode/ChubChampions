@@ -14921,7 +14921,7 @@
             const _fpTargetEl = game[event.target]?.element;
             // Store caster STR so the spike animation can use it
             const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = _spikeCasterChar?.stats?.strength || 35;
+            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = (_spikeCasterChar?.stats?.strength ?? _spikeCasterChar?.strength) || 35;
 
             // Earth spike: check if target is airborne at pillar impact moment
             if (event.power.includes('earth_spike')) {
@@ -15484,7 +15484,9 @@
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
             const playerChar = characters.find(c => c.id === selectedCharacterId) ?? null;
-            const cpuChar    = currentCpuCharacter ?? null;
+            // currentCpuCharacter is a full char object when set; fall back to wrapping
+            // currentCpuStats so that cpuChar?.stats?.agility always resolves correctly.
+            const cpuChar = currentCpuCharacter ?? (currentCpuStats ? { stats: currentCpuStats } : null);
             // AGI-based attack speed: scale animation durations by attacker's AGI.
             // Backend sends attackDuration (150–620ms). Base reference = 500ms (neutral fighter).
             const atkMult = event.attackDuration ? event.attackDuration / 500 : 1.0;
@@ -18969,7 +18971,7 @@
                                 } else {
                                     // Fallback visual only (no server position)
                                     const _grCasterChar = caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-                                    const _grStr        = _grCasterChar?.stats?.strength || 35;
+                                    const _grStr        = (_grCasterChar?.stats?.strength ?? _grCasterChar?.strength) || 35;
                                     const _grKbPx       = Math.min(250, Math.floor(_grStr * 2));
                                     const _grKbDir      = caster === 'player' ? 1 : -1;
                                     targetEl.style.transition = 'transform 0.38s cubic-bezier(0.2,0,0.6,1)';
