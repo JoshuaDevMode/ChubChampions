@@ -15484,6 +15484,8 @@
         // isLSFirst/Follow: Light Step follow-up (old midpoint run behavior)
         async function animateServerAttack(event, isComboFirst, isComboFollow, isLSFirst = false, isLSFollow = false) {
             const { attacker, defender, attackType, defense, damage, isCrit, hasFury, jumpDodge } = event;
+            const playerChar = characters.find(c => c.id === selectedCharacterId) ?? null;
+            const cpuChar    = currentCpuCharacter ?? null;
             // AGI-based attack speed: scale animation durations by attacker's AGI.
             // Backend sends attackDuration (150–620ms). Base reference = 500ms (neutral fighter).
             const atkMult = event.attackDuration ? event.attackDuration / 500 : 1.0;
