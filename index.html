@@ -19123,7 +19123,7 @@
                     if (power.includes('tsunami')) {
                         const fromLeft  = caster === 'player';
                         const charH     = game[target].element.getBoundingClientRect().height / getGameZoom();
-                        const feetY     = getCharacterFeetY(caster) - 40;
+                        const feetY     = getCharacterFeetY(caster) - 60;
                         const waveH     = Math.round(Math.max(charH * 2, 200));
                         const waveW     = Math.round(waveH * 1.45);
                         // WAVE_DRAWN: fraction of canvas height where the wave visually meets the ground.
