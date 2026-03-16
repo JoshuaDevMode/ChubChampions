@@ -11063,13 +11063,10 @@
             happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 25, icon: '💊' },
             apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 6,  icon: '🍎' },
             banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 7,  icon: '🍌' },
-            rice_bowl:      { name: 'Rice Bowl',       category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 9,  icon: '🍚' },
-            energy_bar:     { name: 'Energy Bar',      category: 'food',    wellnessRestore: 18, xpGrant: 9,  price: 10, icon: '🍫' },
+            marshmallow:    { name: 'Marshmallow',     category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 9,  icon: '🍬' },
+            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 10, icon: '🍫' },
             chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 11, icon: '🍗' },
-            protein_shake:  { name: 'Protein Shake',   category: 'food',    wellnessRestore: 26, xpGrant: 12, price: 13, icon: '🥤' },
             steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 14, icon: '🥩' },
-            fighter_feast:  { name: "Fighter's Feast", category: 'food',    wellnessRestore: 42, xpGrant: 20, price: 20, icon: '🍖' },
-            ice_pack:       { name: 'Ice Pack',        category: 'medical', wellnessRestore: 20, xpGrant: 6,  price: 13, icon: '🧊' },
             bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 18, icon: '🩹' },
             herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 24, icon: '🌿' },
             adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 30, icon: '💉' },
@@ -11128,9 +11125,7 @@
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
             music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 5,  icon: '🎵' },
-            comic_book:       { name: 'Comic Book',       category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 6,  icon: '📖' },
             punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
-            energy_drink:     { name: 'Energy Drink',     category: 'activity', moraleRestore: 15, xpGrant: 8,  price: 10, icon: '⚡' },
             pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 13, icon: '📣' },
             movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 17, icon: '🎬' },
             champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 28, icon: '👑' },
@@ -11174,7 +11169,7 @@
             bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
             silver:    { chance: 0.20, pool: ['apple', 'banana', 'rice_bowl', 'chicken'], dropType: 'wellness' },
             gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
-            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'stamina_potion', 'ice_pack', 'bandage'], dropType: 'mixed' },
+            epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'stamina_potion', 'bandage', 'herb'], dropType: 'mixed' },
             legendary: { chance: 1.00, pool: ['big_potion', 'stamina_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
         };
 
@@ -18199,20 +18194,15 @@
             bg.style.background = color;
             arena.appendChild(bg);
             bg.addEventListener('animationend', () => bg.remove(), { once: true });
-            // Large power name text
+            // Large power name text — centered in arena, vertically above the fighters
             const el = document.createElement('div');
             el.className = 'fury-power-flash';
             el.style.color = color;
             el.textContent = powerName.toUpperCase() + '!';
-            // Position above caster (override the CSS centering with caster position)
-            const arenaRect  = arena.getBoundingClientRect();
-            const fighterEl  = game[caster] && game[caster].element;
-            if (fighterEl) {
-                const fr = fighterEl.getBoundingClientRect();
-                const _pfZoom = getGameZoom();
-                el.style.left = ((fr.left - arenaRect.left + fr.width / 2) / _pfZoom) + 'px';
-                el.style.top  = ((fr.top  - arenaRect.top  - 20) / _pfZoom) + 'px';
-            }
+            const arenaRect = arena.getBoundingClientRect();
+            const _pfZoom   = getGameZoom();
+            el.style.left = (arenaRect.width / _pfZoom / 2) + 'px';
+            el.style.top  = (arenaRect.height / _pfZoom * 0.28) + 'px';
             arena.appendChild(el);
             el.addEventListener('animationend', () => el.remove(), { once: true });
         }
