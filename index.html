@@ -21088,24 +21088,14 @@
                         // the boost once (for the local progress bar display only).
                         // lastExpGained is set to the boosted value for the results screen.
                         const hadBoost = xpBoostBattlesLeft > 0;
-                        const _xpResult = addExpToCharacter(character.id, serverExp); // handles boost internally
+                        addExpToCharacter(character.id, serverExp); // handles boost internally
                         lastExpGained = hadBoost ? Math.floor(serverExp * xpBoostMultiplier) : serverExp;
                         const label = winner === 'player' ? 'EXP gained!' : 'EXP gained (defeat)';
                         const style = winner === 'player' ? 'log-fury' : 'log-info';
                         log(`+${lastExpGained} ${label}${hadBoost ? ' ⚡ BOOSTED' : ''}`, style);
 
                         if (serverLeveledUp) {
-                            // Race-condition fix: addExpToCharacter may have already incremented
-                            // character.level locally. If so, undo it — the authoritative level
-                            // is set by levelup/apply. Premature level sync causes get_options to
-                            // check XP against the NEXT level's threshold, failing the check.
-                            if (_xpResult.leveledUp) {
-                                character.level = Math.max(1, character.level - 1);
-                                // Show exp bar as full (battle just hit the threshold)
-                                character.exp = getExpForNextLevel(character.level);
-                                saveCharacters();
-                            }
-                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + (character.level + 1) + '!', 'levelup');
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                             fetchAndQueueLevelUp(character);
                         }
                     } else {
@@ -22388,15 +22378,10 @@
                     if (playerWon) aonDailyWins++;
                     const serverExp = lastBattleRewards?.expGained;
                     if (serverExp !== undefined) {
-                        const _aonXpResult = addExpToCharacter(character.id, serverExp);
+                        addExpToCharacter(character.id, serverExp);
                         lastAonExp = serverExp;
                         if (lastBattleRewards?.leveledUp) {
-                            if (_aonXpResult.leveledUp) {
-                                character.level = Math.max(1, character.level - 1);
-                                character.exp   = getExpForNextLevel(character.level);
-                                saveCharacters();
-                            }
-                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + (character.level + 1) + '!', 'levelup');
+                            addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                             fetchAndQueueLevelUp(character);
                         }
                     } else {
