@@ -12443,9 +12443,8 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                         body: JSON.stringify({
-                            playerId:     playerSession.playerId,
-                            chestIndex:   slotIndex,
-                            xpBoostCount: pendingXpBoosts.length,
+                            playerId:   playerSession.playerId,
+                            chestIndex: slotIndex,
                         }),
                     });
                     return r.ok ? await r.json() : null;
@@ -12597,20 +12596,35 @@
             }
         });
 
-        function activateXpBoost(index) {
+        async function activateXpBoost(index) {
             if (index < 0 || index >= pendingXpBoosts.length) return;
             if (xpBoostBattlesLeft > 0) {
                 showNotice('A boost is already active! (' + xpBoostBattlesLeft + ' battles left)');
                 return;
             }
-            const boost = pendingXpBoosts[index];
-            xpBoostMultiplier = boost.mult;
-            xpBoostBattlesLeft = boost.battles;
-            pendingXpBoosts.splice(index, 1);
-            saveProgression();
-            closeBoostModal();
-            updateXpBoostSlots();
-            showNotice('⚡ XP Boost x' + xpBoostMultiplier + ' activated! (' + xpBoostBattlesLeft + ' battles)');
+            if (!playerSession) return;
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/activate-boost', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession.playerId, index }),
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Failed to activate boost');
+                    return;
+                }
+                // Mirror server state locally for UI
+                xpBoostMultiplier  = data.active.mult;
+                xpBoostBattlesLeft = data.active.battlesLeft;
+                pendingXpBoosts.splice(index, 1);
+                saveProgression();
+                closeBoostModal();
+                updateXpBoostSlots();
+                showNotice('⚡ XP Boost x' + xpBoostMultiplier + ' activated! (' + xpBoostBattlesLeft + ' battles)');
+            } catch (e) {
+                showNotice('Failed to activate boost');
+            }
         }
 
         // ===== DAILY CLAIM SYSTEM =====
@@ -13561,15 +13575,6 @@
             const character = characters.find(c => c.id === characterId);
             if (!character || character.level >= MAX_LEVEL) return { leveledUp: false };
 
-            // Apply XP boost if active
-            if (xpBoostBattlesLeft > 0) {
-                exp = Math.floor(exp * xpBoostMultiplier);
-                xpBoostBattlesLeft--;
-                if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
-                saveProgression();
-                updateCurrencyUI();
-            }
-
             character.exp += exp;
             const expNeeded = getExpForNextLevel(character.level);
 
@@ -13779,6 +13784,15 @@
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
                 globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
                 globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
+                // Authoritative boost state from server
+                if (Array.isArray(data.pendingXpBoosts)) pendingXpBoosts = data.pendingXpBoosts;
+                if (data.activeXpBoost) {
+                    xpBoostMultiplier  = data.activeXpBoost.mult;
+                    xpBoostBattlesLeft = data.activeXpBoost.battlesLeft;
+                } else {
+                    xpBoostMultiplier  = 1.0;
+                    xpBoostBattlesLeft = 0;
+                }
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
@@ -14578,9 +14592,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                     body: JSON.stringify({
-                        playerId:     playerSession.playerId,
+                        playerId: playerSession.playerId,
                         dayNum,
-                        xpBoostCount: pendingXpBoosts.length,
                     }),
                 });
                 const data = await resp.json();
@@ -21086,14 +21099,17 @@
 
                     if (serverExp !== undefined) {
                         // Apply XP boost multiplier for display only
-                        const hadBoost = xpBoostBattlesLeft > 0;
+                        // Server applies and tracks the boost — use appliedBoostMult for display only.
+                        const appliedMult = lastBattleRewards?.appliedBoostMult ?? 1;
+                        const hadBoost    = appliedMult > 1;
+                        lastExpGained     = serverExp; // already boosted by server
                         if (hadBoost) {
-                            xpBoostBattlesLeft--;
+                            // Mirror active boost state from server response
+                            xpBoostBattlesLeft = Math.max(0, xpBoostBattlesLeft - 1);
                             if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
                             saveProgression();
                             updateCurrencyUI();
                         }
-                        lastExpGained = hadBoost ? Math.floor(serverExp * xpBoostMultiplier) : serverExp;
 
                         // Sync exp directly from server — eliminates local miscalculation.
                         // remainingExp is already deducted by battle/run when leveledUp=true.
@@ -21111,7 +21127,7 @@
 
                         const label = winner === 'player' ? 'EXP gained!' : 'EXP gained (defeat)';
                         const style = winner === 'player' ? 'log-fury' : 'log-info';
-                        log(`+${lastExpGained} ${label}${hadBoost ? ' ⚡ BOOSTED' : ''}`, style);
+                        log(`+${lastExpGained} ${label}${hadBoost ? ' ⚡x' + appliedMult + ' BOOSTED' : ''}`, style);
 
                         if (serverLeveledUp) {
                             addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
@@ -22397,7 +22413,14 @@
                     if (playerWon) aonDailyWins++;
                     const serverExp = lastBattleRewards?.expGained;
                     if (serverExp !== undefined) {
-                        lastAonExp = serverExp;
+                        lastAonExp = serverExp; // already boosted by server
+                        const aonBoostMult = lastBattleRewards?.appliedBoostMult ?? 1;
+                        if (aonBoostMult > 1) {
+                            xpBoostBattlesLeft = Math.max(0, xpBoostBattlesLeft - 1);
+                            if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
+                            saveProgression();
+                            updateCurrencyUI();
+                        }
                         const aonRemaining = lastBattleRewards?.remainingExp;
                         if (aonRemaining !== undefined) {
                             character.exp = aonRemaining;
