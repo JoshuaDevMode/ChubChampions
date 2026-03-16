@@ -10112,7 +10112,7 @@
                 </div>
                 <!-- Element Guide / Picker -->
                 <div class="elem-guide-section">
-                    <div class="elem-guide-label">⚡ CHOOSE YOUR ELEMENT</div>
+                    <div class="elem-guide-label">⚡ CHOOSE YOUR ELEMENT FIRST</div>
                     <div class="elem-guide-cards">
 
                         <div class="elem-guide-card" data-element="fire" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
@@ -11814,7 +11814,8 @@
         let lastLoginTimestamp = null;   // saved to localStorage — previous session start
         let happyPillAvailable = false;  // computed once on load, stays true until bought
         let rerollsUsed = 0;
-        let rerollsMax  = 3;
+        let globalTotalFreeRerollsUsed = 0;
+        let globalTotalPaidRerolls = 0;
 
         // XP Boost system
         let xpBoostMultiplier = 1.0;
@@ -13765,6 +13766,8 @@
                 itemDailyPurchases     = data.itemDailyPurchases     || {};
                 shopFragmentDate       = data.shopFragmentDate       || '';
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
+                globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
+                globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
@@ -16805,6 +16808,20 @@
             document.getElementById('character-select-panel').classList.remove('active');
         }
 
+        function getRerollButtonState() {
+            const freeAlloc = globalCharactersCreated === 0 ? 2 : globalCharactersCreated === 1 ? 3 : 3;
+            const freeRemaining = Math.max(0, freeAlloc - globalTotalFreeRerollsUsed);
+            const REROLL_COST_TABLE = [25, 35, 50, 70, 100, 140, 195, 270, 375, 525];
+            function getRerollCost(idx) {
+                if (idx < REROLL_COST_TABLE.length) return REROLL_COST_TABLE[idx];
+                let cost = REROLL_COST_TABLE[REROLL_COST_TABLE.length - 1];
+                for (let i = REROLL_COST_TABLE.length; i <= idx; i++) cost = Math.round(cost * 1.4 / 5) * 5;
+                return cost;
+            }
+            const nextCost = freeRemaining > 0 ? 0 : getRerollCost(globalTotalPaidRerolls);
+            return { freeRemaining, nextCost };
+        }
+
         async function openCharacterCreation() {
             const creationCost = globalCharactersCreated === 0 ? 0 : Math.floor(60 * Math.pow(1.1, globalCharactersCreated));
             if (creationCost > 0 && globalTokens < creationCost) {
@@ -16826,19 +16843,6 @@
                     tempNewCharacter.stats.defense  = srv.def;
                     tempNewCharacter.maxHp          = srv.hp;
                     tempNewCharacter.stats.energy   = srv.energy || 0;
-                } else {
-                    // First time opening — ask server to generate and store stats
-                    const result = await spendOnServer('generate_stats');
-                    if (result.ok && result.stats) {
-                        const srv = result.stats;
-                        tempNewCharacter.stats.attack   = srv.atk;
-                        tempNewCharacter.stats.strength = srv.str;
-                        tempNewCharacter.stats.agility  = srv.agi;
-                        tempNewCharacter.stats.defense  = srv.def;
-                        tempNewCharacter.maxHp          = srv.hp;
-                        tempNewCharacter.stats.energy   = srv.energy || 0;
-                        serverPendingStats = result.stats;
-                    }
                 }
                 // Restore element choice from localStorage
                 const savedMeta = loadTempChar();
@@ -16856,21 +16860,32 @@
             } else {
                 if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
             }
-            // Show stats
-            const hp = getCharacterMaxHp(tempNewCharacter);
-            document.getElementById('preview-hp').textContent = hp;
-            document.getElementById('preview-atk').textContent = tempNewCharacter.stats.attack;
-            document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
-            document.getElementById('preview-agi').textContent = tempNewCharacter.stats.agility;
-            document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
-            document.getElementById('preview-ene').textContent = tempNewCharacter.stats.energy || 0;
-            // Reroll button: 2 free for first character, paid (🪙30) otherwise
+            // Show stats — display '--' until an element is chosen and stats generated
+            if (!tempNewCharacter.element || !serverPendingStats) {
+                document.getElementById('preview-hp').textContent  = '--';
+                document.getElementById('preview-atk').textContent = '--';
+                document.getElementById('preview-str').textContent = '--';
+                document.getElementById('preview-agi').textContent = '--';
+                document.getElementById('preview-def').textContent = '--';
+                document.getElementById('preview-ene').textContent = '--';
+            } else {
+                document.getElementById('preview-hp').textContent  = getCharacterMaxHp(tempNewCharacter);
+                document.getElementById('preview-atk').textContent = tempNewCharacter.stats.attack;
+                document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
+                document.getElementById('preview-agi').textContent = tempNewCharacter.stats.agility;
+                document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
+                document.getElementById('preview-ene').textContent = tempNewCharacter.stats.energy || 0;
+            }
+            // Reroll button: disabled until element chosen; then free/paid cost
             const rerollBtn = document.getElementById('btn-reroll-stats');
-            const FREE_REROLLS = 2;
-            const isFirstCharNow = characters.length === 0;
-            const freeLeft = isFirstCharNow ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
-            rerollBtn.disabled = false;
-            rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
+            if (!tempNewCharacter.element) {
+                rerollBtn.disabled = true;
+                rerollBtn.textContent = '🎲 REROLL (pick element first)';
+            } else {
+                const { freeRemaining: rerollFreeLeft, nextCost: rerollNextCost } = getRerollButtonState();
+                rerollBtn.disabled = false;
+                rerollBtn.textContent = rerollFreeLeft > 0 ? '🎲 REROLL FREE (' + rerollFreeLeft + ')' : '🎲 REROLL 🪙' + rerollNextCost;
+            }
             // Disable CREATE until element is chosen (enable if already had one)
             document.getElementById('btn-confirm-create').disabled = !tempNewCharacter.element;
             document.getElementById('character-create-modal').classList.add('active');
@@ -16882,13 +16897,10 @@
         }
 
         function rerollStats() {
-            if (!tempNewCharacter || rerollsUsed >= rerollsMax) return;
-
-            const FREE_REROLLS = 2;
-            const isFirstChar = characters.length === 0;
-            const rerollCost = (isFirstChar && rerollsUsed < FREE_REROLLS) ? 0 : 30;
-            if (rerollCost > 0 && globalTokens < rerollCost) {
-                showNotice('Not enough tokens! Reroll costs 🪙 ' + rerollCost + ' but you only have 🪙 ' + globalTokens);
+            if (!tempNewCharacter) return;
+            const { freeRemaining, nextCost } = getRerollButtonState();
+            if (nextCost > 0 && globalTokens < nextCost) {
+                showNotice('Not enough tokens! Reroll costs 🪙 ' + nextCost + ' but you only have 🪙 ' + globalTokens);
                 return;
             }
 
@@ -16907,7 +16919,7 @@
 
             yesBtn.addEventListener('click', function() {
                 cleanup();
-                executeReroll(rerollCost);
+                executeReroll(nextCost);
             }, { once: true });
 
             noBtn.addEventListener('click', function() {
@@ -16916,9 +16928,7 @@
         }
 
         async function executeReroll(rerollCost) {
-            const FREE_REROLLS = 2;
-            const isFreeReroll = characters.length === 0 && rerollsUsed < FREE_REROLLS;
-            const result = await spendOnServer('reroll', { rerollIndex: Math.min(rerollsUsed, 2), isFirstCharacter: isFreeReroll });
+            const result = await spendOnServer('reroll', { element: tempNewCharacter.element });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
             if (result.stats) serverPendingStats = result.stats;
             // Use server-generated stats (hidden bias archetypes for variety)
@@ -16926,30 +16936,44 @@
             const newStats = srv
                 ? { attack: srv.atk, strength: srv.str, agility: srv.agi, defense: srv.def, hp: srv.hp, energy: srv.energy || 0 }
                 : generateBalancedStats();
-            tempNewCharacter.stats.attack  = newStats.attack;
+            tempNewCharacter.stats.attack   = newStats.attack;
             tempNewCharacter.stats.strength = newStats.strength;
-            tempNewCharacter.stats.agility = newStats.agility;
-            tempNewCharacter.stats.defense = newStats.defense;
-            tempNewCharacter.stats.energy  = newStats.energy || 0;
-            // Do NOT override player's chosen element
+            tempNewCharacter.stats.agility  = newStats.agility;
+            tempNewCharacter.stats.defense  = newStats.defense;
+            tempNewCharacter.stats.energy   = newStats.energy || 0;
+            // Element is player's choice — never override from server response
 
             // Recalculate HP based on new stats
             const statDiff = (newStats.defense + newStats.strength) - (newStats.attack + newStats.agility);
             tempNewCharacter.maxHp = srv ? srv.hp : Math.round(BASE_HP + (statDiff * HP_STAT_FACTOR));
-            document.getElementById('preview-hp').textContent = tempNewCharacter.maxHp;
+            document.getElementById('preview-hp').textContent  = tempNewCharacter.maxHp;
             document.getElementById('preview-atk').textContent = newStats.attack;
             document.getElementById('preview-str').textContent = newStats.strength;
             document.getElementById('preview-agi').textContent = newStats.agility;
             document.getElementById('preview-def').textContent = newStats.defense;
+            document.getElementById('preview-ene').textContent = newStats.energy || 0;
+
+            // Sync counters from server response (authoritative)
+            const fr = result.freeRemaining ?? 0;
+            const nc = result.nextCost       ?? 0;
+            if (typeof result.freeRemaining === 'number') {
+                const freeAlloc = globalCharactersCreated === 0 ? 2 : globalCharactersCreated === 1 ? 3 : 3;
+                globalTotalFreeRerollsUsed = freeAlloc - fr;
+            }
+            if (typeof result.nextCost === 'number' && fr === 0) {
+                // Back-compute paid count from cost table
+                const REROLL_COST_TABLE = [25, 35, 50, 70, 100, 140, 195, 270, 375, 525];
+                const idx = REROLL_COST_TABLE.indexOf(nc);
+                if (idx >= 0) globalTotalPaidRerolls = idx;
+            }
 
             rerollsUsed++;
             saveTempChar();    // persist rolled stats
-            saveProgression(); // persist rerollsUsed
-            const isFirstCharAfter = characters.length === 0;
-            const freeLeft = isFirstCharAfter ? Math.max(0, FREE_REROLLS - rerollsUsed) : 0;
+            saveProgression();
+
             const rerollBtn = document.getElementById('btn-reroll-stats');
             rerollBtn.disabled = false;
-            rerollBtn.textContent = freeLeft > 0 ? '🎲 REROLL FREE (' + freeLeft + ')' : '🎲 REROLL 🪙30';
+            rerollBtn.textContent = fr > 0 ? '🎲 REROLL FREE (' + fr + ')' : '🎲 REROLL 🪙' + nc;
         }
 
         async function confirmCharacterCreation() {
@@ -17385,9 +17409,9 @@
         document.getElementById('btn-reroll-stats').addEventListener('click', rerollStats);
         document.getElementById('btn-confirm-create').addEventListener('click', confirmCharacterCreation);
 
-        // Element picker — click to select element
+        // Element picker — click to select element, then fetch element-biased stats from server
         document.querySelectorAll('.elem-guide-card[data-element]').forEach(card => {
-            card.addEventListener('click', () => {
+            card.addEventListener('click', async () => {
                 if (!tempNewCharacter) return;
                 document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
@@ -17396,7 +17420,33 @@
                 saveTempChar();
                 const previewEl = document.getElementById('preview-element');
                 if (previewEl) previewEl.innerHTML = elementBadgeHTML(el, 'sm') || el;
+                document.getElementById('btn-confirm-create').disabled = true; // disable during load
+
+                // Generate stats for chosen element
+                const result = await spendOnServer('generate_stats', { element: el });
+                if (result.ok && result.stats) {
+                    const srv = result.stats;
+                    tempNewCharacter.stats.attack   = srv.atk;
+                    tempNewCharacter.stats.strength = srv.str;
+                    tempNewCharacter.stats.agility  = srv.agi;
+                    tempNewCharacter.stats.defense  = srv.def;
+                    tempNewCharacter.maxHp          = srv.hp;
+                    tempNewCharacter.stats.energy   = srv.energy || 0;
+                    serverPendingStats = result.stats;
+                    document.getElementById('preview-hp').textContent  = tempNewCharacter.maxHp;
+                    document.getElementById('preview-atk').textContent = srv.atk;
+                    document.getElementById('preview-str').textContent = srv.str;
+                    document.getElementById('preview-agi').textContent = srv.agi;
+                    document.getElementById('preview-def').textContent = srv.def;
+                    document.getElementById('preview-ene').textContent = srv.energy || 0;
+                }
                 document.getElementById('btn-confirm-create').disabled = false;
+
+                // Enable reroll button now that element is chosen
+                const { freeRemaining, nextCost } = getRerollButtonState();
+                const rerollBtn = document.getElementById('btn-reroll-stats');
+                rerollBtn.disabled = false;
+                rerollBtn.textContent = freeRemaining > 0 ? '🎲 REROLL FREE (' + freeRemaining + ')' : '🎲 REROLL 🪙' + nextCost;
             });
         });
 
