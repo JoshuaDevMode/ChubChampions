@@ -18453,12 +18453,12 @@
             if (!arenaEl || !game[caster] || !game[target]) return;
 
             // World-space position of fighter center (arena-world coordinate space).
-            // Uses el.style.left which is set by the positioning code and is already in
-            // arena-world coordinates — no getBoundingClientRect needed.
+            // Uses _homeX * scale so it's always correct even before battle animation runs
+            // (e.g. power test mode where style.left is not set).
+            const _fpScale = arenaEl.offsetWidth / 1600;
             function getCenter(fighter) {
                 const H  = arenaEl.offsetHeight;
-                const el = game[fighter].element;
-                const wx = parseFloat(el.style.left || '0') + 110; // left + half fighter width
+                const wx = (game[fighter]._homeX ?? (fighter === 'player' ? 128 : 1252)) * _fpScale + 110;
                 return {
                     x: wx,
                     y: H - 35 - 90,  // ground level - bottom offset - approx chest height
