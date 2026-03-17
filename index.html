@@ -12528,7 +12528,7 @@
                 try {
                     const r = await fetchWithTimeout(BACKEND_URL + '/api/economy/open-chest', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                        headers: await getAuthHeaders(),
                         body: JSON.stringify({
                             playerId:    playerSession.playerId,
                             characterId: char?.id,
@@ -13727,9 +13727,9 @@
             // If no session, React LoginGate shows automatically via usePrivy()
         }
 
-        // Returns auth headers for money-moving endpoints (Privy JWT + fallback secret)
+        // Returns auth headers with Privy JWT for all backend API calls
         async function getAuthHeaders() {
-            const base = { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET };
+            const base = { 'Content-Type': 'application/json' };
             if (!playerSession) return base;
             try {
                 // Always get a fresh token (Privy auto-refreshes if expired)
@@ -13756,7 +13756,7 @@
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/state', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId }),
                 });
                 if (!resp.ok) return;
@@ -14104,7 +14104,7 @@
 
         // Sync a character's state to the backend (fire-and-forget)
         const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
-        const SYNC_SECRET  = 'fc_sync_lol'; // ← paste your SYNC_SECRET from Vercel env vars here
+        // SYNC_SECRET removed — all API calls use Privy JWT via getAuthHeaders()
 
         // Drop-in replacement for fetch() that aborts after `ms` milliseconds.
         // Throws AbortError on timeout (same as a network error — callers with try/catch
@@ -14185,7 +14185,7 @@
 
             const resp = await fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                headers: await getAuthHeaders(),
                 body: JSON.stringify({ seed, player: P, cpu: C, playerId: 'dev_' + Date.now() }),
             }, 20000);
             if (!resp.ok) {
@@ -14333,8 +14333,9 @@
             // 1. Get signed charData from backend
             const sigResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                headers: await getAuthHeaders(),
                 body: JSON.stringify({
+                    playerId:            playerSession?.playerId,
                     characterId:         character.id,
                     walletAddress:       walletAddr,
                     equippedConsumables: character.equippedConsumables || [],
@@ -14384,8 +14385,9 @@
             // 1. Get signed charData from backend
             const sigResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                headers: await getAuthHeaders(),
                 body: JSON.stringify({
+                    playerId:            playerSession?.playerId,
                     characterId:         character.id,
                     walletAddress:       walletAddr,
                     equippedConsumables: character.equippedConsumables || [],
@@ -14444,14 +14446,11 @@
             return null; // Timeout
         }
 
-        function syncPlayerToBackend() {
-            if (!BACKEND_URL || !SYNC_SECRET || !playerSession) return;
+        async function syncPlayerToBackend() {
+            if (!BACKEND_URL || !playerSession) return;
             fetchWithTimeout(BACKEND_URL + '/api/player/sync', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-sync-secret': SYNC_SECRET,
-                },
+                headers: await getAuthHeaders(),
                 body: JSON.stringify({
                     playerId:        playerSession.playerId,
                     unlockedWeapons: globalUnlockedWeapons,
@@ -14459,14 +14458,11 @@
             }).catch(e => console.warn('[sync] player sync error:', e));
         }
 
-        function syncCharacterToBackend(character) {
-            if (!BACKEND_URL || !SYNC_SECRET) return Promise.resolve();
+        async function syncCharacterToBackend(character) {
+            if (!BACKEND_URL) return Promise.resolve();
             return fetchWithTimeout(BACKEND_URL + '/api/character/sync', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-sync-secret': SYNC_SECRET,
-                },
+                headers: await getAuthHeaders(),
                 body: JSON.stringify({
                     id:           character.id,
                     player_id:    playerSession?.playerId ?? null,
@@ -14519,11 +14515,11 @@
         // Fetches characters from server — server is source of truth.
         // Adds missing chars locally AND removes local chars deleted from DB.
         async function fetchCharactersFromServer() {
-            if (!playerSession || !BACKEND_URL || !SYNC_SECRET) return;
+            if (!playerSession || !BACKEND_URL) return;
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/list', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId }),
                 });
                 if (!resp.ok) return;
@@ -14638,7 +14634,7 @@
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/daily-claim', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         dayNum,
@@ -14780,7 +14776,7 @@
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId:    playerSession.playerId,
                         characterId: character.id,
@@ -14892,7 +14888,7 @@
                 if (pvpMatchId) {
                     fetchWithTimeout(BACKEND_URL + '/api/matchmaking/cancel', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: await getAuthHeaders(),
                         body: JSON.stringify({ matchId: pvpMatchId, playerId: playerSession.playerId }),
                     }).catch(() => {});
                 }
@@ -14903,7 +14899,7 @@
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/matchmaking/join', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId:    playerSession.playerId,
                         playerName:  character.name,
@@ -14942,6 +14938,7 @@
                 try {
                     const resp = await fetch(
                         BACKEND_URL + `/api/matchmaking/status?matchId=${pvpMatchId}&playerId=${playerSession.playerId}`,
+                        { headers: await getAuthHeaders() },
                     );
                     if (!resp.ok) throw new Error('status ' + resp.status);
                     pollData = await resp.json();
@@ -14965,7 +14962,7 @@
                 if (pvpMatchId) {
                     fetchWithTimeout(BACKEND_URL + '/api/matchmaking/cancel', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: await getAuthHeaders(),
                         body: JSON.stringify({ matchId: pvpMatchId, playerId: playerSession.playerId }),
                     }).catch(() => {});
                 }
@@ -16110,13 +16107,15 @@
                 selectedCharacterId = characters.length > 0 ? characters[0].id : null;
             }
             saveCharacters();
-            // Sync deletion to Supabase (requires Privy JWT + sync-secret)
+            // Sync deletion to Supabase (requires Privy JWT)
             if (playerSession && BACKEND_URL) {
-                fetchWithTimeout(BACKEND_URL + '/api/character/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-                    body: JSON.stringify({ playerId: playerSession.playerId, characterId: id }),
-                }).catch(e => console.warn('[delete] character delete error:', e));
+                (async () => {
+                    fetchWithTimeout(BACKEND_URL + '/api/character/delete', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({ playerId: playerSession.playerId, characterId: id }),
+                    }).catch(e => console.warn('[delete] character delete error:', e));
+                })();
             }
         }
 
@@ -17751,7 +17750,7 @@
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
                 _preBattleFetch = fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId:    playerSession.playerId,
                         characterId: character.id,
@@ -21839,7 +21838,7 @@
                 // Step 2 — Register room with backend so P2 can find it
                 await fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId: playerSession?.playerId,
                         roomId,
@@ -22022,8 +22021,8 @@
                 // 1. Fetch backend character signature (ed25519 over canonical char bytes)
                 const sigRes  = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character-solana', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
-                    body: JSON.stringify({ characterId: character.id, walletAddress: pubkeyStr }),
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession?.playerId, characterId: character.id, walletAddress: pubkeyStr }),
                 });
                 const sigData = await sigRes.json();
                 if (!sigData.ok) throw new Error(sigData.error || 'Signature request failed');
@@ -22075,7 +22074,7 @@
                 // 7. Register with backend matchmaking (fire-and-forget)
                 fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: await getAuthHeaders(),
                     body: JSON.stringify({
                         playerId: playerSession?.playerId,
                         roomId: roomIdBig.toString(),
