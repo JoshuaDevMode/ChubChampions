@@ -6769,9 +6769,9 @@
             border-image-width: 24px;
             border-image-repeat: stretch;
             border-radius: 0;
-            padding: 16px 24px 20px;
-            max-width: 600px;
-            width: 95%;
+            padding: 18px 30px 22px;
+            max-width: 740px;
+            width: 96%;
             box-shadow: none;
             filter: drop-shadow(0 0 24px rgba(0,0,0,0.9));
         }
@@ -6780,88 +6780,99 @@
         .elem-guide-section {
             margin-top: 14px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 10px;
+            padding-top: 12px;
         }
         .elem-guide-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 10px;
-            color: #888;
+            font-size: 11px;
+            color: #999;
             letter-spacing: 2px;
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             text-transform: uppercase;
         }
         .elem-guide-cards {
             display: flex;
-            gap: 6px;
+            gap: 7px;
         }
         .elem-guide-card {
             flex: 1;
             background: rgba(0,0,0,0.45);
             border: 1.5px solid var(--ec);
             border-radius: 10px;
-            padding: 9px 5px 7px;
+            padding: 11px 6px 10px;
             text-align: center;
             display: flex;
             flex-direction: column;
             gap: 4px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.5), inset 0 0 12px rgba(0,0,0,0.3);
+            box-shadow: 0 0 8px rgba(0,0,0,0.5), inset 0 0 14px rgba(0,0,0,0.35);
             transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
             cursor: pointer;
             user-select: none;
+            min-width: 0;
         }
         .elem-guide-card:hover {
             transform: translateY(-2px);
-            filter: brightness(1.1);
+            filter: brightness(1.12);
+            background: rgba(255,255,255,0.04);
         }
         .elem-guide-card.selected {
             border: 2.5px solid var(--ec);
             background: rgba(255,255,255,0.10);
-            transform: translateY(-3px);
-            box-shadow: 0 0 0 2px var(--ec), 0 6px 16px rgba(0,0,0,0.65);
+            transform: translateY(-4px);
+            box-shadow: 0 0 0 2px var(--ec), 0 8px 18px rgba(0,0,0,0.7);
         }
-        .elem-guide-card.selected::after {
-            content: '✓';
+        .elem-guide-card.selected .elem-guide-checkmark {
             display: block;
+        }
+        .elem-guide-checkmark {
+            display: none;
             font-size: 11px;
             color: var(--ec);
             font-weight: 700;
-            margin-top: 2px;
             line-height: 1;
+            margin-top: 1px;
         }
-        .elem-guide-icon { font-size: 22px; line-height: 1; }
+        .elem-guide-icon { font-size: 26px; line-height: 1; }
         .elem-guide-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--ec);
             letter-spacing: 0.5px;
         }
         .elem-guide-passive {
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
+            font-size: 10px;
             color: #e0e0e0;
             line-height: 1.4;
-            min-height: 24px;
+            min-height: 26px;
         }
         .elem-guide-fury {
             font-family: 'Fredoka', sans-serif;
-            font-size: 8px;
-            color: rgba(255,200,80,0.7);
+            font-size: 9px;
+            color: rgba(255,200,80,0.75);
             font-style: italic;
         }
+        .elem-guide-stats {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            color: rgba(150,200,255,0.75);
+            letter-spacing: 0.2px;
+            padding: 1px 0;
+        }
         .elem-guide-divider {
-            border-top: 1px solid rgba(255,255,255,0.08);
-            margin: 2px 0;
+            border-top: 1px solid rgba(255,255,255,0.10);
+            margin: 3px 0 2px;
         }
         .elem-guide-beats {
             font-family: 'Fredoka', sans-serif;
-            font-size: 8.5px;
+            font-size: 9px;
             color: #4ade80;
         }
         .elem-guide-weakto {
             font-family: 'Fredoka', sans-serif;
-            font-size: 8.5px;
+            font-size: 9px;
             color: #f87171;
         }
 
@@ -6874,9 +6885,10 @@
 
         .character-create-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 1.2em;
+            font-size: 1.5em;
             color: #a855f7;
             text-shadow: 2px 2px 0 #000;
+            letter-spacing: 1px;
         }
 
         .character-create-body {
@@ -6890,16 +6902,17 @@
         .character-create-field label {
             display: block;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.7em;
-            color: #888;
+            font-size: 0.8em;
+            color: #aaa;
             margin-bottom: 8px;
+            letter-spacing: 1.5px;
         }
 
         .character-create-field input {
             width: 100%;
             padding: 12px 15px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.9em;
+            font-size: 1em;
             background: rgba(0,0,0,0.5);
             border: 2px solid #555;
             border-radius: 8px;
@@ -6915,34 +6928,53 @@
         .character-create-preview {
             display: flex;
             justify-content: space-around;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
+            align-items: center;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 14px 10px;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+            gap: 4px;
         }
 
         .preview-stat {
             text-align: center;
+            flex: 1;
         }
 
         .preview-stat-label {
             display: block;
-            font-size: 0.7em;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.75em;
             color: #888;
-            margin-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
         }
 
         .preview-stat-value {
             font-family: 'Fredoka', sans-serif;
-            font-size: 1.1em;
+            font-size: 1.25em;
             color: #fff;
+            font-weight: 600;
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+
+        .preview-stat.stat-highlighted .preview-stat-label {
+            color: #60a5fa;
+            transition: color 0.2s;
+        }
+        .preview-stat.stat-highlighted .preview-stat-value {
+            color: #93c5fd;
+            text-shadow: 0 0 10px rgba(96,165,250,0.55);
         }
 
         .btn-reroll-stats {
             width: 100%;
-            padding: 10px;
+            padding: 11px;
+            margin-top: 16px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.7em;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
             background: linear-gradient(to bottom, #6366f1, #4f46e5);
             border: 2px solid #000;
             border-radius: 8px;
@@ -6967,9 +6999,10 @@
 
         .btn-cancel-create, .btn-confirm-create {
             flex: 1;
-            padding: 12px;
+            padding: 13px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.8em;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
             border: 2px solid #000;
             border-radius: 8px;
             cursor: pointer;
@@ -10114,27 +10147,27 @@
                     <input type="text" id="character-name-input" maxlength="14" placeholder="Enter name...">
                 </div>
                 <div class="character-create-preview">
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="hp">
                         <span class="preview-stat-label">HP</span>
                         <span class="preview-stat-value" id="preview-hp">1000</span>
                     </div>
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="atk">
                         <span class="preview-stat-label">ATK</span>
                         <span class="preview-stat-value" id="preview-atk">--</span>
                     </div>
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="str">
                         <span class="preview-stat-label">STR</span>
                         <span class="preview-stat-value" id="preview-str">--</span>
                     </div>
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="agi">
                         <span class="preview-stat-label">AGI</span>
                         <span class="preview-stat-value" id="preview-agi">--</span>
                     </div>
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="def">
                         <span class="preview-stat-label">DEF</span>
                         <span class="preview-stat-value" id="preview-def">--</span>
                     </div>
-                    <div class="preview-stat">
+                    <div class="preview-stat" data-stat="ene">
                         <span class="preview-stat-label">ENE</span>
                         <span class="preview-stat-value" id="preview-ene">--</span>
                     </div>
@@ -10151,51 +10184,61 @@
                         <div class="elem-guide-card" data-element="fire" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
                             <div class="elem-guide-icon">🔥</div>
                             <div class="elem-guide-name">FIRE</div>
-                            <div class="elem-guide-passive">+4% DMG</div>
+                            <div class="elem-guide-passive">+4% DMG dealt</div>
                             <div class="elem-guide-fury">+12% in Fury</div>
+                            <div class="elem-guide-stats">✦ ATK &amp; STR</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Wind</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Water</div>
+                            <div class="elem-guide-checkmark">✓</div>
                         </div>
 
                         <div class="elem-guide-card" data-element="water" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
                             <div class="elem-guide-icon">💧</div>
                             <div class="elem-guide-name">WATER</div>
-                            <div class="elem-guide-passive">+1.5% HP Regen / turn</div>
-                            <div class="elem-guide-fury">scales with ⚡ENE</div>
+                            <div class="elem-guide-passive">+1.5% HP Regen/turn</div>
+                            <div class="elem-guide-fury">Fury scales with ENE</div>
+                            <div class="elem-guide-stats">✦ ENE &amp; HP</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Fire</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Lightning</div>
+                            <div class="elem-guide-checkmark">✓</div>
                         </div>
 
                         <div class="elem-guide-card" data-element="lightning" style="--ec:#ffd740;--ec-glow:rgba(255,215,64,0.4);">
                             <div class="elem-guide-icon">⚡</div>
                             <div class="elem-guide-name">LIGHTNING</div>
                             <div class="elem-guide-passive">+5% Crit Chance</div>
-                            <div class="elem-guide-fury">+14% in Fury</div>
+                            <div class="elem-guide-fury">+14% Crit in Fury</div>
+                            <div class="elem-guide-stats">✦ AGI &amp; ATK</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Water</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Earth</div>
+                            <div class="elem-guide-checkmark">✓</div>
                         </div>
 
                         <div class="elem-guide-card" data-element="earth" style="--ec:#8bc34a;--ec-glow:rgba(139,195,74,0.4);">
                             <div class="elem-guide-icon">🌍</div>
                             <div class="elem-guide-name">EARTH</div>
-                            <div class="elem-guide-passive">−4% DMG Taken</div>
-                            <div class="elem-guide-fury">−12% in Fury</div>
+                            <div class="elem-guide-passive">−4% DMG received</div>
+                            <div class="elem-guide-fury">−12% DMG in Fury</div>
+                            <div class="elem-guide-stats">✦ DEF &amp; STR</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Lightning</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Wind</div>
+                            <div class="elem-guide-checkmark">✓</div>
                         </div>
 
                         <div class="elem-guide-card" data-element="wind" style="--ec:#b0bec5;--ec-glow:rgba(176,190,197,0.4);">
                             <div class="elem-guide-icon">🌪️</div>
                             <div class="elem-guide-name">WIND</div>
                             <div class="elem-guide-passive">+4% Dodge Chance</div>
-                            <div class="elem-guide-fury">scales with ⚡ENE</div>
+                            <div class="elem-guide-fury">Fury scales with ENE</div>
+                            <div class="elem-guide-stats">✦ AGI &amp; ENE</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Earth</div>
                             <div class="elem-guide-weakto">🛡 Weak vs Fire</div>
+                            <div class="elem-guide-checkmark">✓</div>
                         </div>
 
                     </div>
@@ -11932,24 +11975,13 @@
                     const data = JSON.parse(saved);
                     globalUnlockedWeapons = data.globalUnlockedWeapons || [];
                     globalTokens = data.globalTokens || 0;
-                    globalFragments = data.globalFragments || 0;
                     globalCrystals = data.globalCrystals || 0;
                     globalFragmentChestsOpened = data.globalFragmentChestsOpened || 0;
                     // pendingVictoryChests: NOT loaded from localStorage — server is the only source of truth
                     globalCharactersCreated = data.globalCharactersCreated || 0;
-                    winStreak = data.winStreak || 0;
                     shopItemCooldowns     = data.shopItemCooldowns     || {};
-                    minigameDailyPurchases = data.minigameDailyPurchases || 0;
-                    minigamePurchaseDate   = data.minigamePurchaseDate   || '';
-                    itemDailyPurchases     = data.itemDailyPurchases     || {};
-                    itemPurchaseDate       = data.itemPurchaseDate       || '';
-                    shopFragmentDate = data.shopFragmentDate || '';
-                    shopFragmentBoughtToday = data.shopFragmentBoughtToday || false;
                     lastLoginTimestamp = data.lastLoginTimestamp || null;
                     rerollsUsed = data.rerollsUsed || 0;
-                    xpBoostMultiplier = data.xpBoostMultiplier || 1.0;
-                    xpBoostBattlesLeft = data.xpBoostBattlesLeft || 0;
-                    pendingXpBoosts = data.pendingXpBoosts || [];
                     dailyClaimData = data.dailyClaimData || { startDate: null, claimedDays: [] };
                     dailyBattlesPlayed = data.dailyBattlesPlayed || 0;
                     dailyBattleDate = data.dailyBattleDate || '';
@@ -11996,6 +12028,7 @@
             // Update login timestamp to now for next session comparison
             lastLoginTimestamp = Date.now();
             saveProgression();
+            syncGlobalsFromChar(getSelectedCharacter());
             updateCurrencyUI();
             updateVictoryChestSlots();
             updateXpBoostSlots();
@@ -12004,31 +12037,49 @@
             updateDailyBattleCounter();
         }
 
+        function syncGlobalsFromChar(char) {
+            if (!char) return;
+            globalFragments        = char.fragments              || 0;
+            winStreak              = char.winStreak              || 0;
+            pendingXpBoosts        = char.pendingXpBoosts        || [];
+            xpBoostMultiplier      = char.xpBoostMultiplier      || 1.0;
+            xpBoostBattlesLeft     = char.xpBoostBattlesLeft     || 0;
+            itemDailyPurchases     = char.itemDailyPurchases     || {};
+            itemPurchaseDate       = char.itemPurchaseDate       || '';
+            minigameDailyPurchases = char.minigameDailyPurchases || 0;
+            minigamePurchaseDate   = char.minigamePurchaseDate   || '';
+            shopFragmentDate       = char.shopFragmentDate       || '';
+            shopFragmentBoughtToday = (char.shopFragmentDate === new Date().toDateString());
+        }
+
+        function syncGlobalsToChar(char) {
+            if (!char) return;
+            char.fragments              = globalFragments;
+            char.winStreak              = winStreak;
+            char.pendingXpBoosts        = pendingXpBoosts;
+            char.xpBoostMultiplier      = xpBoostMultiplier;
+            char.xpBoostBattlesLeft     = xpBoostBattlesLeft;
+            char.itemDailyPurchases     = itemDailyPurchases;
+            char.itemPurchaseDate       = itemPurchaseDate;
+            char.minigameDailyPurchases = minigameDailyPurchases;
+            char.minigamePurchaseDate   = minigamePurchaseDate;
+            char.shopFragmentDate       = shopFragmentDate;
+        }
+
         function saveProgression() {
             try {
                 localStorage.setItem('fightchub_progression', JSON.stringify({
                     globalUnlockedWeapons: globalUnlockedWeapons,
                     globalTokens: globalTokens,
-                    globalFragments: globalFragments,
                     globalCrystals: globalCrystals,
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
                     globalCharactersCreated: globalCharactersCreated,
-                    winStreak: winStreak,
                     shopItemCooldowns:     shopItemCooldowns,
-                    minigameDailyPurchases: minigameDailyPurchases,
-                    minigamePurchaseDate:   minigamePurchaseDate,
-                    itemDailyPurchases:     itemDailyPurchases,
-                    itemPurchaseDate:       itemPurchaseDate,
-                    xpBoostMultiplier: xpBoostMultiplier,
-                    xpBoostBattlesLeft: xpBoostBattlesLeft,
-                    pendingXpBoosts: pendingXpBoosts,
                     dailyClaimData: dailyClaimData,
                     dailyBattlesPlayed: dailyBattlesPlayed,
                     dailyBattleDate: dailyBattleDate,
                     dailyChestsEarned: dailyChestsEarned,
                     dailyChestDate: dailyChestDate,
-                    shopFragmentDate: shopFragmentDate,
-                    shopFragmentBoughtToday: shopFragmentBoughtToday,
                     lastLoginTimestamp: lastLoginTimestamp,
                     rerollsUsed: rerollsUsed
                 }));
@@ -12043,17 +12094,21 @@
         }
 
         function getLockedWeaponsForTier(tier) {
+            const char = getSelectedCharacter();
+            const unlocked = char ? (char.unlockedWeapons || []) : [];
             const tierWeapons = getWeaponsForTier(tier);
-            return tierWeapons.filter(w => !globalUnlockedWeapons.includes(w.id));
+            return tierWeapons.filter(w => !unlocked.includes(w.id));
         }
 
         // Get all locked weapons across all tiers (for inventory display)
         function getLockedWeapons() {
+            const char = getSelectedCharacter();
+            const unlocked = char ? (char.unlockedWeapons || []) : [];
             const locked = [];
             for (const tier of CHEST_LEVEL_TIERS) {
                 const tierWeapons = getWeaponsForTier(tier);
                 tierWeapons.forEach(w => {
-                    if (!globalUnlockedWeapons.includes(w.id)) {
+                    if (!unlocked.includes(w.id)) {
                         locked.push({ ...w, tier: tier });
                     }
                 });
@@ -12218,7 +12273,9 @@
         // ===== VICTORY CHEST & FRAGMENT SYSTEM =====
 
         function getFragmentChestCost() {
-            return 10 + (globalFragmentChestsOpened * 2);
+            const char = getSelectedCharacter();
+            const opened = char ? (char.fragmentChestsOpened || 0) : 0;
+            return 10 + (opened * 2);
         }
 
         function updateCurrencyUI() {
@@ -12488,9 +12545,13 @@
             }
 
             // Apply server-authoritative balances
-            globalTokens    = serverReward.newTokenBalance;
-            globalFragments = serverReward.newFragBalance;
-            globalCrystals  = serverReward.newCrystalBalance;
+            globalTokens   = serverReward.newTokenBalance;
+            globalCrystals = serverReward.newCrystalBalance;
+            // Fragments are now per-character — update the character that opened the chest
+            if (serverReward.newFragBalance !== undefined && char) {
+                char.fragments = serverReward.newFragBalance;
+                syncGlobalsFromChar(char);
+            }
 
             // Build reward lines from server response
             if (serverReward.tokens > 0)    rewardLines.push('+' + serverReward.tokens + ' 🪙');
@@ -12498,6 +12559,8 @@
             if (serverReward.crystal)       rewardLines.push('💎 +1 CRYSTAL!');
             if (serverReward.xpBoost) {
                 pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
+                const _chestXpChar = getSelectedCharacter();
+                if (_chestXpChar) { syncGlobalsToChar(_chestXpChar); saveCharacters(); }
                 rewardLines.push('⚡ x' + serverReward.xpBoost.mult + ' XP BOOST earned!');
             }
             if (serverReward.consumable && character) {
@@ -12643,7 +12706,7 @@
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/activate-boost', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
-                    body: JSON.stringify({ playerId: playerSession.playerId, index }),
+                    body: JSON.stringify({ playerId: playerSession.playerId, index, characterId: String(getSelectedCharacter()?.id ?? '') }),
                 });
                 const data = await resp.json();
                 if (!resp.ok || !data.ok) {
@@ -12654,6 +12717,8 @@
                 xpBoostMultiplier  = data.active.mult;
                 xpBoostBattlesLeft = data.active.battlesLeft;
                 pendingXpBoosts.splice(index, 1);
+                const _ac = getSelectedCharacter();
+                if (_ac) { syncGlobalsToChar(_ac); saveCharacters(); }
                 saveProgression();
                 closeBoostModal();
                 updateXpBoostSlots();
@@ -12802,6 +12867,8 @@
                 case 'xpboost':
                     if (result.xpBoost && pendingXpBoosts.length < 3) {
                         pendingXpBoosts.push({ mult: result.xpBoost.mult, battles: result.xpBoost.battles });
+                        const _dcXpChar = getSelectedCharacter();
+                        if (_dcXpChar) { syncGlobalsToChar(_dcXpChar); saveCharacters(); }
                         toastText += '⚡ x' + result.xpBoost.mult + ' XP Boost!';
                     } else {
                         toastText += '⚡ Boost slots full!';
@@ -12886,6 +12953,8 @@
                 if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
                 if (serverReward.xpBoost && pendingXpBoosts.length < 3) {
                     pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
+                    const _icXpChar = getSelectedCharacter();
+                    if (_icXpChar) { syncGlobalsToChar(_icXpChar); saveCharacters(); }
                     rewardLines.push('⚡ x' + serverReward.xpBoost.mult + ' XP BOOST earned!');
                 }
                 if (serverReward.consumable && character) {
@@ -12979,12 +13048,14 @@
         }
 
         async function openFragmentChest() {
+            const char = getSelectedCharacter();
+            if (!char) return;
             const cost = getFragmentChestCost();
             if (globalFragments < cost) return;
 
-            const result = await spendOnServer('fragment_chest');
+            const result = await spendOnServer('fragment_chest', { characterId: String(char.id) });
             if (!result.ok || !result.weaponId) { showNotice(result.error || 'Failed to open chest'); return; }
-            globalFragmentChestsOpened++;
+            char.fragmentChestsOpened = (char.fragmentChestsOpened || 0) + 1;
 
             // Server selected the weapon — look up its data from WEAPON_TIERS
             let newWeapon = null;
@@ -13023,7 +13094,8 @@
             rewardName.innerHTML = '<span style="font-size: 0.7em; color: #aaa;">' + tierLabel + '</span><br>' + newWeapon.name;
 
             if (isNewWeapon) {
-                globalUnlockedWeapons.push(newWeapon.id);
+                if (!char.unlockedWeapons) char.unlockedWeapons = [];
+                char.unlockedWeapons.push(newWeapon.id);
                 addNotification('⚔️', 'New weapon unlocked: ' + newWeapon.name, 'weapon');
                 WEAPONS[newWeapon.id] = {
                     name: newWeapon.name,
@@ -13036,12 +13108,16 @@
                 };
             }
 
+            if (result.newFragments !== undefined) {
+                char.fragments = result.newFragments;
+                syncGlobalsFromChar(char);
+            }
+            saveCharacters();
             saveProgression();
             updateCurrencyUI();
             populateInventoryPanel();
             if (isNewWeapon) {
-                const _sc = getSelectedCharacter();
-                if (_sc) syncCharacterToBackend(_sc);
+                syncCharacterToBackend(char);
             }
         }
 
@@ -13067,6 +13143,8 @@
 
         function openForgeOverlay() {
             const overlay = document.getElementById('forge-overlay');
+            const char = getSelectedCharacter();
+            if (!char) { showNotice('Select a character first'); return; }
             const cost = getFragmentChestCost();
             const pct = Math.min(100, (globalFragments / cost) * 100);
             const canForge = globalFragments >= cost;
@@ -13076,7 +13154,7 @@
             for (const tier of CHEST_LEVEL_TIERS) {
                 if (WEAPON_TIERS[tier]) totalWeapons += WEAPON_TIERS[tier].length;
             }
-            const owned = globalUnlockedWeapons.length;
+            const owned = (char.unlockedWeapons || []).length;
 
             // Update stats
             document.getElementById('forge-stat-fragments').innerHTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));"> ' + globalFragments;
@@ -13587,6 +13665,7 @@
             applyMoraleDecayAll();
             loadPendingLevelUps();
             loadProgression();
+            syncGlobalsFromChar(getSelectedCharacter());
             preloadLobbySprites();
         }
 
@@ -13689,18 +13768,15 @@
                     Object.keys(localStorage)
                         .filter(k => k.startsWith('fightchub_') && k !== 'fightchub_session')
                         .forEach(k => localStorage.removeItem(k));
-                    globalTokens = 0; globalFragments = 0; globalCrystals = 0;
+                    globalTokens = 0; globalCrystals = 0;
                     pendingVictoryChests = []; winStreak = 0;
                     updateCurrencyUI(); updateVictoryChestSlots();
                     return;
                 }
 
                 globalTokens               = data.tokens;
-                globalFragments            = data.fragments;
                 globalCrystals             = data.crystals ?? globalCrystals;
-                globalFragmentChestsOpened = data.fragmentChestsOpened;
                 globalCharactersCreated    = data.charactersCreated;
-                winStreak                  = data.winStreak;
                 if (Array.isArray(data.pendingChests)) {
                     pendingVictoryChests = data.pendingChests;
                 }
@@ -13710,30 +13786,16 @@
                     dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
                 }
                 // Restore authoritative shop state (overrides stale localStorage)
-                shopItemCooldowns      = data.shopItemCooldowns      || {};
-                minigamePurchaseDate   = data.minigamePurchaseDate   || '';
-                minigameDailyPurchases = data.minigameDailyPurchases || 0;
-                itemPurchaseDate       = data.itemPurchaseDate       || '';
-                itemDailyPurchases     = data.itemDailyPurchases     || {};
-                shopFragmentDate       = data.shopFragmentDate       || '';
+                shopItemCooldowns = data.shopItemCooldowns || {};
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
                 globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
                 globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
-                // Authoritative boost state from server
-                if (Array.isArray(data.pendingXpBoosts)) pendingXpBoosts = data.pendingXpBoosts;
-                if (data.activeXpBoost) {
-                    xpBoostMultiplier  = data.activeXpBoost.mult;
-                    xpBoostBattlesLeft = data.activeXpBoost.battlesLeft;
-                } else {
-                    xpBoostMultiplier  = 1.0;
-                    xpBoostBattlesLeft = 0;
-                }
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
                 renderDailyClaimGrid();
                 updateDailyClaimIndicator();
-                console.log('[state] synced from server: tokens=' + data.tokens + ' frags=' + data.fragments);
+                console.log('[state] synced from server: tokens=' + data.tokens);
             } catch (e) {
                 console.warn('[state] sync failed:', e);
             }
@@ -13969,6 +14031,29 @@
                         c.moraleItems = [];
                         needsSave = true;
                     }
+                    // Migrate: add per-character forge state if missing
+                    if (c.unlockedWeapons === undefined) {
+                        c.unlockedWeapons = [];
+                        needsSave = true;
+                    }
+                    if (c.fragmentChestsOpened === undefined) {
+                        c.fragmentChestsOpened = 0;
+                        needsSave = true;
+                    }
+                    if (c.fragments === undefined) {
+                        c.fragments = 0;
+                        needsSave = true;
+                    }
+                    // Migrate: per-character win streak, XP boosts, shop limits
+                    if (c.winStreak === undefined) { c.winStreak = 0; needsSave = true; }
+                    if (c.pendingXpBoosts === undefined) { c.pendingXpBoosts = []; needsSave = true; }
+                    if (c.xpBoostMultiplier === undefined) { c.xpBoostMultiplier = 1.0; needsSave = true; }
+                    if (c.xpBoostBattlesLeft === undefined) { c.xpBoostBattlesLeft = 0; needsSave = true; }
+                    if (c.itemDailyPurchases === undefined) { c.itemDailyPurchases = {}; needsSave = true; }
+                    if (c.itemPurchaseDate === undefined) { c.itemPurchaseDate = ''; needsSave = true; }
+                    if (c.minigameDailyPurchases === undefined) { c.minigameDailyPurchases = 0; needsSave = true; }
+                    if (c.minigamePurchaseDate === undefined) { c.minigamePurchaseDate = ''; needsSave = true; }
+                    if (c.shopFragmentDate === undefined) { c.shopFragmentDate = ''; needsSave = true; }
                     // Migrate: rename branch IDs (strength→warrior, defense→guardian, agility→phantom)
                     if (c.skills) {
                         const keys = Object.keys(c.skills);
@@ -14404,9 +14489,10 @@
                         feet: character.appearance?.feet  ?? null,
                     },
                     weapons: {
-                        equipped:   character.equippedWeapons  || [],
-                        durability: character.weaponDurability || {},
-                        unlocked:   globalUnlockedWeapons      || [],
+                        equipped:             character.equippedWeapons   || [],
+                        durability:           character.weaponDurability  || {},
+                        unlocked:             character.unlockedWeapons   || [],
+                        fragmentChestsOpened: character.fragmentChestsOpened || 0,
                     },
                     element:      character.element      ?? null,
                     adaptability: character.adaptability ?? 0,
@@ -14473,6 +14559,20 @@
                             local.stats  = sc.stats;
                             local.maxHp  = sc.maxHp;
                             local.skills = sc.skills;
+                            // Forge state is per-character and server-authoritative
+                            local.unlockedWeapons      = sc.unlockedWeapons      || [];
+                            local.fragmentChestsOpened = sc.fragmentChestsOpened || 0;
+                            local.fragments            = sc.fragments            || 0;
+                            // Per-character streak, XP boosts, shop limits
+                            local.winStreak              = sc.winStreak              || 0;
+                            local.pendingXpBoosts        = sc.pendingXpBoosts        || [];
+                            local.xpBoostMultiplier      = sc.xpBoostMultiplier      || 1.0;
+                            local.xpBoostBattlesLeft     = sc.xpBoostBattlesLeft     || 0;
+                            local.itemDailyPurchases     = sc.itemDailyPurchases     || {};
+                            local.itemPurchaseDate       = sc.itemPurchaseDate       || '';
+                            local.minigameDailyPurchases = sc.minigameDailyPurchases || 0;
+                            local.minigamePurchaseDate   = sc.minigamePurchaseDate   || '';
+                            local.shopFragmentDate       = sc.shopFragmentDate       || '';
                             // If DB has no pending level-up, remove any stale queued entries.
                             // Guards against localStorage entries left over from failed/falsely-
                             // triggered level-ups (e.g. offline fallback when no real level-up occurred).
@@ -14497,6 +14597,7 @@
                         localStorage.setItem('fightchub_selected_character', String(selectedCharacterId));
                     }
                     saveCharacters();
+                    syncGlobalsFromChar(getSelectedCharacter());
                     updateLobbyCharacterDisplay();
                 }
             } catch (e) {
@@ -14520,8 +14621,9 @@
                 }
                 const data = await resp.json();
                 if (data.ok) {
-                    globalTokens   = data.newTokens;
-                    globalFragments = data.newFragments;
+                    globalTokens = data.newTokens;
+                    // newFragments is only returned for fragment-related actions (per-character)
+                    // Callers that need it will update char.fragments directly from the result
                     updateCurrencyUI();
                 }
                 return data;
@@ -14540,12 +14642,21 @@
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         dayNum,
+                        characterId: String(getSelectedCharacter()?.id ?? ''),
                     }),
                 });
                 const data = await resp.json();
                 if (data.ok) {
-                    globalTokens    = data.newTokens;
-                    globalFragments = data.newFragments;
+                    globalTokens = data.newTokens;
+                    // Fragments are now per-character — update selected character
+                    if (data.newFragments !== undefined) {
+                        const _dcChar = getSelectedCharacter();
+                        if (_dcChar) {
+                            _dcChar.fragments = data.newFragments;
+                            syncGlobalsFromChar(_dcChar);
+                            saveCharacters();
+                        }
+                    }
                     // Sync authoritative daily claim state from server
                     if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
                         dailyClaimData.startDate   = data.dailyClaimStart;
@@ -15921,8 +16032,12 @@
             if (!character) return false;
             const durability = getWeaponDurability(character, weaponId);
             if (durability >= 100) return false;
-            const result = await spendOnServer('repair_weapon', { durability, currency: paymentType });
+            const result = await spendOnServer('repair_weapon', { durability, currency: paymentType, characterId: String(character.id) });
             if (!result.ok) { showNotice(result.error || 'Not enough resources!'); return false; }
+            if (paymentType === 'fragments' && result.newFragments !== undefined) {
+                character.fragments = result.newFragments;
+                syncGlobalsFromChar(character);
+            }
             setWeaponDurability(character, weaponId, 100);
             saveCharacters();
             saveProgression();
@@ -16901,8 +17016,10 @@
                 const existingCard = document.querySelector(`.elem-guide-card[data-element="${tempNewCharacter.element}"]`);
                 if (existingCard) existingCard.classList.add('selected');
                 if (previewElReset) previewElReset.innerHTML = elementBadgeHTML(tempNewCharacter.element, 'sm') || tempNewCharacter.element;
+                highlightPreviewStats(tempNewCharacter.element);
             } else {
                 if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
+                highlightPreviewStats(null);
             }
 
             // Show stats — always visible now (element not required)
@@ -16928,6 +17045,7 @@
 
         function closeCharacterCreation() {
             document.getElementById('character-create-modal').classList.remove('active');
+            highlightPreviewStats(null);
             // Keep tempNewCharacter alive so player can resume
         }
 
@@ -17053,6 +17171,7 @@
 
         // Update lobby character display
         function updateLobbyCharacterDisplay() {
+            syncGlobalsFromChar(getSelectedCharacter());
             const character = getSelectedCharacter();
             const nameEl = document.getElementById('menu-character-name');
             const levelEl = document.getElementById('menu-character-level');
@@ -17466,6 +17585,27 @@
         document.getElementById('btn-reroll-stats').addEventListener('click', rerollStats);
         document.getElementById('btn-confirm-create').addEventListener('click', confirmCharacterCreation);
 
+        // Which stats each element synergizes with (used to highlight preview panel)
+        const ELEMENT_SYNERGY_STATS = {
+            fire:      ['atk', 'str'],
+            water:     ['ene', 'hp'],
+            lightning: ['agi', 'atk'],
+            earth:     ['def', 'str'],
+            wind:      ['agi', 'ene'],
+        };
+
+        function highlightPreviewStats(element) {
+            document.querySelectorAll('.character-create-preview .preview-stat').forEach(el => {
+                el.classList.remove('stat-highlighted');
+            });
+            if (element && ELEMENT_SYNERGY_STATS[element]) {
+                ELEMENT_SYNERGY_STATS[element].forEach(stat => {
+                    const el = document.querySelector(`.character-create-preview .preview-stat[data-stat="${stat}"]`);
+                    if (el) el.classList.add('stat-highlighted');
+                });
+            }
+        }
+
         // Element picker — selecting an element does NOT regenerate stats.
         // Stats are generated once on creation open; element is an independent choice.
         document.querySelectorAll('.elem-guide-card[data-element]').forEach(card => {
@@ -17479,6 +17619,7 @@
                 const previewEl = document.getElementById('preview-element');
                 if (previewEl) previewEl.innerHTML = elementBadgeHTML(el, 'sm') || el;
                 document.getElementById('btn-confirm-create').disabled = false;
+                highlightPreviewStats(el);
 
                 // Update pending_stats.element on server (reuses existing stats — no new random roll)
                 spendOnServer('generate_stats', { element: el }).catch(() => {});
@@ -21103,6 +21244,8 @@
                             // Mirror active boost state from server response
                             xpBoostBattlesLeft = Math.max(0, xpBoostBattlesLeft - 1);
                             if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
+                            const _boostChar = getSelectedCharacter();
+                            if (_boostChar) { syncGlobalsToChar(_boostChar); saveCharacters(); }
                             saveProgression();
                             updateCurrencyUI();
                         }
@@ -21197,6 +21340,8 @@
                 }
                 // Win streak token bonus
                 winStreak = lastBattleRewards.newWinStreak;
+                const _mChar = getSelectedCharacter();
+                if (_mChar) { syncGlobalsToChar(_mChar); saveCharacters(); }
                 if (lastBattleRewards.tokensEarned > 0) {
                     globalTokens += lastBattleRewards.tokensEarned;
                     if (winStreak === 5) {
@@ -22417,6 +22562,8 @@
                         if (aonBoostMult > 1) {
                             xpBoostBattlesLeft = Math.max(0, xpBoostBattlesLeft - 1);
                             if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
+                            const _aonBoostChar = getSelectedCharacter();
+                            if (_aonBoostChar) { syncGlobalsToChar(_aonBoostChar); saveCharacters(); }
                             saveProgression();
                             updateCurrencyUI();
                         }
@@ -23919,7 +24066,7 @@
             if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             if (globalTokens < CONSUMABLE_SHOP_PRICES[id]) { showNotice('Not enough tokens!'); return; }
 
-            const result = await spendOnServer('buy_consumable', { itemId: id });
+            const result = await spendOnServer('buy_consumable', { itemId: id, characterId: character.id });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
 
             const cons = CONSUMABLES[id];
@@ -23928,6 +24075,7 @@
             itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
             shopItemCooldowns[id] = Date.now();
             character.consumables.push(id);
+            syncGlobalsToChar(character);
             saveCharacters();
             saveProgression();
             renderShop();
@@ -23951,6 +24099,7 @@
             shopItemCooldowns[id] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(id);
+            syncGlobalsToChar(character);
             saveCharacters();
             saveProgression();
             renderShop();
@@ -24003,6 +24152,7 @@
             }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
+            syncGlobalsToChar(character);
             saveCharacters();
             saveProgression();
             renderShop();
@@ -24033,6 +24183,7 @@
             shopItemCooldowns[itemId] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(itemId);
+            syncGlobalsToChar(character);
             saveCharacters();
             saveProgression();
 
@@ -24132,6 +24283,7 @@
             }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
+            syncGlobalsToChar(character);
             saveProgression();
 
             // Step 2: For interactive items, defer reward to minigame completion
@@ -24155,11 +24307,21 @@
             }
             if (globalTokens < FRAGMENT_SHOP_PRICE) { showNotice('Not enough tokens!'); return; }
 
-            const result = await spendOnServer('buy_fragment');
+            const char = getSelectedCharacter();
+            if (!char) { showNotice('Select a character first!'); return; }
+
+            const result = await spendOnServer('buy_fragment', { characterId: String(char.id) });
             if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
 
+            if (result.newFragments !== undefined) {
+                char.fragments = result.newFragments;
+                syncGlobalsFromChar(char);
+                saveCharacters();
+            }
             shopFragmentDate = today;
             shopFragmentBoughtToday = true;
+            syncGlobalsToChar(char);
+            saveCharacters();
             saveProgression();
             renderShop();
             showNotice('+1 ' + FRAG_ICON_HTML + ' Fragment purchased!');
@@ -25597,8 +25759,8 @@
                 return;
             }
 
-            // Show only weapons the player has unlocked through chests
-            globalUnlockedWeapons.forEach(weaponKey => {
+            // Show only weapons this character has unlocked through chests
+            (character.unlockedWeapons || []).forEach(weaponKey => {
                 const weapon = WEAPONS[weaponKey];
                 if (!weapon) return; // safety: skip if not loaded into WEAPONS yet
                 const isEquipped = character && character.equippedWeapons && character.equippedWeapons.includes(weaponKey);
