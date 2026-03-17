@@ -11125,13 +11125,6 @@
             headbutt: 60
         };
 
-        // ── Combat constants ───────────────────────────────────────────────────────
-        const CRITICAL_CHANCE           = 0.05; // 5% base crit chance
-        const CRITICAL_MULTIPLIER       = 1.6;
-        const CRITICAL_MULTIPLIER_FURY  = 1.3;  // reduced crit multiplier during fury
-        const FURY_GAIN                 = 1.5;
-        const FURY_DURATION             = 7000; // 7 seconds
-
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
             happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 25, icon: '💊' },
@@ -11147,7 +11140,6 @@
         };
 
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
-        const CONSUMABLE_TRIGGER_HP = 0.25;
         const BATTLE_CONSUMABLES = {
             // ── Original potions ──────────────────────────────────────
             small_potion:    { name: 'Small Potion',   category: 'potion', healPercent: 0.22,                        icon: '🧪', price: 12 },
@@ -11941,23 +11933,13 @@
         const CHEST_IMG_PATH = 'Assets/UI/Chests/';
         const FRAG_ICON_HTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         const VICTORY_CHEST_TIERS = [
-            { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 2,        fragments: 0, xpMult: 0,    prob: 0.60,  singleReward: true },
-            { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 4,        fragments: 1, xpMult: 0,    prob: 0.26,  singleReward: true },
-            { id: 'gold',       name: 'GOLD',        img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 8,        fragments: 1, xpMult: 1.25, prob: 0.10,  singleReward: true },
-            { id: 'epic',       name: 'EPIC',        img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 16,       fragments: 2, xpMult: 1.5,  prob: 0.032 },
-            { id: 'legendary',  name: 'LEGENDARY',   img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [28, 40], fragments: 4, xpMult: 0,    prob: 0.008 }
+            { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 2,        fragments: 0, xpMult: 0,    singleReward: true },
+            { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 4,        fragments: 1, xpMult: 0,    singleReward: true },
+            { id: 'gold',       name: 'GOLD',        img: CHEST_IMG_PATH + 'Golden.png',    color: '#ffd700', tokens: 8,        fragments: 1, xpMult: 1.25, singleReward: true },
+            { id: 'epic',       name: 'EPIC',        img: CHEST_IMG_PATH + 'Epic.png',      color: '#9b59b6', tokens: 16,       fragments: 2, xpMult: 1.5  },
+            { id: 'legendary',  name: 'LEGENDARY',   img: CHEST_IMG_PATH + 'Legendary.png', color: '#ff4500', tokens: [28, 40], fragments: 4, xpMult: 0    }
         ];
         const XP_BOOST_DURATION = 5;
-
-        function rollChestTier() {
-            const roll = Math.random();
-            let cumulative = 0;
-            for (const tier of VICTORY_CHEST_TIERS) {
-                cumulative += tier.prob;
-                if (roll < cumulative) return tier;
-            }
-            return VICTORY_CHEST_TIERS[0];
-        }
 
         function getChestTierById(id) {
             return VICTORY_CHEST_TIERS.find(t => t.id === id) || VICTORY_CHEST_TIERS[0];
@@ -13216,8 +13198,6 @@
         // ===== CHARACTER SYSTEM =====
         const MAX_CHARACTERS = 3;
         const MAX_LEVEL = 100;
-        const BASE_EXP_TO_LEVEL = 100;
-        const EXP_INCREASE_PER_LEVEL = 10; // +10 per level (linear)
         const HP_INCREASE_PER_LEVEL = 0.05; // 5%
         // Battle mode EXP (max 10 battles/day for EXP)
         const EXP_PER_WIN_MIN = 30;
@@ -13260,7 +13240,7 @@
         // Wardrobe (NFT) panel state
         const WARDROBE_NFT_PROGRAM_SOLANA = 'ChubNft111111111111111111111111111111111111';
         const WARDROBE_NFT_CONTRACT_MONAD  = '0x0000000000000000000000000000000000000000';
-        const HELIUS_API_KEY = 'YOUR_HELIUS_API_KEY'; // Replace after deployment
+
         let wardrobeWallet    = null;
         let wardrobeChain     = 'solana';
         let wardrobeNFTs      = [];
@@ -13411,9 +13391,8 @@
 
         function getExpForNextLevel(level) {
             if (level >= MAX_LEVEL) return Infinity;
-            // Linear progression: 100 + (level-1) * 10
-            // Level 1→2: 100, Level 2→3: 110, ..., Level 99→100: 1080
-            return BASE_EXP_TO_LEVEL + (level - 1) * EXP_INCREASE_PER_LEVEL;
+            // Formula is server-authoritative; frontend uses exp from character/list
+            return 100 + (level - 1) * 10;
         }
 
         function getCharacterMaxHp(character) {
@@ -14549,8 +14528,9 @@
                             local.element      = sc.element;
                             local.adaptability = sc.adaptability;
                             local.qTable       = sc.qTable;
-                            // Level and stats are validated server-side
+                            // Level, exp and stats are validated server-side
                             local.level  = sc.level;
+                            local.exp    = sc.exp ?? local.exp ?? 0;
                             local.stats  = sc.stats;
                             local.maxHp  = sc.maxHp;
                             local.skills = sc.skills;
@@ -16173,455 +16153,13 @@
 
             document.getElementById('resume-battle-btn').addEventListener('click', () => {
                 overlay.remove();
-                resumeBattle(battleData);
+                // chest tier determined server-side
+                applyForfeitPenalty(battleData);
             });
             document.getElementById('forfeit-battle-btn').addEventListener('click', () => {
                 overlay.remove();
                 applyForfeitPenalty(battleData);
             });
-        }
-
-        // Seeded PRNG (mulberry32) for deterministic offline simulation
-        function createSeededRng(seed) {
-            let s = seed | 0;
-            return function() {
-                s = (s + 0x6D2B79F5) | 0;
-                let t = Math.imul(s ^ (s >>> 15), 1 | s);
-                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-            };
-        }
-
-        // Simulate turns silently (no DOM, pure math) for offline time
-        const TURN_DURATION_ESTIMATE = 2.5; // seconds per turn (matches animation timing)
-
-        function simulateOfflineTurns(saved, elapsedSeconds) {
-            const turnsToSim = Math.floor(elapsedSeconds / TURN_DURATION_ESTIMATE);
-            if (turnsToSim <= 0) return saved;
-
-            // Use seeded RNG so same snapshot always produces same results
-            const rng = createSeededRng(saved.simSeed || 1);
-
-            // Work on copies so we don't mutate the original
-            const g = {
-                player: { ...saved.game.player },
-                cpu: { ...saved.game.cpu },
-                turn: saved.game.turn
-            };
-            const ws = {
-                player: {
-                    inventory: [...saved.weaponState.player.inventory],
-                    usedWeapons: [...saved.weaponState.player.usedWeapons],
-                    equippedWeapon: saved.weaponState.player.equippedWeapon,
-                    turnsRemaining: saved.weaponState.player.turnsRemaining
-                },
-                cpu: {
-                    inventory: [...saved.weaponState.cpu.inventory],
-                    usedWeapons: [...saved.weaponState.cpu.usedWeapons],
-                    equippedWeapon: saved.weaponState.cpu.equippedWeapon,
-                    turnsRemaining: saved.weaponState.cpu.turnsRemaining
-                }
-            };
-            const bc = {
-                player: saved.battleConsumables.player.map(c => ({ ...c })),
-                cpu: saved.battleConsumables.cpu.map(c => ({ ...c }))
-            };
-            const st = {
-                player: { ...saved.stats.player },
-                cpu: { ...saved.stats.cpu }
-            };
-
-            // Get character stats for damage calc
-            const character = characters.find(c => c.id === saved.characterId);
-            const pStats = character ? character.stats : { attack: 35, defense: 35, strength: 35, agility: 35 };
-            const cStats = saved.currentCpuStats || { attack: 35, defense: 35, strength: 35, agility: 35 };
-
-            function getStats(fighter) {
-                return fighter === 'player' ? pStats : cStats;
-            }
-
-            function simCalcDamage(baseDmg, isCrit, hasFury, isBasic, attacker, defender, atkType) {
-                let dmg = baseDmg;
-                if (isCrit) {
-                    let critMult = hasFury ? CRITICAL_MULTIPLIER_FURY : CRITICAL_MULTIPLIER;
-                    if (isBasic) critMult += 0.1;
-                    dmg *= critMult;
-                }
-                if (hasFury) dmg *= 1.4;
-                const aStats = getStats(attacker);
-                dmg *= (1 + aStats.attack * 0.01);
-                const strAttacks = ['kick', 'headbutt'];
-                const agiAttacks = ['punch', 'uppercut'];
-                const isWeapon = atkType && WEAPONS[atkType] !== undefined;
-                if (atkType && (strAttacks.includes(atkType) || isWeapon)) {
-                    dmg *= (1 + (aStats.strength || 35) * 0.01);
-                } else if (atkType && agiAttacks.includes(atkType)) {
-                    dmg *= (1 + (aStats.agility || 35) * 0.01);
-                }
-                let defDef = getStats(defender).defense || 35;
-                let effectiveDef = Math.sqrt(defDef) * 12;
-                if (atkType === 'uppercut') effectiveDef *= 0.70;
-                dmg *= 100 / (100 + effectiveDef);
-                return Math.round(dmg);
-            }
-
-            function simHit(attacker, defender, atkType, damageMultiplier) {
-                const dStats = getStats(defender);
-                const willDefend = rng() < 0.35;
-                let dodgeChance = Math.min(0.50, 0.40 + (dStats.agility || 35) * 0.002);
-                if (atkType === 'kick') dodgeChance = Math.max(0, dodgeChance - 0.15);
-                const defType = willDefend ? (rng() < dodgeChance ? 'dodge' : 'block') : 'none';
-
-                const isWeapon = WEAPONS[atkType] !== undefined;
-                const weapon = isWeapon ? WEAPONS[atkType] : null;
-                const baseDmg = isWeapon ? weapon.damage : DAMAGE[atkType];
-                const hasFury = g[attacker].furyActive;
-                const critBonus = isWeapon ? weapon.critBonus : 0;
-                let chance = CRITICAL_CHANCE + critBonus;
-                if (hasFury) chance += 0.20;
-                const isCrit = rng() < chance;
-
-                if (defType === 'none') {
-                    const finalDmg = Math.round(simCalcDamage(baseDmg, isCrit, hasFury, !isWeapon, attacker, defender, atkType) * damageMultiplier);
-                    g[defender].health = Math.max(0, g[defender].health - finalDmg);
-                    if (!hasFury) g[attacker].fury = Math.min(g[attacker].fury + FURY_GAIN, g[attacker].maxFury);
-                    st[attacker].hits++;
-                    st[attacker].totalDamage += finalDmg;
-                    if (isCrit) st[attacker].criticals++;
-                    if (atkType === 'headbutt' && !isWeapon) {
-                        const selfDmg = Math.round(finalDmg * 0.08);
-                        if (selfDmg > 0) g[attacker].health = Math.max(1, g[attacker].health - selfDmg);
-                    }
-                } else if (defType === 'block') {
-                    const blockRed = isWeapon ? 0.70 : 0.40;
-                    const fullDmg = Math.round(simCalcDamage(baseDmg, isCrit, hasFury, !isWeapon, attacker, defender, atkType) * damageMultiplier);
-                    const blockedDmg = Math.round(fullDmg * blockRed);
-                    g[defender].health = Math.max(0, g[defender].health - blockedDmg);
-                    if (!hasFury) g[attacker].fury = Math.min(g[attacker].fury + FURY_GAIN * 0.5, g[attacker].maxFury);
-                    g[defender].fury = Math.min(g[defender].fury + 1, g[defender].maxFury);
-                    st[defender].blocks++;
-                    st[attacker].hits++;
-                    st[attacker].totalDamage += blockedDmg;
-                } else {
-                    st[defender].dodges++;
-                }
-
-                return g[defender].health <= 0;
-            }
-
-            function simTryConsumable(fighter) {
-                if (g[fighter].health > g[fighter].maxHealth * CONSUMABLE_TRIGGER_HP) return;
-                const slots = bc[fighter];
-                const idx = slots.findIndex(s => !s.used);
-                if (idx === -1) return;
-                const cons = CONSUMABLES[slots[idx].id];
-                const heal = Math.round(g[fighter].maxHealth * cons.healPercent);
-                g[fighter].health = Math.min(g[fighter].maxHealth, g[fighter].health + heal);
-                slots[idx].used = true;
-            }
-
-            function simThrowWeapon(fighter, defender) {
-                const state = ws[fighter];
-                const weapon = WEAPONS[state.equippedWeapon];
-                const throwDmg = Math.round(((weapon.dmgMin + weapon.dmgMax) / 2) * 0.20);
-                g[defender].health = Math.max(0, g[defender].health - throwDmg);
-                st[fighter].weaponsThrown++;
-                state.usedWeapons.push(state.equippedWeapon);
-                state.equippedWeapon = null;
-                state.turnsRemaining = 0;
-                return g[defender].health <= 0;
-            }
-
-            function simEquipWeapon(fighter) {
-                const state = ws[fighter];
-                if (state.equippedWeapon) return state.equippedWeapon;
-                const avail = state.inventory.filter(w => !state.usedWeapons.includes(w));
-                if (avail.length === 0) return null;
-                const pLevel = character ? character.level : 1;
-                const cpuGuaranteed = (fighter === 'cpu' && pLevel >= 5);
-                if (!cpuGuaranteed && rng() > WEAPON_USE_CHANCE) return null;
-                const weaponType = avail[Math.floor(rng() * avail.length)];
-                state.equippedWeapon = weaponType;
-                state.turnsRemaining = 1 + Math.floor(rng() * 3);
-                st[fighter].weaponsUsed++;
-                return weaponType;
-            }
-
-            function simCheckFury(fighter) {
-                if (g[fighter].fury >= g[fighter].maxFury && !g[fighter].furyActive) {
-                    g[fighter].furyActive = true;
-                    g[fighter].fury = g[fighter].maxFury;
-                }
-            }
-
-            // Fury drains ~maxFury over FURY_DURATION (7s). Per turn (~2.5s): drain fraction
-            const furyDrainPerTurn = function(fighter) {
-                return g[fighter].maxFury * (TURN_DURATION_ESTIMATE / (FURY_DURATION / 1000));
-            };
-
-            let winner = null;
-            let timerRemaining = saved.matchTimerRemaining;
-            for (let t = 0; t < turnsToSim; t++) {
-                // Check if timer ran out
-                timerRemaining -= TURN_DURATION_ESTIMATE;
-                if (timerRemaining <= 0) {
-                    // Timer expired — resolve by HP like endByTimeout
-                    if (g.player.health > g.cpu.health) winner = 'player';
-                    else if (g.cpu.health > g.player.health) winner = 'cpu';
-                    else winner = 'draw';
-                    break;
-                }
-
-                const attacker = g.turn;
-                const defender = attacker === 'player' ? 'cpu' : 'player';
-
-                // Drain fury for active fury fighters
-                ['player', 'cpu'].forEach(f => {
-                    if (g[f].furyActive) {
-                        g[f].fury = Math.max(0, g[f].fury - furyDrainPerTurn(f));
-                        if (g[f].fury <= 0) {
-                            g[f].furyActive = false;
-                            g[f].fury = 0;
-                        }
-                    }
-                });
-
-                // Throw weapon if turns ran out
-                if (ws[attacker].equippedWeapon && ws[attacker].turnsRemaining <= 0) {
-                    if (simThrowWeapon(attacker, defender)) { winner = attacker; break; }
-                    simTryConsumable(defender);
-                }
-
-                // Equip weapon
-                simEquipWeapon(attacker);
-
-                // Determine attack
-                const equipped = ws[attacker].equippedWeapon;
-                let atkType;
-                let usingWeapon = false;
-                if (equipped) {
-                    atkType = equipped;
-                    usingWeapon = true;
-                    ws[attacker].turnsRemaining--;
-                } else {
-                    atkType = ['punch','kick','uppercut','headbutt'][Math.floor(rng()*4)];
-                }
-
-                // Turn steal check (defender fury 30%)
-                const defenderHasFury = g[defender].furyActive;
-                const turnStolen = defenderHasFury && rng() < 0.30;
-
-                if (turnStolen) {
-                    // Defender counter-hits attacker
-                    const defWeapon = ws[defender].equippedWeapon;
-                    let counterType;
-                    if (defWeapon) { counterType = defWeapon; ws[defender].turnsRemaining--; }
-                    else counterType = ['punch','kick','uppercut','headbutt'][Math.floor(rng()*4)];
-                    if (simHit(defender, attacker, counterType, 1)) { winner = defender; break; }
-                    simTryConsumable(attacker);
-                    // Attacker still gets reduced hit
-                    if (simHit(attacker, defender, atkType, 0.5)) { winner = attacker; break; }
-                    simTryConsumable(defender);
-                    g.turn = attacker; // Turn stays with attacker after steal
-                } else {
-                    // Normal hit
-                    if (simHit(attacker, defender, atkType, 1)) { winner = attacker; break; }
-                    simTryConsumable(defender);
-                    simTryConsumable(attacker);
-
-                    // Combo check
-                    const aAgi = getStats(attacker).agility || 35;
-                    let comboChance = Math.min(0.15, 0.10 + aAgi * 0.001);
-                    if (atkType === 'punch') comboChance += 0.10;
-                    if (g[attacker].furyActive) comboChance += 0.30;
-                    if (rng() < comboChance) {
-                        st[attacker].combos++;
-                        const extraHits = rng() < 0.5 ? 1 : 2;
-                        for (let ci = 0; ci < extraHits; ci++) {
-                            const comboType = ['punch','kick','uppercut','headbutt'][Math.floor(rng()*4)];
-                            if (simHit(attacker, defender, comboType, 1)) { winner = attacker; break; }
-                            simTryConsumable(defender);
-                        }
-                        if (winner) break;
-                    }
-                    g.turn = defender;
-                }
-
-                // Check fury activation
-                simCheckFury(attacker);
-                simCheckFury(defender);
-            }
-
-            // Write results back
-            saved.game.player = g.player;
-            saved.game.cpu = g.cpu;
-            saved.game.turn = g.turn;
-            if (winner) {
-                saved.game.gameOver = true;
-                if (winner === 'draw') {
-                    saved._offlineDraw = true;
-                } else {
-                    saved._offlineWinner = winner;
-                    saved._offlineLoser = winner === 'player' ? 'cpu' : 'player';
-                }
-            }
-            saved.weaponState = ws;
-            saved.battleConsumables = bc;
-            saved.stats = st;
-            saved.matchTimerRemaining = Math.max(0, timerRemaining);
-            return saved;
-        }
-
-        async function resumeBattle(saved) {
-            try {
-                // Select the saved character
-                const character = characters.find(c => c.id === saved.characterId);
-                if (!character) {
-                    applyForfeitPenalty(saved);
-                    showForfeitToast('Character no longer exists. Battle forfeited.');
-                    return;
-                }
-
-                // Simulate turns that would have happened while page was closed
-                const elapsedSecs = Math.floor((Date.now() - saved.timestamp) / 1000);
-                if (elapsedSecs > 0) {
-                    simulateOfflineTurns(saved, elapsedSecs);
-                }
-
-                selectedCharacterId = saved.characterId;
-
-                // Restore CPU identity
-                selectedCpuHue = saved.cpuHue;
-                currentCpuName = saved.currentCpuName;
-                currentCpuStats = saved.currentCpuStats;
-
-                // Restore AoN state
-                if (saved.aon) {
-                    aonActive = true;
-                    aonEntryFee = saved.aonEntryFee;
-                    aonFormat = saved.aonFormat;
-                    aonRoundsToWin = saved.aonRoundsToWin;
-                    aonScore = saved.aonScore || { player: 0, cpu: 0 };
-                    aonCurrentRound = saved.aonCurrentRound;
-                    aonRoundResults = saved.aonRoundResults || [];
-                    aonCpuName = saved.aonCpuName;
-                    aonCpuStats = saved.aonCpuStats;
-                }
-
-                _ensureAudioCtx(); // Unlock audio
-
-                // Show game container with loading screen
-                document.getElementById('game-container').style.display = '';
-                showLoadingScreen();
-                document.getElementById('lobby-wrapper').style.display = 'none';
-                await sleep(100);
-
-                // Process sprites (keepCpuHue=true to preserve saved CPU color)
-                updateLoadingProgress(10, 'Reloading fighter sprites...');
-                await sleep(50);
-                await processAllFighterImages(true);
-
-                updateLoadingProgress(70, 'Loading effects...');
-                await sleep(50);
-                await processEffectImages();
-
-                updateLoadingProgress(100, 'Resuming battle...');
-                await sleep(300);
-                hideLoadingScreen();
-
-                // Restore game state
-                game.player.health = saved.game.player.health;
-                game.player.maxHealth = saved.game.player.maxHealth;
-                game.player.fury = saved.game.player.fury;
-                game.player.maxFury = saved.game.player.maxFury;
-                game.player.furyActive = false; // Will re-activate below if needed
-                game.cpu.health = saved.game.cpu.health;
-                game.cpu.maxHealth = saved.game.cpu.maxHealth;
-                game.cpu.fury = saved.game.cpu.fury;
-                game.cpu.maxFury = saved.game.cpu.maxFury;
-                game.cpu.furyActive = false;
-                game.turn = saved.game.turn;
-                game.gameOver = false;
-                game.gameOverHandled = false;
-                game.inProgress = false;
-
-                // Restore weapon state
-                weaponState.player.inventory = saved.weaponState.player.inventory || [];
-                weaponState.player.usedWeapons = saved.weaponState.player.usedWeapons || [];
-                weaponState.player.equippedWeapon = saved.weaponState.player.equippedWeapon;
-                weaponState.player.turnsRemaining = saved.weaponState.player.turnsRemaining;
-                weaponState.cpu.inventory = saved.weaponState.cpu.inventory || [];
-                weaponState.cpu.usedWeapons = saved.weaponState.cpu.usedWeapons || [];
-                weaponState.cpu.equippedWeapon = saved.weaponState.cpu.equippedWeapon;
-                weaponState.cpu.turnsRemaining = saved.weaponState.cpu.turnsRemaining;
-
-                // Restore battle consumables
-                battleConsumables.player = saved.battleConsumables.player || [];
-                battleConsumables.cpu = saved.battleConsumables.cpu || [];
-
-                // Restore stats
-                stats.player = saved.stats.player;
-                stats.cpu = saved.stats.cpu;
-
-                // Update all UI
-                updateBothFighters();
-                updateFuryBar('player');
-                updateFuryBar('cpu');
-                updateCombatHud(character);
-                updateWeaponDisplay('player');
-                updateWeaponDisplay('cpu');
-                updateConsumableDisplay('player');
-                updateConsumableDisplay('cpu');
-                updateCombatEquipment();
-
-                // Restore fury visual effects if fury was active
-                if (saved.game.player.furyActive) {
-                    activateFury('player');
-                    game.player.fury = saved.game.player.fury;
-                    updateFuryBar('player');
-                }
-                if (saved.game.cpu.furyActive) {
-                    activateFury('cpu');
-                    game.cpu.fury = saved.game.cpu.fury;
-                    updateFuryBar('cpu');
-                }
-
-                // Restore AoN HUD score
-                if (saved.aon) {
-                    aonUpdateHudScore();
-                }
-
-                // Clear and init game log
-                document.getElementById('game-log').innerHTML = '';
-
-                startIdleBlink(game.player.element);
-                startIdleBlink(game.cpu.element);
-
-                // If the battle finished during offline simulation
-                if (saved._offlineWinner) {
-                    log('Battle finished while away.');
-                    game.gameOver = true;
-                    showGameOver(saved._offlineWinner, saved._offlineLoser);
-                    return;
-                }
-                if (saved._offlineDraw) {
-                    log('Battle ended in a draw while away.');
-                    game.gameOver = true;
-                    showResultsDraw();
-                    return;
-                }
-
-                // Server battles complete in a single request — no mid-battle
-                // state to resume. Clear the snapshot and send the player to lobby.
-                localStorage.removeItem('fightchub_battle_active');
-                document.getElementById('game-container').style.display = 'none';
-                document.getElementById('lobby-wrapper').style.display = '';
-                showNotice('Battle session expired. Start a new fight!');
-            } catch (e) {
-                console.error('Error resuming battle:', e);
-                applyForfeitPenalty(saved);
-                showForfeitToast('Failed to resume battle. Forfeited.');
-            }
         }
 
         (function checkBattleResume() {
@@ -20252,14 +19790,14 @@
             if (f.furyInterval) clearInterval(f.furyInterval);
 
             const drainStep = 100;
-            const drainAmount = f.maxFury / (FURY_DURATION / drainStep);
+            const drainAmount = f.maxFury / (7000 / drainStep);
             f.furyInterval = setInterval(() => {
                 f.fury = Math.max(0, f.fury - drainAmount);
                 updateFuryBar(fighter);
                 if (f.fury <= 0) deactivateFury(fighter);
             }, drainStep);
 
-            f.furyTimeout = setTimeout(() => { deactivateFury(fighter); }, FURY_DURATION);
+            f.furyTimeout = setTimeout(() => { deactivateFury(fighter); }, 7000);
 
             updateFuryBar(fighter);
         }
@@ -26603,22 +26141,15 @@
         }
 
         async function loadSolanaWardrobeSkins(walletAddress) {
-            const url = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
-            const res = await fetch(url, {
+            const url = `${BACKEND_URL}/api/nft/solana-assets`;
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0', id: 'wardrobe-fetch',
-                    method: 'getAssetsByOwner',
-                    params: {
-                        ownerAddress: walletAddress,
-                        page: 1, limit: 100,
-                        displayOptions: { showUnverifiedCollections: false },
-                    },
-                }),
+                headers: await getAuthHeaders(),
+                body: JSON.stringify({ walletAddress }),
             });
-            const data = await res.json();
-            const assets = (data.result && data.result.items) ? data.result.items : [];
+            const data = await response.json();
+            // data.items will contain the NFT assets
+            const assets = Array.isArray(data.items) ? data.items : [];
             return assets
                 .filter(a => {
                     const creators = a.creators || [];
