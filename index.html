@@ -20547,11 +20547,8 @@
         }
 
         // Canvas-based attack animation for basic attacks.
-        // Two layers per frame:
-        //   1. Smear ghost (behind): current frame drawn with ctx skew+scale transform
-        //      at 45% opacity peak — gives motion trail without affecting the main sprite.
-        //   2. Main frame (on top): clean, full opacity, no transform.
-        // Crossfade between consecutive frames softens hard cuts.
+        // Crossfade only: frame[i] at full alpha, frame[i+1] fades in on top.
+        // Keeps sprite fully opaque at all times while softening hard frame cuts.
         function _blendAttack(fighterEl, img, allFrames, duration) {
             const midIndex = Math.ceil(allFrames.length / 2);
             const reverseFrames = allFrames.slice(0, midIndex).reverse();
@@ -20574,7 +20571,6 @@
             cv.className = 'blend-attack-canvas';
             cv.width = 200;
             cv.height = 200;
-            // CSS transform only for centering + sprite direction — smear is drawn in canvas 2D
             cv.style.transform = `translate(-50%,-50%)${isCpu ? ' scaleX(-1)' : ''}`;
             body.appendChild(cv);
             const ctx = cv.getContext('2d', { alpha: true });
@@ -20601,35 +20597,17 @@
                 const idxB   = Math.min(idxA + 1, sequence.length - 1);
                 const blendT = seqPos - idxA;
 
-                const fwdProgress = Math.min(elapsed / duration, 1);
-                const smear = Math.sin(Math.PI * fwdProgress); // 0→1→0 during forward swing
-
                 const fA = frameImgs[idxA];
                 const fB = frameImgs[idxB];
 
                 ctx.clearRect(0, 0, 200, 200);
 
-                // ── Layer 1: smear ghost behind (skewed, low opacity) ─────────
-                if (smear > 0.01 && fA?.complete && fA.naturalWidth > 0) {
-                    const skewRad = smear * 8 * Math.PI / 180;
-                    const sx = 1 + smear * 0.10;
-                    const sy = 1 - smear * 0.05;
-                    ctx.save();
-                    ctx.globalAlpha = smear * 0.20; // max 20% opacity at peak
-                    // Apply skew+scale around canvas center (100,100)
-                    ctx.translate(100, 100);
-                    ctx.transform(sx, 0, Math.tan(skewRad), sy, 0, 0);
-                    ctx.translate(-100, -100);
-                    ctx.drawImage(fA, 0, 0, 200, 200);
-                    ctx.restore();
-                }
-
-                // ── Layer 2: main frame on top (clean, full opacity) ──────────
+                // Frame A: full alpha base
                 if (fA?.complete && fA.naturalWidth > 0) {
                     ctx.globalAlpha = 1;
                     ctx.drawImage(fA, 0, 0, 200, 200);
                 }
-                // Crossfade: next frame fades in on top
+                // Frame B: fades in on top
                 if (fB?.complete && fB.naturalWidth > 0) {
                     ctx.globalAlpha = blendT;
                     ctx.drawImage(fB, 0, 0, 200, 200);
