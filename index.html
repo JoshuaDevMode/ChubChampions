@@ -21102,13 +21102,14 @@
                         // remainingExp is already deducted by battle/run when leveledUp=true.
                         if (serverRemaining !== undefined) {
                             character.exp = serverRemaining;
+                            if (serverLeveledUp) {
+                                // Level will be set by levelup/apply; increment locally for display
+                                character.level = Math.min(MAX_LEVEL, character.level + 1);
+                            }
                         } else {
-                            // Older backend: fall back to local calculation
+                            // Older backend (no remainingExp): let addExpToCharacter handle
+                            // both exp accumulation and level increment to avoid double-increment.
                             addExpToCharacter(character.id, serverExp);
-                        }
-                        if (serverLeveledUp) {
-                            // Level will be set by levelup/apply; increment locally for display
-                            character.level = Math.min(MAX_LEVEL, character.level + 1);
                         }
                         saveCharacters();
 
@@ -22411,11 +22412,12 @@
                         const aonRemaining = lastBattleRewards?.remainingExp;
                         if (aonRemaining !== undefined) {
                             character.exp = aonRemaining;
+                            if (lastBattleRewards?.leveledUp) {
+                                character.level = Math.min(MAX_LEVEL, character.level + 1);
+                            }
                         } else {
+                            // Older backend: let addExpToCharacter handle both exp and level.
                             addExpToCharacter(character.id, serverExp);
-                        }
-                        if (lastBattleRewards?.leveledUp) {
-                            character.level = Math.min(MAX_LEVEL, character.level + 1);
                         }
                         saveCharacters();
                         if (lastBattleRewards?.leveledUp) {
