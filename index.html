@@ -12298,12 +12298,16 @@
         }
 
         function startChestUnlock(slotIndex) {
-            if (slotIndex < 0 || slotIndex >= pendingVictoryChests.length) return;
-            const chest = pendingVictoryChests[slotIndex];
+            const char = getSelectedCharacter();
+            const charChests = char
+                ? pendingVictoryChests.filter(c => !c.characterId || c.characterId === char.id)
+                : pendingVictoryChests;
+            if (slotIndex < 0 || slotIndex >= charChests.length) return;
+            const chest = charChests[slotIndex];
             if (chest.unlockStart) return; // already started
 
-            // Only one chest can unlock at a time
-            const alreadyUnlocking = pendingVictoryChests.some(c => c.unlockStart && getChestRemainingTime(c) > 0);
+            // Only one chest per character can unlock at a time
+            const alreadyUnlocking = charChests.some(c => c.unlockStart && getChestRemainingTime(c) > 0);
 
             const tier = getChestTierById(chest.tier);
             const duration = CHEST_UNLOCK_TIMES[chest.tier];
@@ -12332,7 +12336,7 @@
             tokenBtn.style.display = '';
 
             tokenBtn.addEventListener('click', async function() {
-                const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier });
+                const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier, characterId: char?.id, chestIndex: slotIndex });
                 if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
                 // Mark as ready instantly
                 chest.unlockStart = Date.now() - CHEST_UNLOCK_TIMES[chest.tier] - 1000;
@@ -12345,7 +12349,7 @@
 
             yesBtn.addEventListener('click', async function() {
                 // Persist unlock start server-side first
-                const result = await spendOnServer('start_chest_unlock', { chestIndex: slotIndex });
+                const result = await spendOnServer('start_chest_unlock', { characterId: char?.id, chestIndex: slotIndex });
                 if (!result.ok) {
                     showNotice(result.error || 'Could not start chest unlock. Try again.');
                     return;
@@ -12379,9 +12383,13 @@
         }
 
         async function openVictoryChest(slotIndex) {
-            if (slotIndex < 0 || slotIndex >= pendingVictoryChests.length) return;
+            const char = getSelectedCharacter();
+            const charChests = char
+                ? pendingVictoryChests.filter(c => !c.characterId || c.characterId === char.id)
+                : pendingVictoryChests;
+            if (slotIndex < 0 || slotIndex >= charChests.length) return;
 
-            const chest = pendingVictoryChests[slotIndex];
+            const chest = charChests[slotIndex];
 
             // Not started → show confirmation to start unlock
             if (!chest.unlockStart) {
@@ -12411,7 +12419,7 @@
                 tokenBtn.style.display = '';
 
                 tokenBtn.addEventListener('click', async function() {
-                    const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier });
+                    const result = await spendOnServer('skip_chest_timer', { chestTier: chest.tier, characterId: char?.id, chestIndex: slotIndex });
                     if (!result.ok) { showNotice(result.error || 'Not enough tokens!'); return; }
                     chest.unlockStart = Date.now() - chest.unlockDuration - 1000;
                     saveProgression();
@@ -12465,8 +12473,9 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
                         body: JSON.stringify({
-                            playerId:   playerSession.playerId,
-                            chestIndex: slotIndex,
+                            playerId:    playerSession.playerId,
+                            characterId: char?.id,
+                            chestIndex:  slotIndex,
                         }),
                     });
                     return r.ok ? await r.json() : null;
@@ -12507,7 +12516,8 @@
             rewardName.innerHTML = rewardLines.map(r => '<div class="reward-line">' + r + '</div>').join('');
 
             // Remove chest locally (server already removed it)
-            pendingVictoryChests.splice(slotIndex, 1);
+            const globalIdx = pendingVictoryChests.indexOf(chest);
+            if (globalIdx !== -1) pendingVictoryChests.splice(globalIdx, 1);
             saveProgression();
             updateCurrencyUI();
         }
@@ -12528,10 +12538,14 @@
         function updateVictoryChestSlots() {
             const container = document.getElementById('victory-chest-slots');
             if (!container) return;
+            const char = getSelectedCharacter();
+            const charChests = char
+                ? pendingVictoryChests.filter(c => !c.characterId || c.characterId === char.id)
+                : pendingVictoryChests;
             let html = '';
             for (let i = 0; i < 4; i++) {
-                if (i < pendingVictoryChests.length) {
-                    const chest = pendingVictoryChests[i];
+                if (i < charChests.length) {
+                    const chest = charChests[i];
                     const tier = getChestTierById(chest.tier);
                     let stateClass = 'chest-locked';
                     let timerHtml = '';
@@ -12940,8 +12954,8 @@
             const el = document.getElementById('daily-battle-counter');
             if (!el) return;
             const today = new Date().toDateString();
-            const played = (dailyBattleDate === today) ? dailyBattlesPlayed : 0;
             const char = getSelectedCharacter();
+            const played = (char && char.dailyBattleDate === today) ? (char.dailyBattlesPlayed || 0) : 0;
             const effectiveLimit = getEffectiveBattleLimit(char);
             const remaining = Math.max(0, effectiveLimit - played);
             if (remaining === 0) {
@@ -21053,17 +21067,21 @@
 
             lastExpGained = 0; // Reset
 
-            // Daily battle limit check (resets each day)
+            // Daily battle limit check — per character (resets each day)
             const today = new Date().toDateString();
-            if (dailyBattleDate !== today) {
-                dailyBattleDate = today;
-                dailyBattlesPlayed = 0;
+            const _battleChar = getSelectedCharacter();
+            if (_battleChar) {
+                if (_battleChar.dailyBattleDate !== today) {
+                    _battleChar.dailyBattleDate = today;
+                    _battleChar.dailyBattlesPlayed = 0;
+                }
             }
-            const effectiveLimit = getEffectiveBattleLimit(getSelectedCharacter());
-            const withinDailyLimit = dailyBattlesPlayed < effectiveLimit;
+            const effectiveLimit = getEffectiveBattleLimit(_battleChar);
+            const _charPlayed = _battleChar ? (_battleChar.dailyBattlesPlayed || 0) : 0;
+            const withinDailyLimit = _charPlayed < effectiveLimit;
             lastBattleWithinLimit = withinDailyLimit;
-            dailyBattlesPlayed++;
-            saveProgression();
+            if (_battleChar) _battleChar.dailyBattlesPlayed = _charPlayed + 1;
+            saveCharacters();
 
             // Track battle for progression (only if within daily limit)
             if (withinDailyLimit) {
@@ -21170,8 +21188,10 @@
                     }
                 }
                 // Chest
-                if (lastBattleRewards.chestTier && pendingVictoryChests.length < 4) {
-                    pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, unlockStart: null, unlockDuration: null });
+                const _chestChar = getSelectedCharacter();
+                const _charChestCount = _chestChar ? pendingVictoryChests.filter(c => !c.characterId || c.characterId === _chestChar.id).length : pendingVictoryChests.length;
+                if (lastBattleRewards.chestTier && _charChestCount < 4) {
+                    pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, characterId: _chestChar?.id, unlockStart: null, unlockDuration: null });
                     const tierName = lastBattleRewards.chestTier.charAt(0).toUpperCase() + lastBattleRewards.chestTier.slice(1);
                     addNotification('📦', tierName + ' chest earned!', 'chest');
                 }
