@@ -14904,28 +14904,54 @@
             const _mvArenaW = document.getElementById('arena').offsetWidth;
             const _mvScale  = _mvArenaW / 1600;
             if (event.from !== event.to) {
-                const movEl     = game[event.fighter].element;
+                const movEl      = game[event.fighter].element;
                 const movingLeft = event.to < event.from;
-                // isBack = sprite faces opposite its natural forward direction.
-                // Player natural = right; CPU natural = left.
-                const isBack = event.fighter === 'player' ? movingLeft : !movingLeft;
-                // Duration scales with distance (encodes AGI + level)
                 const distServer = Math.abs(event.to - event.from);
-                // Physics: time = distance / speed.
-                // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
-                // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
-                const pxPerTurn = event.speed || 180;
-                const moveDur   = Math.max(120, Math.min(600, Math.round(distServer / pxPerTurn * 300)));
-                movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
-                void movEl.offsetWidth;
                 const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
-                movEl.style.left  = _movTargetX + 'px';
-                movEl.style.right = 'auto';
-                // Frame rate driven by AGI speed (px/turn), not distance
-                animateRun(movEl, isBack, null, event.speed);
-                await sleep(moveDur);
-                stopRunAnimation(movEl);
-                movEl.style.transition = '';
+
+                if (event.isBounce) {
+                    // Wall bounce: hurt frame slides back with ease-out
+                    const movImg     = movEl.querySelector('img.character-png');
+                    const hurtFrames = movImg?._hurtFrames;
+                    if (hurtFrames?.length) movImg.src = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
+                    const bounceDur = Math.max(80, Math.min(280, Math.round(distServer * 0.9)));
+                    movEl.style.transition = `left ${bounceDur}ms ease-out`;
+                    void movEl.offsetWidth;
+                    movEl.style.left  = _movTargetX + 'px';
+                    movEl.style.right = 'auto';
+                    // Show wall impact damage
+                    if (event.bounceDamage > 0) {
+                        showDamage(event.fighter, event.bounceDamage, false);
+                        if (event.playerHp !== undefined) {
+                            game.player.health = event.playerHp;
+                            game.cpu.health    = event.cpuHp;
+                            updateBothFighters();
+                        }
+                    }
+                    await sleep(bounceDur);
+                    movEl.style.transition = '';
+                    // Return to idle after brief hurt pause
+                    setTimeout(() => { if (movImg && movImg._idleSrc) movImg.src = movImg._idleSrc; }, 120);
+                } else {
+                    // Normal move
+                    // isBack = sprite faces opposite its natural forward direction.
+                    // Player natural = right; CPU natural = left.
+                    const isBack = event.fighter === 'player' ? movingLeft : !movingLeft;
+                    // Physics: time = distance / speed.
+                    // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
+                    // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
+                    const pxPerTurn = event.speed || 180;
+                    const moveDur   = Math.max(120, Math.min(600, Math.round(distServer / pxPerTurn * 300)));
+                    movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
+                    void movEl.offsetWidth;
+                    movEl.style.left  = _movTargetX + 'px';
+                    movEl.style.right = 'auto';
+                    // Frame rate driven by AGI speed (px/turn), not distance
+                    animateRun(movEl, isBack, null, event.speed);
+                    await sleep(moveDur);
+                    stopRunAnimation(movEl);
+                    movEl.style.transition = '';
+                }
             } else {
                 // No movement — just sync positions silently
                 pEl.style.left  = (event.playerX * _mvScale) + 'px';
@@ -19142,7 +19168,7 @@
                     if (power.includes('tsunami')) {
                         const fromLeft  = caster === 'player';
                         // Ground level in arena-world coordinate space (same system as left/top on spawned elements)
-                        const feetY     = arena.offsetHeight - 35;
+                        const feetY     = _fighterGroundY[target] ?? getCharacterFeetY(target);
                         const waveH     = Math.round(arena.offsetHeight * 0.55);
                         const waveW     = Math.round(waveH * 1.45);
                         // WAVE_DRAWN: fraction of canvas height where the wave visually meets the ground.
