@@ -20546,10 +20546,12 @@
             stopSpriteAnimation(fighterEl);
         }
 
-        // Canvas-based attack animation with smear + crossfade for basic attacks.
-        // Smear: CSS transform (skewX + scaleX) peaks at mid-swing, giving motion feel.
-        // Crossfade: draws frame[i] at full alpha, then frame[i+1] at blendT on top —
-        //   keeps sprite fully opaque at all times while softening frame cuts.
+        // Canvas-based attack animation for basic attacks.
+        // Two layers per frame:
+        //   1. Smear ghost (behind): current frame drawn with ctx skew+scale transform
+        //      at 45% opacity peak — gives motion trail without affecting the main sprite.
+        //   2. Main frame (on top): clean, full opacity, no transform.
+        // Crossfade between consecutive frames softens hard cuts.
         function _blendAttack(fighterEl, img, allFrames, duration) {
             const midIndex = Math.ceil(allFrames.length / 2);
             const reverseFrames = allFrames.slice(0, midIndex).reverse();
@@ -20558,7 +20560,6 @@
             const frameDuration = duration / allFrames.length;
             const totalDuration = duration + reverseFrames.length * frameDuration;
 
-            // Pre-decode frames as Image objects (blob URLs already in browser cache)
             const frameImgs = sequence.map(src => {
                 const fi = new Image();
                 fi.src = src;
@@ -20567,13 +20568,14 @@
 
             const body = fighterEl.querySelector('.fighter-body');
             const isCpu = !!fighterEl.closest('#cpu');
-            const flipStr = isCpu ? 'scaleX(-1) ' : '';
 
             img.style.visibility = 'hidden';
             const cv = document.createElement('canvas');
             cv.className = 'blend-attack-canvas';
             cv.width = 200;
             cv.height = 200;
+            // CSS transform only for centering + sprite direction — smear is drawn in canvas 2D
+            cv.style.transform = `translate(-50%,-50%)${isCpu ? ' scaleX(-1)' : ''}`;
             body.appendChild(cv);
             const ctx = cv.getContext('2d', { alpha: true });
 
@@ -20594,38 +20596,45 @@
                     return;
                 }
 
-                // ── Crossfade between consecutive frames ──────────────────────
                 const seqPos = (elapsed / totalDuration) * (sequence.length - 1);
                 const idxA   = Math.floor(seqPos);
                 const idxB   = Math.min(idxA + 1, sequence.length - 1);
-                const blendT = seqPos - idxA; // 0→1 within current frame interval
+                const blendT = seqPos - idxA;
 
-                ctx.clearRect(0, 0, 200, 200);
+                const fwdProgress = Math.min(elapsed / duration, 1);
+                const smear = Math.sin(Math.PI * fwdProgress); // 0→1→0 during forward swing
+
                 const fA = frameImgs[idxA];
                 const fB = frameImgs[idxB];
-                // Frame A: full alpha (base layer — sprite never goes transparent)
+
+                ctx.clearRect(0, 0, 200, 200);
+
+                // ── Layer 1: smear ghost behind (skewed, low opacity) ─────────
+                if (smear > 0.01 && fA?.complete && fA.naturalWidth > 0) {
+                    const skewRad = smear * 8 * Math.PI / 180;
+                    const sx = 1 + smear * 0.10;
+                    const sy = 1 - smear * 0.05;
+                    ctx.save();
+                    ctx.globalAlpha = smear * 0.45; // max 45% opacity at peak
+                    // Apply skew+scale around canvas center (100,100)
+                    ctx.translate(100, 100);
+                    ctx.transform(sx, 0, Math.tan(skewRad), sy, 0, 0);
+                    ctx.translate(-100, -100);
+                    ctx.drawImage(fA, 0, 0, 200, 200);
+                    ctx.restore();
+                }
+
+                // ── Layer 2: main frame on top (clean, full opacity) ──────────
                 if (fA?.complete && fA.naturalWidth > 0) {
                     ctx.globalAlpha = 1;
                     ctx.drawImage(fA, 0, 0, 200, 200);
                 }
-                // Frame B: composites on top at blendT (new pose fades in over old)
+                // Crossfade: next frame fades in on top
                 if (fB?.complete && fB.naturalWidth > 0) {
                     ctx.globalAlpha = blendT;
                     ctx.drawImage(fB, 0, 0, 200, 200);
                 }
                 ctx.globalAlpha = 1;
-
-                // ── Smear: CSS transform on the canvas element ────────────────
-                // sin curve peaks at mid-swing (middle of the forward phase),
-                // returns to 0 at impact and stays 0 during recovery.
-                const fwdProgress = Math.min(elapsed / duration, 1);
-                const smear   = Math.sin(Math.PI * fwdProgress);
-                const skewDeg = (smear * 8).toFixed(2);
-                const sx      = (1 + smear * 0.10).toFixed(4);
-                const sy      = (1 - smear * 0.05).toFixed(4);
-                // Opacity fades to 45% at peak smear, full at start/end
-                cv.style.opacity   = (1 - smear * 0.55).toFixed(3);
-                cv.style.transform = `translate(-50%,-50%) ${flipStr}scaleX(${sx}) scaleY(${sy}) skewX(${skewDeg}deg)`;
 
                 img._blendRaf = requestAnimationFrame(draw);
             }
