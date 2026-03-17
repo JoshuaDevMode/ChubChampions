@@ -14860,7 +14860,7 @@
             }, 1000);
 
             // Cancel button
-            document.getElementById('matchmaking-cancel').addEventListener('click', () => {
+            document.getElementById('matchmaking-cancel').addEventListener('click', async () => {
                 cancelled = true;
                 clearInterval(countdownInterval);
                 overlay.remove();
