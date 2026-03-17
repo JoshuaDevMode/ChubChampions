@@ -20545,78 +20545,56 @@
             stopSpriteAnimation(fighterEl);
         }
 
-        // Canvas-based attack animation for basic attacks.
-        // Crossfade only: frame[i] at full alpha, frame[i+1] fades in on top.
-        // Keeps sprite fully opaque at all times while softening hard frame cuts.
+        // Non-uniform frame timing for basic attacks.
+        // Early frames (wind-up/swing) are fast; the impact frame holds longer.
+        // Uses setTimeout chain so each frame has its own delay — no canvas needed.
         function _blendAttack(fighterEl, img, allFrames, duration) {
+            // Weight per forward frame — must sum to 1.0
+            function getWeights(n) {
+                if (n <= 1) return [1];
+                if (n === 2) return [0.30, 0.70];
+                if (n === 3) return [0.20, 0.50, 0.30];
+                if (n === 4) return [0.15, 0.20, 0.40, 0.25];
+                if (n === 5) return [0.10, 0.15, 0.15, 0.35, 0.25];
+                // 6+ frames: early frames share 40%, last two share 60%
+                const earlyCount = n - 2;
+                const w = Array(earlyCount).fill(0.40 / earlyCount);
+                w.push(0.40, 0.20);
+                return w;
+            }
+
+            const weights = getWeights(allFrames.length);
             const midIndex = Math.ceil(allFrames.length / 2);
             const reverseFrames = allFrames.slice(0, midIndex).reverse();
-            const sequence = [...allFrames, ...reverseFrames];
+            // Reverse plays at uniform speed (fast recovery)
+            const reverseSpeed = Math.max(30, Math.round(duration / allFrames.length * 0.7));
 
-            const frameDuration = duration / allFrames.length;
-            const totalDuration = duration + reverseFrames.length * frameDuration;
+            img.src = allFrames[0];
 
-            const frameImgs = sequence.map(src => {
-                const fi = new Image();
-                fi.src = src;
-                return fi;
-            });
-
-            const body = fighterEl.querySelector('.fighter-body');
-            const isCpu = !!fighterEl.closest('#cpu');
-
-            img.style.visibility = 'hidden';
-            const cv = document.createElement('canvas');
-            cv.className = 'blend-attack-canvas';
-            cv.width = 200;
-            cv.height = 200;
-            cv.style.transform = `translate(-50%,-50%)${isCpu ? ' scaleX(-1)' : ''}`;
-            body.appendChild(cv);
-            const ctx = cv.getContext('2d', { alpha: true });
-
-            function cleanup() {
-                cv.remove();
-                img.style.visibility = '';
-                img._blendRaf = null;
-                img._attackDone = true;
+            // Build flat schedule: [[src, delayMs], ...]
+            const schedule = [];
+            for (let i = 0; i < allFrames.length; i++) {
+                schedule.push([allFrames[i], Math.round(weights[i] * duration)]);
+            }
+            for (const src of reverseFrames) {
+                schedule.push([src, reverseSpeed]);
             }
 
-            let start = null;
-            function draw(ts) {
-                if (!start) start = ts;
-                const elapsed = ts - start;
-
-                if (elapsed >= totalDuration) {
-                    cleanup();
+            let step = 0;
+            function next() {
+                step++;
+                if (step >= schedule.length) {
+                    img._attackDone = true;
+                    img._currentAnim = null;
                     return;
                 }
-
-                const seqPos = (elapsed / totalDuration) * (sequence.length - 1);
-                const idxA   = Math.floor(seqPos);
-                const idxB   = Math.min(idxA + 1, sequence.length - 1);
-                const blendT = seqPos - idxA;
-
-                const fA = frameImgs[idxA];
-                const fB = frameImgs[idxB];
-
-                ctx.clearRect(0, 0, 200, 200);
-
-                // Frame A: full alpha base
-                if (fA?.complete && fA.naturalWidth > 0) {
-                    ctx.globalAlpha = 1;
-                    ctx.drawImage(fA, 0, 0, 200, 200);
-                }
-                // Frame B: fades in on top
-                if (fB?.complete && fB.naturalWidth > 0) {
-                    ctx.globalAlpha = blendT;
-                    ctx.drawImage(fB, 0, 0, 200, 200);
-                }
-                ctx.globalAlpha = 1;
-
-                img._blendRaf = requestAnimationFrame(draw);
+                const [src, delay] = schedule[step];
+                img.src = src;
+                img._currentAnim = setTimeout(next, delay);
             }
 
-            img._blendRaf = requestAnimationFrame(draw);
+            // Start the chain (clearInterval/clearTimeout are interchangeable for IDs)
+            img._currentAnim = setTimeout(next, schedule[0][1]);
         }
 
         function animateAttack(fighterEl, attackType, duration, weaponId) {
