@@ -15285,7 +15285,24 @@
             // Used by Earth Spike so the pillar always erupts from the floor
             // regardless of whether the target is airborne when it fires.
             _fighterGroundY = {};
-            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            await new Promise(resolve => {
+                const imgs = [
+                    game.player?.element?.querySelector('.character-png'),
+                    game.cpu?.element?.querySelector('.character-png'),
+                ].filter(Boolean);
+                const unloaded = imgs.filter(img => !img.complete || img.naturalWidth === 0);
+                if (unloaded.length === 0) {
+                    requestAnimationFrame(() => requestAnimationFrame(resolve));
+                    return;
+                }
+                let done = 0;
+                const onLoad = () => { if (++done >= unloaded.length) requestAnimationFrame(() => requestAnimationFrame(resolve)); };
+                unloaded.forEach(img => {
+                    img.addEventListener('load',  onLoad, { once: true });
+                    img.addEventListener('error', onLoad, { once: true });
+                });
+                setTimeout(resolve, 2000); // safety fallback
+            });
             _fighterGroundY.player = getCharacterFeetY('player');
             _fighterGroundY.cpu    = getCharacterFeetY('cpu');
 
