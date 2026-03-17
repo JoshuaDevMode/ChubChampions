@@ -16109,11 +16109,11 @@
                 selectedCharacterId = characters.length > 0 ? characters[0].id : null;
             }
             saveCharacters();
-            // Sync deletion to Supabase
-            if (playerSession && BACKEND_URL && SYNC_SECRET) {
+            // Sync deletion to Supabase (requires Privy JWT + sync-secret)
+            if (playerSession && BACKEND_URL) {
                 fetchWithTimeout(BACKEND_URL + '/api/character/delete', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-sync-secret': SYNC_SECRET },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                     body: JSON.stringify({ playerId: playerSession.playerId, characterId: id }),
                 }).catch(e => console.warn('[delete] character delete error:', e));
             }
@@ -16945,7 +16945,7 @@
         }
 
         function getRerollButtonState() {
-            const freeAlloc = globalCharactersCreated === 0 ? 2 : globalCharactersCreated === 1 ? 3 : 3;
+            const freeAlloc = 3; // fixed per account — never scales with characters created
             const freeRemaining = Math.max(0, freeAlloc - globalTotalFreeRerollsUsed);
             const REROLL_COST_TABLE = [25, 35, 50, 70, 100, 140, 195, 270, 375, 525];
             function getRerollCost(idx) {
