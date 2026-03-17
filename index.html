@@ -20620,9 +20620,11 @@
                 // returns to 0 at impact and stays 0 during recovery.
                 const fwdProgress = Math.min(elapsed / duration, 1);
                 const smear   = Math.sin(Math.PI * fwdProgress);
-                const skewDeg = (smear * 8).toFixed(2);   // max 8° lean
-                const sx      = (1 + smear * 0.10).toFixed(4); // max 10% stretch
-                const sy      = (1 - smear * 0.05).toFixed(4); // slight vertical compress
+                const skewDeg = (smear * 8).toFixed(2);
+                const sx      = (1 + smear * 0.10).toFixed(4);
+                const sy      = (1 - smear * 0.05).toFixed(4);
+                // Opacity fades to 65% at peak smear, full at start/end
+                cv.style.opacity   = (1 - smear * 0.35).toFixed(3);
                 cv.style.transform = `translate(-50%,-50%) ${flipStr}scaleX(${sx}) scaleY(${sy}) skewX(${skewDeg}deg)`;
 
                 img._blendRaf = requestAnimationFrame(draw);
