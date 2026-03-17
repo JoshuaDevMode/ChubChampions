@@ -20614,7 +20614,7 @@
                     const sx = 1 + smear * 0.10;
                     const sy = 1 - smear * 0.05;
                     ctx.save();
-                    ctx.globalAlpha = smear * 0.45; // max 45% opacity at peak
+                    ctx.globalAlpha = smear * 0.20; // max 20% opacity at peak
                     // Apply skew+scale around canvas center (100,100)
                     ctx.translate(100, 100);
                     ctx.transform(sx, 0, Math.tan(skewRad), sy, 0, 0);
