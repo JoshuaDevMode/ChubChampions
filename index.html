@@ -15697,7 +15697,7 @@
                     ], { duration: _total, easing: 'ease-in-out', fill: 'forwards' });
                     fighterBody._jumpLandMs = _hold + _fall;
                 }
-                animateAttack(attackerEl, animType, Math.round(500 * atkMult), isWeaponAnim ? attackType : undefined);
+                animateAttack(attackerEl, animType, Math.round(375 * atkMult), isWeaponAnim ? attackType : undefined);
                 await sleep(Math.round(300 * atkMult));
             }
 
@@ -20623,8 +20623,8 @@
                 const skewDeg = (smear * 8).toFixed(2);
                 const sx      = (1 + smear * 0.10).toFixed(4);
                 const sy      = (1 - smear * 0.05).toFixed(4);
-                // Opacity fades to 65% at peak smear, full at start/end
-                cv.style.opacity   = (1 - smear * 0.35).toFixed(3);
+                // Opacity fades to 45% at peak smear, full at start/end
+                cv.style.opacity   = (1 - smear * 0.55).toFixed(3);
                 cv.style.transform = `translate(-50%,-50%) ${flipStr}scaleX(${sx}) scaleY(${sy}) skewX(${skewDeg}deg)`;
 
                 img._blendRaf = requestAnimationFrame(draw);
