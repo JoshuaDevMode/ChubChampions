@@ -20470,6 +20470,9 @@
 
             img._idleSrc = img._idleSrc || img.src;
             if (img._currentAnim) { clearInterval(img._currentAnim); img._currentAnim = null; }
+            // Cancel blend attack RAF and remove canvas before restoring img visibility
+            if (img._blendRaf) { cancelAnimationFrame(img._blendRaf); img._blendRaf = null; }
+            fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
             // Restore visibility and remove attack overlays in case a weapon attack was interrupted mid-animation
             img.style.visibility = '';
             fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay').forEach(el => el.remove());
