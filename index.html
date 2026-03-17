@@ -16850,14 +16850,36 @@
                     tempNewCharacter.stats.defense  = srv.def;
                     tempNewCharacter.maxHp          = srv.hp;
                     tempNewCharacter.stats.energy   = srv.energy || 0;
+                    if (srv.element) tempNewCharacter.element = srv.element;
+                } else {
+                    // No pending stats — generate them immediately (no element required).
+                    // Element is chosen separately and does not affect the stat roll.
+                    document.getElementById('preview-hp').textContent  = '...';
+                    document.getElementById('preview-atk').textContent = '...';
+                    document.getElementById('preview-str').textContent = '...';
+                    document.getElementById('preview-agi').textContent = '...';
+                    document.getElementById('preview-def').textContent = '...';
+                    document.getElementById('preview-ene').textContent = '...';
+                    const result = await spendOnServer('generate_stats', {});
+                    if (result.ok && result.stats) {
+                        const srv = result.stats;
+                        tempNewCharacter.stats.attack   = srv.atk;
+                        tempNewCharacter.stats.strength = srv.str;
+                        tempNewCharacter.stats.agility  = srv.agi;
+                        tempNewCharacter.stats.defense  = srv.def;
+                        tempNewCharacter.maxHp          = srv.hp;
+                        tempNewCharacter.stats.energy   = srv.energy || 0;
+                        serverPendingStats = result.stats;
+                    }
                 }
                 // Restore element choice from localStorage
                 const savedMeta = loadTempChar();
-                if (savedMeta && savedMeta.element) {
+                if (savedMeta && savedMeta.element && !tempNewCharacter.element) {
                     tempNewCharacter.element = savedMeta.element;
                 }
             }
-            // Restore element selection UI, or ask player to pick
+
+            // Restore element selection UI
             document.querySelectorAll('.elem-guide-card').forEach(c => c.classList.remove('selected'));
             const previewElReset = document.getElementById('preview-element');
             if (tempNewCharacter.element) {
@@ -16867,15 +16889,9 @@
             } else {
                 if (previewElReset) previewElReset.innerHTML = '<span style="color:#888;font-size:0.85em;">Pick an element ↑</span>';
             }
-            // Show stats — display '--' until an element is chosen and stats generated
-            if (!tempNewCharacter.element || !serverPendingStats) {
-                document.getElementById('preview-hp').textContent  = '--';
-                document.getElementById('preview-atk').textContent = '--';
-                document.getElementById('preview-str').textContent = '--';
-                document.getElementById('preview-agi').textContent = '--';
-                document.getElementById('preview-def').textContent = '--';
-                document.getElementById('preview-ene').textContent = '--';
-            } else {
+
+            // Show stats — always visible now (element not required)
+            if (serverPendingStats) {
                 document.getElementById('preview-hp').textContent  = getCharacterMaxHp(tempNewCharacter);
                 document.getElementById('preview-atk').textContent = tempNewCharacter.stats.attack;
                 document.getElementById('preview-str').textContent = tempNewCharacter.stats.strength;
@@ -16883,17 +16899,14 @@
                 document.getElementById('preview-def').textContent = tempNewCharacter.stats.defense;
                 document.getElementById('preview-ene').textContent = tempNewCharacter.stats.energy || 0;
             }
-            // Reroll button: disabled until element chosen; then free/paid cost
+
+            // Reroll available immediately (no element required)
             const rerollBtn = document.getElementById('btn-reroll-stats');
-            if (!tempNewCharacter.element) {
-                rerollBtn.disabled = true;
-                rerollBtn.textContent = '🎲 REROLL (pick element first)';
-            } else {
-                const { freeRemaining: rerollFreeLeft, nextCost: rerollNextCost } = getRerollButtonState();
-                rerollBtn.disabled = false;
-                rerollBtn.textContent = rerollFreeLeft > 0 ? '🎲 REROLL FREE (' + rerollFreeLeft + ')' : '🎲 REROLL 🪙' + rerollNextCost;
-            }
-            // Disable CREATE until element is chosen (enable if already had one)
+            const { freeRemaining: rerollFreeLeft, nextCost: rerollNextCost } = getRerollButtonState();
+            rerollBtn.disabled = !serverPendingStats;
+            rerollBtn.textContent = rerollFreeLeft > 0 ? '🎲 REROLL FREE (' + rerollFreeLeft + ')' : '🎲 REROLL 🪙' + rerollNextCost;
+
+            // CREATE still requires element — player must make a deliberate choice
             document.getElementById('btn-confirm-create').disabled = !tempNewCharacter.element;
             document.getElementById('character-create-modal').classList.add('active');
         }
@@ -17438,7 +17451,8 @@
         document.getElementById('btn-reroll-stats').addEventListener('click', rerollStats);
         document.getElementById('btn-confirm-create').addEventListener('click', confirmCharacterCreation);
 
-        // Element picker — click to select element, then fetch element-biased stats from server
+        // Element picker — selecting an element does NOT regenerate stats.
+        // Stats are generated once on creation open; element is an independent choice.
         document.querySelectorAll('.elem-guide-card[data-element]').forEach(card => {
             card.addEventListener('click', async () => {
                 if (!tempNewCharacter) return;
@@ -17449,33 +17463,10 @@
                 saveTempChar();
                 const previewEl = document.getElementById('preview-element');
                 if (previewEl) previewEl.innerHTML = elementBadgeHTML(el, 'sm') || el;
-                document.getElementById('btn-confirm-create').disabled = true; // disable during load
-
-                // Generate stats for chosen element
-                const result = await spendOnServer('generate_stats', { element: el });
-                if (result.ok && result.stats) {
-                    const srv = result.stats;
-                    tempNewCharacter.stats.attack   = srv.atk;
-                    tempNewCharacter.stats.strength = srv.str;
-                    tempNewCharacter.stats.agility  = srv.agi;
-                    tempNewCharacter.stats.defense  = srv.def;
-                    tempNewCharacter.maxHp          = srv.hp;
-                    tempNewCharacter.stats.energy   = srv.energy || 0;
-                    serverPendingStats = result.stats;
-                    document.getElementById('preview-hp').textContent  = tempNewCharacter.maxHp;
-                    document.getElementById('preview-atk').textContent = srv.atk;
-                    document.getElementById('preview-str').textContent = srv.str;
-                    document.getElementById('preview-agi').textContent = srv.agi;
-                    document.getElementById('preview-def').textContent = srv.def;
-                    document.getElementById('preview-ene').textContent = srv.energy || 0;
-                }
                 document.getElementById('btn-confirm-create').disabled = false;
 
-                // Enable reroll button now that element is chosen
-                const { freeRemaining, nextCost } = getRerollButtonState();
-                const rerollBtn = document.getElementById('btn-reroll-stats');
-                rerollBtn.disabled = false;
-                rerollBtn.textContent = freeRemaining > 0 ? '🎲 REROLL FREE (' + freeRemaining + ')' : '🎲 REROLL 🪙' + nextCost;
+                // Update pending_stats.element on server (reuses existing stats — no new random roll)
+                spendOnServer('generate_stats', { element: el }).catch(() => {});
             });
         });
 
