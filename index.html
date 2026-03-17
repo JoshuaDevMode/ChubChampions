@@ -391,17 +391,12 @@
 
         .blend-attack-canvas {
             position: absolute;
-            width: 200px;
-            height: 200px;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 0;
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
-        }
-        #cpu .blend-attack-canvas {
-            transform: translate(-50%, -50%) scaleX(-1);
+            /* transform handled entirely in JS (smear + flip) */
         }
 
         #cpu .weapon-attack-char-overlay {
@@ -20548,30 +20543,30 @@
             stopSpriteAnimation(fighterEl);
         }
 
-        // Canvas-based frame blending for basic attacks.
-        // Instead of hard-cutting between frames, blends frame[i] → frame[i+1]
-        // continuously using RAF + globalAlpha. Produces synthetic inbetween frames
-        // without generating new sprite data.
+        // Canvas-based attack animation with smear + crossfade for basic attacks.
+        // Smear: CSS transform (skewX + scaleX) peaks at mid-swing, giving motion feel.
+        // Crossfade: draws frame[i] at full alpha, then frame[i+1] at blendT on top —
+        //   keeps sprite fully opaque at all times while softening frame cuts.
         function _blendAttack(fighterEl, img, allFrames, duration) {
             const midIndex = Math.ceil(allFrames.length / 2);
             const reverseFrames = allFrames.slice(0, midIndex).reverse();
-            // Full sequence: forward all frames + reverse back to frame 0
             const sequence = [...allFrames, ...reverseFrames];
 
-            // Pre-decode all frames as Image objects (blob URLs are already in browser cache)
+            const frameDuration = duration / allFrames.length;
+            const totalDuration = duration + reverseFrames.length * frameDuration;
+
+            // Pre-decode frames as Image objects (blob URLs already in browser cache)
             const frameImgs = sequence.map(src => {
                 const fi = new Image();
                 fi.src = src;
                 return fi;
             });
 
-            // Time budget: forward phase uses `duration`, reverse phase is proportional
-            const frameDuration = duration / allFrames.length;
-            const totalDuration = duration + reverseFrames.length * frameDuration;
-
             const body = fighterEl.querySelector('.fighter-body');
-            img.style.visibility = 'hidden';
+            const isCpu = !!fighterEl.closest('#cpu');
+            const flipStr = isCpu ? 'scaleX(-1) ' : '';
 
+            img.style.visibility = 'hidden';
             const cv = document.createElement('canvas');
             cv.className = 'blend-attack-canvas';
             cv.width = 200;
@@ -20596,26 +20591,36 @@
                     return;
                 }
 
-                // Map elapsed time to a continuous position in [0, sequence.length-1]
+                // ── Crossfade between consecutive frames ──────────────────────
                 const seqPos = (elapsed / totalDuration) * (sequence.length - 1);
-                const idxA = Math.floor(seqPos);
-                const idxB = Math.min(idxA + 1, sequence.length - 1);
-                const blendT = seqPos - idxA; // 0→1 fractional blend between A and B
-
-                const fA = frameImgs[idxA];
-                const fB = frameImgs[idxB];
+                const idxA   = Math.floor(seqPos);
+                const idxB   = Math.min(idxA + 1, sequence.length - 1);
+                const blendT = seqPos - idxA; // 0→1 within current frame interval
 
                 ctx.clearRect(0, 0, 200, 200);
-
+                const fA = frameImgs[idxA];
+                const fB = frameImgs[idxB];
+                // Frame A: full alpha (base layer — sprite never goes transparent)
                 if (fA?.complete && fA.naturalWidth > 0) {
-                    ctx.globalAlpha = 1 - blendT;
+                    ctx.globalAlpha = 1;
                     ctx.drawImage(fA, 0, 0, 200, 200);
                 }
+                // Frame B: composites on top at blendT (new pose fades in over old)
                 if (fB?.complete && fB.naturalWidth > 0) {
                     ctx.globalAlpha = blendT;
                     ctx.drawImage(fB, 0, 0, 200, 200);
                 }
                 ctx.globalAlpha = 1;
+
+                // ── Smear: CSS transform on the canvas element ────────────────
+                // sin curve peaks at mid-swing (middle of the forward phase),
+                // returns to 0 at impact and stays 0 during recovery.
+                const fwdProgress = Math.min(elapsed / duration, 1);
+                const smear   = Math.sin(Math.PI * fwdProgress);
+                const skewDeg = (smear * 8).toFixed(2);   // max 8° lean
+                const sx      = (1 + smear * 0.10).toFixed(4); // max 10% stretch
+                const sy      = (1 - smear * 0.05).toFixed(4); // slight vertical compress
+                cv.style.transform = `translate(-50%,-50%) ${flipStr}scaleX(${sx}) scaleY(${sy}) skewX(${skewDeg}deg)`;
 
                 img._blendRaf = requestAnimationFrame(draw);
             }
