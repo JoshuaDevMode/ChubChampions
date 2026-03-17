@@ -13540,10 +13540,14 @@
                     savePendingLevelUps();
                     return;
                 }
+                // Server responded but denied (no pending_levelup in DB, auth error, etc.)
+                // Do NOT queue fallback options — trust the server.
+                console.warn('[levelup] server denied level-up options:', data.error || resp.status);
+                return;
             } catch(e) {
                 console.warn('[levelup] could not fetch options from server:', e);
             }
-            // Fallback: 3 balanced options if backend unreachable
+            // Fallback: only reached on genuine network failure (no server response)
             pendingLevelUps.push({ character, options: [
                 { name: 'Balanced',    atk:5,  str:5,  agi:5,  def:5,  hp:80,  description:'+5 ATK, +5 STR, +5 AGI, +5 DEF, +80 HP'  },
                 { name: 'Brawler',     atk:12, str:6,  agi:4,  def:2,  hp:56,  description:'+12 ATK, +6 STR, +4 AGI, +2 DEF, +56 HP'  },
@@ -14455,6 +14459,17 @@
                             local.stats  = sc.stats;
                             local.maxHp  = sc.maxHp;
                             local.skills = sc.skills;
+                            // If DB has no pending level-up, remove any stale queued entries.
+                            // Guards against localStorage entries left over from failed/falsely-
+                            // triggered level-ups (e.g. offline fallback when no real level-up occurred).
+                            if (!sc.hasPendingLevelUp) {
+                                const before = pendingLevelUps.length;
+                                pendingLevelUps = pendingLevelUps.filter(p => !p.character || p.character.id !== sc.id);
+                                if (pendingLevelUps.length < before) {
+                                    savePendingLevelUps();
+                                    console.log(`[fetchChars] cleared stale pending level-up for char ${sc.id}`);
+                                }
+                            }
                             updated++;
                         }
                     }
