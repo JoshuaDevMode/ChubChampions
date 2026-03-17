@@ -447,6 +447,17 @@
             transform: scaleX(1);
         }
 
+        /* After crossover, sprite-reversed on a facing-flipped fighter means "return to home"
+           which is the opposite direction — override so facing matches movement. */
+        #player.facing-flipped .character-png.sprite-reversed,
+        #player.facing-flipped .weapon-run-overlay.sprite-reversed {
+            transform: scaleX(1) !important;
+        }
+        #cpu.facing-flipped .character-png.sprite-reversed,
+        #cpu.facing-flipped .weapon-run-overlay.sprite-reversed {
+            transform: scaleX(-1) !important;
+        }
+
         /* Fury Aura */
         .fury-orb {
             position: absolute;
@@ -15512,7 +15523,7 @@
                 await sleep(50);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
-                animateRun(attackerEl, !_playerIsOnLeft(), isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(190);
@@ -15550,7 +15561,7 @@
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
                 // ── Phase 1: run to screen center (≈280ms) ───────────────────
-                animateRun(attackerEl, !_playerIsOnLeft(), null);
+                animateRun(attackerEl, false, null);
                 const r0Rect    = attackerEl.getBoundingClientRect();
                 const r0Left    = (r0Rect.left - arenaRect.left) / zoom;
                 const r0W       = r0Rect.width / zoom;
@@ -15621,7 +15632,7 @@
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
-                animateRun(attackerEl, !_playerIsOnLeft(), isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
@@ -15808,14 +15819,14 @@
                 await sleep(60);
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
-                animateRun(attackerEl, _playerIsOnLeft(), isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _midLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(210);
                 stopRunAnimation(attackerEl);
             } else {
                 // Last hit (or solo attack): run back to starting corner
-                animateRun(attackerEl, _playerIsOnLeft(), isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
                 // Deferred rotation reset after jump attack — flip when starting return run
                 if (attackerEl._jumpReturn) {
                     const { img: jImg, isCpu: jIsCpu } = attackerEl._jumpReturn;
