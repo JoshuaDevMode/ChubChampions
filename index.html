@@ -389,6 +389,21 @@
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
+        .blend-attack-canvas {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+        #cpu .blend-attack-canvas {
+            transform: translate(-50%, -50%) scaleX(-1);
+        }
+
         #cpu .weapon-attack-char-overlay {
             transform: translate(-50%, -50%) scaleX(-1);
         }
@@ -20418,6 +20433,12 @@
                 clearInterval(img._currentAnim);
                 img._currentAnim = null;
             }
+            if (img._blendRaf) {
+                cancelAnimationFrame(img._blendRaf);
+                img._blendRaf = null;
+                fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
+                img.style.visibility = '';
+            }
             if (img._idleSrc) {
                 img.src = img._idleSrc;
             }
@@ -20527,6 +20548,81 @@
             stopSpriteAnimation(fighterEl);
         }
 
+        // Canvas-based frame blending for basic attacks.
+        // Instead of hard-cutting between frames, blends frame[i] → frame[i+1]
+        // continuously using RAF + globalAlpha. Produces synthetic inbetween frames
+        // without generating new sprite data.
+        function _blendAttack(fighterEl, img, allFrames, duration) {
+            const midIndex = Math.ceil(allFrames.length / 2);
+            const reverseFrames = allFrames.slice(0, midIndex).reverse();
+            // Full sequence: forward all frames + reverse back to frame 0
+            const sequence = [...allFrames, ...reverseFrames];
+
+            // Pre-decode all frames as Image objects (blob URLs are already in browser cache)
+            const frameImgs = sequence.map(src => {
+                const fi = new Image();
+                fi.src = src;
+                return fi;
+            });
+
+            // Time budget: forward phase uses `duration`, reverse phase is proportional
+            const frameDuration = duration / allFrames.length;
+            const totalDuration = duration + reverseFrames.length * frameDuration;
+
+            const body = fighterEl.querySelector('.fighter-body');
+            img.style.visibility = 'hidden';
+
+            const cv = document.createElement('canvas');
+            cv.className = 'blend-attack-canvas';
+            cv.width = 200;
+            cv.height = 200;
+            body.appendChild(cv);
+            const ctx = cv.getContext('2d', { alpha: true });
+
+            function cleanup() {
+                cv.remove();
+                img.style.visibility = '';
+                img._blendRaf = null;
+                img._attackDone = true;
+            }
+
+            let start = null;
+            function draw(ts) {
+                if (!start) start = ts;
+                const elapsed = ts - start;
+
+                if (elapsed >= totalDuration) {
+                    cleanup();
+                    return;
+                }
+
+                // Map elapsed time to a continuous position in [0, sequence.length-1]
+                const seqPos = (elapsed / totalDuration) * (sequence.length - 1);
+                const idxA = Math.floor(seqPos);
+                const idxB = Math.min(idxA + 1, sequence.length - 1);
+                const blendT = seqPos - idxA; // 0→1 fractional blend between A and B
+
+                const fA = frameImgs[idxA];
+                const fB = frameImgs[idxB];
+
+                ctx.clearRect(0, 0, 200, 200);
+
+                if (fA?.complete && fA.naturalWidth > 0) {
+                    ctx.globalAlpha = 1 - blendT;
+                    ctx.drawImage(fA, 0, 0, 200, 200);
+                }
+                if (fB?.complete && fB.naturalWidth > 0) {
+                    ctx.globalAlpha = blendT;
+                    ctx.drawImage(fB, 0, 0, 200, 200);
+                }
+                ctx.globalAlpha = 1;
+
+                img._blendRaf = requestAnimationFrame(draw);
+            }
+
+            img._blendRaf = requestAnimationFrame(draw);
+        }
+
         function animateAttack(fighterEl, attackType, duration, weaponId) {
             duration = duration || 500;
             const img = fighterEl.querySelector('img');
@@ -20534,6 +20630,8 @@
             // Stop any existing animation
             if (img._currentAnim) { clearInterval(img._currentAnim); img._currentAnim = null; }
             if (img._attackTimeout) { clearTimeout(img._attackTimeout); img._attackTimeout = null; }
+            if (img._blendRaf) { cancelAnimationFrame(img._blendRaf); img._blendRaf = null; }
+            fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
 
             // Determine if we should use weapon attack frames
             const useWeaponAttack = weaponId && img._weaponAttackFrames && img._weaponAttackFrames.length > 0
@@ -20541,87 +20639,52 @@
 
             const allFrames = useWeaponAttack ? img._weaponAttackFrames : (img['_' + attackType + 'Frames'] || [img.src]);
             const weaponFrames = useWeaponAttack ? _weaponAttackFramesCache[weaponId] : null;
-            const speed = Math.max(20, Math.floor(duration / allFrames.length));
+
             img._idleSrc = img._idleSrc || img.src;
             img._attackDone = false;
 
-            // Build sequence: forward all frames → hold last → reverse from middle to 0
-            const midIndex = Math.ceil(allFrames.length / 2);
-            const reverseFrames = allFrames.slice(0, midIndex).reverse();
-            const weaponReverseFrames = weaponFrames ? weaponFrames.slice(0, midIndex).reverse() : null;
-            // Full sequence: forward + reverse from mid
-            const sequence = allFrames.slice(); // forward
-            const weaponSequence = weaponFrames ? weaponFrames.slice() : null;
-            let idx = 0;
-
-            const body = fighterEl.querySelector('.fighter-body');
-            let charOverlay = null;
-            let weaponOverlay = null;
-
             if (useWeaponAttack) {
-                // Hide the original character-png and use two larger overlays instead
-                // This keeps the character at the same visual size as punch/kick animations
-                img.style.visibility = 'hidden';
+                // Weapon attacks: original setInterval logic unchanged
+                const speed = Math.max(20, Math.floor(duration / allFrames.length));
+                const midIndex = Math.ceil(allFrames.length / 2);
+                const sequence = allFrames.slice();
+                const weaponSequence = weaponFrames.slice();
+                let idx = 0;
 
-                // Remove any existing weapon attack overlays
+                const body = fighterEl.querySelector('.fighter-body');
+                img.style.visibility = 'hidden';
                 body.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(el => el.remove());
 
-                // Character attack overlay (larger, same size as weapon overlay)
-                charOverlay = document.createElement('img');
+                const charOverlay = document.createElement('img');
                 charOverlay.className = 'weapon-attack-char-overlay';
                 charOverlay.src = sequence[0];
                 body.appendChild(charOverlay);
 
-                // Weapon overlay
-                weaponOverlay = document.createElement('img');
+                const weaponOverlay = document.createElement('img');
                 weaponOverlay.className = 'weapon-attack-overlay';
                 weaponOverlay.src = weaponSequence[0];
                 body.appendChild(weaponOverlay);
-            } else {
-                img.src = sequence[0];
-            }
 
-            img._currentAnim = setInterval(function() {
-                idx++;
-                if (idx < sequence.length) {
-                    // Forward playback
-                    if (charOverlay) {
+                img._currentAnim = setInterval(function() {
+                    idx++;
+                    if (idx < sequence.length) {
                         charOverlay.src = sequence[idx];
                         weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
+                    } else if (idx === sequence.length) {
+                        // Hold last frame for 2x speed (extra tick)
                     } else {
-                        img.src = sequence[idx];
-                    }
-                } else if (idx === sequence.length) {
-                    // Hold last frame for 2x speed (extra tick)
-                } else {
-                    if (useWeaponAttack) {
-                        // Weapon attacks: no reverse, just stop and clean up
                         clearInterval(img._currentAnim);
                         img._currentAnim = null;
                         img._attackDone = true;
-                        if (charOverlay) {
-                            charOverlay.remove();
-                            weaponOverlay.remove();
-                            img.style.visibility = '';
-                        }
-                    } else {
-                        // Basic attacks: reverse from middle to frame 0
-                        clearInterval(img._currentAnim);
-                        img._currentAnim = null;
-                        let rIdx = 0;
-                        img._currentAnim = setInterval(function() {
-                            if (rIdx < reverseFrames.length) {
-                                img.src = reverseFrames[rIdx];
-                                rIdx++;
-                            } else {
-                                clearInterval(img._currentAnim);
-                                img._currentAnim = null;
-                                img._attackDone = true;
-                            }
-                        }, speed);
+                        charOverlay.remove();
+                        weaponOverlay.remove();
+                        img.style.visibility = '';
                     }
-                }
-            }, speed);
+                }, speed);
+            } else {
+                // Basic attacks: canvas frame blending via RAF
+                _blendAttack(fighterEl, img, allFrames, duration);
+            }
         }
         function startIdleBlink(fighterEl) {
             const img = fighterEl.querySelector('img');
