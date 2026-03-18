@@ -14087,7 +14087,7 @@
         // Drop-in replacement for fetch() that aborts after `ms` milliseconds.
         // Throws AbortError on timeout (same as a network error — callers with try/catch
         // handle it automatically; callers without try/catch fail fast instead of hanging forever).
-        function fetchWithTimeout(url, options = {}, ms = 10000) {
+        function fetchWithTimeout(url, options = {}, ms = 15000) {
             const ctrl = new AbortController();
             const tid  = setTimeout(() => ctrl.abort(), ms);
             return fetch(url, { ...options, signal: ctrl.signal })
