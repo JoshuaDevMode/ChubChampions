@@ -9618,7 +9618,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/FightChub/assets/index-_GOQS874.js"></script>
+  <script type="module" crossorigin src="/FightChub/assets/index-DUrfYlZH.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -14731,7 +14731,6 @@
                 equippedConsumables: (character.equippedConsumables || []).slice(0, getMaxConsumableSlots(character)),
                 equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
                 adaptability:        character.adaptability || 0,
-                qTable:              character.qTable       || {},
                 element:             character.element      || undefined,
                 furyPowerChoice:     getFuryPowerChoice(character),
                 furyPassiveEnabled:  getFuryPassiveEnabled(character),
@@ -17324,7 +17323,6 @@
                             equippedWeapons:     (character.equippedWeapons    || []).filter(id => WEAPONS[id] && getWeaponDurability(character, id) > 0),
                             element:             character.element             || undefined,
                             adaptability:        character.adaptability        || 0,
-                            qTable:              character.qTable              || {},
                             furyPowerChoice:     getFuryPowerChoice(character),
                             furyPassiveEnabled:  getFuryPassiveEnabled(character),
                         },
