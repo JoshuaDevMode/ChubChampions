@@ -7481,6 +7481,47 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.85);
         }
         .session-widget.sw-open .session-dropdown { display: block; }
+        .sdrop-header {
+            padding: 4px 2px 6px;
+        }
+        .sdrop-name {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 900;
+            font-size: 12px;
+            color: #fff;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+        .sdrop-addr {
+            font-family: 'Courier New', monospace;
+            font-size: 7px;
+            color: rgba(167,139,250,0.65);
+            letter-spacing: 0.04em;
+            margin-bottom: 5px;
+        }
+        .sdrop-balances {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .sdrop-bal-chip {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 8px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(167,139,250,0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            color: #c4b5fd;
+        }
+        .sdrop-bal-chip.mon { border-color: rgba(139,92,246,0.4); color: #a78bfa; }
+        .sdrop-bal-chip.sol { border-color: rgba(20,241,149,0.3); color: #5eead4; }
+        .sdrop-divider {
+            height: 1px;
+            background: rgba(167,139,250,0.15);
+            margin: 0 0 4px;
+        }
         .session-rename-input {
             width: 100%;
             box-sizing: border-box;
@@ -9708,8 +9749,17 @@
                     <span class="session-chevron">▾</span>
                 </div>
                 <div class="session-dropdown" id="session-dropdown">
-                    <button class="session-disconnect-btn" onclick="openRenameInput()" style="display:none;">✏ SET NAME</button>
-                    <div id="session-rename-row" style="display:none;margin-top:4px;gap:4px;display:none;flex-direction:column;">
+                    <!-- Player info header -->
+                    <div class="sdrop-header">
+                        <div class="sdrop-name" id="sdrop-name"></div>
+                        <div class="sdrop-addr" id="sdrop-addr"></div>
+                        <div class="sdrop-balances" id="sdrop-balances"></div>
+                    </div>
+                    <div class="sdrop-divider"></div>
+                    <!-- Actions -->
+                    <button class="session-disconnect-btn" onclick="openExportWallet()" id="session-export-btn" style="display:none;">🔑 EXPORT WALLET</button>
+                    <button class="session-disconnect-btn" onclick="openRenameInput()" id="session-rename-btn" style="display:none;">✏ SET NAME</button>
+                    <div id="session-rename-row" style="display:none;margin-top:4px;gap:4px;flex-direction:column;">
                         <input id="session-rename-input" class="session-rename-input" type="text" maxlength="24" placeholder="Enter name…" />
                         <button class="session-disconnect-btn" style="color:#4ade80;border-color:#4ade80;" onclick="savePlayerName()">✓ SAVE</button>
                     </div>
@@ -13670,12 +13720,13 @@
         // Called by React on fresh login (no existing session)
         window.__privyLogin = function(data) {
             playerSession = {
-                playerId: data.playerId,
-                wallet:   data.wallet   || '',
-                wallets:  Array.isArray(data.wallets) ? data.wallets : (data.wallets ? [data.wallets] : []),
-                name:     data.name    || 'Fighter',
-                avatar:   data.avatar  || '',
-                token:    data.token   || '',
+                playerId:          data.playerId,
+                wallet:            data.wallet   || '',
+                wallets:           Array.isArray(data.wallets) ? data.wallets : (data.wallets ? [data.wallets] : []),
+                hasEmbeddedWallet: !!data.hasEmbeddedWallet,
+                name:              data.name    || 'Fighter',
+                avatar:            data.avatar  || '',
+                token:             data.token   || '',
             };
             localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
             updatePlayerSessionUI();
@@ -13791,12 +13842,13 @@
             if (playerId) {
                 const walletsParam = params.get('wallets') || '';
                 playerSession = {
-                    playerId: playerId,
-                    wallet:   params.get('wallet')  || '',
-                    wallets:  walletsParam ? walletsParam.split(',').filter(Boolean) : [],
-                    name:     params.get('name')    || 'Fighter',
-                    avatar:   params.get('avatar')  || '',
-                    token:    params.get('token')   || '',
+                    playerId:          playerId,
+                    wallet:            params.get('wallet')  || '',
+                    wallets:           walletsParam ? walletsParam.split(',').filter(Boolean) : [],
+                    hasEmbeddedWallet: params.get('hasEmbeddedWallet') === '1',
+                    name:              params.get('name')    || 'Fighter',
+                    avatar:            params.get('avatar')  || '',
+                    token:             params.get('token')   || '',
                 };
                 localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
                 window.history.replaceState({}, '', window.location.pathname);
@@ -13897,19 +13949,32 @@
             const avatarEl    = document.getElementById('session-player-avatar');
             const profileEl   = document.getElementById('session-profile');
             const loginBtn    = document.getElementById('session-login-btn');
-            const renameBtn   = document.querySelector('#session-dropdown .session-disconnect-btn');
+            const renameBtn   = document.getElementById('session-rename-btn');
+            const exportBtn   = document.getElementById('session-export-btn');
+            const sdropName   = document.getElementById('sdrop-name');
+            const sdropAddr   = document.getElementById('sdrop-addr');
 
             if (playerSession) {
                 if (nameEl)    nameEl.textContent = playerSession.name;
+                if (sdropName) sdropName.textContent = playerSession.name;
+                if (sdropAddr && playerSession.wallet) {
+                    const w = playerSession.wallet;
+                    sdropAddr.textContent = w.startsWith('0x')
+                        ? w.slice(0, 6) + '…' + w.slice(-4)
+                        : w.slice(0, 4) + '…' + w.slice(-4);
+                }
                 if (avatarEl && playerSession.avatar) {
                     avatarEl.src = playerSession.avatar;
                     avatarEl.style.display = '';
                 }
                 if (profileEl) profileEl.style.display = '';
                 if (loginBtn)  loginBtn.style.display  = 'none';
-                // Only show SET NAME for wallet-only users (no Twitter = no avatar)
+                // SET NAME only for wallet-only users (no Twitter = no avatar)
                 if (renameBtn) renameBtn.style.display = playerSession.avatar ? 'none' : '';
+                // EXPORT WALLET only for embedded wallet users
+                if (exportBtn) exportBtn.style.display = playerSession.hasEmbeddedWallet ? '' : 'none';
                 fetchWalletBalance();
+                fetchDropdownBalances();
             } else {
                 if (nameEl)    nameEl.textContent = '';
                 if (avatarEl)  avatarEl.style.display = 'none';
@@ -13917,6 +13982,71 @@
                 if (loginBtn)  loginBtn.style.display  = '';
                 const balEl = document.getElementById('wallet-balance');
                 if (balEl) balEl.style.display = 'none';
+            }
+        }
+
+        // Opens Privy's secure export-wallet popup.
+        // The private key is shown ONLY inside Privy's encrypted iframe —
+        // it never reaches this page's JS or the game's JS.
+        function openExportWallet() {
+            document.getElementById('session-widget')?.classList.remove('sw-open');
+            const url = 'https://fight-chub-backend.vercel.app/export-wallet';
+            const w = 420, h = 520;
+            const left = Math.round(window.screenX + (window.outerWidth  - w) / 2);
+            const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
+            window.open(url, 'privy_export', `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=no`);
+        }
+
+        // Fetches MON and/or SOL balance for every linked wallet and shows chips in the dropdown.
+        async function fetchDropdownBalances() {
+            const el = document.getElementById('sdrop-balances');
+            if (!el || !playerSession) return;
+            el.innerHTML = '';
+
+            const wallets = playerSession.wallets?.length
+                ? playerSession.wallets
+                : playerSession.wallet ? [playerSession.wallet] : [];
+
+            const evmAddrs = wallets.filter(w => /^0x[0-9a-fA-F]{40}$/.test(w));
+            const solAddrs = wallets.filter(w => w.length >= 32 && w.length <= 44 && !w.startsWith('0x'));
+
+            // MON balance (first EVM address)
+            if (evmAddrs.length) {
+                const chip = document.createElement('span');
+                chip.className = 'sdrop-bal-chip mon';
+                chip.textContent = '⬡ …';
+                el.appendChild(chip);
+                try {
+                    let balHex = null;
+                    if (window.ethereum) {
+                        try { balHex = await window.ethereum.request({ method: 'eth_getBalance', params: [evmAddrs[0], 'latest'] }); } catch(e) {}
+                    }
+                    if (!balHex && MONAD_RPC_URL) {
+                        const r = await fetch(MONAD_RPC_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc:'2.0', method:'eth_getBalance', params:[evmAddrs[0],'latest'], id:1 }),
+                        });
+                        balHex = (await r.json()).result;
+                    }
+                    chip.textContent = balHex
+                        ? '⬡ ' + (parseInt(balHex, 16) / 1e18).toFixed(3) + ' MON'
+                        : '⬡ MON';
+                } catch(e) { chip.textContent = '⬡ MON'; }
+            }
+
+            // SOL balance (first Solana address)
+            if (solAddrs.length) {
+                const chip = document.createElement('span');
+                chip.className = 'sdrop-bal-chip sol';
+                chip.textContent = '◎ …';
+                el.appendChild(chip);
+                try {
+                    if (!window.solanaWeb3) { chip.textContent = '◎ SOL'; return; }
+                    const conn = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
+                    const lamports = await conn.getBalance(new solanaWeb3.PublicKey(solAddrs[0]));
+                    chip.textContent = '◎ ' + (lamports / 1e9).toFixed(3) + ' SOL';
+                } catch(e) { chip.textContent = '◎ SOL'; }
             }
         }
 
