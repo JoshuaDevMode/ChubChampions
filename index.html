@@ -7481,6 +7481,19 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.85);
         }
         .session-widget.sw-open .session-dropdown { display: block; }
+        .session-rename-input {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(167,139,250,0.35);
+            border-radius: 5px;
+            color: #e9d5ff;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            padding: 5px 7px;
+            outline: none;
+        }
+        .session-rename-input:focus { border-color: rgba(167,139,250,0.7); }
         .session-disconnect-btn {
             display: flex;
             align-items: center;
@@ -9694,7 +9707,12 @@
                     <span class="session-chevron">▾</span>
                 </div>
                 <div class="session-dropdown" id="session-dropdown">
-                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()">⏻ DISCONNECT</button>
+                    <button class="session-disconnect-btn" onclick="openRenameInput()" style="display:none;">✏ SET NAME</button>
+                    <div id="session-rename-row" style="display:none;margin-top:4px;gap:4px;display:none;flex-direction:column;">
+                        <input id="session-rename-input" class="session-rename-input" type="text" maxlength="24" placeholder="Enter name…" />
+                        <button class="session-disconnect-btn" style="color:#4ade80;border-color:#4ade80;" onclick="savePlayerName()">✓ SAVE</button>
+                    </div>
+                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;">⏻ DISCONNECT</button>
                     <button class="session-disconnect-btn" style="color:#f87171;border-color:#f87171;margin-top:4px;" onclick="deleteAccount()">🗑 DELETE ACCOUNT</button>
                 </div>
                 <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('fightchub:showlogin'))">🎮 LOGIN</button>
@@ -13652,7 +13670,8 @@
         window.__privyLogin = function(data) {
             playerSession = {
                 playerId: data.playerId,
-                wallet:   data.wallet  || '',
+                wallet:   data.wallet   || '',
+                wallets:  Array.isArray(data.wallets) ? data.wallets : (data.wallets ? [data.wallets] : []),
                 name:     data.name    || 'Fighter',
                 avatar:   data.avatar  || '',
                 token:    data.token   || '',
@@ -13769,9 +13788,11 @@
             const params = new URLSearchParams(window.location.search);
             const playerId = params.get('playerId');
             if (playerId) {
+                const walletsParam = params.get('wallets') || '';
                 playerSession = {
                     playerId: playerId,
                     wallet:   params.get('wallet')  || '',
+                    wallets:  walletsParam ? walletsParam.split(',').filter(Boolean) : [],
                     name:     params.get('name')    || 'Fighter',
                     avatar:   params.get('avatar')  || '',
                     token:    params.get('token')   || '',
@@ -13871,10 +13892,11 @@
         }
 
         function updatePlayerSessionUI() {
-            const nameEl    = document.getElementById('session-player-name');
-            const avatarEl  = document.getElementById('session-player-avatar');
-            const profileEl = document.getElementById('session-profile');
-            const loginBtn  = document.getElementById('session-login-btn');
+            const nameEl      = document.getElementById('session-player-name');
+            const avatarEl    = document.getElementById('session-player-avatar');
+            const profileEl   = document.getElementById('session-profile');
+            const loginBtn    = document.getElementById('session-login-btn');
+            const renameBtn   = document.querySelector('#session-dropdown .session-disconnect-btn');
 
             if (playerSession) {
                 if (nameEl)    nameEl.textContent = playerSession.name;
@@ -13884,6 +13906,8 @@
                 }
                 if (profileEl) profileEl.style.display = '';
                 if (loginBtn)  loginBtn.style.display  = 'none';
+                // Only show SET NAME for wallet-only users (no Twitter = no avatar)
+                if (renameBtn) renameBtn.style.display = playerSession.avatar ? 'none' : '';
                 fetchWalletBalance();
             } else {
                 if (nameEl)    nameEl.textContent = '';
@@ -13893,6 +13917,50 @@
                 const balEl = document.getElementById('wallet-balance');
                 if (balEl) balEl.style.display = 'none';
             }
+        }
+
+        function openRenameInput() {
+            const row = document.getElementById('session-rename-row');
+            const input = document.getElementById('session-rename-input');
+            if (!row) return;
+            const visible = row.style.display === 'flex';
+            row.style.display = visible ? 'none' : 'flex';
+            if (!visible && input) {
+                input.value = playerSession?.name || '';
+                input.focus();
+            }
+        }
+
+        async function savePlayerName() {
+            const input = document.getElementById('session-rename-input');
+            const row   = document.getElementById('session-rename-row');
+            if (!input || !playerSession) return;
+            const newName = input.value.trim().replace(/[<>"'`]/g, '');
+            if (!newName) { showToast('Name cannot be empty'); return; }
+
+            // Check uniqueness server-side before applying locally
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/sync', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId:    playerSession.playerId,
+                        wallet:      playerSession.wallet  || undefined,
+                        displayName: newName,
+                    }),
+                });
+                if (resp.status === 409) { showToast('Name already taken'); return; }
+                if (!resp.ok) { showToast('Failed to save name'); return; }
+            } catch(e) { showToast('Failed to save name'); return; }
+
+            playerSession.name = newName;
+            try {
+                const s = localStorage.getItem('fightchub_session');
+                if (s) { const p = JSON.parse(s); p.name = newName; localStorage.setItem('fightchub_session', JSON.stringify(p)); }
+            } catch(e) {}
+            updatePlayerSessionUI();
+            if (row) row.style.display = 'none';
+            showToast('Name saved!');
         }
 
         function logoutPlayerSession() {
@@ -14522,6 +14590,9 @@
                 body: JSON.stringify({
                     playerId:        playerSession.playerId,
                     unlockedWeapons: globalUnlockedWeapons,
+                    wallet:          playerSession.wallet   || undefined,
+                    wallets:         playerSession.wallets?.length ? playerSession.wallets : undefined,
+                    displayName:     playerSession.name    || undefined,
                 }),
             }).catch(e => console.warn('[sync] player sync error:', e));
         }
