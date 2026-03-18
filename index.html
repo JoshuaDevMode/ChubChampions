@@ -13677,6 +13677,8 @@
             } catch(e) {}
         };
 
+        const BACKEND_URL = 'https://fight-chub-backend.vercel.app';
+
         // ── Session expired handler ───────────────────────────────────────────────
         let _handlingUnauthorized = false;
         function handleUnauthorized() {
@@ -14170,7 +14172,6 @@
         }
 
         // Sync a character's state to the backend (fire-and-forget)
-        const BACKEND_URL  = 'https://fight-chub-backend.vercel.app';
         // SYNC_SECRET removed — all API calls use Privy JWT via getAuthHeaders()
 
         // Drop-in replacement for fetch() that aborts after `ms` milliseconds.
