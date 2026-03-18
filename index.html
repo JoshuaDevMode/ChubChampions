@@ -13602,7 +13602,7 @@
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
-                    body: JSON.stringify({ action: 'get_options', characterId: character.id })
+                    body: JSON.stringify({ action: 'get_options', characterId: character.id, playerId: playerSession?.playerId })
                 });
                 const data = await resp.json();
                 if (data.ok && Array.isArray(data.options)) {
@@ -13677,7 +13677,92 @@
             } catch(e) {}
         };
 
-        function loadPlayerSession() {
+        // ── Session expired handler ───────────────────────────────────────────────
+        let _handlingUnauthorized = false;
+        function handleUnauthorized() {
+            if (_handlingUnauthorized) return;
+            _handlingUnauthorized = true;
+            console.warn('[auth] Session expired — redirecting to login');
+            localStorage.removeItem('fightchub_session');
+            playerSession = null;
+            // Show a brief notice before redirecting
+            const notice = document.createElement('div');
+            notice.style.cssText = 'position:fixed;top:0;left:0;width:100%;padding:12px;background:#1a1a2e;color:#a78bfa;text-align:center;font-family:monospace;font-size:13px;z-index:99999;border-bottom:1px solid #7c3aed;';
+            notice.textContent = 'Session expired — redirecting to login...';
+            document.body.appendChild(notice);
+            setTimeout(() => { window.location.href = BACKEND_URL + '/'; }, 2000);
+        }
+
+        // ── Privy token-refresh iframe ────────────────────────────────────────────
+        // A hidden iframe loaded from the backend keeps a live Privy React context.
+        // The game asks it for a fresh token via postMessage whenever needed.
+        // __tokenRefreshReady resolves once the iframe confirms Privy is initialized.
+        let _tokenRefreshIframe = null;
+        let _tokenRefreshReady  = false;
+        let _tokenRefreshResolvers = []; // callbacks waiting for ready
+        let _pendingTokenRequests  = {}; // requestId → { resolve, timeout }
+        let _tokenRequestCounter   = 0;
+
+        (function initTokenRefreshBridge() {
+            const iframe = document.createElement('iframe');
+            iframe.src = BACKEND_URL + '/token-refresh';
+            iframe.style.cssText = 'display:none;position:absolute;width:0;height:0;border:0;';
+            iframe.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(iframe);
+            _tokenRefreshIframe = iframe;
+
+            window.addEventListener('message', function(e) {
+                if (!e.origin.startsWith(BACKEND_URL.replace(/\/$/, ''))) return;
+                const msg = e.data;
+                if (!msg || typeof msg !== 'object') return;
+
+                if (msg.type === 'token_ready') {
+                    _tokenRefreshReady = true;
+                    _tokenRefreshResolvers.forEach(fn => fn());
+                    _tokenRefreshResolvers = [];
+                }
+
+                if (msg.type === 'token_response') {
+                    const req = _pendingTokenRequests[msg.requestId];
+                    if (req) {
+                        clearTimeout(req.timeout);
+                        delete _pendingTokenRequests[msg.requestId];
+                        req.resolve(msg.token || null);
+                    }
+                }
+            });
+        })();
+
+        // Waits for the iframe to signal Privy is ready (max 6s then proceeds anyway)
+        function waitForTokenRefresh() {
+            if (_tokenRefreshReady) return Promise.resolve();
+            return new Promise(resolve => {
+                const timer = setTimeout(() => {
+                    _tokenRefreshResolvers = _tokenRefreshResolvers.filter(fn => fn !== resolve);
+                    resolve();
+                }, 6000);
+                _tokenRefreshResolvers.push(() => { clearTimeout(timer); resolve(); });
+            });
+        }
+
+        // Implements the hook getAuthHeaders() already calls
+        window.__getPrivyToken = function() {
+            return new Promise(resolve => {
+                if (!_tokenRefreshIframe) return resolve(null);
+                const requestId = ++_tokenRequestCounter;
+                const timeout = setTimeout(() => {
+                    delete _pendingTokenRequests[requestId];
+                    resolve(null); // fallback to stored token on timeout
+                }, 5000);
+                _pendingTokenRequests[requestId] = { resolve, timeout };
+                _tokenRefreshIframe.contentWindow.postMessage(
+                    { type: 'get_token', requestId },
+                    BACKEND_URL.replace(/\/$/, '')
+                );
+            });
+        };
+
+        async function loadPlayerSession() {
             // Legacy: support URL-param sessions from old redirect flow
             const params = new URLSearchParams(window.location.search);
             const playerId = params.get('playerId');
@@ -13699,6 +13784,9 @@
             }
             updatePlayerSessionUI();
             if (playerSession) {
+                // Wait for the token-refresh iframe to be ready so startup API calls
+                // get a fresh Privy token instead of the possibly-expired stored one.
+                await waitForTokenRefresh();
                 syncStateFromServer();
                 initGameWithSession();
             }
@@ -13737,6 +13825,7 @@
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId }),
                 });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
                 if (!resp.ok) return;
                 const data = await resp.json();
 
@@ -14500,6 +14589,7 @@
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({ playerId: playerSession.playerId }),
                 });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
                 if (!resp.ok) return;
                 const data = await resp.json();
                 // If characters key is missing entirely (API error), don't touch local data
@@ -15073,7 +15163,11 @@
                     // Normal move
                     // isBack = sprite faces opposite its natural forward direction.
                     // Player natural = right; CPU natural = left.
-                    const isBack = event.fighter === 'player' ? movingLeft : !movingLeft;
+                    // isBack = sprite should show "retreating" run direction.
+                // After a crossover _playerIsOnLeft() flips, so idle facing inverts for both fighters —
+                // isBack must invert too, otherwise sprite-reversed conflicts with facing-flipped.
+                const _onLeft = _playerIsOnLeft();
+                const isBack  = ((event.fighter === 'player') === _onLeft) ? movingLeft : !movingLeft;
                     // Physics: time = distance / speed.
                     // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
                     // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
@@ -15708,7 +15802,7 @@
                         const t = Math.min((now - r0) / jaRunMs, 1);
                         attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
                         if (t < 1) { requestAnimationFrame(runStep); return; }
-                        attackerEl.style.transition = 'none'; // freeze left/right so commit doesn't trigger CSS transition
+                        attackerEl.style.setProperty('transition', 'none', 'important'); // freeze — overrides .dashing !important
                         attackerEl.style.transform = '';
                         if (!isCpuAtt) {
                             attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
@@ -15738,7 +15832,7 @@
                     }
                 }, peakMs);
 
-                attackerEl.style.transition = 'none';
+                attackerEl.style.setProperty('transition', 'none', 'important'); // overrides .dashing !important
                 await new Promise(res => {
                     const t0 = performance.now();
                     const step = now => {
@@ -15748,6 +15842,7 @@
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
                         if (t < 1) { requestAnimationFrame(step); return; }
                         attackerEl.style.transform = '';
+                        attackerEl.style.setProperty('transition', 'none', 'important'); // keep frozen at landing commit
                         const finalLeft = runTarget + deltaX;
                         attackerEl.style.left  = finalLeft + 'px';
                         attackerEl.style.right = 'auto';
@@ -15827,9 +15922,9 @@
                     const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (currentCpuStats?.agility || 68);
                     const _jumpH  = Math.min(600, Math.round(240 + _defAgi * 0.4));
                     const _hitMs  = Math.round(300 * atkMult);
-                    const _rise   = Math.max(150, _hitMs);
-                    const _hold   = Math.max(80,  Math.round(_hitMs * 0.25));
-                    const _fall   = Math.max(150, Math.round(_hitMs * 0.8));
+                    const _rise   = Math.max(220, _hitMs);
+                    const _hold   = Math.max(120, Math.round(_hitMs * 0.35));
+                    const _fall   = Math.max(320, Math.round(_hitMs * 1.1));
                     const _total  = _rise + _hold + _fall;
                     fighterBody.dataset.jumping = '1';
                     fighterBody._jumpAnim = fighterBody.animate([
