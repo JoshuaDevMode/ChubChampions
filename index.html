@@ -13760,7 +13760,7 @@
                 _pendingTokenRequests[requestId] = { resolve, timeout };
                 _tokenRefreshIframe.contentWindow.postMessage(
                     { type: 'get_token', requestId },
-                    BACKEND_URL.replace(/\/$/, '')
+                    '*' // '*' is safe here — iframe validates e.origin before responding
                 );
             });
         };
