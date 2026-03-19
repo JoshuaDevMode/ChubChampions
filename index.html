@@ -14740,7 +14740,9 @@
                     unlockedWeapons: globalUnlockedWeapons,
                     wallet:          playerSession.wallet   || undefined,
                     wallets:         playerSession.wallets?.length ? playerSession.wallets : undefined,
-                    displayName:     playerSession.name    || undefined,
+                    // Only auto-save display_name for Twitter users (their @ is unique).
+                    // Wallet-only users set their name manually via SET NAME button.
+                    displayName:     (playerSession.avatar && playerSession.name) ? playerSession.name : undefined,
                 }),
             }).catch(e => console.warn('[sync] player sync error:', e));
         }
