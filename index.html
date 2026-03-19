@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Wet+Paint&family=Fredoka:wght@400;600;700&family=DynaPuff:wght@400;700&family=Chewy&family=Sour+Gummy:ital,wght@0,400;0,700;1,400&family=Fuzzy+Bubbles:wght@400;700&display=swap" rel="stylesheet">
-    <title>FightChub</title>
+    <title>Chub Champions</title>
     <link rel="icon" type="image/png" href="/FightChub/assets/Golden-Dv2GeYWe.png">
     <style>
         * {
@@ -14383,7 +14383,7 @@
             if (playerSession && !playerSession.wallet) {
                 showNotice('Setup incomplete — please choose your chain to continue.');
                 setTimeout(() => {
-                    window.location.href = 'https://fight-chub-backend.vercel.app/?force=1';
+                    window.location.href = 'https://chub-champions-backend.vercel.app/?force=1';
                 }, 3000);
                 return;
             }
@@ -14436,7 +14436,7 @@
             } catch(e) {}
         };
 
-        const BACKEND_URL = 'https://fight-chub-backend.vercel.app';
+        const BACKEND_URL = 'https://chub-champions-backend.vercel.app';
 
         // ── Session expired handler ───────────────────────────────────────────────
         let _handlingUnauthorized = false;
@@ -14882,7 +14882,7 @@
         // it never reaches this page's JS or the game's JS.
         function openExportWallet() {
             document.getElementById('session-widget')?.classList.remove('sw-open');
-            const url = 'https://fight-chub-backend.vercel.app/export-wallet';
+            const url = 'https://chub-champions-backend.vercel.app/export-wallet';
             const w = 420, h = 520;
             const left = Math.round(window.screenX + (window.outerWidth  - w) / 2);
             const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
