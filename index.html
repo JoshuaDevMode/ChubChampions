@@ -6368,6 +6368,158 @@
             display: flex;
         }
 
+        /* ── Leaderboard panel ───────────────────────── */
+        .leaderboard-panel {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+        }
+        .leaderboard-panel.active { display: flex; }
+
+        .leaderboard-container {
+            background: none;
+            border: 40px solid transparent;
+            border-image-source: url('/FightChub/assets/window-frame-oxBsLhjF.png');
+            border-image-slice: 15% fill;
+            border-image-width: 40px;
+            border-image-repeat: stretch;
+            box-sizing: border-box;
+            padding: 10px 20px;
+            max-width: 680px;
+            width: 92%;
+            max-height: 82vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #333;
+        }
+        .leaderboard-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.3em;
+            color: #fbbf24;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .leaderboard-close {
+            font-size: 2em;
+            color: #fff;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .leaderboard-close:hover { color: #fbbf24; }
+
+        /* Player's own rank card */
+        .lb-my-rank {
+            background: rgba(124,58,237,0.18);
+            border: 1px solid rgba(167,139,250,0.35);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .lb-my-rank-pos {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5em;
+            color: #a78bfa;
+            min-width: 48px;
+            text-align: center;
+        }
+        .lb-my-rank-info { flex: 1; }
+        .lb-my-rank-name {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1em;
+            color: #e9d5ff;
+            margin-bottom: 2px;
+        }
+        .lb-my-rank-pts {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55em;
+            color: #a78bfa;
+        }
+        .lb-tier-badge {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .lb-tier-Brawler    { color:#9ca3af; border:1px solid #9ca3af44; }
+        .lb-tier-Fighter    { color:#4ade80; border:1px solid #4ade8044; text-shadow:0 0 8px #4ade8066; }
+        .lb-tier-Warrior    { color:#60a5fa; border:1px solid #60a5fa44; text-shadow:0 0 8px #60a5fa66; }
+        .lb-tier-Gladiator  { color:#a78bfa; border:1px solid #a78bfa44; text-shadow:0 0 8px #a78bfa88; }
+        .lb-tier-Champion   { color:#fbbf24; border:1px solid #fbbf2444; text-shadow:0 0 8px #fbbf2466; }
+        .lb-tier-Legend     { color:#f87171; border:1px solid #f8717144; text-shadow:0 0 12px #f8717199; }
+
+        /* Rows */
+        .lb-list {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        .lb-row:hover { background: rgba(255,255,255,0.04); }
+        .lb-row.lb-row-me { background: rgba(124,58,237,0.12); }
+        .lb-row-rank {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.95em;
+            color: #6b7280;
+            min-width: 34px;
+            text-align: right;
+        }
+        .lb-row-rank.top3 { color: #fbbf24; font-size: 1.1em; }
+        .lb-row-name {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1em;
+            color: #e5e7eb;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .lb-row-pts {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.48em;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+        .lb-empty {
+            font-family: 'Fredoka', sans-serif;
+            color: #4b5563;
+            font-size: 0.95em;
+            text-align: center;
+            padding: 32px 0;
+        }
+        .lb-loading {
+            font-family: 'Fredoka', sans-serif;
+            color: #6b7280;
+            font-size: 0.9em;
+            text-align: center;
+            padding: 32px 0;
+        }
+        /* Ranking delta toast in battle log */
+        .log-ranking { color: #fbbf24; }
+        .log-ranking-loss { color: #f87171; }
+
         .history-container {
             font-size: 18px;
             background: none;
@@ -9718,6 +9870,7 @@
                 <button class="top-nav-btn btn-shine" id="menu-shop-btn">SHOP</button>
                 <button class="top-nav-btn btn-shine" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn btn-shine" id="menu-wardrobe-btn">👘 WARDROBE</button>
+                <button class="top-nav-btn btn-shine" id="menu-leaderboard-btn">🏆 RANKING</button>
             </div>
             <div class="top-currency-group">
                 <span class="currency-item" id="currency-tokens">🪙 0</span>
@@ -10183,6 +10336,29 @@
             </div>
             <div class="history-list" id="history-list">
                 <!-- Match history will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Panel -->
+    <div class="leaderboard-panel" id="leaderboard-panel">
+        <div class="leaderboard-container">
+            <div class="leaderboard-header">
+                <div class="leaderboard-title">🏆 RANKING</div>
+                <span class="leaderboard-close" id="leaderboard-close">&times;</span>
+            </div>
+            <!-- Player's own rank card -->
+            <div class="lb-my-rank" id="lb-my-rank" style="display:none;">
+                <div class="lb-my-rank-pos" id="lb-my-pos">#–</div>
+                <div class="lb-my-rank-info">
+                    <div class="lb-my-rank-name" id="lb-my-name">–</div>
+                    <div class="lb-my-rank-pts" id="lb-my-pts">0 PTS</div>
+                </div>
+                <div class="lb-tier-badge" id="lb-my-tier">BRAWLER</div>
+            </div>
+            <!-- List -->
+            <div class="lb-list" id="lb-list">
+                <div class="lb-loading">Loading...</div>
             </div>
         </div>
     </div>
@@ -11933,6 +12109,7 @@
             legendary: 35
         };
         let globalCharactersCreated = 0;
+        let globalRankingPoints = 0;
         let winStreak = 0;
         let shopItemCooldowns = {}; // { itemId: timestamp } — 24h cooldown per item
         const SHOP_COOLDOWN        = 24 * 60 * 60 * 1000; // 24h cooldown per shop item
@@ -13902,6 +14079,93 @@
         }
 
         // Fetch authoritative economy state from server and override local values
+        // ── Ranking helpers ───────────────────────────────────────────────────
+        const RANK_TIERS = [
+            { name: 'Legend',    min: 12000, cls: 'lb-tier-Legend'   },
+            { name: 'Champion',  min: 7000,  cls: 'lb-tier-Champion'  },
+            { name: 'Gladiator', min: 3500,  cls: 'lb-tier-Gladiator' },
+            { name: 'Warrior',   min: 1500,  cls: 'lb-tier-Warrior'   },
+            { name: 'Fighter',   min: 500,   cls: 'lb-tier-Fighter'   },
+            { name: 'Brawler',   min: 0,     cls: 'lb-tier-Brawler'   },
+        ];
+
+        function getRankTierName(pts) {
+            for (const t of RANK_TIERS) { if (pts >= t.min) return t.name; }
+            return 'Brawler';
+        }
+        function getRankTierCls(pts) {
+            for (const t of RANK_TIERS) { if (pts >= t.min) return t.cls; }
+            return 'lb-tier-Brawler';
+        }
+
+        function openLeaderboard() {
+            const panel = document.getElementById('leaderboard-panel');
+            panel.classList.add('active');
+            fetchLeaderboard();
+        }
+
+        async function fetchLeaderboard() {
+            const list = document.getElementById('lb-list');
+            list.innerHTML = '<div class="lb-loading">Loading...</div>';
+
+            try {
+                const pid    = playerSession?.playerId ?? '';
+                const params = new URLSearchParams({ limit: '50' });
+                if (pid) params.set('playerId', pid);
+
+                const resp = await fetchWithTimeout(
+                    BACKEND_URL + '/api/leaderboard?' + params.toString(),
+                    { method: 'GET' }
+                );
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+
+                renderLeaderboard(data.leaderboard ?? [], data.playerRank, pid);
+            } catch (e) {
+                list.innerHTML = '<div class="lb-empty">Could not load rankings.</div>';
+            }
+        }
+
+        function renderLeaderboard(rows, playerRank, myId) {
+            // My rank card
+            const myCard  = document.getElementById('lb-my-rank');
+            const myPos   = document.getElementById('lb-my-pos');
+            const myName  = document.getElementById('lb-my-name');
+            const myPts   = document.getElementById('lb-my-pts');
+            const myTier  = document.getElementById('lb-my-tier');
+
+            if (playerRank && playerSession) {
+                myCard.style.display = 'flex';
+                myPos.textContent    = '#' + playerRank.rank;
+                myName.textContent   = playerSession.name || 'You';
+                myPts.textContent    = playerRank.points.toLocaleString() + ' PTS';
+                myTier.textContent   = playerRank.tier;
+                myTier.className     = 'lb-tier-badge ' + getRankTierCls(playerRank.points);
+            } else {
+                myCard.style.display = 'none';
+            }
+
+            const list = document.getElementById('lb-list');
+            if (!rows.length) {
+                list.innerHTML = '<div class="lb-empty">No fighters ranked yet.<br>Reach level 10 to enter the arena!</div>';
+                return;
+            }
+
+            const TOP_MEDALS = ['🥇', '🥈', '🥉'];
+            list.innerHTML = rows.map(row => {
+                const isMe   = row.id === myId;
+                const medal  = row.rank <= 3 ? TOP_MEDALS[row.rank - 1] : '';
+                const rankDisp = medal || ('#' + row.rank);
+                const tierCls  = getRankTierCls(row.points);
+                return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
+                    <div class="lb-row-rank${row.rank <= 3 ? ' top3' : ''}">${rankDisp}</div>
+                    <div class="lb-row-name">${row.name}</div>
+                    <div class="lb-tier-badge ${tierCls}" style="margin-right:6px;">${row.tier}</div>
+                    <div class="lb-row-pts">${row.points.toLocaleString()} PTS</div>
+                </div>`;
+            }).join('');
+        }
+
         async function syncStateFromServer() {
             if (!playerSession) return;
             try {
@@ -13942,6 +14206,10 @@
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
                 globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
                 globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
+                // Ranking points — server is the authority
+                if (data.rankingPoints !== undefined) {
+                    globalRankingPoints = data.rankingPoints;
+                }
                 // Preferred chain — server is source of truth (prevents URL param manipulation)
                 if (data.preferredChain && playerSession) {
                     playerSession.preferredChain = data.preferredChain;
@@ -16690,6 +16958,17 @@
         document.getElementById('history-panel').addEventListener('click', (e) => {
             if (e.target.id === 'history-panel') {
                 document.getElementById('history-panel').classList.remove('active');
+            }
+        });
+
+        // Leaderboard panel
+        document.getElementById('menu-leaderboard-btn').addEventListener('click', openLeaderboard);
+        document.getElementById('leaderboard-close').addEventListener('click', () => {
+            document.getElementById('leaderboard-panel').classList.remove('active');
+        });
+        document.getElementById('leaderboard-panel').addEventListener('click', (e) => {
+            if (e.target.id === 'leaderboard-panel') {
+                document.getElementById('leaderboard-panel').classList.remove('active');
             }
         });
 
@@ -21196,6 +21475,18 @@
                         } else if (mChar.morale < 40) {
                             addNotification('😐', mChar.name + ' is discouraged (morale ' + mChar.morale + '/100)', 'morale');
                         }
+                    }
+                }
+                // Ranking points (level 10+ chars only)
+                if (lastBattleRewards.rankingDelta !== undefined && lastBattleRewards.rankingDelta !== 0) {
+                    const delta = lastBattleRewards.rankingDelta;
+                    const sign  = delta > 0 ? '+' : '';
+                    globalRankingPoints = lastBattleRewards.newRankingPoints ?? (globalRankingPoints + delta);
+                    const tierName = getRankTierName(globalRankingPoints);
+                    if (delta > 0) {
+                        log('🏆 Ranking ' + sign + delta + ' pts — ' + globalRankingPoints + ' (' + tierName + ')', 'log-ranking');
+                    } else {
+                        log('🏆 Ranking ' + sign + delta + ' pts — ' + globalRankingPoints + ' (' + tierName + ')', 'log-ranking-loss');
                     }
                 }
                 // Chest
