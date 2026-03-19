@@ -6406,8 +6406,7 @@
         .leaderboard-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.3em;
-            color: #fbbf24;
-            text-shadow: 2px 2px 0 #000;
+            color: #92400e;
         }
         .leaderboard-close {
             font-size: 2em;
@@ -6419,9 +6418,9 @@
 
         /* Player's own rank card */
         .lb-my-rank {
-            background: rgba(124,58,237,0.18);
-            border: 1px solid rgba(167,139,250,0.35);
-            border-radius: 8px;
+            background: rgba(109,40,217,0.08);
+            border: 1px solid rgba(109,40,217,0.25);
+            border-radius: 6px;
             padding: 10px 14px;
             margin-bottom: 14px;
             display: flex;
@@ -6431,7 +6430,7 @@
         .lb-my-rank-pos {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.5em;
-            color: #a78bfa;
+            color: #6d28d9;
             min-width: 48px;
             text-align: center;
         }
@@ -6439,13 +6438,13 @@
         .lb-my-rank-name {
             font-family: 'Fredoka', sans-serif;
             font-size: 1em;
-            color: #e9d5ff;
+            color: #3b1f6b;
             margin-bottom: 2px;
         }
         .lb-my-rank-pts {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.55em;
-            color: #a78bfa;
+            color: #6d28d9;
         }
         .lb-tier-badge {
             font-family: 'Press Start 2P', monospace;
@@ -6454,12 +6453,12 @@
             border-radius: 4px;
             white-space: nowrap;
         }
-        .lb-tier-Brawler    { color:#9ca3af; border:1px solid #9ca3af44; }
-        .lb-tier-Fighter    { color:#4ade80; border:1px solid #4ade8044; text-shadow:0 0 8px #4ade8066; }
-        .lb-tier-Warrior    { color:#60a5fa; border:1px solid #60a5fa44; text-shadow:0 0 8px #60a5fa66; }
-        .lb-tier-Gladiator  { color:#a78bfa; border:1px solid #a78bfa44; text-shadow:0 0 8px #a78bfa88; }
-        .lb-tier-Champion   { color:#fbbf24; border:1px solid #fbbf2444; text-shadow:0 0 8px #fbbf2466; }
-        .lb-tier-Legend     { color:#f87171; border:1px solid #f8717144; text-shadow:0 0 12px #f8717199; }
+        .lb-tier-Brawler    { color:#78716c; background:rgba(87,83,78,0.18);   border:1px solid rgba(87,83,78,0.35); }
+        .lb-tier-Fighter    { color:#4d7c0f; background:rgba(77,124,15,0.15);  border:1px solid rgba(77,124,15,0.4); }
+        .lb-tier-Warrior    { color:#1d4ed8; background:rgba(29,78,216,0.15);  border:1px solid rgba(29,78,216,0.4); }
+        .lb-tier-Gladiator  { color:#6d28d9; background:rgba(109,40,217,0.15); border:1px solid rgba(109,40,217,0.4); }
+        .lb-tier-Champion   { color:#92400e; background:rgba(146,64,14,0.18);  border:1px solid rgba(146,64,14,0.45); }
+        .lb-tier-Legend     { color:#991b1b; background:rgba(153,27,27,0.18);  border:1px solid rgba(153,27,27,0.45); }
 
         /* Rows */
         .lb-list {
@@ -6477,20 +6476,20 @@
             border-radius: 6px;
             transition: background 0.15s;
         }
-        .lb-row:hover { background: rgba(255,255,255,0.04); }
-        .lb-row.lb-row-me { background: rgba(124,58,237,0.12); }
+        .lb-row:hover { background: rgba(0,0,0,0.06); }
+        .lb-row.lb-row-me { background: rgba(109,40,217,0.07); }
         .lb-row-rank {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.95em;
-            color: #6b7280;
+            color: #78716c;
             min-width: 34px;
             text-align: right;
         }
-        .lb-row-rank.top3 { color: #fbbf24; font-size: 1.1em; }
+        .lb-row-rank.top3 { color: #92400e; font-size: 1.1em; }
         .lb-row-name {
             font-family: 'Fredoka', sans-serif;
             font-size: 1em;
-            color: #e5e7eb;
+            color: #292524;
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -6499,7 +6498,7 @@
         .lb-row-pts {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.48em;
-            color: #9ca3af;
+            color: #78716c;
             white-space: nowrap;
         }
         .lb-empty {
@@ -12108,7 +12107,6 @@
             legendary: 35
         };
         let globalCharactersCreated = 0;
-        let globalRankingPoints = 0;
         let winStreak = 0;
         let shopItemCooldowns = {}; // { itemId: timestamp } — 24h cooldown per item
         const SHOP_COOLDOWN        = 24 * 60 * 60 * 1000; // 24h cooldown per shop item
@@ -14136,7 +14134,7 @@
             if (playerRank && playerSession) {
                 myCard.style.display = 'flex';
                 myPos.textContent    = '#' + playerRank.rank;
-                myName.textContent   = playerSession.name || 'You';
+                myName.textContent   = playerRank.charName || playerSession.name || 'You';
                 myPts.textContent    = playerRank.points.toLocaleString() + ' PTS';
                 myTier.textContent   = playerRank.tier;
                 myTier.className     = 'lb-tier-badge ' + getRankTierCls(playerRank.points);
@@ -14205,10 +14203,6 @@
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
                 globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
                 globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
-                // Ranking points — server is the authority
-                if (data.rankingPoints !== undefined) {
-                    globalRankingPoints = data.rankingPoints;
-                }
                 // Preferred chain — server is source of truth (prevents URL param manipulation)
                 if (data.preferredChain && playerSession) {
                     playerSession.preferredChain = data.preferredChain;
@@ -21476,16 +21470,17 @@
                         }
                     }
                 }
-                // Ranking points (level 10+ chars only)
+                // Ranking points — stored on the character (level 10+ only)
                 if (lastBattleRewards.rankingDelta !== undefined && lastBattleRewards.rankingDelta !== 0) {
-                    const delta = lastBattleRewards.rankingDelta;
-                    const sign  = delta > 0 ? '+' : '';
-                    globalRankingPoints = lastBattleRewards.newRankingPoints ?? (globalRankingPoints + delta);
-                    const tierName = getRankTierName(globalRankingPoints);
-                    if (delta > 0) {
-                        log('🏆 Ranking ' + sign + delta + ' pts — ' + globalRankingPoints + ' (' + tierName + ')', 'log-ranking');
-                    } else {
-                        log('🏆 Ranking ' + sign + delta + ' pts — ' + globalRankingPoints + ' (' + tierName + ')', 'log-ranking-loss');
+                    const delta   = lastBattleRewards.rankingDelta;
+                    const sign    = delta > 0 ? '+' : '';
+                    const rkChar  = getSelectedCharacter();
+                    if (rkChar) {
+                        rkChar.rankingPoints = lastBattleRewards.newRankingPoints ?? Math.max(0, (rkChar.rankingPoints || 0) + delta);
+                        saveCharacters();
+                        const tierName = getRankTierName(rkChar.rankingPoints);
+                        const cls = delta > 0 ? 'log-ranking' : 'log-ranking-loss';
+                        log('🏆 Ranking ' + sign + delta + ' pts — ' + rkChar.rankingPoints + ' (' + tierName + ')', cls);
                     }
                 }
                 // Chest
