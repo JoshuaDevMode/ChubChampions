@@ -13698,6 +13698,15 @@
         let playerSession = null; // { playerId, wallet, name, avatar, token }
 
         function initGameWithSession() {
+            // Race condition guard: user closed chain-selection popup before choosing.
+            // Redirect them back to complete setup instead of letting them play walletless.
+            if (playerSession && !playerSession.wallet) {
+                showNotice('Setup incomplete — please choose your chain to continue.');
+                setTimeout(() => {
+                    window.location.href = 'https://fight-chub-backend.vercel.app/?force=1';
+                }, 3000);
+                return;
+            }
             loadCharacters();
             fetchCharactersFromServer(); // async: merges server chars not in localStorage
             // One-time migration: push all local chars to server so player_id is set in DB.
@@ -13932,6 +13941,14 @@
                 if (data.pendingStats) serverPendingStats = data.pendingStats;
                 globalTotalFreeRerollsUsed = data.totalFreeRerollsUsed ?? 0;
                 globalTotalPaidRerolls     = data.totalPaidRerolls     ?? 0;
+                // Preferred chain — server is source of truth (prevents URL param manipulation)
+                if (data.preferredChain && playerSession) {
+                    playerSession.preferredChain = data.preferredChain;
+                    try {
+                        const s = localStorage.getItem('fightchub_session');
+                        if (s) { const p = JSON.parse(s); p.preferredChain = data.preferredChain; localStorage.setItem('fightchub_session', JSON.stringify(p)); }
+                    } catch(e) {}
+                }
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
