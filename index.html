@@ -4858,6 +4858,181 @@
             border-top-color: transparent;
         }
 
+        /* ── AoN Tabs ──────────────────────────────────────────── */
+        .aon-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #2a1008;
+        }
+        .aon-tab {
+            flex: 1;
+            padding: 10px 6px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            color: #554433;
+            font-family: inherit;
+            font-size: 0.82em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-transform: uppercase;
+        }
+        .aon-tab:hover { color: #ff8866; }
+        .aon-tab.active { color: #ffcc88; border-bottom-color: #ef4444; }
+        .aon-tab-content { display: none; }
+        .aon-tab-content.active { display: block; }
+
+        /* AoN Lobby */
+        .aon-lobby-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .aon-lobby-refresh {
+            background: none;
+            border: 1px solid #3a2008;
+            border-radius: 6px;
+            color: #664433;
+            font-family: inherit;
+            font-size: 0.78em;
+            font-weight: bold;
+            padding: 6px 12px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+        .aon-lobby-refresh:hover { color: #ffcc88; border-color: #b03020; }
+        .aon-lobby-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .aon-lobby-empty {
+            color: #443322;
+            text-align: center;
+            font-size: 0.88em;
+            padding: 28px 0;
+            border: 1px dashed #2a1008;
+            border-radius: 8px;
+        }
+        .aon-challenge-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #2a1408;
+            border-radius: 8px;
+            transition: border-color 0.15s;
+        }
+        .aon-challenge-row:hover { border-color: #8b2020; }
+        .aon-challenge-info { flex: 1; min-width: 0; }
+        .aon-challenge-name {
+            font-size: 0.9em;
+            color: #ffcc88;
+            font-weight: bold;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .aon-challenge-details { font-size: 0.75em; color: #664433; }
+        .aon-chain-badge {
+            display: inline-block;
+            font-size: 0.6em;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .aon-chain-badge.monad { background: #5b21b6; color: #e9d5ff; border: 1px solid #7c3aed; }
+        .aon-chain-badge.solana { background: #0f766e; color: #99f6e4; border: 1px solid #14b8a6; }
+        .aon-challenge-fee {
+            font-size: 1em;
+            font-weight: bold;
+            color: #f87171;
+            white-space: nowrap;
+            margin-right: 6px;
+        }
+        .aon-join-btn {
+            background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
+            border: 1px solid #ef4444;
+            border-bottom: 3px solid #450a0a;
+            border-radius: 8px;
+            color: #ffddcc;
+            font-family: inherit;
+            font-size: 0.82em;
+            font-weight: bold;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .aon-join-btn:hover {
+            background: linear-gradient(160deg, #991b1b 0%, #7f1d1d 100%);
+            box-shadow: 0 0 10px rgba(239,68,68,0.35);
+        }
+
+        /* My open challenge box */
+        .aon-my-challenge-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #4a1808;
+            border-top: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .aon-my-challenge-title {
+            color: #cc4444;
+            font-size: 0.8em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .aon-my-challenge-details { color: #8a7060; font-size: 0.88em; margin-bottom: 12px; }
+        .aon-cancel-btn {
+            background: linear-gradient(160deg, #1c0e00 0%, #100800 100%);
+            border: 1px solid #3a2008;
+            border-radius: 8px;
+            color: #886644;
+            font-family: inherit;
+            font-size: 0.82em;
+            font-weight: bold;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .aon-cancel-btn:hover { border-color: #b03020; color: #ffcc88; }
+
+        /* PvP accept result */
+        .aon-pvp-result {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #2a1408;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .aon-pvp-result.win  { border-color: #15803d; box-shadow: 0 0 18px rgba(74,222,128,0.15); }
+        .aon-pvp-result.loss { border-color: #7f1d1d; box-shadow: 0 0 18px rgba(248,113,113,0.12); }
+        .aon-pvp-result-title { font-size: 1.6em; font-weight: bold; margin-bottom: 8px; }
+        .aon-pvp-result.win  .aon-pvp-result-title { color: #4ade80; text-shadow: 0 0 12px rgba(74,222,128,0.6); }
+        .aon-pvp-result.loss .aon-pvp-result-title { color: #f87171; }
+        .aon-pvp-result-pot { font-size: 1.1em; margin-bottom: 6px; }
+        .aon-pvp-result.win  .aon-pvp-result-pot { color: #4ade80; }
+        .aon-pvp-result.loss .aon-pvp-result-pot { color: #f87171; }
+        .aon-pvp-result-score { font-size: 0.82em; color: #664433; margin-bottom: 10px; }
+        .aon-pvp-result-rounds { font-size: 0.75em; color: #443322; }
+
         /* Matchmaking Overlay */
         .aon-matchmaking {
             position: absolute;
@@ -6383,7 +6558,7 @@
         .leaderboard-container {
             background: none;
             border: 40px solid transparent;
-            border-image-source: url('/FightChub/assets/window-frame-oxBsLhjF.png');
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
             border-image-slice: 15% fill;
             border-image-width: 40px;
             border-image-repeat: stretch;
@@ -6401,16 +6576,17 @@
             align-items: center;
             margin-bottom: 14px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid #555;
         }
         .leaderboard-title {
-            font-family: 'Fredoka', sans-serif;
-            font-size: 1.3em;
-            color: #92400e;
+            font-family: 'Sour Gummy', sans-serif;
+            font-weight: 900;
+            font-size: 1.4em;
+            color: #fcd34d;
         }
         .leaderboard-close {
             font-size: 2em;
-            color: #fff;
+            color: #d1d5db;
             cursor: pointer;
             line-height: 1;
         }
@@ -6418,8 +6594,6 @@
 
         /* Player's own rank card */
         .lb-my-rank {
-            background: rgba(109,40,217,0.08);
-            border: 1px solid rgba(109,40,217,0.25);
             border-radius: 6px;
             padding: 10px 14px;
             margin-bottom: 14px;
@@ -6427,38 +6601,58 @@
             align-items: center;
             gap: 12px;
         }
+        .lb-my-rank-Brawler   { background:rgba(156,163,175,0.15); border:1px solid rgba(156,163,175,0.45); }
+        .lb-my-rank-Fighter   { background:rgba(74,222,128,0.12);  border:1px solid rgba(74,222,128,0.45);  }
+        .lb-my-rank-Warrior   { background:rgba(96,165,250,0.12);  border:1px solid rgba(96,165,250,0.45);  }
+        .lb-my-rank-Gladiator { background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.45); }
+        .lb-my-rank-Champion  { background:rgba(251,146,60,0.12);  border:1px solid rgba(251,146,60,0.45);  }
+        .lb-my-rank-Legend    { background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.45); }
+        .lb-my-rank-Mythic    { background:rgba(129,140,248,0.15); border:1px solid rgba(129,140,248,0.5);  }
+        .lb-my-rank-Sovereign { background:rgba(234,179,8,0.15);   border:1px solid rgba(253,224,71,0.6);   }
+
         .lb-my-rank-pos {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.5em;
-            color: #6d28d9;
             min-width: 48px;
             text-align: center;
         }
+        .lb-my-rank-Brawler   .lb-my-rank-pos, .lb-my-rank-Brawler   .lb-my-rank-pts { color: #9ca3af; }
+        .lb-my-rank-Fighter   .lb-my-rank-pos, .lb-my-rank-Fighter   .lb-my-rank-pts { color: #4ade80; }
+        .lb-my-rank-Warrior   .lb-my-rank-pos, .lb-my-rank-Warrior   .lb-my-rank-pts { color: #60a5fa; }
+        .lb-my-rank-Gladiator .lb-my-rank-pos, .lb-my-rank-Gladiator .lb-my-rank-pts { color: #a78bfa; }
+        .lb-my-rank-Champion  .lb-my-rank-pos, .lb-my-rank-Champion  .lb-my-rank-pts { color: #fb923c; }
+        .lb-my-rank-Legend    .lb-my-rank-pos, .lb-my-rank-Legend    .lb-my-rank-pts { color: #f87171; }
+        .lb-my-rank-Mythic    .lb-my-rank-pos, .lb-my-rank-Mythic    .lb-my-rank-pts { color: #818cf8; }
+        .lb-my-rank-Sovereign .lb-my-rank-pos, .lb-my-rank-Sovereign .lb-my-rank-pts { color: #eab308; }
+
         .lb-my-rank-info { flex: 1; }
         .lb-my-rank-name {
-            font-family: 'Fredoka', sans-serif;
+            font-family: 'Sour Gummy', sans-serif;
             font-size: 1em;
-            color: #3b1f6b;
+            color: #e5e7eb;
             margin-bottom: 2px;
         }
         .lb-my-rank-pts {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.55em;
-            color: #6d28d9;
         }
         .lb-tier-badge {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 0.45em;
-            padding: 4px 8px;
-            border-radius: 4px;
+            font-family: 'Sour Gummy', sans-serif;
+            font-weight: 700;
+            font-size: 0.75em;
+            padding: 4px 12px;
+            border-radius: 50px;
             white-space: nowrap;
+            letter-spacing: 0.3px;
         }
-        .lb-tier-Brawler    { color:#78716c; background:rgba(87,83,78,0.18);   border:1px solid rgba(87,83,78,0.35); }
-        .lb-tier-Fighter    { color:#4d7c0f; background:rgba(77,124,15,0.15);  border:1px solid rgba(77,124,15,0.4); }
-        .lb-tier-Warrior    { color:#1d4ed8; background:rgba(29,78,216,0.15);  border:1px solid rgba(29,78,216,0.4); }
-        .lb-tier-Gladiator  { color:#6d28d9; background:rgba(109,40,217,0.15); border:1px solid rgba(109,40,217,0.4); }
-        .lb-tier-Champion   { color:#92400e; background:rgba(146,64,14,0.18);  border:1px solid rgba(146,64,14,0.45); }
-        .lb-tier-Legend     { color:#991b1b; background:rgba(153,27,27,0.18);  border:1px solid rgba(153,27,27,0.45); }
+        .lb-tier-Brawler   { color:#fff;    background:linear-gradient(160deg,#d1d5db,#9ca3af,#6b7280); border:2px solid #9ca3af; box-shadow:0 0 8px rgba(156,163,175,0.5), inset 0 1px 0 rgba(255,255,255,0.35); }
+        .lb-tier-Fighter   { color:#14532d; background:linear-gradient(160deg,#bbf7d0,#86efac,#4ade80); border:2px solid #4ade80; box-shadow:0 0 8px rgba(74,222,128,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Warrior   { color:#1e3a8a; background:linear-gradient(160deg,#bfdbfe,#93c5fd,#60a5fa); border:2px solid #60a5fa; box-shadow:0 0 8px rgba(96,165,250,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Gladiator { color:#3b0764; background:linear-gradient(160deg,#e9d5ff,#c4b5fd,#a78bfa); border:2px solid #a78bfa; box-shadow:0 0 8px rgba(167,139,250,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Champion  { color:#7c2d12; background:linear-gradient(160deg,#fed7aa,#fdba74,#fb923c); border:2px solid #fb923c; box-shadow:0 0 8px rgba(251,146,60,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Legend    { color:#7f1d1d; background:linear-gradient(160deg,#fecaca,#fca5a5,#f87171); border:2px solid #f87171; box-shadow:0 0 8px rgba(248,113,113,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Mythic    { color:#1e1b4b; background:linear-gradient(160deg,#c7d2fe,#818cf8,#6366f1); border:2px solid #818cf8; box-shadow:0 0 10px rgba(129,140,248,0.65), inset 0 1px 0 rgba(255,255,255,0.4); }
+        .lb-tier-Sovereign { color:#1c1917; background:linear-gradient(160deg,#fef9c3,#fde047,#eab308); border:2px solid #fde047; box-shadow:0 0 12px rgba(253,224,71,0.7), inset 0 1px 0 rgba(255,255,255,0.5); }
 
         /* Rows */
         .lb-list {
@@ -6476,20 +6670,20 @@
             border-radius: 6px;
             transition: background 0.15s;
         }
-        .lb-row:hover { background: rgba(0,0,0,0.06); }
-        .lb-row.lb-row-me { background: rgba(109,40,217,0.07); }
+        .lb-row:hover { background: rgba(255,255,255,0.06); }
+        .lb-row.lb-row-me { background: rgba(139,92,246,0.12); }
         .lb-row-rank {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.95em;
-            color: #78716c;
+            color: #9ca3af;
             min-width: 34px;
             text-align: right;
         }
-        .lb-row-rank.top3 { color: #92400e; font-size: 1.1em; }
+        .lb-row-rank.top3 { color: #fcd34d; font-size: 1.1em; }
         .lb-row-name {
-            font-family: 'Fredoka', sans-serif;
+            font-family: 'Sour Gummy', sans-serif;
             font-size: 1em;
-            color: #292524;
+            color: #e5e7eb;
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -6498,19 +6692,19 @@
         .lb-row-pts {
             font-family: 'Press Start 2P', monospace;
             font-size: 0.48em;
-            color: #78716c;
+            color: #9ca3af;
             white-space: nowrap;
         }
         .lb-empty {
             font-family: 'Fredoka', sans-serif;
-            color: #4b5563;
+            color: #9ca3af;
             font-size: 0.95em;
             text-align: center;
             padding: 32px 0;
         }
         .lb-loading {
             font-family: 'Fredoka', sans-serif;
-            color: #6b7280;
+            color: #9ca3af;
             font-size: 0.9em;
             text-align: center;
             padding: 32px 0;
@@ -6518,6 +6712,254 @@
         /* Ranking delta toast in battle log */
         .log-ranking { color: #fbbf24; }
         .log-ranking-loss { color: #f87171; }
+
+        /* ── Character Profile Modal ───────────────────── */
+        .char-profile-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.93);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .char-profile-overlay.active { display: flex; }
+
+        .char-profile-modal {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+
+        /* Top row: header bar with name + close */
+        .char-profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 4px;
+        }
+        .char-profile-title {
+            font-family: 'Sour Gummy', sans-serif;
+            font-weight: 900;
+            font-size: 1.35em;
+            color: #fcd34d;
+        }
+        .char-profile-close {
+            font-size: 2em;
+            color: #d1d5db;
+            cursor: pointer;
+            line-height: 1;
+            background: none;
+            border: none;
+        }
+        .char-profile-close:hover { color: #fbbf24; }
+
+        /* Two-panel row */
+        .char-profile-panels {
+            display: flex;
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        /* Left: sprite panel */
+        .char-profile-sprite-frame {
+            background: none;
+            border: 30px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
+            border-image-slice: 15% fill;
+            border-image-width: 30px;
+            border-image-repeat: stretch;
+            box-sizing: border-box;
+            width: 200px;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 8px 4px;
+        }
+        .char-profile-sprite-wrap {
+            width: 128px;
+            height: 128px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            image-rendering: pixelated;
+        }
+        .char-profile-sprite-wrap img {
+            width: 128px;
+            height: 128px;
+            image-rendering: pixelated;
+            object-fit: contain;
+        }
+        .char-profile-level-badge {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.88em;
+            color: #fcd34d;
+        }
+
+        /* Right: stats panel */
+        .char-profile-stats-frame {
+            background: none;
+            border: 30px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
+            border-image-slice: 15% fill;
+            border-image-width: 30px;
+            border-image-repeat: stretch;
+            box-sizing: border-box;
+            flex: 1;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .char-profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .char-profile-charname {
+            font-family: 'Sour Gummy', sans-serif;
+            font-weight: 800;
+            font-size: 1.15em;
+            color: #f9fafb;
+        }
+        .char-profile-rank-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .char-profile-pts {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5em;
+            color: #9ca3af;
+        }
+        .char-profile-qtier {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.78em;
+            color: #6b7280;
+            padding: 2px 8px;
+            border-radius: 50px;
+            border: 1px solid #374151;
+            background: rgba(255,255,255,0.04);
+        }
+        .char-profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 14px;
+        }
+        .char-profile-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .char-profile-stat-label {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.8em;
+            color: #9ca3af;
+            min-width: 30px;
+        }
+        .char-profile-stat-bar-wrap {
+            flex: 1;
+            height: 7px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .char-profile-stat-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+        .char-profile-stat-val {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.82em;
+            color: #e5e7eb;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        /* Battle history section */
+        .char-profile-history-frame {
+            background: none;
+            border: 30px solid transparent;
+            border-image-source: url('/FightChub/assets/iron-frame-DJd0m5ef.png');
+            border-image-slice: 15% fill;
+            border-image-width: 30px;
+            border-image-repeat: stretch;
+            box-sizing: border-box;
+            padding: 8px 14px;
+        }
+        .char-profile-history-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.9em;
+            color: #fcd34d;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .char-profile-battles {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .char-profile-battle-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+        }
+        .cpb-result {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.82em;
+            min-width: 44px;
+            font-weight: 700;
+        }
+        .cpb-result.win  { color: #4ade80; }
+        .cpb-result.loss { color: #f87171; }
+        .cpb-turns {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.78em;
+            color: #6b7280;
+            min-width: 52px;
+        }
+        .cpb-mode {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.75em;
+            color: #a78bfa;
+        }
+        .cpb-date {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.72em;
+            color: #4b5563;
+            margin-left: auto;
+        }
+        .char-profile-no-history {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.85em;
+            color: #4b5563;
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        /* Clickable names in leaderboard */
+        .lb-row-name-link {
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            text-decoration-color: rgba(229,231,235,0.3);
+        }
+        .lb-row-name-link:hover { color: #fcd34d; text-decoration-color: #fcd34d; }
 
         .history-container {
             font-size: 18px;
@@ -9823,7 +10265,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/FightChub/assets/index-DUrfYlZH.js"></script>
+  <script type="module" crossorigin src="/FightChub/assets/index-Ckae0YeD.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -10286,40 +10728,57 @@
             <div class="aon-title">💀 ALL OR NOTHING</div>
             <div class="aon-subtitle">Bet it all. Winner takes everything.</div>
 
-            <div class="aon-section-label">ENTRY FEE</div>
-            <div class="aon-fee-grid">
-                <button class="aon-fee-btn" data-fee="10">🪙 10</button>
-                <button class="aon-fee-btn" data-fee="25">🪙 25</button>
-                <button class="aon-fee-btn" data-fee="50">🪙 50</button>
-                <button class="aon-fee-btn" data-fee="100">🪙 100</button>
-            </div>
-            <div class="aon-custom-row">
-                <button class="aon-custom-btn" id="aon-custom-toggle">CUSTOM</button>
-                <input type="number" class="aon-custom-input" id="aon-custom-input" placeholder="Min 15 🪙" min="15" style="display:none;">
+            <!-- Tabs -->
+            <div class="aon-tabs">
+                <button class="aon-tab active" data-tab="pvp">⚔️ CREAR DESAFÍO</button>
+                <button class="aon-tab" data-tab="lobby">🏟️ SALA</button>
             </div>
 
-            <div class="aon-section-label">FORMAT</div>
-            <div class="aon-format-grid">
-                <button class="aon-format-btn selected" data-format="3">BEST OF 3</button>
-                <button class="aon-format-btn" data-format="5">BEST OF 5</button>
+            <!-- ── Tab: PvP Challenge ──────────────────────────────── -->
+            <div class="aon-tab-content active" id="aon-tab-pvp">
+                <!-- My active challenge (shown if open challenge exists) -->
+                <div class="aon-my-challenge-box" id="aon-my-challenge-box" style="display:none;">
+                    <div class="aon-my-challenge-title">⏳ DESAFÍO PUBLICADO</div>
+                    <div class="aon-my-challenge-details" id="aon-my-challenge-details">–</div>
+                    <button class="aon-cancel-btn" id="aon-cancel-pvp-btn">CANCELAR</button>
+                </div>
+                <!-- Create form -->
+                <div id="aon-pvp-create-form">
+                    <div class="aon-section-label">TOKENS A APOSTAR</div>
+                    <div class="aon-fee-grid" id="aon-pvp-fee-grid">
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="10">🪙 10</button>
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="25">🪙 25</button>
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="50">🪙 50</button>
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="100">🪙 100</button>
+                    </div>
+                    <div class="aon-custom-row">
+                        <button class="aon-custom-btn" id="aon-pvp-custom-toggle">CUSTOM</button>
+                        <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 15 🪙" min="15" style="display:none;">
+                    </div>
+                    <div class="aon-section-label">FORMATO</div>
+                    <div class="aon-format-grid" id="aon-pvp-format-grid">
+                        <button class="aon-format-btn aon-pvp-format-btn selected" data-rtw="2">BEST OF 3</button>
+                        <button class="aon-format-btn aon-pvp-format-btn" data-rtw="3">BEST OF 5</button>
+                    </div>
+                    <div class="aon-summary" id="aon-pvp-summary">
+                        <div class="aon-summary-row"><span>Apuesta</span><span class="aon-val" id="aon-pvp-sum-fee">🪙 --</span></div>
+                        <div class="aon-summary-row aon-winnings"><span>Premio Total</span><span class="aon-val" id="aon-pvp-sum-win">🪙 --</span></div>
+                        <div class="aon-summary-row aon-fee-row"><span>Comisión (4%)</span><span class="aon-val" id="aon-pvp-sum-platform">🪙 --</span></div>
+                    </div>
+                    <button class="aon-create-btn" id="aon-pvp-create-btn" disabled>PUBLICAR DESAFÍO</button>
+                </div>
             </div>
 
-            <div class="aon-summary" id="aon-summary">
-                <div class="aon-summary-row">
-                    <span>Entry Fee</span>
-                    <span class="aon-val" id="aon-sum-fee">🪙 --</span>
+            <!-- ── Tab: Sala / Lobby ──────────────────────────────── -->
+            <div class="aon-tab-content" id="aon-tab-lobby">
+                <div class="aon-lobby-header">
+                    <div class="aon-section-label" style="margin:0;">DESAFÍOS ABIERTOS</div>
+                    <button class="aon-lobby-refresh" id="aon-lobby-refresh">↻ Actualizar</button>
                 </div>
-                <div class="aon-summary-row aon-winnings">
-                    <span>Potential Win</span>
-                    <span class="aon-val" id="aon-sum-win">🪙 --</span>
-                </div>
-                <div class="aon-summary-row aon-fee-row">
-                    <span>Platform Fee (4%)</span>
-                    <span class="aon-val" id="aon-sum-platform">🪙 --</span>
+                <div class="aon-lobby-list" id="aon-lobby-list">
+                    <div class="aon-lobby-empty">Cargando...</div>
                 </div>
             </div>
-
-            <button class="aon-create-btn" id="aon-create-btn" disabled>CREATE ROOM</button>
         </div>
     </div>
 
@@ -10358,6 +10817,47 @@
             <!-- List -->
             <div class="lb-list" id="lb-list">
                 <div class="lb-loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Profile Modal -->
+    <div class="char-profile-overlay" id="char-profile-overlay">
+        <div class="char-profile-modal">
+            <!-- Header -->
+            <div class="char-profile-header">
+                <div class="char-profile-title" id="cp-title">Fighter Profile</div>
+                <button class="char-profile-close" id="char-profile-close">&times;</button>
+            </div>
+            <!-- Two panels: sprite | stats -->
+            <div class="char-profile-panels">
+                <!-- Left: sprite -->
+                <div class="char-profile-sprite-frame">
+                    <div class="char-profile-sprite-wrap">
+                        <img id="cp-sprite" src="/FightChub/assets/Character-DcCKbpWK.png" alt="Fighter" />
+                    </div>
+                    <div class="char-profile-level-badge" id="cp-level">Lv. 1</div>
+                    <div id="cp-element"></div>
+                </div>
+                <!-- Right: stats -->
+                <div class="char-profile-stats-frame">
+                    <div class="char-profile-name-row">
+                        <span class="char-profile-charname" id="cp-name">–</span>
+                        <div class="lb-tier-badge" id="cp-tier-badge">Brawler</div>
+                    </div>
+                    <div class="char-profile-rank-row">
+                        <span class="char-profile-pts" id="cp-pts">0 PTS</span>
+                        <span class="char-profile-qtier" id="cp-qtier">Novice</span>
+                    </div>
+                    <div class="char-profile-stats-grid" id="cp-stats-grid"></div>
+                </div>
+            </div>
+            <!-- Battle history -->
+            <div class="char-profile-history-frame">
+                <div class="char-profile-history-title">LAST BATTLES</div>
+                <div class="char-profile-battles" id="cp-battles">
+                    <div class="char-profile-no-history">Loading...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -13471,6 +13971,10 @@
         // All or Nothing state
         let aonActive = false;
         let aonEntryFee = 0;
+        // PvP AoN state
+        let aonPvpFee = 0;
+        let aonPvpRoundsToWin = 2; // 2=BO3, 3=BO5
+        let aonPvpMyChallenge = null; // { matchId, entryFee, roundsToWin } if open challenge exists
         let aonFormat = 3; // Best of 3 or 5
         let aonRoundsToWin = 2;
         let aonScore = { player: 0, cpu: 0 };
@@ -14079,7 +14583,9 @@
         // Fetch authoritative economy state from server and override local values
         // ── Ranking helpers ───────────────────────────────────────────────────
         const RANK_TIERS = [
-            { name: 'Legend',    min: 12000, cls: 'lb-tier-Legend'   },
+            { name: 'Sovereign', min: 35000, cls: 'lb-tier-Sovereign' },
+            { name: 'Mythic',    min: 20000, cls: 'lb-tier-Mythic'    },
+            { name: 'Legend',    min: 12000, cls: 'lb-tier-Legend'    },
             { name: 'Champion',  min: 7000,  cls: 'lb-tier-Champion'  },
             { name: 'Gladiator', min: 3500,  cls: 'lb-tier-Gladiator' },
             { name: 'Warrior',   min: 1500,  cls: 'lb-tier-Warrior'   },
@@ -14118,13 +14624,13 @@
                 if (!resp.ok) throw new Error('HTTP ' + resp.status);
                 const data = await resp.json();
 
-                renderLeaderboard(data.leaderboard ?? [], data.playerRank, pid);
+                renderLeaderboard(data.leaderboard ?? [], data.playerRank);
             } catch (e) {
                 list.innerHTML = '<div class="lb-empty">Could not load rankings.</div>';
             }
         }
 
-        function renderLeaderboard(rows, playerRank, myId) {
+        function renderLeaderboard(rows, playerRank) {
             // My rank card
             const myCard  = document.getElementById('lb-my-rank');
             const myPos   = document.getElementById('lb-my-pos');
@@ -14134,6 +14640,7 @@
 
             if (playerRank && playerSession) {
                 myCard.style.display = 'flex';
+                myCard.className     = 'lb-my-rank lb-my-rank-' + playerRank.tier;
                 myPos.textContent    = '#' + playerRank.rank;
                 myName.textContent   = playerRank.charName || playerSession.name || 'You';
                 myPts.textContent    = playerRank.points.toLocaleString() + ' PTS';
@@ -14149,17 +14656,123 @@
                 return;
             }
 
+            const myCharId = playerRank?.charId ?? null;
             const TOP_MEDALS = ['🥇', '🥈', '🥉'];
             list.innerHTML = rows.map(row => {
-                const isMe   = row.id === myId;
+                const isMe   = myCharId && row.id === myCharId;
                 const medal  = row.rank <= 3 ? TOP_MEDALS[row.rank - 1] : '';
                 const rankDisp = medal || ('#' + row.rank);
                 const tierCls  = getRankTierCls(row.points);
                 return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
                     <div class="lb-row-rank${row.rank <= 3 ? ' top3' : ''}">${rankDisp}</div>
-                    <div class="lb-row-name">${row.name}</div>
+                    <div class="lb-row-name lb-row-name-link" data-charid="${row.id}">${row.name}</div>
                     <div class="lb-tier-badge ${tierCls}" style="margin-right:6px;">${row.tier}</div>
                     <div class="lb-row-pts">${row.points.toLocaleString()} PTS</div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Character Profile Modal ───────────────────────────────────────────────
+
+        function openCharProfile(charId) {
+            const overlay = document.getElementById('char-profile-overlay');
+            overlay.classList.add('active');
+            // Reset while loading
+            document.getElementById('cp-title').textContent     = 'Fighter Profile';
+            document.getElementById('cp-name').textContent      = '–';
+            document.getElementById('cp-level').textContent     = 'Lv. –';
+            document.getElementById('cp-pts').textContent       = '– PTS';
+            document.getElementById('cp-qtier').textContent     = '–';
+            document.getElementById('cp-element').innerHTML     = '';
+            document.getElementById('cp-stats-grid').innerHTML  = '';
+            document.getElementById('cp-battles').innerHTML     = '<div class="char-profile-no-history">Loading...</div>';
+            document.getElementById('cp-tier-badge').textContent = '–';
+            document.getElementById('cp-tier-badge').className  = 'lb-tier-badge';
+            document.getElementById('cp-sprite').src            = 'Assets/Player/Movement/Character.png';
+            fetchCharProfile(charId);
+        }
+
+        async function fetchCharProfile(charId) {
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/profile?id=' + encodeURIComponent(charId));
+                if (!resp.ok) { renderCharProfileError(); return; }
+                const data = await resp.json();
+                renderCharProfile(data);
+            } catch (e) {
+                renderCharProfileError();
+            }
+        }
+
+        function renderCharProfileError() {
+            document.getElementById('cp-name').textContent     = 'Error loading profile';
+            document.getElementById('cp-battles').innerHTML    = '';
+        }
+
+        function renderCharProfile(d) {
+            // Title / name
+            document.getElementById('cp-title').textContent = d.name;
+            document.getElementById('cp-name').textContent  = d.name;
+            document.getElementById('cp-level').textContent = 'Lv. ' + d.level;
+
+            // Ranking
+            const pts = d.rankingPoints ?? 0;
+            document.getElementById('cp-pts').textContent = pts.toLocaleString() + ' PTS';
+
+            // Tier badge
+            const tierBadge = document.getElementById('cp-tier-badge');
+            tierBadge.textContent = d.rankTier;
+            tierBadge.className   = 'lb-tier-badge ' + getRankTierCls(pts);
+
+            // Q-tier
+            const qLabel = d.qTier ? (d.qTier.charAt(0).toUpperCase() + d.qTier.slice(1) + ' AI') : '–';
+            document.getElementById('cp-qtier').textContent = qLabel;
+
+            // Element badge
+            const elemDiv = document.getElementById('cp-element');
+            if (d.element && ELEMENT_DATA[d.element]) {
+                elemDiv.innerHTML = elementBadgeHTML(d.element, 'sm');
+            } else {
+                elemDiv.innerHTML = '';
+            }
+
+            // Stats grid
+            const statDefs = [
+                { key: 'atk', label: 'ATK', color: '#f87171', max: 100 },
+                { key: 'str', label: 'STR', color: '#fb923c', max: 100 },
+                { key: 'agi', label: 'AGI', color: '#4ade80', max: 100 },
+                { key: 'def', label: 'DEF', color: '#60a5fa', max: 100 },
+                { key: 'hp',  label: 'HP',  color: '#a78bfa', max: 2000 },
+            ];
+            const statsGrid = document.getElementById('cp-stats-grid');
+            statsGrid.innerHTML = statDefs.map(s => {
+                const val  = d.stats ? (d.stats[s.key] ?? 0) : 0;
+                const pct  = Math.min(100, Math.round((val / s.max) * 100));
+                return `<div class="char-profile-stat">
+                    <span class="char-profile-stat-label">${s.label}</span>
+                    <div class="char-profile-stat-bar-wrap">
+                        <div class="char-profile-stat-bar" style="width:${pct}%;background:${s.color};"></div>
+                    </div>
+                    <span class="char-profile-stat-val">${val}</span>
+                </div>`;
+            }).join('');
+
+            // Battle history
+            const battlesEl = document.getElementById('cp-battles');
+            if (!d.battleHistory || !d.battleHistory.length) {
+                battlesEl.innerHTML = '<div class="char-profile-no-history">No battles recorded yet.</div>';
+                return;
+            }
+            battlesEl.innerHTML = d.battleHistory.map(b => {
+                const resultCls  = b.won ? 'win' : 'loss';
+                const resultText = b.won ? 'WIN' : 'LOSS';
+                const modeText   = b.isAon ? '⚡ AoN' : '';
+                const date       = b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { month:'short', day:'numeric' }) : '';
+                const cpuInfo    = b.cpuLevel ? ` vs Lv.${b.cpuLevel}` : '';
+                return `<div class="char-profile-battle-row">
+                    <span class="cpb-result ${resultCls}">${resultText}</span>
+                    <span class="cpb-turns">${b.turns} turns${cpuInfo}</span>
+                    <span class="cpb-mode">${modeText}</span>
+                    <span class="cpb-date">${date}</span>
                 </div>`;
             }).join('');
         }
@@ -16963,6 +17576,22 @@
         document.getElementById('leaderboard-panel').addEventListener('click', (e) => {
             if (e.target.id === 'leaderboard-panel') {
                 document.getElementById('leaderboard-panel').classList.remove('active');
+            }
+        });
+
+        // Leaderboard name clicks → open profile
+        document.getElementById('lb-list').addEventListener('click', (e) => {
+            const nameEl = e.target.closest('.lb-row-name-link');
+            if (nameEl && nameEl.dataset.charid) openCharProfile(nameEl.dataset.charid);
+        });
+
+        // Character profile modal close
+        document.getElementById('char-profile-close').addEventListener('click', () => {
+            document.getElementById('char-profile-overlay').classList.remove('active');
+        });
+        document.getElementById('char-profile-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'char-profile-overlay') {
+                document.getElementById('char-profile-overlay').classList.remove('active');
             }
         });
 
@@ -21907,21 +22536,249 @@
                 showNotice('Fighter is critically injured! Feed or heal first.');
                 return;
             }
-            // Reset selections
-            document.querySelectorAll('.aon-fee-btn').forEach(b => b.classList.remove('selected'));
-            document.querySelectorAll('.aon-format-btn').forEach(b => b.classList.remove('selected'));
-            document.querySelector('.aon-format-btn[data-format="3"]').classList.add('selected');
-            document.getElementById('aon-custom-toggle').classList.remove('selected');
-            document.getElementById('aon-custom-input').style.display = 'none';
-            document.getElementById('aon-custom-input').value = '';
-            aonEntryFee = 0;
-            aonFormat = 3;
-            aonUpdateSummary();
+            // Reset PvP form
+            document.querySelectorAll('.aon-pvp-fee-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.aon-pvp-format-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelector('.aon-pvp-format-btn[data-rtw="2"]').classList.add('selected');
+            document.getElementById('aon-pvp-custom-toggle').classList.remove('selected');
+            document.getElementById('aon-pvp-custom-input').style.display = 'none';
+            document.getElementById('aon-pvp-custom-input').value = '';
+            aonPvpFee = 0;
+            aonPvpRoundsToWin = 2;
+            // Always open on PvP tab
+            aonSwitchTab('pvp');
             document.getElementById('aon-panel').classList.add('active');
+            aonRefreshPvpTab();
         }
 
         function aonClosePanel() {
             document.getElementById('aon-panel').classList.remove('active');
+        }
+
+        // ── AoN Tab switching ────────────────────────────────────────────────────
+        function aonSwitchTab(tabName) {
+            document.querySelectorAll('.aon-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+            document.querySelectorAll('.aon-tab-content').forEach(c => c.classList.toggle('active', c.id === 'aon-tab-' + tabName));
+            if (tabName === 'lobby') aonLoadLobby();
+            if (tabName === 'pvp')   aonRefreshPvpTab();
+        }
+
+
+        // ── PvP tab helpers ──────────────────────────────────────────────────────
+        function aonUpdatePvpSummary() {
+            const feeEl      = document.getElementById('aon-pvp-sum-fee');
+            const winEl      = document.getElementById('aon-pvp-sum-win');
+            const platEl     = document.getElementById('aon-pvp-sum-platform');
+            const createBtn  = document.getElementById('aon-pvp-create-btn');
+            if (aonPvpFee <= 0) {
+                feeEl.textContent = '🪙 --'; winEl.textContent = '🪙 --'; platEl.textContent = '🪙 --';
+                createBtn.disabled = true; createBtn.textContent = 'PUBLICAR DESAFÍO'; return;
+            }
+            const totalPool  = aonPvpFee * 2;
+            const platform   = Math.floor(totalPool * 0.04);
+            const prize      = totalPool - platform;
+            feeEl.textContent  = '🪙 ' + aonPvpFee;
+            winEl.textContent  = '🪙 ' + prize;
+            platEl.textContent = '-🪙 ' + platform;
+            if (globalTokens < aonPvpFee) {
+                createBtn.disabled = true; createBtn.textContent = 'NO TIENES SUFICIENTES TOKENS';
+            } else {
+                createBtn.disabled = false; createBtn.textContent = 'PUBLICAR DESAFÍO';
+            }
+        }
+
+        function aonRefreshPvpTab() {
+            const boxEl   = document.getElementById('aon-my-challenge-box');
+            const formEl  = document.getElementById('aon-pvp-create-form');
+            const detEl   = document.getElementById('aon-my-challenge-details');
+            if (aonPvpMyChallenge) {
+                const fmt = aonPvpMyChallenge.roundsToWin === 3 ? 'BO5' : 'BO3';
+                detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — Esperando rival...';
+                boxEl.style.display  = 'block';
+                formEl.style.display = 'none';
+            } else {
+                boxEl.style.display  = 'none';
+                formEl.style.display = 'block';
+            }
+            aonUpdatePvpSummary();
+        }
+
+        async function aonCreatePvpChallenge() {
+            if (!playerSession) return;
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Selecciona un personaje primero.'); return; }
+            if (aonPvpFee <= 0) return;
+
+            const btn = document.getElementById('aon-pvp-create-btn');
+            btn.disabled = true; btn.textContent = 'Publicando...';
+
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/aon/create-pvp', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId:     playerSession.playerId,
+                        characterId:  character.id,
+                        entryFee:     aonPvpFee,
+                        roundsToWin:  aonPvpRoundsToWin,
+                        displayName:  playerSession.displayName || playerSession.name || 'Challenger',
+                        charName:     character.name || 'Fighter',
+                        charLevel:    character.level || 1,
+                        chain:        character.chain || null,
+                    }),
+                });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                const data = await resp.json();
+                if (!data.ok) { showNotice(data.error || 'No se pudo publicar el desafío.'); aonUpdatePvpSummary(); return; }
+
+                globalTokens = data.newTokens;
+                saveProgression();
+                aonPvpMyChallenge = { matchId: data.matchId, entryFee: aonPvpFee, roundsToWin: aonPvpRoundsToWin };
+                aonRefreshPvpTab();
+                showToast('¡Desafío publicado! Esperando rival...');
+            } catch (e) {
+                showNotice('Error al conectar con el servidor.');
+                aonUpdatePvpSummary();
+            }
+        }
+
+        async function aonCancelPvpChallenge() {
+            if (!playerSession || !aonPvpMyChallenge) return;
+            const btn = document.getElementById('aon-cancel-pvp-btn');
+            btn.disabled = true; btn.textContent = 'Cancelando...';
+
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/aon/cancel-pvp', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession.playerId, matchId: aonPvpMyChallenge.matchId }),
+                });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                const data = await resp.json();
+                if (!data.ok) { showNotice(data.error || 'No se pudo cancelar.'); btn.disabled = false; btn.textContent = 'CANCELAR'; return; }
+
+                globalTokens = data.newTokens;
+                saveProgression();
+                aonPvpMyChallenge = null;
+                aonRefreshPvpTab();
+                showToast('Desafío cancelado. Tokens devueltos.');
+            } catch (e) {
+                showNotice('Error al conectar con el servidor.');
+                btn.disabled = false; btn.textContent = 'CANCELAR';
+            }
+        }
+
+        // ── Lobby ───────────────────────────────────────────────────────────────
+        async function aonLoadLobby() {
+            const listEl = document.getElementById('aon-lobby-list');
+            listEl.innerHTML = '<div class="aon-lobby-empty">Cargando...</div>';
+            try {
+                const pid  = playerSession?.playerId ?? '';
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/aon/lobby' + (pid ? '?playerId=' + encodeURIComponent(pid) : ''));
+                if (!resp.ok) throw new Error('server error');
+                const data = await resp.json();
+
+                // Sync my challenge state from server
+                if (pid) {
+                    aonPvpMyChallenge = data.myChallenge ?? null;
+                    // Refresh PvP tab state if visible
+                    if (document.getElementById('aon-tab-pvp').classList.contains('active')) aonRefreshPvpTab();
+                }
+
+                const challenges = data.challenges ?? [];
+                if (!challenges.length) {
+                    listEl.innerHTML = '<div class="aon-lobby-empty">No hay desafíos abiertos.<br>¡Sé el primero en publicar uno!</div>';
+                    return;
+                }
+
+                listEl.innerHTML = challenges.map(c => {
+                    const fmt   = c.roundsToWin === 3 ? 'BO5' : 'BO3';
+                    const pot   = Math.round(c.entryFee * 2 * 0.96);
+                    const chain = c.chain === 'monad' ? '<span class="aon-chain-badge monad">MONAD</span>'
+                                : c.chain === 'solana' ? '<span class="aon-chain-badge solana">SOLANA</span>'
+                                : '';
+                    return `<div class="aon-challenge-row">
+                        <div class="aon-challenge-info">
+                            <div class="aon-challenge-name">${c.challengerName}${chain}</div>
+                            <div class="aon-challenge-details">${c.charName} · Lv.${c.charLevel} · ${fmt}</div>
+                        </div>
+                        <span class="aon-challenge-fee">🪙 ${c.entryFee}</span>
+                        <button class="aon-join-btn"
+                            data-matchid="${c.matchId}"
+                            data-fee="${c.entryFee}"
+                            data-rtw="${c.roundsToWin}"
+                            data-cname="${c.challengerName}"
+                            data-pot="${pot}">
+                            UNIRSE
+                        </button>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                listEl.innerHTML = '<div class="aon-lobby-empty">Error al cargar. Intenta de nuevo.</div>';
+            }
+        }
+
+        async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot) {
+            if (!playerSession) return;
+            const character = getSelectedCharacter();
+            if (!character) { showNotice('Selecciona un personaje para unirte al desafío.'); return; }
+
+            if (globalTokens < entryFee) {
+                showNotice('No tienes suficientes tokens. Necesitas 🪙 ' + entryFee + '.'); return;
+            }
+
+            const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+            showConfirm(
+                '⚔️ ACEPTAR DESAFÍO',
+                `vs ${challengerName}\nApuesta: 🪙 ${entryFee} — ${fmt}\nPremio total: 🪙 ${pot}`,
+                async () => {
+                    const listEl = document.getElementById('aon-lobby-list');
+                    listEl.innerHTML = '<div class="aon-lobby-empty">Luchando contra ' + challengerName + '...</div>';
+                    try {
+                        const resp = await fetchWithTimeout(BACKEND_URL + '/api/aon/accept', {
+                            method: 'POST',
+                            headers: await getAuthHeaders(),
+                            body: JSON.stringify({
+                                playerId:    playerSession.playerId,
+                                matchId:     matchId,
+                                characterId: character.id,
+                            }),
+                        });
+                        if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                        const data = await resp.json();
+                        if (!data.ok) { showNotice(data.error || 'Error al aceptar el desafío.'); aonLoadLobby(); return; }
+
+                        // Award tokens locally (server already updated the DB)
+                        if (data.won) {
+                            globalTokens = globalTokens - entryFee + data.potWon;
+                        } else {
+                            globalTokens = globalTokens - entryFee;
+                        }
+                        saveProgression();
+
+                        // Show result in lobby tab
+                        const score = data.seriesScore;
+                        const roundLines = (data.roundResults || []).map((r, i) =>
+                            `Round ${i + 1}: ${r.winner === 'player' ? '✓ ' + challengerName : '✓ Tú'} (${r.turns} turnos)`
+                        ).join('<br>');
+
+                        listEl.innerHTML = `
+                            <div class="aon-pvp-result ${data.won ? 'win' : 'loss'}">
+                                <div class="aon-pvp-result-title">${data.won ? '🏆 ¡GANASTE!' : '💀 PERDISTE'}</div>
+                                <div class="aon-pvp-result-pot">${data.won ? '+🪙 ' + (data.potWon - entryFee) + ' ganancia neta' : '-🪙 ' + entryFee}</div>
+                                <div class="aon-pvp-result-score">vs ${challengerName} — ${score.opponent}-${score.challenger}</div>
+                                <div class="aon-pvp-result-rounds" style="margin-top:8px;">${roundLines}</div>
+                            </div>
+                            <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                        `;
+                        document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
+                        updateTokenDisplay();
+                    } catch (e) {
+                        showNotice('Error al conectar con el servidor.');
+                        aonLoadLobby();
+                    }
+                }
+            );
         }
 
         function aonUpdateSummary() {
@@ -27079,54 +27936,70 @@
             if (e.target.id === 'aon-panel') aonClosePanel();
         });
 
-        // AoN fee buttons
-        document.querySelectorAll('.aon-fee-btn').forEach(btn => {
+        // AoN tabs
+        document.querySelectorAll('.aon-tab').forEach(tab => {
+            tab.addEventListener('click', () => aonSwitchTab(tab.dataset.tab));
+        });
+
+        // ── PvP tab: fee buttons ─────────────────────────────────────────────────
+        document.querySelectorAll('.aon-pvp-fee-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.aon-fee-btn').forEach(b => b.classList.remove('selected'));
-                document.getElementById('aon-custom-toggle').classList.remove('selected');
-                document.getElementById('aon-custom-input').style.display = 'none';
+                document.querySelectorAll('.aon-pvp-fee-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('aon-pvp-custom-toggle').classList.remove('selected');
+                document.getElementById('aon-pvp-custom-input').style.display = 'none';
                 btn.classList.add('selected');
-                aonEntryFee = parseFloat(btn.dataset.fee);
-                aonUpdateSummary();
+                aonPvpFee = parseFloat(btn.dataset.fee);
+                aonUpdatePvpSummary();
             });
         });
 
-        // AoN custom fee
-        document.getElementById('aon-custom-toggle').addEventListener('click', () => {
-            document.querySelectorAll('.aon-fee-btn').forEach(b => b.classList.remove('selected'));
-            const toggle = document.getElementById('aon-custom-toggle');
-            const input = document.getElementById('aon-custom-input');
+        // PvP tab: custom fee
+        document.getElementById('aon-pvp-custom-toggle').addEventListener('click', () => {
+            document.querySelectorAll('.aon-pvp-fee-btn').forEach(b => b.classList.remove('selected'));
+            const toggle = document.getElementById('aon-pvp-custom-toggle');
+            const input  = document.getElementById('aon-pvp-custom-input');
             toggle.classList.add('selected');
             input.style.display = '';
             input.focus();
-            aonEntryFee = parseFloat(input.value) || 0;
-            aonUpdateSummary();
+            aonPvpFee = parseFloat(input.value) || 0;
+            aonUpdatePvpSummary();
+        });
+        document.getElementById('aon-pvp-custom-input').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            aonPvpFee = (!isNaN(val) && val >= 15) ? val : 0;
+            aonUpdatePvpSummary();
         });
 
-        document.getElementById('aon-custom-input').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            if (isNaN(val) || val < 15) {
-                aonEntryFee = 0;
-            } else {
-                aonEntryFee = val;
-            }
-            aonUpdateSummary();
-        });
-
-        // AoN format buttons
-        document.querySelectorAll('.aon-format-btn').forEach(btn => {
+        // PvP tab: format buttons
+        document.querySelectorAll('.aon-pvp-format-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.aon-format-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.aon-pvp-format-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
-                aonFormat = parseInt(btn.dataset.format);
-                aonUpdateSummary();
+                aonPvpRoundsToWin = parseInt(btn.dataset.rtw);
+                aonUpdatePvpSummary();
             });
         });
 
-        // AoN create room
-        document.getElementById('aon-create-btn').addEventListener('click', () => {
-            if (aonEntryFee <= 0) return;
-            aonStartMatchmaking();
+        // PvP tab: publish challenge
+        document.getElementById('aon-pvp-create-btn').addEventListener('click', aonCreatePvpChallenge);
+
+        // PvP tab: cancel challenge
+        document.getElementById('aon-cancel-pvp-btn').addEventListener('click', aonCancelPvpChallenge);
+
+        // Lobby: refresh
+        document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
+
+        // Lobby: join button (event delegation)
+        document.getElementById('aon-lobby-list').addEventListener('click', (e) => {
+            const btn = e.target.closest('.aon-join-btn');
+            if (!btn) return;
+            aonAcceptChallenge(
+                parseInt(btn.dataset.matchid),
+                parseInt(btn.dataset.fee),
+                parseInt(btn.dataset.rtw),
+                btn.dataset.cname,
+                parseInt(btn.dataset.pot),
+            );
         });
 
         // Create Fighter button - show confirmation
