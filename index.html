@@ -515,95 +515,6 @@
         .fury-particle-earth { width: 10px; height: 10px; background: radial-gradient(circle, #d4aa40 0%, #7a5510 100%); border-radius: 2px; }
         .fury-particle-wind  { width: 20px; height: 3px;  background: linear-gradient(90deg, transparent, #e0f8ff 40%, #fff 60%, transparent); border-radius: 2px; }
 
-        /* ── Power Lab ───────────────────────────────────────────────────────── */
-        body.power-test-mode #lobby-wrapper     { display: none !important; }
-        body.power-test-mode #game-container    { display: block !important; }
-        body.power-test-mode .hud               { display: none !important; }
-        body.power-test-mode .vs-screen         { display: none !important; }
-        body.power-test-mode .loading-screen    { display: none !important; }
-        body.power-test-mode .game-log          { display: none !important; }
-        body.power-test-mode .countdown         { display: none !important; }
-
-        #power-test-panel {
-            display: none;
-            position: fixed;
-            bottom: 0; left: 50%; transform: translateX(-50%);
-            width: min(600px, 98vw);
-            background: rgba(8,8,14,0.94);
-            border: 1px solid rgba(255,255,255,0.10);
-            border-bottom: none;
-            border-radius: 18px 18px 0 0;
-            padding: 12px 14px 10px;
-            z-index: 9100;
-            flex-direction: column;
-            gap: 9px;
-            box-shadow: 0 -4px 32px rgba(0,0,0,0.7);
-        }
-        body.power-test-mode #power-test-panel { display: flex; }
-
-        .ptp-header {
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 8px;
-        }
-        .ptp-title { font-family: 'Fredoka', sans-serif; font-size: 1em; color: #ccc; letter-spacing: 1px; }
-        .ptp-back-btn {
-            font-family: 'Fredoka', sans-serif; font-size: 0.8em; color: #aaa;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 8px; padding: 5px 12px; cursor: pointer;
-        }
-        .ptp-back-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
-
-        .ptp-elements { display: flex; gap: 5px; flex-wrap: wrap; }
-        .ptp-elem-tab {
-            font-family: 'Fredoka', sans-serif; font-size: 0.78em;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 8px; padding: 5px 10px; cursor: pointer; color: #999;
-            transition: all 0.15s;
-        }
-        .ptp-elem-tab:hover { background: rgba(255,255,255,0.10); color: #fff; }
-        .ptp-elem-tab.active { background: rgba(255,255,255,0.10); font-weight: bold; }
-
-        .ptp-row { display: flex; align-items: center; gap: 8px; }
-        .ptp-bg-btn {
-            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 6px; color: #aaa; padding: 3px 10px; cursor: pointer; font-size: 0.85em;
-        }
-        .ptp-bg-btn:hover { background: rgba(255,255,255,0.14); }
-        .ptp-bg-name { font-family: 'Fredoka', sans-serif; font-size: 0.82em; color: #aaa; min-width: 80px; text-align: center; }
-
-        .ptp-powers { display: flex; gap: 8px; flex-wrap: wrap; }
-        .ptp-power-btn {
-            flex: 1; min-width: 120px;
-            font-family: 'Fredoka', sans-serif; font-size: 0.82em;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 10px; padding: 9px 10px; cursor: pointer; color: #ccc;
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            transition: all 0.15s;
-        }
-        .ptp-power-btn:hover { background: rgba(255,255,255,0.10); transform: translateY(-1px); }
-        .ptp-power-btn:active { transform: translateY(1px); }
-        .ptp-pw-label { font-size: 0.7em; opacity: 0.55; letter-spacing: 1px; text-transform: uppercase; }
-        .ptp-pw-name  { font-size: 1em; font-weight: bold; }
-        .ptp-power-btn.ptp-passive.aura-on { animation: ptpPassivePulse 1.2s ease-in-out infinite; }
-        @keyframes ptpPassivePulse { 0%,100%{ opacity:1; } 50%{ opacity:0.65; } }
-
-        /* small lobby entry button */
-        .menu-btn-powerlab {
-            font-family: 'Fredoka', sans-serif; font-size: 0.88em; font-weight: bold;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-            border-radius: 10px; padding: 10px 20px; color: #aaa; cursor: pointer;
-            letter-spacing: 1px; transition: all 0.15s; margin-top: 4px;
-        }
-        .menu-btn-powerlab:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
-
-        .menu-btn-training {
-            font-family: 'Fredoka', sans-serif; font-size: 0.88em; font-weight: bold;
-            background: rgba(255,160,0,0.10); border: 1px solid rgba(255,160,0,0.28);
-            border-radius: 10px; padding: 10px 20px; color: #ffb347; cursor: pointer;
-            letter-spacing: 1px; transition: all 0.15s; margin-top: 4px;
-        }
-        .menu-btn-training:hover { background: rgba(255,160,0,0.20); color: #ffd080; border-color: rgba(255,160,0,0.5); }
-
         /* Damage effects */
         .damage-text {
             position: absolute;
@@ -10357,7 +10268,6 @@
                         <button class="session-disconnect-btn" style="color:#4ade80;border-color:#4ade80;" onclick="savePlayerName()">✓ SAVE</button>
                     </div>
                     <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;">⏻ DISCONNECT</button>
-                    <button class="session-disconnect-btn" style="color:#f87171;border-color:#f87171;margin-top:4px;" onclick="deleteAccount()">🗑 DELETE ACCOUNT</button>
                 </div>
                 <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('fightchub:showlogin'))">🎮 LOGIN</button>
             </div>
@@ -10493,8 +10403,6 @@
                 <button class="menu-btn menu-btn-aon" id="menu-pvp-btn">
                     ALL OR<br>NOTHING
                 </button>
-                <button class="menu-btn-powerlab" onclick="enterPowerTestMode()">⚗️ POWER LAB</button>
-                <button class="menu-btn-training" onclick="startTrainingMode()">🥊 TRAINING</button>
                 <div class="xp-boost-container" id="xp-boost-container">
                     <div class="xp-boost-widget-title">⚡ XP BOOST</div>
                     <div class="xp-boost-status-row">
@@ -11378,20 +11286,6 @@
         </div>
     </div>
 
-<!-- Power Lab panel (visible only in power-test-mode) -->
-<div id="power-test-panel">
-    <div class="ptp-header">
-        <span class="ptp-title">⚗️ POWER LAB</span>
-        <button class="ptp-back-btn" onclick="exitPowerTestMode()">← MENU</button>
-    </div>
-    <div class="ptp-elements" id="ptp-elements"></div>
-    <div class="ptp-row">
-        <button class="ptp-bg-btn" onclick="cyclePowerTestBg(-1)">◀</button>
-        <span class="ptp-bg-name" id="ptp-bg-name">Apocalypse</span>
-        <button class="ptp-bg-btn" onclick="cyclePowerTestBg(1)">▶</button>
-    </div>
-    <div class="ptp-powers" id="ptp-powers"></div>
-</div>
 <!-- Settings panel — fixed overlay, visible from both lobby and arena -->
 <div class="settings-panel hidden" id="settings-panel">
     <div class="settings-header">
@@ -14997,20 +14891,6 @@
             window.dispatchEvent(new CustomEvent('fightchub:showlogin'));
         }
 
-        async function deleteAccount() {
-            if (!playerSession) return;
-            if (!confirm('Delete your account? This cannot be undone. All characters and progress will be lost.')) return;
-            document.getElementById('session-widget')?.classList.remove('sw-open');
-            try {
-                await fetchWithTimeout(BACKEND_URL + '/api/player/delete', {
-                    method: 'POST',
-                    headers: await getAuthHeaders(),
-                    body: JSON.stringify({ playerId: playerSession.playerId }),
-                });
-            } catch(e) { /* ignore network errors — still clear locally */ }
-            logoutPlayerSession();
-        }
-
         function toggleSessionMenu() {
             const widget = document.getElementById('session-widget');
             if (!widget) return;
@@ -18511,13 +18391,13 @@
             // Ensure the character exists in Supabase before the battle fetch.
             // Characters created locally may not have been synced yet — upsert now
             // so battle/run never returns 403 "Character not found".
-            if (!trainingMode && !_pvpBattleResult && playerSession) {
+            if (!_pvpBattleResult && playerSession) {
                 try { await syncCharacterToBackend(character); } catch (_) {}
             }
 
             // Start the backend battle fetch NOW so it runs in parallel with the countdown
             _preBattleFetch = null;
-            if (!trainingMode && !_pvpBattleResult && playerSession) {
+            if (!_pvpBattleResult && playerSession) {
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
                 _preBattleFetch = fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
@@ -18563,7 +18443,7 @@
             initWeaponInventory();
             log('The fight has begun!');
             startMatchTimer();
-            if (!trainingMode && !playerSession) {
+            if (!playerSession) {
                 // Online-only: require login before battling
                 stopMatchTimer();
                 stopBattleHeartbeat();
@@ -18574,11 +18454,7 @@
                 return;
             }
 
-            if (trainingMode) {
-                await runTrainingBattle(character);
-            } else {
-                await startServerBattle(character);
-            }
+            await startServerBattle(character);
         }
 
         function initWeaponInventory() {
@@ -20567,7 +20443,6 @@
         let FURY_ORB_FRAMES_CPU = [];
 
         function getFighterElement(fighter) {
-            if (powerTestMode) return fighter === 'player' ? _powerTestElement : null;
             if (fighter === 'player') return getSelectedCharacter()?.element || null;
             return currentCpuStats?.element || null;
         }
@@ -20622,277 +20497,6 @@
             p.addEventListener('animationend', () => p.remove(), { once: true });
         }
 
-        // ── Training Mode ─────────────────────────────────────────────────────
-        let trainingMode = false;
-
-        function generateTrainingEvents(character, pMaxHp, cMaxHp) {
-            const events = [];
-            const rnd = () => Math.random();
-            const pick = arr => arr[Math.floor(rnd() * arr.length)];
-
-            const basicTypes = ['punch', 'kick', 'uppercut', 'headbutt'];
-            const weapons    = (character.equippedWeapons || []).filter(id => WEAPONS[id]);
-            const allTypes   = [...basicTypes, ...weapons];
-            const pEl        = character.element;
-            let furyDone     = false;
-
-            // Initial advance to melee range (server 1600px coords)
-            events.push({ type: 'move', fighter: 'player', action: 'advance',
-                from: 128, to: 650, playerX: 650, cpuX: 950 });
-
-            for (let i = 0; i < 30; i++) {
-                const attacker = i % 2 === 0 ? 'player' : 'cpu';
-                const defender = attacker === 'player' ? 'cpu' : 'player';
-
-                // Occasional repositioning to keep fighters dynamic
-                if (i > 0 && i % 6 === 0) {
-                    const moveAction = pick(['advance', 'retreat', 'stay']);
-                    const pX = 580 + Math.floor(rnd() * 120);
-                    const cX = 900 + Math.floor(rnd() * 100);
-                    events.push({ type: 'move', fighter: attacker, action: moveAction,
-                        from: attacker === 'player' ? 650 : 950,
-                        to:   attacker === 'player' ? pX  : cX,
-                        playerX: pX, cpuX: cX });
-                }
-
-                // Fury demo at turn ~10
-                if (attacker === 'player' && pEl && !furyDone && i >= 10) {
-                    events.push({ type: 'fury_update', fighter: 'player', meter: 10, active: true, changed: true });
-                    events.push({ type: 'log', message: '✨ FURY activated! (Training)', cssClass: 'log-critical' });
-                    const ptPow = PT_POWERS && PT_POWERS[pEl];
-                    if (ptPow) {
-                        for (const pk of ['p1', 'p2']) {
-                            if (ptPow[pk]) {
-                                events.push({ type: 'fury_power', caster: 'player', target: 'cpu',
-                                    power: ptPow[pk].id, damage: 0, playerHp: pMaxHp, cpuHp: cMaxHp });
-                            }
-                        }
-                    }
-                    events.push({ type: 'fury_update', fighter: 'player', meter: 0, active: false, changed: true });
-                    furyDone = true;
-                    continue;
-                }
-
-                // Randomize defense type for visual variety
-                const defRoll = rnd();
-                const defense = defRoll < 0.55 ? 'none' : defRoll < 0.80 ? 'dodge' : 'block';
-
-                events.push({
-                    type:       'attack',
-                    attacker,
-                    defender,
-                    attackType: pick(allTypes),
-                    defense,
-                    damage:     defense === 'none' ? Math.floor(rnd() * 15) + 5 : 0,
-                    playerHp:   pMaxHp,
-                    cpuHp:      cMaxHp,
-                    isCrit:     false,
-                    hasFury:    false,
-                });
-            }
-            return events;
-        }
-
-        async function runTrainingBattle(character) {
-            const pMaxHp = game.player.maxHealth;
-            const cMaxHp = game.cpu.maxHealth;
-            const events = generateTrainingEvents(character, pMaxHp, cMaxHp);
-            log('🥊 TRAINING MODE — No damage dealt', 'log-critical');
-            game.inProgress = true;
-            await animateBattleFromLog(events, pMaxHp, cMaxHp);
-            if (!game.gameOver) {
-                game.inProgress = false;
-                log('Training session complete! Returning to lobby...', 'log-critical');
-                await sleep(2000);
-                exitTrainingMode();
-            }
-        }
-
-        function startTrainingMode() {
-            const character = getSelectedCharacter();
-            if (!character) { showNotice('Select a character first.'); return; }
-            trainingMode = true;
-            startGameWithCharacter(character);
-        }
-
-        function exitTrainingMode() {
-            trainingMode = false;
-            stopMatchTimer();
-            stopBattleHeartbeat();
-            localStorage.removeItem('fightchub_battle_active');
-            ['player', 'cpu'].forEach(f => { if (game[f].furyActive) deactivateFury(f); });
-            document.querySelectorAll('.fury-saturator,.fury-grayscale-overlay,.fury-darkness').forEach(e => e.remove());
-            _furyGrayOverlay = null; _furyDarknessEl = null;
-            game.gameOver = false; game.gameOverHandled = false; game.inProgress = false;
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('lobby-wrapper').style.display  = '';
-        }
-
-        // ── Power Lab ──────────────────────────────────────────────────────────
-        let powerTestMode   = false;
-        let _powerTestElement = 'fire';
-        let _powerTestBgIndex = 0;
-        let _powerTestFuryOn  = false;
-
-        const PT_BG_NAMES = ['Apocalypse', 'Athena', 'Celta', 'Ruins', 'Samurai'];
-
-        const PT_POWERS = {
-            fire:      { passive: { name: 'Burn Aura',     id: 'fire_burn_aura'           }, p1: { name: 'Fireball',        id: 'fire_fireball'            }, p2: { name: 'Flamethrower',  id: 'fire_flamethrower'       } },
-            lightning: { passive: { name: 'Electric Orb',  id: 'lightning_orb_active'      }, p1: { name: 'Lightning Bolt', id: 'lightning_lightning_bolt'  }, p2: { name: 'Sky Discharge', id: 'lightning_sky_discharge' } },
-            earth:     { passive: { name: 'Stone Skin',    id: 'earth_stone_skin'          }, p1: { name: 'Giant Rock',     id: 'earth_giant_rock'          }, p2: { name: 'Earth Spike',  id: 'earth_spike'             } },
-            water:     { passive: { name: 'Flow',          id: 'water_passive'             }, p1: { name: 'Tsunami',        id: 'water_tsunami'             }, p2: { name: 'Water Bullets', id: 'water_water_bullets'     } },
-            wind:      { passive: { name: 'Gust',          id: 'wind_passive'              }, p1: { name: 'Tornado',        id: 'wind_tornado'              }, p2: { name: 'Air Columns',   id: 'wind_air_columns'        } },
-        };
-
-        function enterPowerTestMode() {
-            powerTestMode    = true;
-            _powerTestElement = 'fire';
-            _powerTestFuryOn  = false;
-            _powerTestBgIndex = 0;
-
-            document.getElementById('game-container').style.display = '';
-            document.getElementById('lobby-wrapper').style.display  = 'none';
-            document.body.classList.add('power-test-mode');
-
-            // Reset game state
-            game.gameOver = false; game.gameOverHandled = false; game.inProgress = false;
-            ['player', 'cpu'].forEach(f => { if (game[f].furyActive) deactivateFury(f); });
-            game.player.fury = 0; game.player.furyActive = false;
-            game.cpu.fury    = 0; game.cpu.furyActive    = false;
-
-            // Set idle sprites
-            const pImg = document.querySelector('#player .character-png');
-            const cImg = document.querySelector('#cpu .character-png');
-            if (pImg) { pImg.src = 'Assets/Player/Movement/Character.png'; pImg.style.visibility = ''; }
-            if (cImg) { cImg.src = 'Assets/Player/Movement/Character.png'; cImg.style.visibility = ''; }
-
-            _ptUpdateBg();
-            _ptRenderPanel();
-        }
-
-        function exitPowerTestMode() {
-            ['player', 'cpu'].forEach(f => { if (game[f].furyActive) deactivateFury(f); });
-            document.querySelectorAll('.fury-saturator,.fury-grayscale-overlay,.fury-darkness').forEach(e => e.remove());
-            _furyGrayOverlay = null; _furyDarknessEl = null;
-            powerTestMode = false;
-            document.body.classList.remove('power-test-mode');
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('lobby-wrapper').style.display  = '';
-            const bg = ARENA_BACKGROUNDS[Math.floor(Math.random() * ARENA_BACKGROUNDS.length)];
-            document.getElementById('arena').style.backgroundImage = 'url(' + bg + ')';
-            const _bgEl2 = document.getElementById('arena-bg');
-            if (_bgEl2) _bgEl2.style.backgroundImage = 'url(' + bg + ')';
-        }
-
-        function _ptUpdateBg() {
-            const _bgUrl = 'url(' + ARENA_BACKGROUNDS[_powerTestBgIndex] + ')';
-            document.getElementById('arena').style.backgroundImage = _bgUrl;
-            const _bgEl3 = document.getElementById('arena-bg');
-            if (_bgEl3) _bgEl3.style.backgroundImage = _bgUrl;
-            const n = document.getElementById('ptp-bg-name');
-            if (n) n.textContent = PT_BG_NAMES[_powerTestBgIndex];
-            const sat = document.querySelector('.fury-saturator');
-            const bg  = document.getElementById('arena').style.backgroundImage;
-            if (sat) sat.style.backgroundImage = bg;
-            if (_furyGrayOverlay) _furyGrayOverlay.style.backgroundImage = bg;
-        }
-
-        function cyclePowerTestBg(dir) {
-            _powerTestBgIndex = (_powerTestBgIndex + dir + ARENA_BACKGROUNDS.length) % ARENA_BACKGROUNDS.length;
-            _ptUpdateBg();
-        }
-
-        function setPowerTestElement(element) {
-            _powerTestElement = element;
-            if (_powerTestFuryOn) {
-                // Deactivate current fury and re-activate with new element
-                deactivateFury('player');
-                document.querySelectorAll('.fury-saturator,.fury-grayscale-overlay,.fury-darkness').forEach(e => e.remove());
-                _furyGrayOverlay = null; _furyDarknessEl = null;
-                _powerTestFuryOn = false;
-                activateFury('player');
-                _powerTestFuryOn = true;
-            }
-            _ptRenderPanel();
-        }
-
-        function togglePowerTestFury() {
-            if (_powerTestFuryOn) {
-                deactivateFury('player');
-                document.querySelectorAll('.fury-saturator,.fury-grayscale-overlay,.fury-darkness').forEach(e => e.remove());
-                _furyGrayOverlay = null; _furyDarknessEl = null;
-                _powerTestFuryOn = false;
-            } else {
-                activateFury('player');
-                _powerTestFuryOn = true;
-            }
-            _ptUpdatePassiveBtn();
-        }
-
-        function triggerTestPower(powerType) {
-            const powers = PT_POWERS[_powerTestElement];
-            if (!powers) return;
-            const pw    = powers[powerType];
-            const elemD = ELEMENT_DATA[_powerTestElement] || {};
-            const color = elemD.color || '#ffd700';
-            if (powerType === 'passive') {
-                togglePowerTestFury();
-                return;
-            }
-            showFuryPowerFlash('player', pw.name, color);
-            playFuryPowerAnimation('player', 'cpu', pw.id, color);
-        }
-
-        function _ptRenderPanel() {
-            const tabs = document.getElementById('ptp-elements');
-            if (tabs) {
-                tabs.innerHTML = Object.keys(ELEMENT_DATA).map(el => {
-                    const d = ELEMENT_DATA[el];
-                    const active = el === _powerTestElement;
-                    const style  = active ? `border-color:${d.color};color:${d.color};background:${d.color}18;` : '';
-                    return `<button class="ptp-elem-tab${active ? ' active' : ''}" onclick="setPowerTestElement('${el}')" style="${style}">${d.icon} ${d.label}</button>`;
-                }).join('');
-            }
-            const powers  = PT_POWERS[_powerTestElement];
-            const elemD   = ELEMENT_DATA[_powerTestElement] || {};
-            const color   = elemD.color || '#ffd700';
-            const pwEl    = document.getElementById('ptp-powers');
-            if (pwEl && powers) {
-                const passiveOn = _powerTestFuryOn;
-                pwEl.innerHTML = `
-                    <button class="ptp-power-btn ptp-passive${passiveOn ? ' aura-on' : ''}" id="ptp-passive-btn" onclick="triggerTestPower('passive')" style="border-color:${passiveOn ? color : color + '44'};color:${color};">
-                        <span class="ptp-pw-label">PASSIVE${passiveOn ? ' ●' : ''}</span>
-                        <span class="ptp-pw-name">${powers.passive.name}</span>
-                    </button>
-                    <button class="ptp-power-btn" onclick="triggerTestPower('p1')" style="border-color:${color}77;">
-                        <span class="ptp-pw-label">P1</span>
-                        <span class="ptp-pw-name">${powers.p1.name}</span>
-                    </button>
-                    <button class="ptp-power-btn" onclick="triggerTestPower('p2')" style="border-color:${color};">
-                        <span class="ptp-pw-label">P2</span>
-                        <span class="ptp-pw-name">${powers.p2.name}</span>
-                    </button>
-                `;
-            }
-        }
-
-        function _ptUpdatePassiveBtn() {
-            const btn   = document.getElementById('ptp-passive-btn');
-            if (!btn) return;
-            const elemD = ELEMENT_DATA[_powerTestElement] || {};
-            const color = elemD.color || '#ffd700';
-            const powers = PT_POWERS[_powerTestElement];
-            if (_powerTestFuryOn) {
-                btn.classList.add('aura-on');
-                btn.style.borderColor = color;
-                btn.querySelector('.ptp-pw-label').textContent = 'PASSIVE ●';
-            } else {
-                btn.classList.remove('aura-on');
-                btn.style.borderColor = color + '44';
-                btn.querySelector('.ptp-pw-label').textContent = 'PASSIVE';
-            }
-        }
-        // ── end Power Lab ────────────────────────────────────────────────────
 
         function activateFury(fighter) {
             const f = game[fighter];
