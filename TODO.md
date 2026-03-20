@@ -1,0 +1,511 @@
+# Chub Champions — TODO
+
+## ✅ Done
+
+### Core Game
+- [x] Battle engine ported to TypeScript (backend/lib/battle-engine/)
+- [x] /api/battle/run endpoint (Next.js, Vercel) — x-sync-secret header, anti-replay UNIQUE(player_id, seed)
+- [x] Server battle integration in frontend (startServerBattle, animateBattleFromLog)
+- [x] Game is online-only — requires Privy login (playerSession) to battle
+- [x] Chest system — battle chests (pendingVictoryChests array) + fragment chests, 5 tiers
+- [x] Skill tree — 8 branches × 7 nodes, path/cross-node locks, Champion prestige branch
+- [x] Consumables — 8 items, equip 2 for battle, server-side trigger logic
+- [x] Weapon system — PNG sprites, 13 tiers (tier_5 → tier_100), weapon-run overlay
+- [x] Sprite layer system — Blob URLs, hue-shift, composited skins
+- [x] Daily claim — 30-day rewards, persist via localStorage
+- [x] XP boost system — pendingXpBoosts (max 3), manual activate
+- [x] Deployed: joshuadevmode.github.io/ChubChampions/ + chub-champions-backend.vercel.app
+
+### UI / UX (2025-02-24)
+- [x] Lobby, AoN panel y stats: mejoras visuales generales de CSS
+- [x] XP bar rediseñada — barra gold gradient + círculo de nivel + texto "current / max"
+- [x] Notificaciones (campana) — badge, dropdown, colores por tipo (arma, nivel, cofre, PvP)
+- [x] Árbol de habilidades — panel izquierdo con 14 combat stats derivados (crit, dodge, lifesteal…)
+  agrupados en OFFENSE / DEFENSE / STATUS, todos visibles aunque sean 0%
+- [x] Árbol de habilidades — nodos cuadrados (8px radius), badge de rank debajo del icono,
+  conectores en naranja estilo Mu Online, tooltips con hover
+- [x] Session widget — botón LOGOUT reemplazado por dropdown al hacer click (chevron ▾ + DISCONNECT)
+- [x] Balance de wallet en currency bar — detecta Solana (◎ SOL, teal) vs Monad (⬡ MON, violeta)
+  según formato de dirección; click para refrescar
+- [x] Fix: cofres no se podían abrir — syncStateFromServer ahora siempre respeta el servidor
+  (antes ignoraba array vacío); start_chest_unlock ya no es fire-and-forget
+
+### Backend APIs (all on chub-champions-backend / Vercel)
+- [x] POST /api/battle/run
+- [x] POST /api/aon/start — deducts tokens, creates/resumes aon_matches row
+- [x] POST /api/matchmaking/join — P2 runs battle immediately (short polling, ±3 level range)
+- [x] GET  /api/matchmaking/status — P1 polls; flipped event log + rewards
+- [x] POST /api/matchmaking/cancel
+- [x] POST /api/economy/spend — server-side price validation
+- [x] POST /api/character/sync
+- [x] POST /api/player/sync
+- [x] backend/lib/pack-char.ts — packs DB character into on-chain BattleTypes.Character
+- [x] backend/pages/api/aon/sign-character.ts — EIP-191 char sig for AoNEscrow (viem)
+- [x] backend/pages/api/aon/sign-character-solana.ts — ed25519 char sig for Solana program (tweetnacl)
+
+### Frontend On-Chain (Monad / EVM)
+- [x] ethers.js v6 via CDN; MONAD_CHAIN_ID = 10143
+- [x] packCharForContract() / packSkillsForContract()
+- [x] aonStartMatchmakingOnChain(), aonCreateRoomOnChain(), aonJoinRoomOnChain(), aonWaitForResult()
+- [x] aonStartMatchmaking() routing: Solana → Monad → off-chain CPU fallback
+
+### Frontend On-Chain (Solana)
+- [x] @solana/web3.js v1 CDN
+- [x] _canonicalCharBytesForSolana(), _anchorDiscriminator(), _borshEncodeCharData()
+- [x] _buildCreateRoomIxData(), _aonWaitForResultSolana(), aonStartMatchmakingSolana()
+
+### Smart Contracts — Monad (Foundry, compiles clean)
+- [x] ChubToken.sol (ERC-20, non-transferable; symbol CHUB; reward() + spend())
+- [x] BattleEngine.sol + BattleTypes/RNG/Constants/SkillsLib — full Solidity port of battle engine
+- [x] AoNEscrow.sol — Pyth Entropy VRF, trusted relayer sig, burn-on-enter/mint-on-exit
+- [x] DeployAoN.s.sol deploy script
+
+### Smart Contracts — Solana (Anchor 0.31, code complete)
+- [x] chub-token program (spend + reward CPIs)
+- [x] fightchub-aon program — 8 instructions (initialize, create_room, join_room, consume_randomness, cancel_room, refund_entropy_stuck, claim_held_payout, admin)
+- [x] Rust battle engine port (rng.rs / engine.rs / skills.rs / constants.rs)
+- [x] Ed25519 char sig verification via Instructions sysvar precompile
+- [x] **Switchboard Classic VRF** migration (replaced Pyth Entropy — Pyth is EVM-only)
+  - Config: switchboard_program replaces pyth_entropy + pyth_provider
+  - Room: vrf_account (Pubkey) replaces entropy_sequence (u64)
+  - join_room: 12 Switchboard VRF accounts; cpi::request_randomness
+  - consume_randomness: reads result from vrf.load()?.get_result()
+
+---
+
+## 🔴 CRÍTICO — Antes de lanzar compra de tokens
+
+- [x] **Migrar autenticación de endpoints de `SYNC_SECRET` a JWT de Privy** ✅ Done
+  - `backend/lib/privy-server.ts` — singleton PrivyClient
+  - `backend/lib/verify-privy.ts` — verifyRequest() helper (Privy JWT or SYNC_SECRET fallback)
+  - Endpoints migrados: economy/spend, character/feed, character/boost, aon/start
+  - Frontend: getAuthHeaders() helper, token stored in playerSession, 401 → redirect to login
+  - `pages/index.tsx` → getAccessToken() and pass token in redirect URL params
+  - **Requires new Vercel env var: `PRIVY_APP_SECRET`** (get from Privy dashboard → Settings → API Keys)
+
+---
+
+## 🚀 Deploy (highest priority)
+
+### Monad Testnet
+- [ ] Get Monad testnet RPC URL + faucet MON
+- [ ] Look up Pyth Entropy address on Monad testnet
+- [ ] Generate CHARACTER_SIGNER wallet (EVM keypair) — export private key → CHARACTER_SIGNER_KEY
+- [ ] Generate RELAYER wallet (EVM keypair) → fund with MON (calls resolveMatch on AoNEscrow)
+- [ ] Set Foundry env vars: PRIVATE_KEY, PYTH_ENTROPY_ADDRESS, PYTH_PROVIDER_ADDRESS, RELAYER_ADDRESS, CHARACTER_SIGNER_KEY
+- [ ] `forge script script/DeployAoN.s.sol --broadcast` (deploys ChubToken + AoNEscrow)
+- [ ] Fill AON_ESCROW_ADDRESS + CHUB_TOKEN_ADDRESS constants in index.html
+- [ ] Call setAuthorized(escrow, true) on ChubToken (done in deploy script — verify it ran)
+
+### Solana Devnet
+- [ ] `anchor build` in contracts/solana-aon/ — verify clean compile with Switchboard crate
+  - If anchor version conflict: add `[patch.crates-io]` pinning anchor-lang = "0.31.0"
+- [ ] `anchor deploy --provider.cluster devnet`
+- [ ] Fill FIGHTCHUB_AON_SOLANA_PROGRAM_ID in index.html
+- [ ] Fill create_room + join_room account metas in frontend from generated IDL
+- [ ] Generate CHARACTER_SIGNER_SOLANA keypair (`solana-keygen new`) → export as base58
+- [ ] Set env var CHARACTER_SIGNER_SOLANA_KEY in Vercel (base58, 64-byte keypair)
+
+---
+
+## 🔧 Backend / Infrastructure
+
+### Supabase
+- [ ] Run supabase/schema.sql — tables: characters, battle_results, skin_templates, skin_mints
+- [ ] Run backend/supabase/matchmaking_schema.sql — matches table + find_or_create_match RPC
+- [ ] Run migration: `ALTER TABLE battle_results ADD CONSTRAINT battle_results_player_seed_unique UNIQUE (player_id, seed);`
+- [ ] **Run migration: per-character win_streak, xp_boost_data, shop_data** (required for per-character XP boost/streak/shop limits refactor)
+  ```sql
+  ALTER TABLE characters
+    ADD COLUMN IF NOT EXISTS win_streak INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS xp_boost_data JSONB DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS shop_data JSONB DEFAULT '{}';
+  ```
+  `xp_boost_data` structure: `{ pending: [{mult, battles}], active: {mult, battlesLeft} | null }`
+  `shop_data` structure: `{ itemDailyPurchases: {}, itemPurchaseDate: '', minigameDailyPurchases: 0, minigamePurchaseDate: '' }`
+- [ ] Verify Vercel env vars:
+      NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SYNC_SECRET
+      NEXT_PUBLIC_PRIVY_APP_ID, PRIVY_APP_SECRET (get from Privy dashboard → Settings → API Keys)
+      CHARACTER_SIGNER_KEY (0x… EVM private key — used by sign-character.ts)
+      CHARACTER_SIGNER_SOLANA_KEY (base58 64-byte keypair — used by sign-character-solana.ts)
+- [ ] Create Supabase Storage bucket "skins"
+
+### Missing Endpoints
+- [x] POST /api/aon/room/open — P1 registers roomId so P2 can discover it (needed for on-chain Solana AoN P2 flow)
+  - Requires migration: `ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS on_chain_room_id text; ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS on_chain_chain text;`
+- [x] Add rate limiting to /api/battle/run (1 battle / 5s per playerId)
+- [x] Wire consumable deduction: after battle returns, deduct used consumables from character in DB
+
+---
+
+## 💎 Smart Contracts — Remaining
+
+### Monad
+- [ ] Add MON → CHUB buy function to ChubToken (payable, sets exchange rate)
+- [ ] ERC-721 character NFT contract (mintable at level threshold)
+- [ ] ERC-6551 token-bound accounts (character NFT owns its skin NFTs)
+- [ ] /api/character/mint endpoint (verifies level, calls contract)
+- [ ] /api/character/[id]/metadata dynamic metadata endpoint
+
+### Solana
+- [ ] Update frontend join_room call: remove user_commitment param, add 12 Switchboard VRF accounts
+  - P2 flow: VrfLite.create() → fund escrow (~0.002 SOL) → join_room (batch in sendAll)
+- [ ] fightchub-nft Metaplex program — character NFT + mutable metadata
+- [ ] Wormhole NTT setup for CHUB token bridging Monad ↔ Solana
+
+---
+
+## 🌐 Frontend
+
+- [ ] Show on-chain CHUB balance in lobby currency bar (once Monad contracts deployed)
+- [ ] "Mint Skin NFT" button in inventory (call ERC-721 contract)
+- [ ] Show owned skin NFTs from wallet (read from contract)
+- [ ] Equip skin from NFT (set character.appearance from on-chain metadata)
+- [ ] Call /api/character/sync after level-up, stat changes, skin equip (verify wired correctly)
+
+---
+
+## 🔐 Auditoría de Contratos (hacer antes de mainnet)
+
+- [ ] **Tradability de assets** — verificar que skins (ERC-721 / Metaplex) sean libremente
+      transferibles entre wallets; confirmar que CHUB (soulbound) NO es transferible pero
+      los NFTs de equipo SÍ lo son
+- [ ] **Revisión de exploits — Monad (Solidity)**
+  - Reentrancy en AoNEscrow (reward/spend CPIs)
+  - Integer overflow / underflow en cálculos de payout y durability
+  - Acceso no autorizado a resolveMatch / setAuthorized
+  - Replay attacks en sig de personaje (incluye expiryTimestamp en hash)
+  - Front-running del relayer en entropyCallback
+- [ ] **Revisión de exploits — Solana (Rust/Anchor)**
+  - Account substitution attacks (verificar seeds y bumps en cada instrucción)
+  - CPI privilege escalation (chub-token reward/spend solo llamable por Config PDA)
+  - Doble pago en consume_randomness si se llama dos veces con el mismo VRF result
+  - Timeout de VRF — asegurarse de que refund_entropy_stuck no drene fondos incorrectos
+  - Ed25519 precompile — verificar que el mensaje canónico incluye room_id + expiry
+- [ ] **Bridge de NFTs** — diseñar e implementar el flujo de bridge individual y en conjunto:
+  - Bridge individual: un NFT de skin de Monad → Solana (o viceversa) via Wormhole Token Bridge
+  - Bridge en lote (bulk): múltiples NFTs en una sola tx para reducir fees
+  - Verificar que metadata dinámica (skin_key, rarity, template_id) surviva el bridge
+  - Decidir si el bridge "quema y acuña" o usa lock-and-mint
+- [ ] **Segunda revisión post-bridge** — re-auditar exploits con el bridge integrado
+      (posibles vectores nuevos: mensaje VAA manipulado, doble redención, griefing del relayer)
+
+---
+
+## 🗑️ Delete Account / Reset
+
+- [x] **Botón "Delete Account" real** ✅ Done
+  - `deleteAccount()` en frontend: calls POST /api/player/delete, then clears all fightchub_ localStorage
+  - `POST /api/player/delete` endpoint: deletes aon_matches, battle_results, characters, players rows
+  - `logoutPlayerSession()` now clears ALL fightchub_* keys (not just fightchub_session)
+  - `player/state.ts` returns `{ notFound: true }` when player doesn't exist → frontend clears local data
+
+---
+
+## 🎮 Sesión 2026-03-10 — Fixes de animaciones y bugs críticos
+
+### ✅ Resueltos hoy
+
+- [x] **Fix sprites CPU hue-shift 404** — `undefined` string llegaba a `img.src` cuando `winFrames[0]`
+      era undefined (extractFrames vacío). Guards en `applyHueShiftPreservingBlacks`,
+      `applyHueShiftToFrames`, y asignaciones de `dataset.win/lose`.
+
+- [x] **Fix posicionamiento fighters — escala de coordenadas del servidor**
+      El servidor usa `ARENA_WIDTH=1600px` internamente pero el arena real varía por viewport.
+      Sin escala, `_homeX=128` se aplicaba como 128px literales en arenas de 700-900px.
+      Fix: scale factor `arenaW / 1600` en MoveEvents y retorno al home.
+      *(Nota: en producción la arena siempre es 1600px por CSS zoom → scale=1, pero la lógica
+       es correcta para cualquier tamaño futuro.)*
+
+- [x] **Fix posición de ataque — usa posición actual del defensor**
+      Antes: `_atkLeftPx = arenaW * 0.72` (fijo, solo correcto para posiciones iniciales).
+      Ahora: `(defensor._homeX ± _ATCK_GAP) * scale` — sigue al defensor tras MoveEvents.
+      `_ATCK_GAP = 100` → overlap físico de -120px → ~5px de contacto visual entre sprites.
+
+- [x] **Fix CSS transition snap — conversión a left:px al inicio de batalla**
+      CSS no puede interpolar `right:8%` → `left:Xpx` ni `auto` → `Xpx`.
+      `animateBattleFromLog` ahora convierte ambos fighters a `left:px` antes del primer evento.
+
+- [x] **Fix training mode — fighters se acercaban desde las esquinas**
+      `generateTrainingEvents` ahora emite un MoveEvent inicial a melee range
+      (playerX=650, cpuX=950, gap=80px) antes del primer ataque.
+
+- [x] **Fix TDZ error** — `rerollsUsed`/`rerollsMax` declarados con `let` en línea ~15684
+      pero accedidos en `loadProgression` (línea ~11282). Movidos al bloque de globals.
+
+- [x] **Fix battle/run 403 y player/state 500** — columnas faltantes en Supabase causaban
+      fallo en queries con lista explícita de columnas. Fix: `select('*')` en run.ts,
+      state.ts, spend.ts, levelup.ts.
+
+- [x] **Fix character delete** — solo borraba de localStorage. Nuevo endpoint
+      `POST /api/character/delete` + frontend lo llama al eliminar personaje.
+
+- [x] **Schema Supabase** — reescrito completo en `supabase/schema.sql` con todas las
+      columnas actuales (player_id, pending_levelup, morale/wellness, minigame_*, etc.)
+
+- [x] **Lobby background** — reemplazado con imagen de mayor resolución.
+
+---
+
+### 🔄 Pendiente — Animaciones y Q-Learning
+
+- [ ] **Seguir refinando el gap de ataque** — `_ATCK_GAP=100` da contacto visual razonable
+      pero podría ajustarse más según sprites individuales. Considerar medir el bounding box
+      real de cada sprite para un contact detection más preciso.
+
+- [ ] **Jump attack** — revisar animación completa: arco de salto, landing en posición
+      correcta del defensor (ya usa `getBoundingClientRect` pero verificar con las nuevas
+      posiciones escaladas), rotación del sprite al aterrizar/retornar.
+
+- [ ] **Q-Learning — posicionamiento preferido por build/arma**
+      Actualmente `_ATCK_GAP` es fijo para todos. El CPU debería tener un "preferred range"
+      según su arma equipada (spear/gun → distancia mayor) y stats (agi alto → moverse,
+      def alto → aguantar en rango medio). El Q-learning ya refuerza esto indirectamente
+      pero no hay un bias de inicio por arquetipo.
+
+- [ ] **Q-Learning — acción `jump_fury` y ataques aéreos**
+      El counter de jump_fury está implementado en el engine pero la animación aérea y la
+      interacción con el sistema de posicionamiento necesita más pruebas y ajustes finos.
+
+- [x] **Movimiento variable — advance_half / retreat_half**
+      Agregado `advance_half` y `retreat_half` al pool de Q-learning (5 acciones de movimiento).
+      El personaje elige cuánto moverse: paso cauteloso (50% speed) o sprint completo (100%).
+      La stamina escala con `movedPx` — caminar menos cuesta menos. `MoveEvent` emite `speed`
+      (px/turn reales usados) para que el frontend ajuste el frame rate de la animación.
+
+- [x] **Animación de movimiento — frame rate basado en AGI**
+      `animateRun` ahora recibe `speed` (px/turn del personaje) en vez de la duración CSS.
+      Frame interval: `max(65, 330 - speed × 0.59)` ms — AGI bajo → ~265ms (lento),
+      AGI cap → 65ms (veloz). La transición CSS sigue siendo distancia-based para que
+      el personaje llegue a tiempo, pero la cadencia de pasos refleja su agilidad real.
+
+---
+
+## 🗜️ Optimización Q-Table (pendiente)
+
+- [ ] **Redondear Q-values a 3 decimales**
+      Los Q-values son rankings relativos — precisión de 0.001 es suficiente.
+      Aplicar `Math.round(q * 1000) / 1000` al guardar en DB. Ahorra ~30-40% de tamaño.
+
+- [ ] **Serializar Q-table como array en vez de objeto**
+      En vez de `{"punch":0.123,"kick":-0.045,...}` guardar `[0.123,-0.045,...]`.
+      Los índices corresponden a acciones en orden fijo (QL_BASIC_ACTIONS + QL_DEF_ACTIONS
+      + QL_MOVE_ACTIONS). Ahorra ~50% adicional eliminando los nombres de keys.
+      Combinado con redondeo: de ~1.6 MB a ~640 KB por personaje a 2000 batallas.
+
+- [ ] **Cap de tamaño de Q-table**
+      Limitar a ~5,000 entradas máximas por personaje descartando los estados
+      menos visitados. Evita crecimiento indefinido en cuentas muy activas.
+
+---
+
+## 🗜️ Optimización Q-Table — ✅ Implementado
+
+- [x] Redondear Q-values a 3 decimales en `pruneQTable`
+- [x] Serializar Q-table como array (`serializeQTable` / `deserializeQTable`) — ~50% menos tamaño
+- [x] Cap 50,000 estados en `pruneQTable` — descarta los menos visitados
+- [x] `QL_ATTACK_ACTIONS` = `[...QL_BASIC_ACTIONS, 'jump_attack']` — jump attack como acción Q
+- [x] `anti_air` en `QL_ALL_ACTIONS` (índice 17) — solo ofrecida cuando `isJumpAtk2 === true`
+
+---
+
+## ⚔️ Sistema de Ataque Aéreo (Jump Attack + Anti-Air) — ✅ Implementado
+
+### Engine
+- [x] `jump_attack` en el pool de ataque del Q-learning (requiere gap > MELEE_RANGE+80 y stamina ≥ 15)
+- [x] Al elegir `jump_attack`: segundo Q-lookup de `QL_BASIC_ACTIONS` decide el ataque al pico del arco
+- [x] Costo de stamina: 15 (salto) + costo del ataque base
+- [x] Multiplicador de daño +70% si llega sin ser interceptado (`isJumpAttack` flag en `executeHit`)
+- [x] `playerJumpedThisTurn` / `cpuJumpedThisTurn` en `BattleContext`
+- [x] Anti-air disponible como defensa Q solo cuando `isJumpAtk2 === true`
+- [x] Anti-air usa kick (o mace si el defensor lo tiene equipado), costo = kick/mace stamina + 7
+- [x] 50% full cancel (atacante aterriza con hurt frame, pierde arma si tenía) / 50% disrupted (40% daño)
+- [x] Knockback al atacante aéreo: `Math.floor(defStr * 0.4)` px, ×2 con mace
+- [x] Posición actualizada en `ctx.playerX/cpuX`, emitida en `knockbackPx/playerX/cpuX`
+
+### Frontend
+- [x] Animación de carrera: `jaRunMs` basado en AGI (`280 / jaRunSpd`)
+- [x] Animación de arco: `jaArcMs` basado en STR (`860 / jaArcSpd`)
+- [x] Peak del arco a `peakMs = jaArcMs * 0.36` — el atacante elige el ataque en ese momento
+- [x] `knockdown: true` → muestra `_hurtFrames[0]` por 600ms en el atacante derribado
+- [x] `knockbackPx` → desliza al atacante aéreo a la nueva posición con transición 220ms ease-out
+- [x] Sincronización de `_homeX` en evento knockdown (posición ya animada por el kick previo)
+
+### Assets pendientes para mace
+- [ ] **`Assets/Weapons/Mace Run.png`** — sprite sheet 5 frames × 2 rows (weapon overlay durante carrera)
+- [ ] **`Assets/Weapons/Imperial Mace Run.png`** — ídem para mace tier 80
+- [ ] **`Assets/Weapons/Mace Attack.png`** — sprite sheet 4 frames × 2 rows (overlay durante ataque)
+- [ ] **`Assets/Weapons/Imperial Mace Attack.png`** — ídem para mace tier 80
+- [ ] Agregar `attackOverlay: true` a `tier_mace` y `tier_imperial_mace` en `WEAPON_TIERS` (index.html ~11524)
+      una vez que los sprite sheets de ataque estén listos — el pipeline los carga automáticamente
+- **Nota:** Sin estos archivos la lógica funciona correctamente (daño, knockback ×2, detección de mace)
+  pero la animación del anti-air con mace usa punch frames como fallback en vez del overlay de mace.
+
+---
+
+---
+
+## 🧬 Sistema de Modelos de Stats (2026-03-15)
+
+### ✅ Implementado
+
+- [x] **`stat-generator.ts`** — energy incluida en STAT_TOTAL (170) — tradeoff real vs físicos
+  - BIASES: O/S/D/B/M/W con `key` letter por archetype
+  - `generateStats(modelKey?)` — acepta key para regenerar con el mismo bias
+  - Modelo M (Mystic) ajustado: energy [45,68], atk/def bajos — energy como stat primaria
+  - ENERGY_MAX subido a 68 (igual que físicos) — build de energy puro es viable
+
+- [x] **`levelup-options.ts`** — pool de 19 opciones con letra única por opción
+  - Nueva opción: `Powerhouse (P)` — +20 STR (STR ahora tiene su opción spike igual que ATK/AGI/DEF)
+  - Nuevas opciones energy alta: `Surge (G)` +22, `Fierce Channel (K)` +22 ATK+energy, `Arcane Flood (A)` +28
+  - Tabla de letras: H/L/I/P/W/B/C/S/N/F/E/M/U/Y/D/T/R/G/K/A
+
+- [x] **`stat_model` column (characters table)** — tipo `text` — historial de level-ups
+  - Una letra por cada nivel ganado: ej. `"BWCNFE..."` al nivel 7
+  - `levelup/apply` concatena la letra elegida al aplicar cada level-up
+  - `sync.ts` NO guarda arquetipo de creación — solo level-ups cuentan
+
+- [x] **`base_stats` column (characters table)** — tipo `jsonb` — snapshot de stats al nivel 1
+  - Escrito una sola vez en `sync.ts` al crear el personaje, nunca sobreescrito
+  - Permite recalcular stats exactos si se cambian valores de opciones: `base_stats + suma(stat_model)`
+
+### ✅ Migrations Supabase aplicadas
+
+```sql
+ALTER TABLE players    ADD COLUMN IF NOT EXISTS crystals integer not null default 0;
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS exp integer not null default 0;
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS player_id text;
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS stat_model text;
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS base_stats jsonb;
+CREATE INDEX IF NOT EXISTS idx_characters_player_id ON characters(player_id);
+```
+
+---
+
+## 🧬 Sistema Elemental + Biases (2026-03-16)
+
+### ✅ Implementado
+
+- [x] **`stat-generator.ts`** — STAT_TOTAL 185, ENERGY_MAX 68 (igual que físicos), pool compartido
+  - 11 biases: O/S/D/B/M/W + nuevos E(Arcane)/A(Arcane Swift)/T(Tank-Mage)/R(Rogue)/G(Guardian)
+  - Guardian (G): STR[30-58] + DEF[30-58] simultáneos — tanque físico puro sin energy
+  - Rangos de energy corregidos en O/S/D → [20,40]; B → [25,50] flat; M/W/E/A/T actualizados
+
+- [x] **Flujo element-first en creación de personaje** (index.html)
+  - Jugador elige elemento antes de ver stats → element card click llama `generate_stats` al servidor
+  - Stats se muestran como `--` hasta elegir elemento; botón REROLL deshabilitado hasta entonces
+  - Botón CREATE deshabilitado hasta elegir elemento
+
+- [x] **Sistema de rerolls escalante y server-autoritativo** (economy/spend.ts)
+  - `REROLL_COST_TABLE = [25, 35, 50, 70, 100, 140, 195, 270, 375, 525]` luego ×1.4
+  - Char 1: 2 free rerolls; char 2: +1 free (total 3); char 3+: sin free, pago desde donde quedó
+  - Contadores en DB: `total_free_rerolls_used` + `total_paid_rerolls` (anti-exploit)
+  - Server retorna `freeRemaining` + `nextCost`; frontend sincroniza desde respuesta del servidor
+
+- [x] **Fórmula elemental 2-stat en fury powers** (engine.ts)
+  - `getElementPowerSec(el, stats)`: combo ponderado por elemento reemplaza `secStat` único
+    - Fire: ENE×0.6+STR×0.4 | Lightning: ENE×0.7+STR×0.3 | Earth: STR×0.7+ENE×0.3
+    - Wind: AGI×0.6+ENE×0.4 | Water: ENE×0.7+AGI×0.3
+  - Pasivos elementales ahora escalan con los stats clave del elemento (fire→ENE+STR, etc.)
+
+### ⚠️ Migration Supabase pendiente
+
+```sql
+ALTER TABLE players ADD COLUMN IF NOT EXISTS total_free_rerolls_used integer not null default 0;
+ALTER TABLE players ADD COLUMN IF NOT EXISTS total_paid_rerolls      integer not null default 0;
+```
+
+---
+
+## 💬 Discusión — Wall Bounce + Corner Pressure (próxima sesión)
+
+> **NOTA: esto es una discusión de diseño, no un cambio implementado.**
+> Acordado en sesión 2026-03-16 — implementar en la próxima sesión.
+
+### Idea general
+Cuando un personaje es arrojado por un combo finisher y su knockback lo lleva hasta el borde
+de la arena, rebota contra la pared y vuelve unos píxeles hacia el centro. Esto:
+- Crea un objetivo de posicionamiento: arrinconar al oponente tiene recompensa real
+- El rebote puede disparar un hit de seguimiento (kick)
+- Cuanto más cerca de la pared está el defensor, mayor la probabilidad de combo del atacante
+
+### Mecánica de rebote
+- **Trigger:** solo en **combo finisher** (280px knockback). Fury powers con knockback
+  (Tsunami, Giant Rock) también candidatos — decidir en sesión.
+- **Detección:** si el `toX` post-knockback fue clamped por `Math.max(0,...)` o
+  `Math.min(ARENA_WIDTH - FIGHTER_WIDTH,...)`, significa que tocó la pared → rebote.
+- **Distancia de rebote:** `80px` de vuelta hacia el centro — pequeño, solo táctico/visual.
+- **Follow-up:** ventana de ataque para el atacante (similar al back-attack post-crossover):
+  chance de un kick de seguimiento antes de que el defensor se recupere.
+
+### Corner pressure (bonus de combo)
+- **Variable:** `distToNearestWall = min(defenderX, ARENA_WIDTH - FIGHTER_WIDTH - defenderX)`
+- **Pressure factor:** `distPressure = clamp((300 - distToNearestWall) / 300, 0, 1)`
+  → 0% a 300px+ de la pared, 100% (máximo efecto) en el borde mismo
+- **Bonus a `comboChance`:** `+ distPressure * 0.06` → máximo **+6%** en el borde
+- **Cap total de `comboChance`:** `0.38` — para que no se vuelva cheese con builds muy rápidos
+
+### Valores acordados
+```
+WALL_BOUNCE_PX         = 80     // rebote tras tocar el borde
+CORNER_PRESSURE_RANGE  = 300    // distancia desde la pared donde empieza el efecto
+CORNER_COMBO_BONUS_MAX = 0.06   // +6% máximo de comboChance en el borde exacto
+COMBO_CHANCE_CAP       = 0.38   // cap total de comboChance (actualmente no hay cap explícito)
+```
+
+### Cambios necesarios (backend)
+- `engine.ts` — detectar wall clamp en el knockback del combo finisher, emitir segundo
+  `MoveEvent` de rebote, sumar corner factor a `comboChance` antes de `isCombo`
+- `constants.ts` — agregar las 4 constantes arriba
+
+### Cambios necesarios (frontend)
+- Animación de rebote: slide corto con ease-out rebotando desde la pared
+- Efecto visual de impacto (polvo/destello en el borde) — opcional pero recomendado
+- Indicador "CORNERED!" cuando `distPressure > 0.7` — opcional
+
+---
+
+---
+
+## ✅ Sesión 2026-03-19/20 — Rename + Auth + UX fixes
+
+### Rename FightChub → Chub Champions
+- [x] GitHub repos renombrados: `FightChub` → `ChubChampions`, `fight-chub-backend` → `ChubChampionsBackend`
+- [x] Vercel project renombrado: `fight-chub-backend` → `chub-champions-backend`
+- [x] `vite.config.js` base path: `/FightChub/` → `/ChubChampions/`
+- [x] `LoginGate.jsx` título y asset paths actualizados
+- [x] `BACKEND_URL` en index.html: `chub-champions-backend.vercel.app`
+- [x] Backend pages y comentarios actualizados
+- [x] Contratos: `FightChubCharacter.sol` → `ChubChampionsCharacter.sol`, `FightChubSkin.sol` → `ChubChampionsSkin.sol`
+
+### Auth / Login
+- [x] **Selección de chain en primer login** — `LoginGate.jsx` redirige a `chub-champions-backend.vercel.app/` si el usuario no tiene wallet; backend muestra MONAD / SOLANA
+- [x] **Fix "Setup incomplete" notice** — `sendToGame()` usa el address devuelto por `createWallet()` directamente (user.linkedAccounts era stale)
+- [x] **Fix export wallet popup** — popup llamaba `window.close()` si no estaba autenticado en el dominio backend; ahora llama `login()` primero
+- [x] **Removed cross-origin token-refresh iframe** — eliminado iframe oculto que causaba `SecurityError: Failed to read window.ethereum`; `window.__getPrivyToken` ahora proviene de `LoginGate.jsx` directamente
+
+### UI
+- [x] **Eliminados modos de test** — POWER LAB y TRAINING removidos del lobby, HTML, CSS y JS
+- [x] **Eliminado botón DELETE ACCOUNT** del lobby y función `deleteAccount()`
+- [x] **Session name** — fuente cambiada a DynaPuff, color oscuro, tamaño aumentado
+- [x] **Monad chain label** — "EVM · Compatible" → "EVM · Low fees"
+
+### TypeScript fixes (previos al deploy)
+- [x] `qTable` type cast en `aon/accept.ts`
+- [x] `isAonRound` declarado antes de uso en `battle/run.ts`
+- [x] `charId` agregado al tipo `playerRank` en `leaderboard/index.ts`
+- [x] `calcRankingDelta` args faltantes en `matchmaking/join.ts`
+
+### CORS
+- [x] `middleware.ts` (Edge) — maneja OPTIONS preflight y agrega headers CORS a todas las rutas `/api/*`
+- [x] `vercel.json` — headers CORS a nivel CDN como respaldo
+
+---
+
+## 🔍 Nice to Have
+
+- [ ] Battle replay (store event log, let player replay past fights)
+- [ ] Leaderboard page (query battle_results by win count)
+- [ ] Push notifications for chest unlock ready
+- [ ] Mobile layout polish
+- [ ] New skill branch (effect TBD)
