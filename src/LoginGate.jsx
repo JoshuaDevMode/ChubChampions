@@ -48,6 +48,12 @@ export default function LoginGate() {
       const linkedWallet = user.linkedAccounts?.find(a => a.type === 'wallet');
       const wallet = linkedWallet?.address || user.wallet?.address || '';
 
+      // First-ever login: no wallet yet → redirect to backend for chain selection
+      if (!wallet) {
+        window.location.href = 'https://chub-champions-backend.vercel.app/';
+        return;
+      }
+
       const twitterAcc = user.linkedAccounts?.find(a => a.type === 'twitter_oauth');
       const emailAcc   = user.linkedAccounts?.find(a => a.type === 'email');
       const name = twitterAcc?.username
