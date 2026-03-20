@@ -13,5 +13,5 @@ function copyStaticPlugin() {
 
 export default defineConfig({
   plugins: [react(), copyStaticPlugin()],
-  base: '/FightChub/',
+  base: '/ChubChampions/',
 });
