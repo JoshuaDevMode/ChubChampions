@@ -14348,74 +14348,20 @@
             setTimeout(() => { window.location.href = BACKEND_URL + '/'; }, 2000);
         }
 
-        // ── Privy token-refresh iframe ────────────────────────────────────────────
-        // A hidden iframe loaded from the backend keeps a live Privy React context.
-        // The game asks it for a fresh token via postMessage whenever needed.
-        // __tokenRefreshReady resolves once the iframe confirms Privy is initialized.
-        let _tokenRefreshIframe = null;
-        let _tokenRefreshReady  = false;
-        let _tokenRefreshResolvers = []; // callbacks waiting for ready
-        let _pendingTokenRequests  = {}; // requestId → { resolve, timeout }
-        let _tokenRequestCounter   = 0;
-
-        (function initTokenRefreshBridge() {
-            const iframe = document.createElement('iframe');
-            iframe.src = BACKEND_URL + '/token-refresh';
-            iframe.style.cssText = 'display:none;position:absolute;width:0;height:0;border:0;';
-            iframe.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(iframe);
-            _tokenRefreshIframe = iframe;
-
-            window.addEventListener('message', function(e) {
-                if (!e.origin.startsWith(BACKEND_URL.replace(/\/$/, ''))) return;
-                const msg = e.data;
-                if (!msg || typeof msg !== 'object') return;
-
-                if (msg.type === 'token_ready') {
-                    _tokenRefreshReady = true;
-                    _tokenRefreshResolvers.forEach(fn => fn());
-                    _tokenRefreshResolvers = [];
-                }
-
-                if (msg.type === 'token_response') {
-                    const req = _pendingTokenRequests[msg.requestId];
-                    if (req) {
-                        clearTimeout(req.timeout);
-                        delete _pendingTokenRequests[msg.requestId];
-                        req.resolve(msg.token || null);
-                    }
-                }
-            });
-        })();
-
-        // Waits for the iframe to signal Privy is ready (max 6s then proceeds anyway)
+        // Waits for LoginGate (React) to expose window.__getPrivyToken (max 3s)
         function waitForTokenRefresh() {
-            if (_tokenRefreshReady) return Promise.resolve();
+            if (typeof window.__getPrivyToken === 'function') return Promise.resolve();
             return new Promise(resolve => {
-                const timer = setTimeout(() => {
-                    _tokenRefreshResolvers = _tokenRefreshResolvers.filter(fn => fn !== resolve);
-                    resolve();
-                }, 6000);
-                _tokenRefreshResolvers.push(() => { clearTimeout(timer); resolve(); });
+                const iv = setInterval(() => {
+                    if (typeof window.__getPrivyToken === 'function') {
+                        clearInterval(iv);
+                        clearTimeout(timer);
+                        resolve();
+                    }
+                }, 50);
+                const timer = setTimeout(() => { clearInterval(iv); resolve(); }, 3000);
             });
         }
-
-        // Implements the hook getAuthHeaders() already calls
-        window.__getPrivyToken = function() {
-            return new Promise(resolve => {
-                if (!_tokenRefreshIframe) return resolve(null);
-                const requestId = ++_tokenRequestCounter;
-                const timeout = setTimeout(() => {
-                    delete _pendingTokenRequests[requestId];
-                    resolve(null); // fallback to stored token on timeout
-                }, 5000);
-                _pendingTokenRequests[requestId] = { resolve, timeout };
-                _tokenRefreshIframe.contentWindow.postMessage(
-                    { type: 'get_token', requestId },
-                    '*' // '*' is safe here — iframe validates e.origin before responding
-                );
-            });
-        };
 
         async function loadPlayerSession() {
             // Legacy: support URL-param sessions from old redirect flow
@@ -14442,7 +14388,7 @@
             }
             updatePlayerSessionUI();
             if (playerSession) {
-                // Wait for the token-refresh iframe to be ready so startup API calls
+                // Wait for LoginGate to expose __getPrivyToken so startup API calls
                 // get a fresh Privy token instead of the possibly-expired stored one.
                 await waitForTokenRefresh();
                 syncStateFromServer();
