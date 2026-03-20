@@ -77,7 +77,7 @@ export default function LoginGate() {
         fontSize: 'clamp(18px, 4vw, 32px)', color: '#c4b5fd',
         textShadow: '0 0 30px rgba(167,139,250,0.6), 0 0 70px rgba(124,58,237,0.3)',
         letterSpacing: '4px', marginBottom: '2px',
-      }}>FIGHTCHUB</div>
+      }}>CHUB CHAMPIONS</div>
 
       <div style={{
         fontSize: 'clamp(6px, 1.2vw, 9px)', color: '#6b7280', letterSpacing: '1px',
@@ -90,7 +90,7 @@ export default function LoginGate() {
         filter: 'drop-shadow(0 0 28px rgba(124,58,237,0.55))',
       }}>
         <img
-          src="/FightChub/Assets/UI/stone-frame.png"
+          src="/ChubChampions/Assets/UI/stone-frame.png"
           alt=""
           style={{ width: '100%', height: '100%', display: 'block' }}
         />
