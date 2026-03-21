@@ -3564,7 +3564,7 @@
         /* Wrapper: wellness+morale bars on the left, CARE button on the right */
         .menu-bars-with-care {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 8px;
             width: 100%;
             margin-top: 2px;
@@ -3572,9 +3572,9 @@
         .menu-bars-col {
             flex: 1;
             display: flex;
-            flex-direction: row;
-            gap: 6px;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 4px;
+            align-items: stretch;
         }
 
         /* CARE button — right of bars, same width as SKILLS */
@@ -4132,9 +4132,18 @@
         /* Battle Instinct (Q-learning) bar in lobby */
         .instinct-bar-container {
             width: 100%;
-            margin-top: 1px;
+            margin-top: 3px;
             padding: 0;
             box-sizing: border-box;
+        }
+        .instinct-section-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            color: #a78bfa;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 2px;
         }
         .instinct-bar-label {
             display: flex;
@@ -4158,6 +4167,13 @@
             border-radius: 3px;
             background: linear-gradient(90deg, #7c3aed, #a855f7);
             transition: width 0.6s ease;
+        }
+        .instinct-hint {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 8px;
+            color: #888;
+            margin-top: 3px;
+            line-height: 1.3;
         }
 
         /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
@@ -10420,13 +10436,15 @@
                             <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                         </div>
                         <div class="instinct-bar-container" id="instinct-bar-container" style="display:none;">
+                            <div class="instinct-section-title">🧠 Battle Instinct</div>
                             <div class="instinct-bar-label">
-                                <span class="instinct-status-text" id="instinct-status-text">🧠 INSTINCT</span>
-                                <span id="instinct-value-text">0/100</span>
+                                <span class="instinct-status-text" id="instinct-status-text">Rookie</span>
+                                <span id="instinct-value-text">0 BP</span>
                             </div>
                             <div class="instinct-bar-track">
                                 <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
                             </div>
+                            <div class="instinct-hint">BP = Battle Points · Earn by fighting · Higher = sharper AI in combat</div>
                         </div>
                     </div><!-- /menu-stats-panel -->
                     <div class="stats-side-ext stats-side-right" id="winrate-side-ext"></div>
@@ -14693,7 +14711,11 @@
                 globalCrystals             = data.crystals ?? globalCrystals;
                 globalCharactersCreated    = data.charactersCreated;
                 if (Array.isArray(data.pendingChests)) {
-                    pendingVictoryChests = data.pendingChests;
+                    // Normalize characterId to number — DB stores it as string but char.id is a number
+                    pendingVictoryChests = data.pendingChests.map(c => ({
+                        ...c,
+                        characterId: c.characterId != null ? Number(c.characterId) : undefined,
+                    }));
                 }
                 // Restore authoritative daily claim state
                 if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
@@ -25007,7 +25029,7 @@
             const valEl = document.getElementById('instinct-value-text');
             const fill  = document.getElementById('instinct-bar-fill');
 
-            if (label) label.textContent = '🧠 ' + tierLabel;
+            if (label) label.textContent = tierLabel;
             if (valEl) valEl.textContent = Math.round(adapt) + ' BP';  // Battle Points
             if (fill)  fill.style.width  = pct + '%';
 
