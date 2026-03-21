@@ -16627,10 +16627,14 @@
             worldEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                // Same transform as world so fighters and background stay aligned.
-                // The clamped T keeps the bg covering the viewport at all zoom levels.
+                // Never scale the background below 1.0 — doing so would shrink it from
+                // the bottom-left origin and expose the bare #arena element on the sides.
+                // When zoomed out (fighters far apart at start), keep bg at full size (T=0).
+                // When zoomed in, pan and scale together with the world layer.
+                const bgZoom = Math.max(1.0, _camZoom);
+                const bgT    = bgZoom > 1.0 ? _camTransX : 0;
                 bgEl.style.transformOrigin = '0 100%';
-                bgEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
+                bgEl.style.transform       = `translateX(${bgT.toFixed(2)}px) scale(${bgZoom.toFixed(4)})`;
             }
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -16653,7 +16657,12 @@
             const worldEl = document.getElementById('arena-world');
             if (worldEl) { worldEl.style.transformOrigin = '0 100%'; worldEl.style.transform = `translateX(${tStr}px) scale(${zStr})`; }
             const bgEl = document.getElementById('arena-bg');
-            if (bgEl)    { bgEl.style.transformOrigin = '0 100%';   bgEl.style.transform    = `translateX(${tStr}px) scale(${zStr})`; }
+            if (bgEl) {
+                const bgZoom0 = Math.max(1.0, _camZoom);
+                const bgT0    = bgZoom0 > 1.0 ? _camTransX : 0;
+                bgEl.style.transformOrigin = '0 100%';
+                bgEl.style.transform = `translateX(${bgT0.toFixed(2)}px) scale(${bgZoom0.toFixed(4)})`;
+            }
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
         }
