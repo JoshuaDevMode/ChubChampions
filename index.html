@@ -16505,7 +16505,7 @@
                     case 'combo':
                         _comboCount++;
                         showComboHit(_comboCount);
-                        await sleep(60);
+                        await sleep(20);
                         break;
 
                     case 'combo_finisher':
@@ -16767,7 +16767,7 @@
                 // Real combo follow-up: snap to combat position in case anything reset it
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
-                await sleep(50);
+                await sleep(15);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
@@ -16955,8 +16955,8 @@
                     ], { duration: _total, easing: 'ease-in-out', fill: 'forwards' });
                     fighterBody._jumpLandMs = _hold + _fall;
                 }
-                animateAttack(attackerEl, animType, Math.round(375 * atkMult), isWeaponAnim ? attackType : undefined);
-                await sleep(Math.round(300 * atkMult));
+                animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
+                await sleep(Math.round((isComboFollow ? 130 : 300) * atkMult));
             }
 
             // Apply result
@@ -17025,7 +17025,7 @@
                         setTimeout(() => { kbEl.style.transition = ''; }, 240);
                     }
                 }
-                await sleep(Math.round(300 * Math.max(0.35, atkMult)));
+                await sleep(isComboFirst ? Math.round(70 * atkMult) : Math.round(300 * Math.max(0.35, atkMult)));
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
                 stats[defender].dodges = (stats[defender].dodges || 0) + 1;
@@ -17064,7 +17064,7 @@
             // Return phase
             if (isComboFirst) {
                 // Real combo: hold position, next hit fires from here
-                await sleep(60);
+                await sleep(20);
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
                 animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
