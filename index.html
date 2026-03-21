@@ -308,7 +308,7 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            transform-origin: 50% 100%;   /* zoom from ground center */
+            transform-origin: 0 100%;     /* fixed left-bottom anchor; JS pans via translateX */
             overflow: visible;
             pointer-events: none;
         }
@@ -321,7 +321,7 @@
             width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
-            transform-origin: 50% 100%;
+            transform-origin: 0 100%;
             z-index: 0;
             pointer-events: none;
         }
@@ -3205,6 +3205,51 @@
             font-size: 0.9em;
             margin-bottom: 15px;
         }
+
+        /* ── Empty lobby state (no characters) ─────────────────────────────────
+           Only the background and the "+" button are shown.
+           Everything else is hidden until the first character is created.    */
+        .main-menu.lobby-empty .lobby-currency-bar    { display: none !important; }
+        .main-menu.lobby-empty .menu-buttons-left     { display: none !important; }
+        .main-menu.lobby-empty .menu-buttons-bottom   { display: none !important; }
+        .main-menu.lobby-empty .menu-character-name   { display: none !important; }
+        .main-menu.lobby-empty #menu-element-badge    { display: none !important; }
+        .main-menu.lobby-empty .menu-char-left-col    { display: none !important; }
+        .main-menu.lobby-empty #menu-arrow-right      { display: none !important; }
+        .main-menu.lobby-empty .menu-character-container { display: none !important; }
+        .main-menu.lobby-empty .menu-character-info   { display: none !important; }
+
+        /* Center the create button in the middle of the screen */
+        .main-menu.lobby-empty .menu-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-menu.lobby-empty .menu-character-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+        }
+        .main-menu.lobby-empty .menu-character-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-menu.lobby-empty .menu-arrow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-menu.lobby-empty .menu-create-btn-plus {
+            width: 90px;
+            height: 90px;
+            font-size: 3em;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(249,115,22,0.5), 0 0 80px rgba(249,115,22,0.2);
+        }
+        /* ─────────────────────────────────────────────────────────────────── */
 
         /* Buttons Layout - Spread across screen */
         .menu-buttons-left {
@@ -10655,13 +10700,13 @@
                     <div class="aon-section-label">TOKENS A APOSTAR</div>
                     <div class="aon-fee-grid" id="aon-pvp-fee-grid">
                         <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="10">🪙 10</button>
-                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="25">🪙 25</button>
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="20">🪙 20</button>
+                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="30">🪙 30</button>
                         <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="50">🪙 50</button>
-                        <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="100">🪙 100</button>
                     </div>
                     <div class="aon-custom-row">
                         <button class="aon-custom-btn" id="aon-pvp-custom-toggle">CUSTOM</button>
-                        <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 15 🪙" min="15" style="display:none;">
+                        <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 55 🪙" min="55" style="display:none;">
                     </div>
                     <div class="aon-section-label">FORMATO</div>
                     <div class="aon-format-grid" id="aon-pvp-format-grid">
@@ -16048,6 +16093,11 @@
         }
 
         async function _animateMoveEvent(event) {
+            // Save pre-move facing BEFORE updating _homeX.
+            // isBack must be based on the PRE-move orientation so the run sprite faces
+            // the correct direction during crossover animations (post-move _playerIsOnLeft()
+            // would be flipped and make the fighter visually run backwards).
+            const _prevOnLeft = _playerIsOnLeft();
             game.player._homeX = event.playerX;
             game.cpu._homeX    = event.cpuX;
             const pEl = game.player.element;
@@ -16058,7 +16108,10 @@
                 const movEl      = game[event.fighter].element;
                 const movingLeft = event.to < event.from;
                 const distServer = Math.abs(event.to - event.from);
-                const _movTargetX = (event.fighter === 'player' ? event.playerX : event.cpuX) * _mvScale;
+                // _visualPos: reflects positions outside [0,1380] back inside so fighters
+                // never go off-screen (e.g. WALL_LEFT=-35 → display at 35).
+                const _destX      = event.fighter === 'player' ? event.playerX : event.cpuX;
+                const _movTargetX = _visualPos(_destX) * _mvScale;
 
                 if (event.isBounce) {
                     // Wall bounce: hurt frame slides back with ease-out
@@ -16084,14 +16137,12 @@
                     // Return to idle after brief hurt pause
                     setTimeout(() => { if (movImg && movImg._idleSrc) movImg.src = movImg._idleSrc; }, 120);
                 } else {
-                    // Normal move
+                    // Normal move.
                     // isBack = sprite faces opposite its natural forward direction.
                     // Player natural = right; CPU natural = left.
-                    // isBack = sprite should show "retreating" run direction.
-                // After a crossover _playerIsOnLeft() flips, so idle facing inverts for both fighters —
-                // isBack must invert too, otherwise sprite-reversed conflicts with facing-flipped.
-                const _onLeft = _playerIsOnLeft();
-                const isBack  = ((event.fighter === 'player') === _onLeft) ? movingLeft : !movingLeft;
+                    // Use _prevOnLeft (pre-move) so that during a crossover the sprite faces
+                    // the direction of travel, not the post-crossover idle direction.
+                    const isBack = ((event.fighter === 'player') === _prevOnLeft) ? movingLeft : !movingLeft;
                     // Physics: time = distance / speed.
                     // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
                     // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
@@ -16108,13 +16159,14 @@
                     movEl.style.transition = '';
                 }
             } else {
-                // No movement — just sync positions silently
-                pEl.style.left  = (event.playerX * _mvScale) + 'px';
+                // No movement — just sync positions silently (apply visual reflection too).
+                pEl.style.left  = (_visualPos(event.playerX) * _mvScale) + 'px';
                 pEl.style.right = 'auto';
-                cEl.style.left  = (event.cpuX * _mvScale) + 'px';
+                cEl.style.left  = (_visualPos(event.cpuX) * _mvScale) + 'px';
                 cEl.style.right = 'auto';
             }
-            // Update idle sprite facing after every move (handles crossover flips)
+            // Update idle sprite facing AFTER animation completes (handles crossover flips).
+            // Called with post-move _homeX so both fighters get the correct idle orientation.
             _syncFacingDirection();
             await sleep(20);
         }
@@ -16495,7 +16547,20 @@
         // Zooms in as fighters approach, keeping both centered.
         // Only the #arena-world layer (fighters + fury effects) is scaled;
         // the HUD and overlays stay fixed in #arena.
-        let _camZoom = 1.0, _camPanX = 0, _camRaf = null;
+
+        // Visual wall boundaries (server allows WALL_LEFT=-35 / WALL_RIGHT=1415 for
+        // transparent sprite padding, but the visible body spans [0, 1380]).
+        // _visualPos() reflects out-of-bounds positions back inside so fighters
+        // never go off-screen: e.g. worldX=-35 → displayX=35, worldX=1415 → displayX=1345.
+        const _VWALL_L = 0;
+        const _VWALL_R = 1380; // ARENA_WIDTH(1600) - FIGHTER_WIDTH(220)
+        function _visualPos(worldX) {
+            if (worldX < _VWALL_L) return -worldX;                    // reflect left  (2*0 - x)
+            if (worldX > _VWALL_R) return 2 * _VWALL_R - worldX;      // reflect right
+            return worldX;
+        }
+
+        let _camZoom = 1.0, _camTransX = 0, _camRaf = null;
         let _cameraEnabled = localStorage.getItem('fightchub_camera_enabled') !== 'false';
 
         function _camTick() {
@@ -16506,13 +16571,10 @@
             const W   = arenaEl.offsetWidth;
             const sc  = W / 1600;
             const HW  = 110 * sc;
-            const pX  = ((game.player?._homeX ?? 120)  * sc) + HW;
-            const cX  = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const pX  = (_visualPos(game.player?._homeX ?? 120)  * sc) + HW;
+            const cX  = (_visualPos(game.cpu?._homeX    ?? 1400) * sc) + HW;
             const gap = Math.abs(cX - pX);
-            // Midpoint between fighters as a percentage of the arena width.
-            // Using this as transform-origin means scale(Z) zooms in ON the fighters,
-            // so they stay in place while everything grows around them — no translateX needed.
-            const midXPct = Math.max(5, Math.min(95, ((pX + cX) / 2) / W * 100));
+            const midX = (pX + cX) / 2;
 
             // Reduce max zoom when any fighter is airborne to avoid clipping jumps at top
             const anyAirborne = !!(
@@ -16525,17 +16587,26 @@
 
             const targetZoom = Math.min(maxZoom, W / Math.max(1, gap + 500));
             _camZoom += (targetZoom - _camZoom) * 0.07;
-            // Lerp origin X toward fighters' midpoint so it tracks smoothly
-            _camPanX += (midXPct - _camPanX) * 0.07;
 
-            const origin = `${_camPanX.toFixed(2)}% 100%`;
-            const zStr   = _camZoom.toFixed(4);
-            worldEl.style.transformOrigin = origin;
-            worldEl.style.transform       = `scale(${zStr})`;
+            // Pan to keep fighters centered.
+            // With transform-origin:0 100% and transform:translateX(T) scale(Z):
+            //   a world point at midX lands at screen pos midX*Z + T.
+            //   We want that to equal W/2 → T = W/2 - midX*Z.
+            // Clamp T to [W*(1-Z), 0] so arena edges never leave the viewport.
+            const idealT  = W / 2 - midX * _camZoom;
+            const targetT = Math.max(W * (1 - _camZoom), Math.min(0, idealT));
+            _camTransX += (targetT - _camTransX) * 0.07;
+
+            const zStr = _camZoom.toFixed(4);
+            const tStr = _camTransX.toFixed(2);
+            worldEl.style.transformOrigin = '0 100%';
+            worldEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                bgEl.style.transformOrigin = origin;
-                bgEl.style.transform       = `scale(${zStr})`;
+                // Same transform as world so fighters and background stay aligned.
+                // The clamped T keeps the bg covering the viewport at all zoom levels.
+                bgEl.style.transformOrigin = '0 100%';
+                bgEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
             }
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -16546,18 +16617,19 @@
             const W  = arenaEl ? arenaEl.offsetWidth : 800;
             const sc = W / 1600;
             const HW = 110 * sc;
-            const pX  = ((game.player?._homeX ?? 120)  * sc) + HW;
-            const cX  = ((game.cpu?._homeX    ?? 1400) * sc) + HW;
+            const pX  = (_visualPos(game.player?._homeX ?? 120)  * sc) + HW;
+            const cX  = (_visualPos(game.cpu?._homeX    ?? 1400) * sc) + HW;
             const gap = Math.abs(cX - pX);
-            _camZoom = Math.min(1.55, W / Math.max(1, gap + 500));
-            // _camPanX repurposed as origin X percentage (fighters' midpoint)
-            _camPanX = Math.max(5, Math.min(95, ((pX + cX) / 2) / W * 100));
-            const origin  = `${_camPanX.toFixed(2)}% 100%`;
-            const zStr    = _camZoom.toFixed(4);
+            const midX = (pX + cX) / 2;
+            _camZoom   = Math.min(1.55, W / Math.max(1, gap + 500));
+            const idealT = W / 2 - midX * _camZoom;
+            _camTransX   = Math.max(W * (1 - _camZoom), Math.min(0, idealT));
+            const zStr = _camZoom.toFixed(4);
+            const tStr = _camTransX.toFixed(2);
             const worldEl = document.getElementById('arena-world');
-            if (worldEl) { worldEl.style.transformOrigin = origin; worldEl.style.transform = `scale(${zStr})`; }
+            if (worldEl) { worldEl.style.transformOrigin = '0 100%'; worldEl.style.transform = `translateX(${tStr}px) scale(${zStr})`; }
             const bgEl = document.getElementById('arena-bg');
-            if (bgEl)    { bgEl.style.transformOrigin = origin;    bgEl.style.transform    = `scale(${zStr})`; }
+            if (bgEl)    { bgEl.style.transformOrigin = '0 100%';   bgEl.style.transform    = `translateX(${tStr}px) scale(${zStr})`; }
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -16568,35 +16640,34 @@
             const bgEl    = document.getElementById('arena-bg');
             if (worldEl) { worldEl.style.transform = ''; worldEl.style.transformOrigin = ''; }
             if (bgEl)    { bgEl.style.transform    = ''; bgEl.style.transformOrigin    = ''; }
-            _camZoom = 1.0; _camPanX = 50;
+            _camZoom = 1.0; _camTransX = 0;
         }
 
         // Smoothly lerps the camera back to the neutral state then stops the RAF.
         // Used when the player disables the follow camera mid-battle.
         function stopArenaCameraSmooth() {
             if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
-            const worldEl = document.getElementById('arena-world');
-            const bgEl    = document.getElementById('arena-bg');
-            const DURATION = 350;
+            const worldEl   = document.getElementById('arena-world');
+            const bgEl      = document.getElementById('arena-bg');
+            const DURATION  = 350;
             const startZoom = _camZoom;
-            const t0 = performance.now();
+            const startTx   = _camTransX;
+            const t0   = performance.now();
             const ease = t => 1 - (1 - t) * (1 - t); // ease-out quad
-            // Keep the current origin during the zoom-out so fighters stay anchored
-            const origin = `${_camPanX.toFixed(2)}% 100%`;
-            if (worldEl) worldEl.style.transformOrigin = origin;
-            if (bgEl)    bgEl.style.transformOrigin    = origin;
             function step(now) {
-                const t = Math.min((now - t0) / DURATION, 1);
-                const z = startZoom + (1.0 - startZoom) * ease(t);
+                const t    = Math.min((now - t0) / DURATION, 1);
+                const z    = startZoom + (1.0 - startZoom) * ease(t);
+                const tx   = startTx   + (0    - startTx)   * ease(t);
                 const zStr = z.toFixed(4);
-                if (worldEl) worldEl.style.transform = `scale(${zStr})`;
-                if (bgEl)    bgEl.style.transform    = `scale(${zStr})`;
+                const tStr = tx.toFixed(2);
+                if (worldEl) worldEl.style.transform = `translateX(${tStr}px) scale(${zStr})`;
+                if (bgEl)    bgEl.style.transform    = `translateX(${tStr}px) scale(${zStr})`;
                 if (t < 1) { _camRaf = requestAnimationFrame(step); return; }
                 if (worldEl) { worldEl.style.transform = ''; worldEl.style.transformOrigin = ''; }
                 if (bgEl)    { bgEl.style.transform    = ''; bgEl.style.transformOrigin    = ''; }
                 _camRaf = null;
             }
-            _camZoom = 1.0; _camPanX = 50;
+            _camZoom = 1.0; _camTransX = 0;
             _camRaf = requestAnimationFrame(step);
         }
         // ─────────────────────────────────────────────────────────────────────────
@@ -17771,6 +17842,8 @@
         function updateLobbyCharacterDisplay() {
             syncGlobalsFromChar(getSelectedCharacter());
             const character = getSelectedCharacter();
+            // Empty-state: hide all lobby UI except the "+" button when no characters exist.
+            document.getElementById('main-menu').classList.toggle('lobby-empty', characters.length === 0);
             const nameEl = document.getElementById('menu-character-name');
             const levelEl = document.getElementById('menu-character-level');
             const statsEl = document.getElementById('menu-character-stats');
