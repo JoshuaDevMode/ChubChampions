@@ -8943,20 +8943,20 @@
         .menu-upgrade-stats::after {
             content: '';
             position: absolute;
-            width: 32px; height: 3px;
+            width: 18px; height: 3px;
             top: 0; left: 0;
             border-radius: 3px;
             background: linear-gradient(to right, transparent 0%, rgba(200,255,220,0.4) 20%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,1.0) 100%);
             filter: drop-shadow(0 0 4px rgba(255,255,255,1.0)) drop-shadow(0 0 10px rgba(160,255,180,1.0)) drop-shadow(0 0 18px rgba(100,220,130,0.7));
-            offset-path: inset(2px round 5px);
+            offset-path: inset(2px round 13px);
             offset-rotate: auto;
-            animation: orbitBorder 2s linear infinite;
+            animation: orbitBorder 1.6s linear infinite;
             transform: none;
             pointer-events: none;
             z-index: 10;
         }
         .menu-upgrade-stats::before { animation-delay: 0s; }
-        .menu-upgrade-stats::after  { animation-delay: -1s; }
+        .menu-upgrade-stats::after  { animation-delay: -0.8s; }
 
         /* ── Victory chest slot ── */
         .victory-chest-slot.filled.chest-ready {
@@ -14336,6 +14336,8 @@
             character.maxHp += option.hp || 0;
             // Award 1 skill point per level up
             character.skillPoints = (character.skillPoints || 0) + 1;
+            // Track stat model history (one letter per level-up choice)
+            if (option.key) character.statModel = (character.statModel || '') + option.key;
             saveCharacters();
             syncCharacterToBackend(character);
         }
@@ -15601,6 +15603,7 @@
                         morale: character.morale ?? 100,
                         lastMoraleTimestamp: character.lastMoraleTimestamp || null,
                     },
+                    stat_model: character.statModel || null,
                 }),
             }).then(r => {
                 if (r.ok) console.log('[sync] character synced ok:', character.name);
@@ -18272,6 +18275,8 @@
                     if (data.newLevel) character.level = data.newLevel;
                     // Award skill point
                     character.skillPoints = (character.skillPoints || 0) + 1;
+                    // Track stat model history locally (server already saved it; keep local in sync)
+                    if (savedOption?.key) character.statModel = (character.statModel || '') + savedOption.key;
                     saveCharacters();
                     // Sync to DB so the new level/stats are persisted even if the server apply
                     // wrote them — this ensures local and remote stay in agreement.
