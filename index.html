@@ -15671,6 +15671,8 @@
                             local.minigameDailyPurchases = sc.minigameDailyPurchases || 0;
                             local.minigamePurchaseDate   = sc.minigamePurchaseDate   || '';
                             local.shopFragmentDate       = sc.shopFragmentDate       || '';
+                            // Restore stat model history from server (source of truth)
+                            if (sc.statModel) local.statModel = sc.statModel;
                             // If DB has no pending level-up, remove any stale queued entries.
                             // Guards against localStorage entries left over from failed/falsely-
                             // triggered level-ups (e.g. offline fallback when no real level-up occurred).
