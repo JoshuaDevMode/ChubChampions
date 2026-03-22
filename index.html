@@ -2411,13 +2411,13 @@
             margin-bottom: 1px;
         }
         .power-pip {
-            width: 26px;
+            width: calc(100% - 2px);
             height: 22px;
             border-radius: 5px;
             border: 1.5px solid rgba(255,255,255,0.12);
             background: rgba(0,0,0,0.4);
             color: rgba(255,255,255,0.25);
-            font-size: 0.58em;
+            font-size: 0.55em;
             font-family: 'Fredoka', sans-serif;
             font-weight: 700;
             letter-spacing: 0.03em;
@@ -2428,6 +2428,11 @@
             transition: background 0.15s, border-color 0.15s, color 0.15s;
             user-select: none;
             line-height: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: 0 3px;
+            position: relative;
         }
         .power-pip:hover:not(.pip-locked) {
             filter: brightness(1.2);
@@ -2445,6 +2450,32 @@
         .power-pip.pip-locked {
             opacity: 0.3;
             cursor: not-allowed;
+        }
+        /* Custom dark tooltip */
+        .power-pip[data-tip]::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8,8,8,0.95);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 7px;
+            padding: 6px 10px;
+            font-size: 1.6em;
+            font-weight: 400;
+            white-space: pre-line;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 999;
+            width: 160px;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .power-pip[data-tip]:hover::after {
+            opacity: 1;
         }
 
         .menu-character-winrate {
@@ -8469,16 +8500,17 @@
 
         /* Victory Chest Container */
         .victory-chest-container {
-            background: rgba(0,0,0,0.55);
-            border: 1px solid #5a3d0a;
-            border-top: 1px solid #8a6318;
-            border-radius: 8px;
-            padding: 10px 14px;
+            background: none;
+            border: 14px solid transparent;
+            border-image-source: url('/ChubChampions/assets/stone-frame-BKALqHrC.png');
+            border-image-slice: 15% fill;
+            border-image-width: 14px;
+            border-image-repeat: stretch;
+            padding: 4px 10px 8px;
             pointer-events: auto;
             z-index: 5;
             width: 100%;
             box-sizing: border-box;
-            box-shadow: 0 0 14px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,180,0,0.05);
         }
 
         .victory-chest-label {
@@ -9180,10 +9212,13 @@
         /* XP Boost widget */
         .xp-boost-container {
             width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,235,59,0.35);
-            border-radius: 8px;
-            padding: 8px 12px;
+            background: none;
+            border: 14px solid transparent;
+            border-image-source: url('/ChubChampions/assets/stone-frame-BKALqHrC.png');
+            border-image-slice: 15% fill;
+            border-image-width: 14px;
+            border-image-repeat: stretch;
+            padding: 4px 10px 8px;
             pointer-events: auto;
             z-index: 5;
             box-sizing: border-box;
@@ -10913,7 +10948,7 @@
                         <div class="elem-guide-card" data-element="water" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
                             <div class="elem-guide-icon">💧</div>
                             <div class="elem-guide-name">WATER</div>
-                            <div class="elem-guide-passive">+1.5% HP Regen/turn</div>
+                            <div class="elem-guide-passive">+0.2% HP Regen/turn</div>
                             <div class="elem-guide-fury">Fury scales with ENE</div>
                             <div class="elem-guide-stats">✦ ENE &amp; HP</div>
                             <div class="elem-guide-divider"></div>
@@ -12347,7 +12382,7 @@
             const passiveEnabled = getFuryPassiveEnabled(character);
             const choice         = getFuryPowerChoice(character); // respects level gating
 
-            row.style.display = '';
+            row.style.display = 'none'; // always hidden — pips in left column are the UI
             row.querySelector('.fury-power-label').innerHTML =
                 `<span style="color:${color};">${icon}</span> FURY:`;
 
@@ -12413,23 +12448,24 @@
 
             // ── Left-column pips ─────────────────────────────────────────────
             if (col) {
-                const passClass = passiveLocked ? 'pip-on pip-locked'
+                const passClass = passiveLocked ? 'pip-off pip-locked'
                                 : passiveEnabled ? 'pip-on' : 'pip-off';
                 const p1Class   = !p1Unlocked ? 'pip-locked'
                                 : choice === 'p1' ? 'pip-on' : 'pip-off';
                 const p2Class   = !p2Unlocked ? 'pip-locked'
                                 : choice === 'p2' ? 'pip-on' : 'pip-off';
 
-                const passTitle = passiveLocked ? `Passive unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}`
-                                : passiveEnabled ? 'Passive: ON — click to disable' : 'Passive: OFF — click to enable';
-                const p1Title   = p1Unlocked ? `${powers.p1.name}: ${powers.p1.desc}` : `${powers.p1.name} — unlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}`;
-                const p2Title   = p2Unlocked ? `${powers.p2.name}: ${powers.p2.desc}` : `${powers.p2.name} — unlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}`;
+                const passLabel = 'PASSIVE';
+                const passData  = passiveLocked ? `Unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}`
+                                : passiveEnabled ? `Passive: ON\nClick to disable` : `Passive: OFF\nClick to enable`;
+                const p1Data    = p1Unlocked ? `${powers.p1.name}\n${powers.p1.desc}` : `${powers.p1.name}\nUnlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}`;
+                const p2Data    = p2Unlocked ? `${powers.p2.name}\n${powers.p2.desc}` : `${powers.p2.name}\nUnlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}`;
 
                 col.innerHTML = `
-                    <span class="elem-powers-icon" title="${icon} ${elemD.label || ''}" style="color:${color};">${icon}</span>
-                    <button class="power-pip ${passClass}" onclick="toggleFuryPassive()" title="${passTitle}">P</button>
-                    <button class="power-pip ${p1Class}" onclick="selectFuryPower('p1')" title="${p1Title}">1</button>
-                    <button class="power-pip ${p2Class}" onclick="selectFuryPower('p2')" title="${p2Title}">2</button>`;
+                    <span class="elem-powers-icon" style="color:${color};">${icon}</span>
+                    <button class="power-pip ${passClass}" onclick="toggleFuryPassive()" data-tip="${passData}">${passLabel}</button>
+                    <button class="power-pip ${p1Class}" onclick="selectFuryPower('p1')" data-tip="${p1Data}">${powers.p1.name}</button>
+                    <button class="power-pip ${p2Class}" onclick="selectFuryPower('p2')" data-tip="${p2Data}">${powers.p2.name}</button>`;
             }
         }
 
@@ -16834,8 +16870,10 @@
                         attackerEl.style.setProperty('transition', 'none', 'important'); // freeze — overrides .dashing !important
                         attackerEl.style.transform = '';
                         if (!isCpuAtt) {
+                            attackerEl.style.right = 'auto';
                             attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
                         } else {
+                            attackerEl.style.left  = 'auto';
                             attackerEl.style.right = ((arenaW - runTarget - r0W) / arenaW * 100) + '%';
                         }
                         res();
@@ -23494,9 +23532,25 @@
         }
 
 
+        // Pending sleep resolvers — flushed when the tab is hidden so all sleep()-based
+        // sequences (loading screen, battle animations) fast-forward in background.
+        const _sleepPending = new Set();
         function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+            return new Promise(resolve => {
+                // Tab already hidden — resolve immediately so sequences don't stall.
+                if (document.hidden) { resolve(); return; }
+                const tid = setTimeout(() => { _sleepPending.delete(resolve); resolve(); }, ms);
+                resolve._tid = tid;
+                _sleepPending.add(resolve);
+            });
         }
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) return;
+            // Tab just hidden — flush any in-flight sleep so it doesn't block.
+            const pending = [..._sleepPending];
+            _sleepPending.clear();
+            for (const res of pending) { clearTimeout(res._tid); res(); }
+        });
 
         // Max frame size for extracted sprites (display is 220px, 512 gives 2x+ retina quality)
         const MAX_FRAME_SIZE = 512;
@@ -28111,13 +28165,29 @@
             document.getElementById('char-options-popup').classList.remove('active');
             showInputModal('✏️ NEW NAME', character.name, (newName) => {
                 const trimmedName = sanitizeName(newName);
-                if (trimmedName.length > 0) {
-                    showConfirm('⚠️ CHANGE NAME', `Change name to "${trimmedName}"?`, () => {
+                if (trimmedName.length < 2) return;
+                showConfirm('✏️ CHANGE NAME', `Rename to "${trimmedName}"?\nCosts 🪙4 tokens`, async () => {
+                    const session = getPlayerSession();
+                    if (!session) return;
+                    try {
+                        const resp = await fetch(`${BACKEND_URL}/api/character/rename`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                            body: JSON.stringify({ playerId: session.playerId, characterId: character.id, newName: trimmedName }),
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            showNotice(data.error || 'Could not rename character');
+                            return;
+                        }
                         character.name = trimmedName;
                         saveCharacters();
+                        if (data.newTokens !== undefined) { globalTokens = data.newTokens; updateCurrencyUI(); }
                         updateLobbyCharacterDisplay();
-                    });
-                }
+                    } catch (e) {
+                        showNotice('Network error — try again');
+                    }
+                });
             });
         });
 
