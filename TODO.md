@@ -417,10 +417,9 @@ ALTER TABLE players ADD COLUMN IF NOT EXISTS total_paid_rerolls      integer not
 
 ---
 
-## 💬 Discusión — Wall Bounce + Corner Pressure (próxima sesión)
+## ✅ Wall Bounce + Corner Pressure — Implementado
 
-> **NOTA: esto es una discusión de diseño, no un cambio implementado.**
-> Acordado en sesión 2026-03-16 — implementar en la próxima sesión.
+> Acordado en sesión 2026-03-16, implementado y verificado en sesión 2026-03-22.
 
 ### Idea general
 Cuando un personaje es arrojado por un combo finisher y su knockback lo lleva hasta el borde
