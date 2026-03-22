@@ -12608,7 +12608,7 @@
         const SHOP_COOLDOWN        = 24 * 60 * 60 * 1000; // 24h cooldown per shop item
         const MINIGAME_ITEM_IDS    = ['punching_bag', 'jump_training'];
         const MINIGAME_DAILY_LIMIT = 3;   // combined across both minigame items
-        const ITEM_DAILY_LIMIT     = 10;  // per individual item for all other purchasable items
+        const ITEM_DAILY_LIMIT     = 2;   // per individual item for all other purchasable items
         let minigamePurchaseDate   = '';
         let minigameDailyPurchases = 0;
         let itemPurchaseDate       = '';
@@ -24815,7 +24815,6 @@
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character first!'); return; }
             if (getItemPurchasesRemaining(id) <= 0) { showNotice('Daily limit reached for this item! (2/day)'); return; }
-            if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             const wItem = WELLNESS_ITEMS[id];
             if (!wItem || globalTokens < wItem.price) { showNotice('Not enough tokens!'); return; }
 
@@ -24825,7 +24824,6 @@
             const today = new Date().toDateString();
             if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
             itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
-            shopItemCooldowns[id] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(id);
             syncGlobalsToChar(character);
@@ -24863,7 +24861,6 @@
                 showNotice(isMinigameItem ? 'Daily minigame limit reached! (3/day)' : 'Daily limit reached for this item! (2/day)');
                 return;
             }
-            if (getItemCooldownRemaining(id) > 0) { showNotice('This item is on cooldown!'); return; }
             const mItem = MORALE_ITEMS[id];
             if (!mItem || globalTokens < mItem.price) { showNotice('Not enough tokens!'); return; }
 
@@ -24877,7 +24874,6 @@
             } else {
                 if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
                 itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
-                shopItemCooldowns[id] = Date.now();
             }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
@@ -24896,7 +24892,6 @@
             if (!item) { showNotice('Unknown item!'); return null; }
             if ((character.wellness ?? 100) >= WELLNESS_MAX) { showNotice('Fighter is already at full condition!'); return null; }
             if (getItemPurchasesRemaining(itemId) <= 0) { showNotice('Daily limit reached for this item! (2/day)'); return null; }
-            if (getItemCooldownRemaining(itemId) > 0) { showNotice('This item is on cooldown!'); return null; }
             if (globalTokens < item.price) { showNotice('Not enough tokens!'); return null; }
 
             // Ensure character exists in Supabase BEFORE spend, so the UPDATE on
@@ -24909,7 +24904,6 @@
             const today = new Date().toDateString();
             if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
             itemDailyPurchases[itemId] = (itemDailyPurchases[itemId] || 0) + 1;
-            shopItemCooldowns[itemId] = Date.now();
             if (!character.wellnessItems) character.wellnessItems = [];
             character.wellnessItems.push(itemId);
             syncGlobalsToChar(character);
@@ -24991,7 +24985,6 @@
                 showNotice(isMinigame ? 'Daily minigame limit reached! (3/day)' : 'Daily limit reached for this item! (2/day)');
                 return null;
             }
-            if (!isMinigame && getItemCooldownRemaining(id) > 0) { showNotice('This activity is on cooldown!'); return null; }
             if (globalTokens < mItem.price) { showNotice('Not enough tokens!'); return null; }
 
             // Ensure character exists in Supabase BEFORE spend
@@ -25008,7 +25001,6 @@
             } else {
                 if (itemPurchaseDate !== today) { itemPurchaseDate = today; itemDailyPurchases = {}; }
                 itemDailyPurchases[id] = (itemDailyPurchases[id] || 0) + 1;
-                shopItemCooldowns[id] = Date.now();
             }
             if (!character.moraleItems) character.moraleItems = [];
             character.moraleItems.push(id);
