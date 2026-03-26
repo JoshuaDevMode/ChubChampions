@@ -333,6 +333,20 @@
             transition: all 0.15s ease;
             z-index: 5;
         }
+        .fighter-name-label {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+            letter-spacing: 0.5px;
+        }
 
         .fighter-body {
             width: 100%;
@@ -11656,6 +11670,7 @@
             <div id="arena-bg"></div>
             <div id="arena-world">
             <div class="fighter" id="player">
+                <span class="fighter-name-label" id="player-name-label"></span>
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -11664,6 +11679,7 @@
             </div>
 
             <div class="fighter" id="cpu">
+                <span class="fighter-name-label" id="cpu-name-label"></span>
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -17491,6 +17507,8 @@
             cfAttEl.style.right = 'auto';
             await sleep(240);
             cfAttEl.style.transition = '';
+            // Sync facing after combo finisher — positions may have crossed over
+            _syncFacingDirection();
             await sleep(280);
         }
 
@@ -18155,6 +18173,7 @@
                     if (event.playerX !== undefined) {
                         game.player._homeX = event.playerX;
                         game.cpu._homeX    = event.cpuX;
+                        _syncFacingDirection();
                     }
                 }
                 // Anti-air knockback: push the aerial attacker (defender in event) to new position
@@ -18170,7 +18189,7 @@
                         void kbEl.offsetWidth;
                         kbEl.style.left  = _kbTargetX + 'px';
                         kbEl.style.right = 'auto';
-                        setTimeout(() => { kbEl.style.transition = ''; }, 240);
+                        setTimeout(() => { kbEl.style.transition = ''; _syncFacingDirection(); }, 240);
                     }
                 }
                 await sleep(isComboFirst ? Math.round(70 * atkMult) : Math.round(300 * Math.max(0.35, atkMult)));
@@ -19537,6 +19556,11 @@
             void game.player.element.offsetWidth; // force reflow before restoring transitions
             game.player.element.style.transition = '';
             game.cpu.element.style.transition    = '';
+            // Set fighter name labels above sprites
+            const _pLabel = document.getElementById('player-name-label');
+            const _cLabel = document.getElementById('cpu-name-label');
+            if (_pLabel) _pLabel.textContent = character.name || 'Fighter';
+            if (_cLabel) _cLabel.textContent = currentCpuName || 'CPU';
             // Start camera now that _homeX and element positions are correct
             if (_cameraEnabled) startArenaCamera();
             // Reset stamina to full and start progressive fill animation
@@ -20981,6 +21005,7 @@
                                 if (_grNewX !== null && _grNewX !== undefined) {
                                     game.player._homeX = event.playerX;
                                     game.cpu._homeX    = event.cpuX;
+                                    _syncFacingDirection();
                                 }
                                 // Animate target sliding to new server position
                                 if (_grNewX !== null && _grNewX !== undefined) {
