@@ -335,9 +335,10 @@
         }
         .fighter-name-label {
             position: absolute;
-            top: -8px;
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
+            margin-bottom: 2px;
             font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             color: #fff;
@@ -347,6 +348,10 @@
             z-index: 10;
             letter-spacing: 0.5px;
         }
+        /* Counter scaleX on labels so text stays readable when sprite is flipped */
+        #cpu .fighter-name-label { transform: translateX(-50%) scaleX(-1); }
+        #player.facing-flipped .fighter-name-label { transform: translateX(-50%) scaleX(-1); }
+        #cpu.facing-flipped .fighter-name-label { transform: translateX(-50%) scaleX(1); }
 
         .fighter-body {
             width: 100%;
@@ -11649,7 +11654,6 @@
             <div id="arena-bg"></div>
             <div id="arena-world">
             <div class="fighter" id="player">
-                <span class="fighter-name-label" id="player-name-label"></span>
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="Player">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -11658,7 +11662,6 @@
             </div>
 
             <div class="fighter" id="cpu">
-                <span class="fighter-name-label" id="cpu-name-label"></span>
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="Assets/Player/Movement/Character.png" class="character-png" alt="CPU">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -19555,11 +19558,15 @@
             void game.player.element.offsetWidth; // force reflow before restoring transitions
             game.player.element.style.transition = '';
             game.cpu.element.style.transition    = '';
-            // Set fighter name labels above sprites
-            const _pLabel = document.getElementById('player-name-label');
-            const _cLabel = document.getElementById('cpu-name-label');
-            if (_pLabel) _pLabel.textContent = character.name || 'Fighter';
-            if (_cLabel) _cLabel.textContent = currentCpuName || 'CPU';
+            // Set fighter name labels above sprites (inside .fighter-body so they track the visible sprite)
+            for (const who of ['player', 'cpu']) {
+                const body = game[who].element.querySelector('.fighter-body');
+                body.querySelector('.fighter-name-label')?.remove();
+                const label = document.createElement('span');
+                label.className = 'fighter-name-label';
+                label.textContent = who === 'player' ? (character.name || 'Fighter') : (currentCpuName || 'CPU');
+                body.appendChild(label);
+            }
             // Start camera now that _homeX and element positions are correct
             if (_cameraEnabled) startArenaCamera();
             // Reset stamina to full and start progressive fill animation
