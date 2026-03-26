@@ -348,10 +348,6 @@
             z-index: 10;
             letter-spacing: 0.5px;
         }
-        /* Counter scaleX on labels so text stays readable when sprite is flipped */
-        #cpu .fighter-name-label { transform: translateX(-50%) scaleX(-1); }
-        #player.facing-flipped .fighter-name-label { transform: translateX(-50%) scaleX(-1); }
-        #cpu.facing-flipped .fighter-name-label { transform: translateX(-50%) scaleX(1); }
 
         .fighter-body {
             width: 100%;
@@ -17253,6 +17249,13 @@
             const onLeft = _playerIsOnLeft();
             game.player.element.classList.toggle('facing-flipped', !onLeft);
             game.cpu.element.classList.toggle('facing-flipped', !onLeft);
+            // Clear leftover inline transforms on character sprites so the
+            // CSS facing-flipped class is not overridden by higher-specificity
+            // inline styles left behind by attack/jump animations.
+            const pImg = game.player.element.querySelector('img.character-png');
+            const cImg = game.cpu.element.querySelector('img.character-png');
+            if (pImg) pImg.style.transform = '';
+            if (cImg) cImg.style.transform = '';
         }
 
         // Sets --push-dir CSS variable on a fighter-body so block/hit pushback
@@ -18241,13 +18244,14 @@
             } else {
                 // Last hit (or solo attack): run back to starting corner
                 animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
-                // Deferred rotation reset after jump attack — flip when starting return run
+                // Deferred rotation reset after jump attack — clear inline transform
+                // so CSS facing-flipped class takes over after _syncFacingDirection().
                 if (attackerEl._jumpReturn) {
-                    const { img: jImg, isCpu: jIsCpu } = attackerEl._jumpReturn;
+                    const { img: jImg } = attackerEl._jumpReturn;
                     delete attackerEl._jumpReturn;
                     if (jImg) {
                         jImg.style.transition = 'transform 0.12s ease-out';
-                        jImg.style.transform = (jIsCpu === _playerIsOnLeft()) ? 'scaleX(-1)' : '';
+                        jImg.style.transform = '';
                         setTimeout(() => { jImg.style.transition = ''; }, 150);
                     }
                 }
