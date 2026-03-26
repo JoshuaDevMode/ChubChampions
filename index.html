@@ -4563,6 +4563,200 @@
             margin-left: 4px;
         }
 
+        /* ==================== VAULT PANEL ==================== */
+        .vault-panel {
+            position: absolute;
+            top: 0; right: 0;
+            width: 420px; height: 100%;
+            box-sizing: border-box;
+            background: none;
+            border: 40px solid transparent;
+            border-image-source: url('/ChubChampions/assets/window-frame-oxBsLhjF.png');
+            border-image-slice: 15% fill;
+            border-image-width: 40px;
+            border-image-repeat: stretch;
+            z-index: 1100;
+            display: flex; flex-direction: column;
+            padding: 10px;
+            transform: translateX(440px);
+            transition: transform 0.5s ease;
+            font-size: 18px;
+        }
+        .vault-panel.active { transform: translateX(0); }
+
+        .vault-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .vault-title { font-family: 'Fredoka', sans-serif; font-size: 1.2em; color: #60a5fa; text-shadow: 2px 2px 0 #000; }
+        .vault-close { font-size: 2em; color: #fff; cursor: pointer; line-height: 1; }
+        .vault-close:hover { color: #60a5fa; }
+
+        .vault-balances {
+            display: flex; gap: 12px; justify-content: center; align-items: center;
+            margin-bottom: 12px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;
+        }
+        .vault-bal-item { font-family: 'Fredoka', sans-serif; font-size: 0.7em; text-align: center; }
+        .vault-bal-label { color: #888; font-size: 0.8em; margin-bottom: 2px; }
+        .vault-bal-value { color: #fbbf24; font-size: 1.1em; }
+        .vault-bal-divider { width: 1px; height: 30px; background: #333; }
+
+        .vault-chain-selector {
+            display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;
+        }
+        .vault-chain-btn {
+            font-family: 'Fredoka', sans-serif; font-size: 0.6em; padding: 6px 16px;
+            border: 2px solid #333; border-radius: 8px; background: #111; color: #888;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .vault-chain-btn.active-sol { border-color: #14f195; color: #14f195; background: rgba(20,241,149,0.1); }
+        .vault-chain-btn.active-mon { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.1); }
+        .vault-chain-btn:hover:not(.active-sol):not(.active-mon) { border-color: #555; color: #bbb; }
+
+        .vault-tabs { display: flex; gap: 4px; margin-bottom: 10px; padding: 0 4px; }
+        .vault-tab {
+            font-family: 'Fredoka', sans-serif; font-size: 0.65em; padding: 6px 12px;
+            border: 1px solid #333; border-radius: 6px 6px 0 0; background: #111;
+            color: #888; cursor: pointer; transition: all 0.15s; flex: 1; text-align: center;
+        }
+        .vault-tab.active { border-color: #60a5fa; color: #60a5fa; background: #0a1628; }
+        .vault-tab:hover:not(.active) { border-color: #555; color: #bbb; }
+
+        .vault-content { flex: 1; overflow-y: auto; padding: 0 4px; }
+
+        .vault-form {
+            display: flex; flex-direction: column; gap: 10px; padding: 10px;
+            background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .vault-form-label { font-family: 'Fredoka', sans-serif; font-size: 0.6em; color: #aaa; }
+        .vault-form-input {
+            font-family: 'Fredoka', sans-serif; font-size: 0.7em; padding: 8px 12px;
+            border: 2px solid #333; border-radius: 8px; background: #111; color: #fff;
+            text-align: center; outline: none; transition: border-color 0.2s;
+        }
+        .vault-form-input:focus { border-color: #60a5fa; }
+        .vault-form-input::placeholder { color: #555; }
+
+        .vault-amount-presets {
+            display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;
+        }
+        .vault-preset-btn {
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em; padding: 4px 10px;
+            border: 1px solid #333; border-radius: 6px; background: #1a1a1a;
+            color: #aaa; cursor: pointer; transition: all 0.15s;
+        }
+        .vault-preset-btn:hover { border-color: #60a5fa; color: #60a5fa; }
+
+        .vault-action-btn {
+            font-family: 'Fredoka', sans-serif; font-size: 0.7em; padding: 10px;
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+        }
+        .vault-action-btn.deposit-btn {
+            background: linear-gradient(to bottom, #22c55e, #16a34a); color: #fff;
+            box-shadow: 0 3px 0 #15803d;
+        }
+        .vault-action-btn.deposit-btn:hover { background: linear-gradient(to bottom, #4ade80, #22c55e); transform: translateY(-1px); }
+        .vault-action-btn.deposit-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #15803d; }
+
+        .vault-action-btn.withdraw-btn {
+            background: linear-gradient(to bottom, #f59e0b, #d97706); color: #fff;
+            box-shadow: 0 3px 0 #92400e;
+        }
+        .vault-action-btn.withdraw-btn:hover { background: linear-gradient(to bottom, #fbbf24, #f59e0b); transform: translateY(-1px); }
+        .vault-action-btn.withdraw-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #92400e; }
+
+        .vault-action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        .vault-info-box {
+            font-family: 'Fredoka', sans-serif; font-size: 0.55em; color: #888;
+            background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px;
+            line-height: 1.4; text-align: center;
+        }
+        .vault-info-box .vault-limit { color: #fbbf24; }
+
+        .vault-status {
+            font-family: 'Fredoka', sans-serif; font-size: 0.6em; text-align: center;
+            padding: 6px; border-radius: 6px; margin-top: 6px;
+        }
+        .vault-status.success { color: #22c55e; background: rgba(34,197,94,0.1); }
+        .vault-status.error { color: #ef4444; background: rgba(239,68,68,0.1); }
+        .vault-status.pending { color: #fbbf24; background: rgba(251,191,36,0.1); }
+
+        .vault-wallet-warn {
+            font-family: 'Fredoka', sans-serif; font-size: 0.6em; color: #f97316;
+            text-align: center; padding: 20px 10px;
+        }
+
+        /* ── Token Pack Cards ──────────────────────────────────────────── */
+        .vault-packs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .vault-pack-card {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .vault-pack-card:hover {
+            border-color: #60a5fa;
+            background: rgba(96,165,250,0.08);
+        }
+        .vault-pack-card.selected {
+            border-color: #22c55e;
+            background: rgba(34,197,94,0.12);
+            box-shadow: 0 0 10px rgba(34,197,94,0.3);
+        }
+        .vault-pack-badge {
+            font-size: 1.2em;
+            margin-bottom: 2px;
+            min-height: 1.4em;
+        }
+        .vault-pack-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45em;
+            color: #c4b5fd;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .vault-pack-chub {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.85em;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        .vault-pack-price {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.7em;
+            color: #fff;
+            margin-top: 3px;
+        }
+        .vault-pack-usd {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.5em;
+            color: #666;
+            margin-top: 1px;
+        }
+        /* Last two packs in 3-col grid: center them */
+        .vault-packs-grid .vault-pack-card:nth-child(4) {
+            grid-column: 1 / 2;
+            justify-self: end;
+        }
+        .vault-packs-grid .vault-pack-card:nth-child(5) {
+            grid-column: 2 / 4;
+            justify-self: start;
+        }
+
+        .vault-preset-btn.active {
+            border-color: #22c55e;
+            color: #22c55e;
+            background: rgba(34,197,94,0.1);
+        }
+
         .menu-btn-create {
             background: linear-gradient(to bottom, #f59e0b, #d97706);
             box-shadow: 0 4px 0 #92400e, 0 8px 20px rgba(0,0,0,0.5);
@@ -4660,6 +4854,54 @@
             margin-top: 20px;
             border-left: 3px solid #ef4444;
             padding-left: 8px;
+        }
+
+        /* Entry Type Toggle */
+        .aon-entry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .aon-entry-btn {
+            background: linear-gradient(160deg, #1a1008 0%, #0e0a04 100%);
+            border: 1px solid #3a2a10;
+            border-bottom: 3px solid #0a0804;
+            border-radius: 8px;
+            color: #886644;
+            font-size: 1.05em;
+            font-weight: bold;
+            padding: 14px 8px;
+            cursor: pointer;
+            transition: all 0.18s;
+            font-family: inherit;
+            text-shadow: 0 1px 0 #000;
+        }
+        .aon-entry-btn:hover:not(.disabled) {
+            border-color: #b03020;
+            color: #ffcc88;
+            background: linear-gradient(160deg, #32180a 0%, #1c0e04 100%);
+        }
+        .aon-entry-btn.selected {
+            border-color: #ef4444;
+            border-bottom-color: #7f1d1d;
+            background: linear-gradient(160deg, #7f1d1d 0%, #5a0d0d 100%);
+            color: #ffddcc;
+            box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,120,100,0.12);
+            text-shadow: 0 0 10px rgba(255,140,100,0.5), 0 1px 0 #000;
+        }
+        .aon-entry-btn.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .aon-entry-soon {
+            display: block;
+            font-size: 0.65em;
+            font-weight: normal;
+            color: #665544;
+            letter-spacing: 1px;
+            margin-top: 2px;
         }
 
         /* Fee Buttons */
@@ -10275,7 +10517,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/ChubChampions/assets/index-CR5-rX_T.js"></script>
+  <script type="module" crossorigin src="/ChubChampions/assets/index-Y_4eLXJc.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -10322,6 +10564,7 @@
                 <button class="top-nav-btn btn-shine" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn btn-shine" id="menu-wardrobe-btn">👘 WARDROBE</button>
                 <button class="top-nav-btn btn-shine" id="menu-leaderboard-btn">🏆 RANKING</button>
+                <button class="top-nav-btn btn-shine" id="menu-vault-btn" style="color:#60a5fa">🏦 VAULT</button>
             </div>
             <div class="top-currency-group">
                 <span class="currency-item" id="currency-tokens">🪙 0</span>
@@ -10684,6 +10927,44 @@
         <div class="shop-grid" id="shop-grid"></div>
     </div>
 
+    <!-- Vault Panel (deposit/withdraw CHUB) -->
+    <div class="vault-panel" id="vault-panel">
+        <div class="vault-header">
+            <div class="vault-title">🏦 CHUB VAULT</div>
+            <span class="vault-close" id="vault-close">&times;</span>
+        </div>
+
+        <!-- Balances -->
+        <div class="vault-balances">
+            <div class="vault-bal-item">
+                <div class="vault-bal-label">IN-GAME</div>
+                <div class="vault-bal-value" id="vault-ingame-bal">🪙 0</div>
+            </div>
+            <div class="vault-bal-divider"></div>
+            <div class="vault-bal-item">
+                <div class="vault-bal-label">ON-CHAIN</div>
+                <div class="vault-bal-value" id="vault-onchain-bal">-- CHUB</div>
+            </div>
+        </div>
+
+        <!-- Chain selector -->
+        <div class="vault-chain-selector">
+            <button class="vault-chain-btn active-sol" id="vault-chain-sol" data-chain="solana">◎ SOLANA</button>
+            <button class="vault-chain-btn" id="vault-chain-mon" data-chain="monad">⬡ MONAD</button>
+        </div>
+
+        <!-- Buy / Deposit / Withdraw tabs -->
+        <div class="vault-tabs">
+            <div class="vault-tab active" id="vault-tab-buy" data-tab="buy">BUY</div>
+            <div class="vault-tab" id="vault-tab-deposit" data-tab="deposit">DEPOSIT</div>
+            <div class="vault-tab" id="vault-tab-withdraw" data-tab="withdraw">WITHDRAW</div>
+        </div>
+
+        <div class="vault-content" id="vault-content">
+            <!-- Filled dynamically by renderVault() -->
+        </div>
+    </div>
+
     <!-- CARE Panel -->
     <div class="care-panel" id="care-panel">
         <div class="care-container">
@@ -10753,6 +11034,11 @@
                 </div>
                 <!-- Create form -->
                 <div id="aon-pvp-create-form">
+                    <div class="aon-section-label">TIPO DE ENTRADA</div>
+                    <div class="aon-entry-grid">
+                        <button class="aon-entry-btn selected" data-entry="chub">🪙 CHUB</button>
+                        <button class="aon-entry-btn disabled" data-entry="native" id="aon-entry-native">⛓️ <span id="aon-native-label">MON</span><span class="aon-entry-soon">COMING SOON</span></button>
+                    </div>
                     <div class="aon-section-label">TOKENS A APOSTAR</div>
                     <div class="aon-fee-grid" id="aon-pvp-fee-grid">
                         <button class="aon-fee-btn aon-pvp-fee-btn" data-fee="10">🪙 10</button>
@@ -11870,41 +12156,41 @@
 
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
-            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 25, icon: '💊' },
-            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 6,  icon: '🍎' },
-            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 7,  icon: '🍌' },
-            marshmallow:    { name: 'Marshmallow',     category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 9,  icon: '🍬' },
-            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 10, icon: '🍫' },
-            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 11, icon: '🍗' },
-            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 14, icon: '🥩' },
-            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 18, icon: '🩹' },
-            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 24, icon: '🌿' },
-            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 30, icon: '💉' },
+            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 10, icon: '💊' },
+            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 1,  icon: '🍎' },
+            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 1,  icon: '🍌' },
+            marshmallow:    { name: 'Marshmallow',     category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 2,  icon: '🍬' },
+            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 2,  icon: '🍫' },
+            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 3,  icon: '🍗' },
+            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 4,  icon: '🥩' },
+            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 5,  icon: '🩹' },
+            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 7,  icon: '🌿' },
+            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 9,  icon: '💉' },
         };
 
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
         const BATTLE_CONSUMABLES = {
             // ── Original potions ──────────────────────────────────────
-            small_potion:    { name: 'Small Potion',   category: 'potion', healPercent: 0.22,                        icon: '🧪', price: 12 },
-            big_potion:      { name: 'Big Potion',     category: 'potion', healPercent: 0.28, hotTicks: 6,           icon: '⚗️', price: 16 },
-            stamina_potion:  { name: 'Energy Drink',   category: 'potion', staminaRestore: 0.50,                     icon: '⚡', price: 14 },
+            small_potion:    { name: 'Small Potion',   category: 'potion', healPercent: 0.22,                        icon: '🧪', price: 3 },
+            big_potion:      { name: 'Big Potion',     category: 'potion', healPercent: 0.28, hotTicks: 6,           icon: '⚗️', price: 5 },
+            stamina_potion:  { name: 'Energy Drink',   category: 'potion', staminaRestore: 0.50,                     icon: '⚡', price: 4 },
             // ── New instant heal ──────────────────────────────────────
-            minor_life_vial: { name: 'Minor Life Vial',category: 'potion', healPercent: 0.15,                        icon: '💊', price: 10 },
-            major_life_vial: { name: 'Major Life Vial',category: 'potion', healPercent: 0.40,                        icon: '🔴', price: 24 },
+            minor_life_vial: { name: 'Minor Life Vial',category: 'potion', healPercent: 0.15,                        icon: '💊', price: 2 },
+            major_life_vial: { name: 'Major Life Vial',category: 'potion', healPercent: 0.40,                        icon: '🔴', price: 7 },
             // ── New buff consumables ──────────────────────────────────
-            war_tonic:       { name: 'War Tonic',      category: 'buff',   dmgBoost: 0.20, buffTurns: 5,             icon: '⚔️', price: 18 },
-            stamina_brew:    { name: 'Stamina Brew',   category: 'buff',   staminaRegen: 0.12, buffTurns: 4,         icon: '💨', price: 15 },
-            fury_shard:      { name: 'Fury Shard',     category: 'buff',   furyBoost: 0.40,                          icon: '🔥', price: 20 },
-            iron_skin:       { name: 'Iron Skin',      category: 'buff',   defBoost: 0.25, buffTurns: 5,             icon: '🛡️', price: 18 },
-            mending_herb:    { name: 'Mending Herb',   category: 'buff',   hotPercent: 0.06, hotTicks: 8,            icon: '🌿', price: 14 },
+            war_tonic:       { name: 'War Tonic',      category: 'buff',   dmgBoost: 0.20, buffTurns: 5,             icon: '⚔️', price: 5 },
+            stamina_brew:    { name: 'Stamina Brew',   category: 'buff',   staminaRegen: 0.12, buffTurns: 4,         icon: '💨', price: 4 },
+            fury_shard:      { name: 'Fury Shard',     category: 'buff',   furyBoost: 0.40,                          icon: '🔥', price: 6 },
+            iron_skin:       { name: 'Iron Skin',      category: 'buff',   defBoost: 0.25, buffTurns: 5,             icon: '🛡️', price: 5 },
+            mending_herb:    { name: 'Mending Herb',   category: 'buff',   hotPercent: 0.06, hotTicks: 8,            icon: '🌿', price: 4 },
         };
         // Legacy alias — battle engine still references CONSUMABLES for heal logic
         const CONSUMABLES = BATTLE_CONSUMABLES;
         const CONSUMABLE_MIN_LEVEL = 5;
         const CONSUMABLE_SHOP_PRICES = {
-            small_potion: 12, big_potion: 16, stamina_potion: 14,
-            minor_life_vial: 10, major_life_vial: 24,
-            war_tonic: 18, stamina_brew: 15, fury_shard: 20, iron_skin: 18, mending_herb: 14,
+            small_potion: 3, big_potion: 5, stamina_potion: 4,
+            minor_life_vial: 2, major_life_vial: 7,
+            war_tonic: 5, stamina_brew: 4, fury_shard: 6, iron_skin: 5, mending_herb: 4,
         };
 
         // ===== WELLNESS SYSTEM CONSTANTS =====
@@ -11933,12 +12219,12 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 5,  icon: '🎵' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
-            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 13, icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 17, icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 28, icon: '👑' },
-            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🏃', interactive: true, maxStack: 3 },
+            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 1,  icon: '🎵' },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🥊', interactive: true, maxStack: 3 },
+            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 3,  icon: '📣' },
+            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 5,  icon: '🎬' },
+            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 8,  icon: '👑' },
+            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🏃', interactive: true, maxStack: 3 },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -12601,11 +12887,11 @@
             legendary: 16 * 60 * 60 * 1000  // 16 hours
         };
         const CHEST_TOKEN_COST = {
-            bronze:    3,
-            silver:    6,
-            gold:      12,
-            epic:      20,
-            legendary: 35
+            bronze:    1,
+            silver:    2,
+            gold:      4,
+            epic:      7,
+            legendary: 12
         };
         let globalCharactersCreated = 0;
         let winStreak = 0;
@@ -13953,7 +14239,7 @@
         const AON_EXP_PER_WIN_MAX = 60;
         const AON_EXP_PER_LOSS_MIN = 8;
         const AON_EXP_PER_LOSS_MAX = 15;
-        const DAILY_BATTLE_LIMIT = 50;
+        const DAILY_BATTLE_LIMIT = 10;
         const DAILY_CHEST_LIMIT = 8;
         const DAILY_AON_LIMIT = 3;
 
@@ -14309,6 +14595,13 @@
             return w > 10; // Critically Injured (0-10) = can't fight
         }
 
+        // Returns the number of pending level-ups queued for this character.
+        // Used to block matchmaking until the player applies their stat upgrades.
+        function getPendingLevelUpCount(character) {
+            if (!character) return 0;
+            return pendingLevelUps.filter(p => p.character && p.character.id === character.id).length;
+        }
+
         function addExpToCharacter(characterId, exp) {
             const character = characters.find(c => c.id === characterId);
             if (!character || character.level >= MAX_LEVEL) return { leveledUp: false };
@@ -14442,6 +14735,7 @@
         };
 
         const BACKEND_URL = 'https://chub-champions-backend.vercel.app';
+        const NATIVE_SYMBOL = 'MON'; // 'SOL' for Solana frontend
 
         // ── Session expired handler ───────────────────────────────────────────────
         let _handlingUnauthorized = false;
@@ -15039,6 +15333,783 @@
             await fetchWalletBalance();
         }
 
+        // ══════════════════════════════════════════════════════════════════════════
+        // ═══  CHUB VAULT — Deposit / Withdraw  ═══════════════════════════════════
+        // ══════════════════════════════════════════════════════════════════════════
+
+        // Vault contract address (Monad) — fill after deploy
+        const CHUB_VAULT_ADDRESS = ''; // e.g. '0x9876...'
+
+        // Minimal ABI for ChubVault (Monad)
+        const CHUB_VAULT_ABI = [
+            'function deposit(uint256 amount) external',
+            'function withdraw(uint256 amount, uint256 nonce, uint256 deadline, bytes sig) external',
+            'function claimHeldPayout() external',
+            'function nonces(address) external view returns (uint256)',
+            'function heldPayouts(address) external view returns (uint256)',
+            'event Deposited(address indexed user, uint256 amount)',
+            'event Withdrawn(address indexed user, uint256 amount, uint256 nonce)',
+        ];
+
+        // Solana vault program ID — fill after deploy
+        const CHUB_VAULT_SOLANA_PROGRAM = ''; // e.g. 'Vault111...'
+
+        let _vaultChain = 'solana'; // current selected chain in vault UI
+        let _vaultTab   = 'buy';
+        let _vaultCurrency = 'native'; // 'native' (SOL/MON), 'usdc', or 'ausd' (Monad only)
+
+        // ── Token Packs (Option B — $0.04/CHUB) ────────────────────────────
+        const TOKEN_PACKS = [
+            { id: 'starter', chub: 25,   usd: 0.99,  label: 'STARTER',  badge: '' },
+            { id: 'popular', chub: 80,   usd: 2.99,  label: 'POPULAR',  badge: '⭐' },
+            { id: 'value',   chub: 175,  usd: 4.99,  label: 'VALUE',    badge: '🔥' },
+            { id: 'pro',     chub: 400,  usd: 9.99,  label: 'PRO',      badge: '💎' },
+            { id: 'whale',   chub: 1000, usd: 19.99, label: 'WHALE',    badge: '🐋' },
+        ];
+
+        // Live crypto prices (USD) — fetched on vault open
+        let _cryptoPrices = { sol: 0, mon: 0 };
+        let _pricesFetched = 0; // timestamp of last fetch
+
+        // Stablecoin contract addresses (fill after deploy / for mainnet)
+        const USDC_MINT_SOLANA   = ''; // EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v (mainnet)
+        const USDC_ADDRESS_MONAD = ''; // ERC20 USDC on Monad
+        const AUSD_ADDRESS_MONAD = '0x00000000efe302beaa2b3e6e1b18d08d69a9012a'; // ERC20 aUSD (Agora) on Monad
+
+        async function _fetchCryptoPrices() {
+            // Cache for 5 minutes
+            if (Date.now() - _pricesFetched < 300000 && _cryptoPrices.sol > 0) return;
+            try {
+                const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                const data = await resp.json();
+                _cryptoPrices.sol = data.solana?.usd || 0;
+                // MON: use env/config price or fallback for testnet
+                // On mainnet, add monad to the CoinGecko query
+                _cryptoPrices.mon = _cryptoPrices.mon || 1; // testnet placeholder: 1 MON = $1
+                _pricesFetched = Date.now();
+            } catch(e) {
+                console.warn('[Vault] price fetch error:', e);
+            }
+        }
+
+        function _packCryptoPrice(pack, currency, chain) {
+            if (currency === 'usdc' || currency === 'ausd') return pack.usd; // stablecoins = $1
+            const price = chain === 'monad' ? _cryptoPrices.mon : _cryptoPrices.sol;
+            if (!price || price <= 0) return 0;
+            return +(pack.usd / price).toFixed(6);
+        }
+
+        // Exchange rates (CHUB per 1 native token) — kept for deposit/withdraw
+        const CHUB_RATE_MONAD  = 10000; // 1 MON = 10,000 CHUB
+        const CHUB_RATE_SOLANA = 10000; // 1 SOL = 10,000 CHUB
+
+        // Treasury wallets — fill after setup
+        const TREASURY_WALLET_MONAD  = ''; // 0x... address
+        const TREASURY_WALLET_SOLANA = ''; // base58 address
+
+        async function openVaultPanel() {
+            const panel = document.getElementById('vault-panel');
+            if (!panel) return;
+            // Auto-detect chain from wallet
+            const detected = _detectWalletChain();
+            if (detected) setVaultChain(detected);
+            panel.classList.add('active');
+            _refreshVaultBalances();
+            _selectedPackId = null;
+            // Fetch live crypto prices for pack display
+            await _fetchCryptoPrices();
+            renderVault();
+        }
+
+        function closeVaultPanel() {
+            document.getElementById('vault-panel')?.classList.remove('active');
+        }
+
+        function setVaultChain(chain) {
+            _vaultChain = chain;
+            // Update chain button styles
+            const solBtn = document.getElementById('vault-chain-sol');
+            const monBtn = document.getElementById('vault-chain-mon');
+            if (solBtn) { solBtn.className = 'vault-chain-btn' + (chain === 'solana' ? ' active-sol' : ''); }
+            if (monBtn) { monBtn.className = 'vault-chain-btn' + (chain === 'monad' ? ' active-mon' : ''); }
+            _refreshVaultBalances();
+            renderVault();
+        }
+
+        function setVaultTab(tab) {
+            _vaultTab = tab;
+            document.querySelectorAll('.vault-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            renderVault();
+        }
+
+        async function _refreshVaultBalances() {
+            // In-game balance
+            const igEl = document.getElementById('vault-ingame-bal');
+            if (igEl) igEl.textContent = '🪙 ' + globalTokens;
+
+            // On-chain CHUB balance
+            const ocEl = document.getElementById('vault-onchain-bal');
+            if (!ocEl) return;
+
+            if (!playerSession || !playerSession.wallet) {
+                ocEl.textContent = '-- CHUB';
+                return;
+            }
+
+            const addr = playerSession.wallet.trim();
+            ocEl.textContent = '...';
+
+            try {
+                if (_vaultChain === 'monad') {
+                    if (!CHUB_TOKEN_ADDRESS || !window.ethereum) { ocEl.textContent = '-- CHUB'; return; }
+                    // Read ERC20 balance via eth_call
+                    const balSig = '0x70a08231000000000000000000000000' + addr.slice(2).toLowerCase();
+                    let balHex = null;
+                    try {
+                        balHex = await window.ethereum.request({
+                            method: 'eth_call',
+                            params: [{ to: CHUB_TOKEN_ADDRESS, data: balSig }, 'latest'],
+                        });
+                    } catch(e) {}
+                    if (!balHex && MONAD_RPC_URL) {
+                        const r = await fetch(MONAD_RPC_URL, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_call', params: [{ to: CHUB_TOKEN_ADDRESS, data: balSig }, 'latest'], id: 1 }),
+                        });
+                        balHex = (await r.json()).result;
+                    }
+                    if (balHex) {
+                        const bal = parseInt(balHex, 16) / 1e18;
+                        ocEl.textContent = Math.floor(bal).toLocaleString() + ' CHUB';
+                    } else {
+                        ocEl.textContent = '-- CHUB';
+                    }
+                } else {
+                    // Solana — read SPL token balance
+                    if (!window.solanaWeb3) { ocEl.textContent = '-- CHUB'; return; }
+                    // TODO: Read actual SPL token account balance when mint is deployed
+                    ocEl.textContent = '-- CHUB';
+                }
+            } catch(e) {
+                console.warn('[Vault] balance fetch error:', e);
+                ocEl.textContent = '-- CHUB';
+            }
+        }
+
+        function renderVault() {
+            const content = document.getElementById('vault-content');
+            if (!content) return;
+
+            // Check wallet connection
+            if (!playerSession || !playerSession.wallet) {
+                content.innerHTML = `
+                    <div class="vault-wallet-warn">
+                        Connect your wallet in the 👘 WARDROBE panel to use the vault.
+                    </div>`;
+                return;
+            }
+
+            const chainLabel  = _vaultChain === 'monad' ? '⬡ Monad' : '◎ Solana';
+            const nativeSym   = _vaultChain === 'monad' ? 'MON' : 'SOL';
+            const rate        = _vaultChain === 'monad' ? CHUB_RATE_MONAD : CHUB_RATE_SOLANA;
+            const treasuryOk  = _vaultChain === 'monad' ? !!TREASURY_WALLET_MONAD : !!TREASURY_WALLET_SOLANA;
+
+            // ── BUY tab ───────────────────────────────────────────────────────────
+            if (_vaultTab === 'buy') {
+                if (!treasuryOk) {
+                    content.innerHTML = `
+                        <div class="vault-wallet-warn">
+                            ${chainLabel} token sale is not active yet.<br>
+                            <span style="font-size:0.85em;color:#666">Coming soon!</span>
+                        </div>`;
+                    return;
+                }
+                const hasEmbedded = window.__privyHasEmbeddedWallet?.(_vaultChain === 'monad' ? 'evm' : 'solana');
+                const hasExternal = _vaultChain === 'monad' ? !!window.ethereum : !!(window.solana || window.phantom?.solana);
+                const walletDefault = hasEmbedded ? 'embedded' : 'external';
+
+                const usdcAvailable = _vaultChain === 'monad' ? !!USDC_ADDRESS_MONAD : !!USDC_MINT_SOLANA;
+                const ausdAvailable = _vaultChain === 'monad' && !!AUSD_ADDRESS_MONAD;
+                const curSym = _vaultCurrency === 'usdc' ? 'USDC' : _vaultCurrency === 'ausd' ? 'aUSD' : nativeSym;
+                const priceReady = (_vaultCurrency === 'usdc' || _vaultCurrency === 'ausd') || (_cryptoPrices.sol > 0 || _cryptoPrices.mon > 0);
+                // Reset currency if switching chain and current currency isn't available
+                if (_vaultCurrency === 'ausd' && _vaultChain !== 'monad') _vaultCurrency = 'native';
+
+                // Build pack cards
+                let packsHTML = '';
+                for (const pack of TOKEN_PACKS) {
+                    const cryptoPrice = _packCryptoPrice(pack, _vaultCurrency, _vaultChain);
+                    const priceLabel = priceReady && cryptoPrice > 0
+                        ? `${cryptoPrice} ${curSym}`
+                        : `$${pack.usd.toFixed(2)}`;
+                    packsHTML += `
+                        <div class="vault-pack-card" onclick="selectPack('${pack.id}')" id="vault-pack-${pack.id}">
+                            <div class="vault-pack-badge">${pack.badge}</div>
+                            <div class="vault-pack-label">${pack.label}</div>
+                            <div class="vault-pack-chub">🪙 ${pack.chub.toLocaleString()}</div>
+                            <div class="vault-pack-price">${priceLabel}</div>
+                            <div class="vault-pack-usd">$${pack.usd.toFixed(2)} USD</div>
+                        </div>`;
+                }
+
+                content.innerHTML = `
+                    <div class="vault-form">
+                        <!-- Wallet selector -->
+                        <div class="vault-wallet-selector" style="display:flex;gap:6px;margin-bottom:8px;justify-content:center">
+                            <select id="vault-wallet-toggle" style="
+                                background:#1a1a2e;color:#c4b5fd;border:1px solid #333;border-radius:6px;
+                                padding:4px 8px;font-family:'Press Start 2P',monospace;font-size:0.55em;cursor:pointer;
+                            ">
+                                <option value="embedded" ${walletDefault === 'embedded' ? 'selected' : ''} ${!hasEmbedded ? 'disabled' : ''}>
+                                    🔐 Embedded Wallet
+                                </option>
+                                <option value="external" ${walletDefault === 'external' ? 'selected' : ''} ${!hasExternal ? 'disabled' : ''}>
+                                    🦊 External Wallet
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Currency toggle -->
+                        <div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap">
+                            <button class="vault-preset-btn${_vaultCurrency === 'native' ? ' active' : ''}" onclick="_vaultCurrency='native';_selectedPackId=null;renderVault()" style="font-size:0.55em;padding:4px 10px">
+                                ${nativeSym}
+                            </button>
+                            <button class="vault-preset-btn${_vaultCurrency === 'usdc' ? ' active' : ''}" onclick="_vaultCurrency='usdc';_selectedPackId=null;renderVault()" style="font-size:0.55em;padding:4px 10px" ${!usdcAvailable ? 'disabled title="USDC not available yet"' : ''}>
+                                USDC ${!usdcAvailable ? '(soon)' : ''}
+                            </button>
+                            ${_vaultChain === 'monad' ? `
+                            <button class="vault-preset-btn${_vaultCurrency === 'ausd' ? ' active' : ''}" onclick="_vaultCurrency='ausd';_selectedPackId=null;renderVault()" style="font-size:0.55em;padding:4px 10px" ${!ausdAvailable ? 'disabled title="aUSD not available yet"' : ''}>
+                                aUSD ${!ausdAvailable ? '(soon)' : ''}
+                            </button>` : ''}
+                        </div>
+
+                        <!-- Pack cards -->
+                        <div class="vault-packs-grid">
+                            ${packsHTML}
+                        </div>
+
+                        <button class="vault-action-btn deposit-btn" id="vault-buy-btn" onclick="vaultBuyPack()" disabled>
+                            SELECT A PACK
+                        </button>
+                        <div id="vault-buy-status"></div>
+                    </div>`;
+                return;
+            }
+
+            // ── DEPOSIT / WITHDRAW need vault contracts deployed ──────────────────
+            const contractReady = _vaultChain === 'monad'
+                ? (CHUB_VAULT_ADDRESS && CHUB_TOKEN_ADDRESS)
+                : (CHUB_VAULT_SOLANA_PROGRAM);
+
+            if (!contractReady) {
+                content.innerHTML = `
+                    <div class="vault-wallet-warn">
+                        ${chainLabel} vault is not deployed yet.<br>
+                        <span style="font-size:0.85em;color:#666">Coming soon!</span>
+                    </div>`;
+                return;
+            }
+
+            // ── DEPOSIT tab ───────────────────────────────────────────────────────
+            if (_vaultTab === 'deposit') {
+                content.innerHTML = `
+                    <div class="vault-form">
+                        <div class="vault-form-label">DEPOSIT CHUB (on-chain → in-game)</div>
+                        <input type="number" class="vault-form-input" id="vault-deposit-amount"
+                               placeholder="Amount" min="10" step="1">
+                        <div class="vault-amount-presets">
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=100">100</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=1000">1K</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=10000">10K</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=100000">100K</button>
+                        </div>
+                        <button class="vault-action-btn deposit-btn" id="vault-deposit-btn" onclick="vaultDeposit()">
+                            DEPOSIT TO GAME
+                        </button>
+                        <div class="vault-info-box">
+                            Burns CHUB from your ${chainLabel} wallet and credits your in-game balance.<br>
+                            Min: <span class="vault-limit">10 CHUB</span> · Max: <span class="vault-limit">1,000,000 CHUB</span>
+                        </div>
+                        <div id="vault-deposit-status"></div>
+                    </div>`;
+            }
+
+            // ── WITHDRAW tab ──────────────────────────────────────────────────────
+            if (_vaultTab === 'withdraw') {
+                content.innerHTML = `
+                    <div class="vault-form">
+                        <div class="vault-form-label">WITHDRAW CHUB (in-game → on-chain)</div>
+                        <input type="number" class="vault-form-input" id="vault-withdraw-amount"
+                               placeholder="Amount" min="10" step="1">
+                        <div class="vault-amount-presets">
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=100">100</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=1000">1K</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=10000">10K</button>
+                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=''+globalTokens">MAX</button>
+                        </div>
+                        <button class="vault-action-btn withdraw-btn" id="vault-withdraw-btn" onclick="vaultWithdraw()">
+                            WITHDRAW TO WALLET
+                        </button>
+                        <div class="vault-info-box">
+                            Deducts from your in-game balance and mints CHUB to your ${chainLabel} wallet.<br>
+                            Min: <span class="vault-limit">10 CHUB</span> · Max: <span class="vault-limit">500,000 CHUB</span> · Daily: <span class="vault-limit">1,000,000 CHUB</span>
+                        </div>
+                        <div id="vault-withdraw-status"></div>
+                    </div>`;
+            }
+        }
+
+        function _vaultStatus(elId, msg, type) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.className = 'vault-status ' + type;
+            el.textContent = msg;
+        }
+
+        // ── Monad Deposit (EVM via ethers.js) ───────────────────────────────────
+        async function _monadDeposit(amount) {
+            if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected. Install MetaMask.');
+
+            const provider = new window.ethers.BrowserProvider(window.ethereum);
+            const signer   = await provider.getSigner();
+            const amountWei = window.ethers.parseUnits(String(amount), 18);
+
+            // No approve needed — vault calls ChubToken.spend() as an authorized contract
+            const vault = new window.ethers.Contract(CHUB_VAULT_ADDRESS, CHUB_VAULT_ABI, signer);
+
+            _vaultStatus('vault-deposit-status', 'Sending deposit transaction...', 'pending');
+            const depTx = await vault.deposit(amountWei);
+            _vaultStatus('vault-deposit-status', 'Waiting for deposit confirmation...', 'pending');
+            const receipt = await depTx.wait();
+
+            return receipt.hash;
+        }
+
+        // ── Solana Deposit ──────────────────────────────────────────────────────
+        async function _solanaDeposit(amount) {
+            // Requires Phantom or similar wallet
+            const provider = window.solana || window.phantom?.solana;
+            if (!provider || !provider.isPhantom) throw new Error('Install Phantom wallet for Solana deposits.');
+
+            // TODO: Build Anchor instruction to call chub-vault deposit(amount)
+            // This requires the deployed program IDL and mint address
+            throw new Error('Solana vault not yet deployed. Coming soon!');
+        }
+
+        // ── Deposit Flow ────────────────────────────────────────────────────────
+        // ── Buy CHUB with native currency ──────────────────────────────────────
+        // ── Send MON via EVM (embedded Privy or external MetaMask) ─────────
+        async function _sendMonad(nativeAmount, treasury) {
+            if (!window.ethers) throw new Error('ethers.js not loaded.');
+
+            // Try Privy embedded wallet first, fall back to external (MetaMask)
+            let eip1193;
+            const useEmbedded = document.getElementById('vault-wallet-toggle')?.value !== 'external';
+            if (useEmbedded && window.__privyGetEvmProvider) {
+                eip1193 = await window.__privyGetEvmProvider();
+            }
+            if (!eip1193) {
+                if (!window.ethereum) throw new Error('No EVM wallet detected. Connect MetaMask or use your embedded wallet.');
+                eip1193 = window.ethereum;
+            }
+
+            const provider = new window.ethers.BrowserProvider(eip1193);
+            const signer = await provider.getSigner();
+            const weiValue = window.ethers.parseEther(String(nativeAmount));
+
+            _vaultStatus('vault-buy-status', 'Sending ' + nativeAmount + ' MON...', 'pending');
+            const tx = await signer.sendTransaction({ to: treasury, value: weiValue });
+            _vaultStatus('vault-buy-status', 'Waiting for confirmation...', 'pending');
+            const receipt = await tx.wait();
+            return receipt.hash;
+        }
+
+        // ── Send SOL via Solana (embedded Privy or external Phantom) ─────
+        async function _sendSolana(nativeAmount, treasury) {
+            if (!window.solanaWeb3) throw new Error('Solana Web3 not loaded.');
+
+            const conn = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
+            const toPubkey = new solanaWeb3.PublicKey(treasury);
+            const lamports = Math.round(nativeAmount * 1e9);
+
+            // Try Privy embedded wallet first, fall back to external (Phantom)
+            const useEmbedded = document.getElementById('vault-wallet-toggle')?.value !== 'external';
+            let privySolWallet = null;
+            if (useEmbedded && window.__privyGetSolanaWallet) {
+                privySolWallet = window.__privyGetSolanaWallet();
+            }
+
+            if (privySolWallet) {
+                // Privy embedded Solana wallet — use its address + sendTransaction
+                const fromPubkey = new solanaWeb3.PublicKey(privySolWallet.address);
+                const tx = new solanaWeb3.Transaction().add(
+                    solanaWeb3.SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+                );
+                tx.feePayer = fromPubkey;
+                tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+
+                _vaultStatus('vault-buy-status', 'Sending ' + nativeAmount + ' SOL...', 'pending');
+                const sig = await privySolWallet.sendTransaction(tx, conn);
+                _vaultStatus('vault-buy-status', 'Waiting for confirmation...', 'pending');
+                await conn.confirmTransaction(sig, 'confirmed');
+                return sig;
+            }
+
+            // External wallet (Phantom etc.)
+            const solProvider = window.solana || window.phantom?.solana;
+            if (!solProvider) throw new Error('No Solana wallet detected. Connect Phantom or use your embedded wallet.');
+
+            const fromPubkey = new solanaWeb3.PublicKey(playerSession.wallet);
+            const tx = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+            );
+            tx.feePayer = fromPubkey;
+            tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+
+            _vaultStatus('vault-buy-status', 'Sending ' + nativeAmount + ' SOL...', 'pending');
+            const signed = await solProvider.signTransaction(tx);
+            const sig = await conn.sendRawTransaction(signed.serialize());
+            _vaultStatus('vault-buy-status', 'Waiting for confirmation...', 'pending');
+            await conn.confirmTransaction(sig, 'confirmed');
+            return sig;
+        }
+
+        // ── Send USDC (ERC20 on Monad / SPL on Solana) ──────────────────
+        async function _sendStablecoin(amount, treasury) {
+            // Both USDC and aUSD have 6 decimals
+            const decimals = 6;
+            if (_vaultChain === 'monad') {
+                const tokenAddr = _vaultCurrency === 'ausd' ? AUSD_ADDRESS_MONAD : USDC_ADDRESS_MONAD;
+                const tokenLabel = _vaultCurrency === 'ausd' ? 'aUSD' : 'USDC';
+                if (!tokenAddr) throw new Error(tokenLabel + ' not available on Monad yet');
+                let eip1193;
+                const useEmbedded = document.getElementById('vault-wallet-toggle')?.value !== 'external';
+                if (useEmbedded && window.__privyGetEvmProvider) {
+                    eip1193 = await window.__privyGetEvmProvider();
+                }
+                if (!eip1193) {
+                    if (!window.ethereum) throw new Error('No EVM wallet detected.');
+                    eip1193 = window.ethereum;
+                }
+                const provider = new window.ethers.BrowserProvider(eip1193);
+                const signer = await provider.getSigner();
+                const token = new window.ethers.Contract(tokenAddr, [
+                    'function transfer(address to, uint256 amount) external returns (bool)',
+                ], signer);
+
+                const rawAmount = BigInt(Math.round(amount * 10 ** decimals));
+                _vaultStatus('vault-buy-status', 'Sending ' + amount + ' ' + tokenLabel + '...', 'pending');
+                const tx = await token.transfer(treasury, rawAmount);
+                _vaultStatus('vault-buy-status', 'Waiting for confirmation...', 'pending');
+                const receipt = await tx.wait();
+                return receipt.hash;
+            } else {
+                // Solana SPL USDC transfer (raw instructions, no @solana/spl-token needed)
+                if (!USDC_MINT_SOLANA) throw new Error('USDC not available on Solana yet');
+                if (!window.solanaWeb3) throw new Error('Solana Web3 not loaded.');
+
+                const conn = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
+                const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+                const ATA_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+                const mintPubkey = new solanaWeb3.PublicKey(USDC_MINT_SOLANA);
+                const toPubkey = new solanaWeb3.PublicKey(treasury);
+
+                // Derive Associated Token Accounts
+                function deriveATA(owner, mint) {
+                    return solanaWeb3.PublicKey.findProgramAddressSync(
+                        [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+                        ATA_PROGRAM_ID
+                    )[0];
+                }
+
+                // Get sender wallet
+                const useEmbedded = document.getElementById('vault-wallet-toggle')?.value !== 'external';
+                let privySolWallet = null;
+                if (useEmbedded && window.__privyGetSolanaWallet) {
+                    privySolWallet = window.__privyGetSolanaWallet();
+                }
+                const senderAddr = privySolWallet
+                    ? privySolWallet.address
+                    : playerSession.wallet;
+                const fromPubkey = new solanaWeb3.PublicKey(senderAddr);
+
+                const senderATA = deriveATA(fromPubkey, mintPubkey);
+                const treasuryATA = deriveATA(toPubkey, mintPubkey);
+
+                const rawAmount = BigInt(Math.round(amount * 10 ** decimals));
+
+                // Build transfer instruction (SPL Token transferChecked)
+                // Layout: [instruction_type(1), amount(8), decimals(1)]
+                const dataBuffer = new ArrayBuffer(10);
+                const view = new DataView(dataBuffer);
+                view.setUint8(0, 12); // transferChecked instruction index
+                // Write amount as u64 little-endian
+                const lo = Number(rawAmount & 0xFFFFFFFFn);
+                const hi = Number((rawAmount >> 32n) & 0xFFFFFFFFn);
+                view.setUint32(1, lo, true);
+                view.setUint32(5, hi, true);
+                view.setUint8(9, decimals);
+
+                const transferIx = new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: senderATA,   isSigner: false, isWritable: true },
+                        { pubkey: mintPubkey,   isSigner: false, isWritable: false },
+                        { pubkey: treasuryATA,  isSigner: false, isWritable: true },
+                        { pubkey: fromPubkey,   isSigner: true,  isWritable: false },
+                    ],
+                    programId: TOKEN_PROGRAM_ID,
+                    data: Buffer.from(new Uint8Array(dataBuffer)),
+                });
+
+                // Check if treasury ATA exists, if not add create instruction
+                const treasuryATAInfo = await conn.getAccountInfo(treasuryATA);
+                const tx = new solanaWeb3.Transaction();
+                if (!treasuryATAInfo) {
+                    // Create ATA instruction (payer = sender)
+                    tx.add(new solanaWeb3.TransactionInstruction({
+                        keys: [
+                            { pubkey: fromPubkey,    isSigner: true,  isWritable: true },
+                            { pubkey: treasuryATA,   isSigner: false, isWritable: true },
+                            { pubkey: toPubkey,      isSigner: false, isWritable: false },
+                            { pubkey: mintPubkey,    isSigner: false, isWritable: false },
+                            { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                        ],
+                        programId: ATA_PROGRAM_ID,
+                        data: Buffer.alloc(0),
+                    }));
+                }
+                tx.add(transferIx);
+                tx.feePayer = fromPubkey;
+                tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+
+                _vaultStatus('vault-buy-status', 'Sending ' + amount + ' USDC...', 'pending');
+
+                let sig;
+                if (privySolWallet) {
+                    sig = await privySolWallet.sendTransaction(tx, conn);
+                } else {
+                    const solProvider = window.solana || window.phantom?.solana;
+                    if (!solProvider) throw new Error('No Solana wallet detected.');
+                    const signed = await solProvider.signTransaction(tx);
+                    sig = await conn.sendRawTransaction(signed.serialize());
+                }
+                _vaultStatus('vault-buy-status', 'Waiting for confirmation...', 'pending');
+                await conn.confirmTransaction(sig, 'confirmed');
+                return sig;
+            }
+        }
+
+        // ── Pack selection ───────────────────────────────────────────────
+        let _selectedPackId = null;
+
+        function selectPack(packId) {
+            _selectedPackId = packId;
+            // Highlight selected card
+            document.querySelectorAll('.vault-pack-card').forEach(c => c.classList.remove('selected'));
+            const card = document.getElementById('vault-pack-' + packId);
+            if (card) card.classList.add('selected');
+            // Enable buy button
+            const btn = document.getElementById('vault-buy-btn');
+            const pack = TOKEN_PACKS.find(p => p.id === packId);
+            if (btn && pack) {
+                btn.disabled = false;
+                const curSym = _vaultCurrency === 'ausd' ? 'aUSD' : _vaultCurrency === 'usdc' ? 'USDC' : (_vaultChain === 'monad' ? 'MON' : 'SOL');
+                const price = _packCryptoPrice(pack, _vaultCurrency, _vaultChain);
+                btn.textContent = `BUY ${pack.chub} CHUB — ${price} ${curSym}`;
+            }
+        }
+
+        // ── Main Buy Flow (pack-based) ──────────────────────────────────
+        async function vaultBuyPack() {
+            const pack = TOKEN_PACKS.find(p => p.id === _selectedPackId);
+            if (!pack) { _vaultStatus('vault-buy-status', 'Select a pack first', 'error'); return; }
+
+            const nativeAmount = _packCryptoPrice(pack, _vaultCurrency, _vaultChain);
+            if (!nativeAmount || nativeAmount <= 0) { _vaultStatus('vault-buy-status', 'Price unavailable — try again', 'error'); return; }
+
+            const treasury = _vaultChain === 'monad' ? TREASURY_WALLET_MONAD : TREASURY_WALLET_SOLANA;
+            if (!treasury) { _vaultStatus('vault-buy-status', 'Treasury not configured', 'error'); return; }
+
+            const btn = document.getElementById('vault-buy-btn');
+            if (btn) btn.disabled = true;
+
+            try {
+                let txHash;
+                if (_vaultCurrency === 'usdc' || _vaultCurrency === 'ausd') {
+                    txHash = await _sendStablecoin(nativeAmount, treasury);
+                } else {
+                    txHash = _vaultChain === 'monad'
+                        ? await _sendMonad(nativeAmount, treasury)
+                        : await _sendSolana(nativeAmount, treasury);
+                }
+
+                // Notify backend to credit CHUB
+                _vaultStatus('vault-buy-status', 'Verifying purchase...', 'pending');
+
+                const headers = await getAuthHeaders();
+                const resp = await fetch(BACKEND_URL + '/api/tokens/buy', {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        txHash,
+                        walletAddress: playerSession.wallet,
+                        chain: _vaultChain,
+                        packId: pack.id,
+                        currency: _vaultCurrency,
+                    }),
+                });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    globalTokens = data.newTokens;
+                    updateCurrencyUI();
+                    _refreshVaultBalances();
+                    _vaultStatus('vault-buy-status', '+' + data.tokensCredited.toLocaleString() + ' CHUB added to your balance!', 'success');
+                    _selectedPackId = null;
+                } else {
+                    _vaultStatus('vault-buy-status', data.error || 'Purchase verification failed', 'error');
+                }
+            } catch(e) {
+                console.error('[Vault buy]', e);
+                _vaultStatus('vault-buy-status', e.message || 'Purchase failed', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // ── Deposit CHUB (on-chain → in-game) ──────────────────────────────────
+        async function vaultDeposit() {
+            const amountInput = document.getElementById('vault-deposit-amount');
+            const amount = Math.floor(Number(amountInput?.value || 0));
+
+            if (amount < 10) { _vaultStatus('vault-deposit-status', 'Minimum deposit is 10 CHUB', 'error'); return; }
+            if (amount > 1000000) { _vaultStatus('vault-deposit-status', 'Maximum deposit is 1,000,000 CHUB', 'error'); return; }
+
+            const btn = document.getElementById('vault-deposit-btn');
+            if (btn) btn.disabled = true;
+
+            try {
+                let txHash;
+                if (_vaultChain === 'monad') {
+                    txHash = await _monadDeposit(amount);
+                } else {
+                    txHash = await _solanaDeposit(amount);
+                }
+
+                // Notify backend to credit in-game tokens
+                _vaultStatus('vault-deposit-status', 'Verifying deposit on-chain...', 'pending');
+
+                const headers = await getAuthHeaders();
+                const resp = await fetch(BACKEND_URL + '/api/tokens/deposit', {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        playerId: playerSession.oddsId || playerSession.oddsid,
+                        txHash,
+                        walletAddress: playerSession.wallet,
+                        chain: _vaultChain,
+                    }),
+                });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    globalTokens = data.newTokens;
+                    updateCurrencyUI();
+                    _vaultStatus('vault-deposit-status', '+' + data.tokensCredited + ' CHUB credited to your game balance!', 'success');
+                    _refreshVaultBalances();
+                } else {
+                    _vaultStatus('vault-deposit-status', data.error || 'Deposit verification failed', 'error');
+                }
+            } catch(e) {
+                console.error('[Vault deposit]', e);
+                _vaultStatus('vault-deposit-status', e.message || 'Deposit failed', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // ── Withdraw Flow ───────────────────────────────────────────────────────
+        async function vaultWithdraw() {
+            const amountInput = document.getElementById('vault-withdraw-amount');
+            const amount = Math.floor(Number(amountInput?.value || 0));
+
+            if (amount < 10) { _vaultStatus('vault-withdraw-status', 'Minimum withdrawal is 10 CHUB', 'error'); return; }
+            if (amount > 500000) { _vaultStatus('vault-withdraw-status', 'Maximum withdrawal is 500,000 CHUB', 'error'); return; }
+            if (amount > globalTokens) { _vaultStatus('vault-withdraw-status', 'Not enough in-game tokens', 'error'); return; }
+
+            const btn = document.getElementById('vault-withdraw-btn');
+            if (btn) btn.disabled = true;
+
+            try {
+                // Step 1: Request signed permit from backend
+                _vaultStatus('vault-withdraw-status', 'Requesting withdrawal permit...', 'pending');
+
+                const headers = await getAuthHeaders();
+                const resp = await fetch(BACKEND_URL + '/api/tokens/withdraw', {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        playerId: playerSession.oddsId || playerSession.oddsid,
+                        amount,
+                        walletAddress: playerSession.wallet,
+                        chain: _vaultChain,
+                    }),
+                });
+                const data = await resp.json();
+
+                if (!data.ok) {
+                    _vaultStatus('vault-withdraw-status', data.error || 'Withdraw request failed', 'error');
+                    return;
+                }
+
+                // Update in-game balance immediately (backend already deducted)
+                globalTokens = data.newTokens;
+                updateCurrencyUI();
+                _refreshVaultBalances();
+
+                // Step 2: Execute on-chain transaction with the signed permit
+                if (_vaultChain === 'monad') {
+                    await _monadWithdraw(data);
+                } else {
+                    await _solanaWithdraw(data);
+                }
+
+                _vaultStatus('vault-withdraw-status', amount + ' CHUB minted to your wallet!', 'success');
+                _refreshVaultBalances();
+
+            } catch(e) {
+                console.error('[Vault withdraw]', e);
+                _vaultStatus('vault-withdraw-status', e.message || 'Withdrawal failed', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // ── Monad Withdraw (EVM via ethers.js) ──────────────────────────────────
+        async function _monadWithdraw(permitData) {
+            if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
+
+            const provider = new window.ethers.BrowserProvider(window.ethereum);
+            const signer   = await provider.getSigner();
+            const vault    = new window.ethers.Contract(CHUB_VAULT_ADDRESS, CHUB_VAULT_ABI, signer);
+
+            const { signature, nonce, deadline, amountWei } = permitData;
+
+            _vaultStatus('vault-withdraw-status', 'Sending withdrawal transaction...', 'pending');
+            const tx = await vault.withdraw(BigInt(amountWei), BigInt(nonce), BigInt(deadline), signature);
+            _vaultStatus('vault-withdraw-status', 'Waiting for confirmation...', 'pending');
+            await tx.wait();
+        }
+
+        // ── Solana Withdraw ─────────────────────────────────────────────────────
+        async function _solanaWithdraw(permitData) {
+            const provider = window.solana || window.phantom?.solana;
+            if (!provider || !provider.isPhantom) throw new Error('Install Phantom wallet for Solana withdrawals.');
+
+            // TODO: Build tx with Ed25519 verify instruction + vault withdraw CPI
+            // Requires deployed program IDL and accounts setup
+            throw new Error('Solana vault not yet deployed. Coming soon!');
+        }
+
         function loadCharacters() {
             try {
                 const saved = localStorage.getItem('fightchub_characters');
@@ -15335,8 +16406,9 @@
         const AON_ESCROW_ABI = [
             'function createRoom(uint256 entryFee, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, uint8 element, uint16 adaptability, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig) external returns (uint256)',
             'function joinRoom(uint256 roomId, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, uint8 element, uint16 adaptability, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig, bytes32 userSeedHash) external payable',
+            'function joinCrossChain(uint256 foreignRoomId, uint256 entryFee, uint8 entryType, address token, tuple(uint32 level, uint32 maxHp, tuple(uint32 attack, uint32 strength, uint32 agility, uint32 defense) stats, uint8 element, uint16 adaptability, bytes skillsPacked, uint8[2] consumables, uint8[5] weapons) charData, uint64 expiry, bytes backendSig) external payable',
             'function getEntropyFee() external view returns (uint256)',
-            'function getRoom(uint256 roomId) external view returns (address p1, address p2, uint256 entryFee, uint8 state, uint64 createdAt, uint64 p2JoinedAt)',
+            'function getRoom(uint256 roomId) external view returns (address p1, address p2, uint256 entryFee, uint8 entryType, uint8 state, uint32 seed, uint64 createdAt)',
             'event RoomCreated(uint256 indexed roomId, address indexed p1, uint256 entryFee)',
             'event P2Joined(uint256 indexed roomId, address indexed p2, uint64 entropySeq)',
             'event MatchResolved(uint256 indexed roomId, address indexed winner, uint256 payout, uint32 turns)',
@@ -15526,8 +16598,8 @@
             const escrow   = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, provider);
             const deadline = Date.now() + timeoutMs;
             while (Date.now() < deadline) {
-                const [,, , state] = await escrow.getRoom(roomId);
-                if (Number(state) === 2 || Number(state) === 3) {
+                const [,, , , state] = await escrow.getRoom(roomId);
+                if (Number(state) === 3) { // Resolved
                     // Resolved or CircuitHold — read MatchResolved event from recent logs
                     const filter = escrow.filters.MatchResolved(roomId);
                     const logs   = await escrow.queryFilter(filter, -200);
@@ -15689,10 +16761,20 @@
                             local.morale              = sc.morale              ?? local.morale ?? 100;
                             local.lastMoraleTimestamp = sc.lastMoraleTimestamp ?? local.lastMoraleTimestamp ?? null;
                             local.moraleItems         = sc.moraleItems         ?? local.moraleItems ?? [];
-                            // If DB has no pending level-up, remove any stale queued entries.
-                            // Guards against localStorage entries left over from failed/falsely-
-                            // triggered level-ups (e.g. offline fallback when no real level-up occurred).
-                            if (!sc.hasPendingLevelUp) {
+                            // Pending level-up reconciliation:
+                            // If DB has a pending level-up, show effective level (DB+1) and
+                            // restore the level-up UI if localStorage lost it (refresh, new browser).
+                            if (sc.hasPendingLevelUp) {
+                                local.level = sc.level + 1; // display effective level
+                                const alreadyQueued = pendingLevelUps.some(p => p.character && p.character.id === sc.id);
+                                if (!alreadyQueued) {
+                                    console.log(`[fetchChars] restoring pending level-up for char ${sc.id} from server`);
+                                    fetchAndQueueLevelUp(local);
+                                }
+                            } else {
+                                // No pending level-up: remove any stale queued entries.
+                                // Guards against localStorage entries left over from failed/falsely-
+                                // triggered level-ups (e.g. offline fallback when no real level-up occurred).
                                 const before = pendingLevelUps.length;
                                 pendingLevelUps = pendingLevelUps.filter(p => !p.character || p.character.id !== sc.id);
                                 if (pendingLevelUps.length < before) {
@@ -16863,23 +17945,20 @@
                 // Save idle src
                 if (jaImg) jaImg._idleSrc = jaImg._idleSrc || jaImg.src;
 
-                // Common refs
+                // Common refs — use server coords (_homeX) scaled to arena, not getBoundingClientRect
                 const arenaEl   = document.getElementById('arena');
-                const zoom      = getGameZoom();
-                const arenaRect = arenaEl.getBoundingClientRect();
-                const defBodyEl = defenderEl.querySelector('.fighter-body') || defenderEl;
-                const defRect   = defBodyEl.getBoundingClientRect();
                 const arenaW    = arenaEl.offsetWidth;
-                const defCx     = (defRect.left - arenaRect.left) / zoom
-                                + (defRect.width / zoom) / 2;
+                const jaScale   = arenaW / 1600;
+                // Target: land at the defender's _homeX (server coords), offset by _ATCK_GAP
+                const defHomeX  = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
+                const jaGapSign = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
+                const defCx     = (defHomeX + jaGapSign * _ATCK_GAP) * jaScale + (attackerEl.offsetWidth / 2);
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
-                // ── Phase 1: run to screen center (≈280ms) ───────────────────
+                // ── Phase 1: run to arena center (≈280ms) ───────────────────
                 animateRun(attackerEl, false, null);
-                const r0Rect    = attackerEl.getBoundingClientRect();
-                const r0Left    = (r0Rect.left - arenaRect.left) / zoom;
-                const r0W       = r0Rect.width / zoom;
-                const runTarget = arenaW * 0.5 - r0W * 0.5;
+                const r0Left    = parseFloat(attackerEl.style.left) || 0;
+                const runTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
                 const runDelta  = runTarget - r0Left;
 
                 await new Promise(res => {
@@ -16889,15 +17968,10 @@
                         const t = Math.min((now - r0) / jaRunMs, 1);
                         attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
                         if (t < 1) { requestAnimationFrame(runStep); return; }
-                        attackerEl.style.setProperty('transition', 'none', 'important'); // freeze — overrides .dashing !important
+                        attackerEl.style.setProperty('transition', 'none', 'important');
                         attackerEl.style.transform = '';
-                        if (!isCpuAtt) {
-                            attackerEl.style.right = 'auto';
-                            attackerEl.style.left  = (runTarget / arenaW * 100) + '%';
-                        } else {
-                            attackerEl.style.left  = 'auto';
-                            attackerEl.style.right = ((arenaW - runTarget - r0W) / arenaW * 100) + '%';
-                        }
+                        attackerEl.style.left  = runTarget + 'px';
+                        attackerEl.style.right = 'auto';
                         res();
                     };
                     requestAnimationFrame(runStep);
@@ -16905,8 +17979,8 @@
                 stopRunAnimation(attackerEl);
                 if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
 
-                // ── Phase 2: jump arc from center to defender chest ───────────
-                const atkW   = attackerEl.getBoundingClientRect().width / zoom;
+                // ── Phase 2: jump arc from center to defender position ─────────
+                const atkW   = attackerEl.offsetWidth;
                 const atkCx  = runTarget + atkW / 2;
                 const deltaX = defCx - atkCx;
 
@@ -16941,11 +18015,17 @@
                 });
 
                 clearTimeout(peakTmr);
+                // Reset rotation on landing (character slams down straight)
+                if (jaImg) {
+                    jaImg.style.transition = 'transform 0.08s ease-out';
+                    jaImg.style.transform  = baseXform.trim() || '';
+                    setTimeout(() => { jaImg.style.transition = ''; }, 100);
+                }
                 // Restore CSS transition so the return run animates (was 'none' during RAF)
                 attackerEl.style.transition = '';
                 stopRunAnimation(attackerEl);
                 playFootstep();
-                // Defer rotation reset — character turns around only after returning to corner
+                // Defer facing flip — character turns around only after returning to corner
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else {
                 // Normal first hit: run from starting corner to opponent
@@ -18297,6 +19377,14 @@
                     character.skillPoints = (character.skillPoints || 0) + 1;
                     // Track stat model history locally (server already saved it; keep local in sync)
                     if (savedOption?.key) character.statModel = (character.statModel || '') + savedOption.key;
+                    // If accumulated EXP already qualifies for another level-up, the server
+                    // set pending_levelup back to true.  Bump local level for display and
+                    // fetch the next set of options so the player can chain level-ups.
+                    if (data.chainsLevelUp) {
+                        character.level = Math.min(MAX_LEVEL, character.level + 1);
+                        addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
+                        fetchAndQueueLevelUp(character);
+                    }
                     saveCharacters();
                     // Sync to DB so the new level/stats are persisted even if the server apply
                     // wrote them — this ensures local and remote stay in agreement.
@@ -22051,7 +23139,7 @@
                     </div>
                     ${levelUpNotice}
                     <div class="results-buttons">
-                        <button class="results-btn" id="results-play-again">PLAY AGAIN</button>
+                        ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -22327,6 +23415,11 @@
             if (!playerSession) return;
             const character = getSelectedCharacter();
             if (!character) { showNotice('Selecciona un personaje primero.'); return; }
+            const _pendingCount = getPendingLevelUpCount(character);
+            if (_pendingCount > 0) {
+                showNotice(`Apply your pending stat upgrade${_pendingCount > 1 ? 's' : ''} before fighting! (${_pendingCount} pending)`);
+                return;
+            }
             if (aonPvpFee <= 0) return;
 
             const btn = document.getElementById('aon-pvp-create-btn');
@@ -22428,7 +23521,9 @@
                             data-fee="${c.entryFee}"
                             data-rtw="${c.roundsToWin}"
                             data-cname="${c.challengerName}"
-                            data-pot="${pot}">
+                            data-pot="${pot}"
+                            data-chain="${c.chain || ''}"
+                            data-onchainroomid="${c.onChainRoomId || ''}">
                             UNIRSE
                         </button>
                     </div>`;
@@ -22438,11 +23533,57 @@
             }
         }
 
-        async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot) {
+        async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot, chain, onChainRoomId) {
             if (!playerSession) return;
             const character = getSelectedCharacter();
             if (!character) { showNotice('Selecciona un personaje para unirte al desafío.'); return; }
 
+            // ── Detect cross-chain scenario ─────────────────────────────────────
+            // P2's chain is determined by which wallet is available
+            const p2HasEvm    = !!window.ethereum;
+            const p2HasSolana = !!window.solana?.isPhantom;
+            const p2Chain     = (FIGHTCHUB_AON_SOLANA_PROGRAM_ID && p2HasSolana) ? 'solana'
+                              : (AON_ESCROW_ADDRESS && p2HasEvm) ? 'monad'
+                              : null;
+
+            const isCrossChain = chain && p2Chain && chain !== p2Chain && onChainRoomId;
+
+            if (isCrossChain) {
+                // Cross-chain on-chain join
+                const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+                showConfirm(
+                    '⚔️ CROSS-CHAIN CHALLENGE',
+                    `vs ${challengerName} (${chain.toUpperCase()})\nApuesta: 🪙 ${entryFee} — ${fmt}\nTu wallet: ${p2Chain.toUpperCase()}\n\nSe bloqueará tu apuesta en ${p2Chain.toUpperCase()} hasta que se resuelva la batalla.`,
+                    async () => {
+                        if (p2Chain === 'monad') {
+                            await aonJoinCrossChainFromMonad(character, onChainRoomId, entryFee, challengerName);
+                        } else {
+                            await aonJoinCrossChainFromSolana(character, onChainRoomId, entryFee, challengerName);
+                        }
+                    }
+                );
+                return;
+            }
+
+            // ── Same-chain on-chain join ────────────────────────────────────────
+            if (chain && onChainRoomId && chain === p2Chain) {
+                const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+                showConfirm(
+                    '⚔️ ON-CHAIN CHALLENGE',
+                    `vs ${challengerName} (${chain.toUpperCase()})\nApuesta: 🪙 ${entryFee} — ${fmt}\nPremio total: 🪙 ${pot}`,
+                    async () => {
+                        if (chain === 'monad') {
+                            await aonJoinSameChainMonad(character, matchId, onChainRoomId, challengerName, entryFee);
+                        } else {
+                            // Solana same-chain join — uses existing aonJoinRoomSolana flow
+                            showNotice('Solana same-chain join coming soon');
+                        }
+                    }
+                );
+                return;
+            }
+
+            // ── Off-chain fallback (Supabase tokens) ────────────────────────────
             if (globalTokens < entryFee) {
                 showNotice('No tienes suficientes tokens. Necesitas 🪙 ' + entryFee + '.'); return;
             }
@@ -22499,6 +23640,302 @@
                     }
                 }
             );
+        }
+
+        // ── Swap event perspective for replay (player↔cpu labels) ─────────
+        // The JS battle engine always uses player=P2, cpu=P1. When P1 watches
+        // the replay, we swap all labels so their character appears as "player".
+        function swapReplayPerspective(events) {
+            return events.map(e => {
+                const swapped = { ...e };
+                // Swap fighter/attacker/target/caster labels
+                if (swapped.fighter  === 'player') swapped.fighter  = 'cpu';
+                else if (swapped.fighter  === 'cpu') swapped.fighter  = 'player';
+                if (swapped.attacker === 'player') swapped.attacker = 'cpu';
+                else if (swapped.attacker === 'cpu') swapped.attacker = 'player';
+                if (swapped.target   === 'player') swapped.target   = 'cpu';
+                else if (swapped.target   === 'cpu') swapped.target   = 'player';
+                if (swapped.caster   === 'player') swapped.caster   = 'cpu';
+                else if (swapped.caster   === 'cpu') swapped.caster   = 'player';
+                // Swap positional/HP fields
+                if ('playerHp' in swapped || 'cpuHp' in swapped) {
+                    const tmpHp = swapped.playerHp;
+                    swapped.playerHp = swapped.cpuHp;
+                    swapped.cpuHp    = tmpHp;
+                }
+                if ('playerX' in swapped || 'cpuX' in swapped) {
+                    const tmpX = swapped.playerX;
+                    swapped.playerX = swapped.cpuX;
+                    swapped.cpuX    = tmpX;
+                }
+                return swapped;
+            });
+        }
+
+        // ── Same-chain on-chain join (Monad P2 → Monad room) ────────────────
+        async function aonJoinSameChainMonad(character, matchId, onChainRoomId, challengerName, entryFee) {
+            const listEl = document.getElementById('aon-lobby-list');
+            listEl.innerHTML = '<div class="aon-lobby-empty">Registering character...</div>';
+            try {
+                // 1. Register P2's character in backend (so replay can load both fighters)
+                await fetchWithTimeout(BACKEND_URL + '/api/aon/room/join', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId:      playerSession.playerId,
+                        characterId:   character.id,
+                        charName:      character.name,
+                        displayName:   playerSession.name || playerSession.playerId,
+                        onChainRoomId: onChainRoomId,
+                        chain:         'monad',
+                    }),
+                });
+
+                // 2. Join on-chain room
+                listEl.innerHTML = '<div class="aon-lobby-empty">Joining on-chain room...</div>';
+                const ok = await aonJoinRoomOnChain(character, onChainRoomId);
+                if (!ok) { aonLoadLobby(); return; }
+
+                // 3. Wait for on-chain resolution
+                listEl.innerHTML = '<div class="aon-lobby-empty">Waiting for battle resolution...</div>';
+                const onChainResult = await aonWaitForResult(onChainRoomId, 600_000); // 10 min timeout
+
+                if (!onChainResult) {
+                    showNotice('Battle timed out or was cancelled.');
+                    aonLoadLobby();
+                    return;
+                }
+
+                // 4. Fetch replay events from backend (JS battle engine for animations)
+                listEl.innerHTML = '<div class="aon-lobby-empty">Loading battle replay...</div>';
+                let replayData = null;
+                try {
+                    const replayResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/replay', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({
+                            playerId:    playerSession.playerId,
+                            characterId: character.id,
+                            matchId:     matchId,
+                            roomId:      Number(onChainRoomId),
+                            chain:       'monad',
+                        }),
+                    }, 15000);
+                    if (replayResp.ok) {
+                        replayData = await replayResp.json();
+                    }
+                } catch (replayErr) {
+                    console.warn('[aon-join-monad] replay fetch failed, falling back to static result:', replayErr);
+                }
+
+                // 5. Determine winner from on-chain result (authoritative)
+                const myAddress = await (new window.ethers.BrowserProvider(window.ethereum)).getSigner().then(s => s.getAddress());
+                const didWin = onChainResult.winner.toLowerCase() === myAddress.toLowerCase();
+
+                // 6. If replay available → animate battle like PvP
+                if (replayData && replayData.ok && replayData.events) {
+                    // Map on-chain winner to JS engine winner label
+                    // In replay: player = P2 (defender), cpu = P1 (challenger)
+                    const jsWinner = didWin ? 'player' : 'cpu';
+                    const battleResult = {
+                        events:        replayData.events,
+                        winner:        jsWinner,
+                        turns:         replayData.turns,
+                        finalPlayerHp: replayData.finalPlayerHp,
+                        finalCpuHp:    replayData.finalCpuHp,
+                    };
+                    // Use server-computed rewards (EXP, wellness, morale, chest, Q-table, ranking)
+                    const rewards = replayData.rewards && Object.keys(replayData.rewards).length > 0
+                        ? replayData.rewards
+                        : { chestTier: null, tokensEarned: 0, newWinStreak: 0 };
+                    // Use PvP animation flow
+                    const opponentChar = replayData.p1Char || null;
+                    // Exit AoN lobby UI and enter arena for animation
+                    aonActive = false;
+                    _aonMatchId = 0;
+                    await startPvpBattle(battleResult, rewards, opponentChar, challengerName, character);
+                    return;
+                }
+
+                // 7. Fallback: show static result (no replay available)
+                listEl.innerHTML = `
+                    <div class="aon-pvp-result ${didWin ? 'win' : 'loss'}">
+                        <div class="aon-pvp-result-title">${didWin ? '🏆 ¡GANASTE!' : '💀 PERDISTE'}</div>
+                        <div class="aon-pvp-result-pot">vs ${challengerName} — ${onChainResult.turns} turnos</div>
+                        <div class="aon-pvp-result-score">Pago: ${onChainResult.payout} MON</div>
+                    </div>
+                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                `;
+                document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
+            } catch (e) {
+                console.error('[aon-join-monad]', e);
+                showNotice('Error: ' + (e.reason || e.message || 'Unknown'));
+                aonLoadLobby();
+            }
+        }
+
+        // ── Cross-chain: Monad P2 joins a Solana room ───────────────────────
+        // P2 locks MON in Monad's AoNEscrow.joinCrossChain() → posts CROSS_JOIN
+        // VAA → frontend calls /api/relay/cross-join → relay delivers to Solana.
+        async function aonJoinCrossChainFromMonad(character, foreignRoomId, entryFee, challengerName) {
+            if (!AON_ESCROW_ADDRESS) { showNotice('Monad contract not deployed yet'); return; }
+
+            const listEl = document.getElementById('aon-lobby-list');
+            listEl.innerHTML = '<div class="aon-lobby-empty">Preparing cross-chain join...</div>';
+
+            try {
+                const signer     = await getMonadSigner();
+                const walletAddr = await signer.getAddress();
+
+                // 1. Get signed charData from backend
+                listEl.innerHTML = '<div class="aon-lobby-empty">Signing character data...</div>';
+                const sigResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId:            playerSession?.playerId,
+                        characterId:         character.id,
+                        walletAddress:       walletAddr,
+                        equippedConsumables: character.equippedConsumables || [],
+                    }),
+                });
+                const sigData = await sigResp.json();
+                if (!sigData.ok) { showNotice(sigData.error || 'Sign error'); aonLoadLobby(); return; }
+
+                // 2. Call joinCrossChain on Monad AoNEscrow
+                const entryFeeWei = window.ethers.parseUnits(String(entryFee), 18);
+                const escrow = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, signer);
+
+                // Estimate Wormhole message fee (small, usually < 0.001 MON)
+                // We send entryFee + extra for wormhole fee
+                const wormholeFeeEstimate = window.ethers.parseUnits('0.01', 18);
+
+                listEl.innerHTML = '<div class="aon-lobby-empty">Confirm transaction in wallet...</div>';
+                const tx = await escrow.joinCrossChain(
+                    BigInt(foreignRoomId),
+                    entryFeeWei,
+                    0, // entryType: Native (MON)
+                    '0x0000000000000000000000000000000000000000', // token: not used for Native
+                    sigData.charData,
+                    BigInt(sigData.expiry),
+                    sigData.backendSig,
+                    { value: entryFeeWei + wormholeFeeEstimate },
+                );
+
+                listEl.innerHTML = '<div class="aon-lobby-empty">Transaction sent, waiting for confirmation...</div>';
+                const receipt = await tx.wait();
+
+                // 3. Parse Wormhole LogMessagePublished event to get sequence
+                const iface = new window.ethers.Interface([
+                    'event LogMessagePublished(address indexed sender, uint64 sequence, uint32 nonce, bytes payload, uint8 consistencyLevel)',
+                ]);
+                let whSequence = null;
+                let whEmitter  = null;
+                for (const log of receipt.logs) {
+                    try {
+                        const parsed = iface.parseLog(log);
+                        if (parsed && parsed.name === 'LogMessagePublished') {
+                            whSequence = parsed.args.sequence.toString();
+                            whEmitter  = parsed.args.sender;
+                            break;
+                        }
+                    } catch (_) {}
+                }
+
+                if (!whSequence) {
+                    showNotice('Cross-chain join succeeded but could not find Wormhole message. Contact support.');
+                    aonLoadLobby();
+                    return;
+                }
+
+                // 4. Call relay to deliver CROSS_JOIN VAA to Solana
+                listEl.innerHTML = '<div class="aon-lobby-empty">Relaying cross-chain message to Solana...</div>';
+                const emitterHex = (whEmitter || AON_ESCROW_ADDRESS).replace('0x', '').padStart(64, '0');
+
+                const relayResp = await fetchWithTimeout(BACKEND_URL + '/api/relay/cross-join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sourceChain: 'monad',
+                        roomId:      parseInt(foreignRoomId),
+                        sequence:    parseInt(whSequence),
+                        emitter:     emitterHex,
+                    }),
+                });
+                const relayData = await relayResp.json();
+
+                if (!relayData.ok) {
+                    showNotice('Relay failed: ' + (relayData.error || 'Unknown error') + '\nYour funds are locked. The relay will retry automatically.');
+                    aonLoadLobby();
+                    return;
+                }
+
+                // 5. Cross-chain join complete — battle will be resolved on Solana
+                //    P2 waits for BATTLE_RESULT to settle their CrossChainLock on Monad
+                listEl.innerHTML = '<div class="aon-lobby-empty">Cross-chain join confirmed! Waiting for battle result...</div>';
+
+                // Poll is complex for cross-chain (result comes back via VAA).
+                // For now, show success and let the user check later.
+                listEl.innerHTML = `
+                    <div class="aon-pvp-result win">
+                        <div class="aon-pvp-result-title">⛓️ CROSS-CHAIN JOIN OK</div>
+                        <div class="aon-pvp-result-pot">vs ${challengerName} (SOLANA)</div>
+                        <div class="aon-pvp-result-score">Your MON is locked. Battle resolves on Solana.<br>Result will be relayed back to settle your lock.</div>
+                    </div>
+                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                `;
+                document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
+
+            } catch (e) {
+                console.error('[aon-cross-monad]', e);
+                showNotice('Cross-chain error: ' + (e.reason || e.message || 'Unknown'));
+                aonLoadLobby();
+            }
+        }
+
+        // ── Cross-chain: Solana P2 joins a Monad room ───────────────────────
+        // P2 locks SOL in Solana's join_room_cross_chain → posts CROSS_JOIN VAA
+        // → frontend calls /api/relay/cross-join → relay delivers to Monad.
+        async function aonJoinCrossChainFromSolana(character, foreignRoomId, entryFee, challengerName) {
+            if (!FIGHTCHUB_AON_SOLANA_PROGRAM_ID) {
+                showNotice('Solana program not deployed yet');
+                return;
+            }
+
+            const listEl = document.getElementById('aon-lobby-list');
+            listEl.innerHTML = '<div class="aon-lobby-empty">Preparing cross-chain join from Solana...</div>';
+
+            try {
+                // Connect Phantom
+                const resp = await window.solana.connect();
+                const pubkeyStr = resp.publicKey.toString();
+
+                // 1. Get signed charData from backend (ed25519)
+                listEl.innerHTML = '<div class="aon-lobby-empty">Signing character data...</div>';
+                const sigRes = await fetchWithTimeout(BACKEND_URL + '/api/aon/sign-character-solana', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId:    playerSession?.playerId,
+                        characterId: character.id,
+                        walletAddress: pubkeyStr,
+                    }),
+                });
+                const sigData = await sigRes.json();
+                if (!sigData.ok) throw new Error(sigData.error || 'Signature request failed');
+
+                // 2. Build join_room_cross_chain instruction
+                //    TODO: Fill account metas after Solana program is deployed.
+                //    Requires: config PDA, instructions_sysvar, cross_chain_lock PDA,
+                //    token accounts, Wormhole accounts, system_program, rent, clock.
+                showNotice('Solana cross-chain join requires deployed program. Coming soon!');
+                aonLoadLobby();
+
+            } catch (e) {
+                console.error('[aon-cross-solana]', e);
+                showNotice('Cross-chain error: ' + (e.message || 'Unknown'));
+                aonLoadLobby();
+            }
         }
 
         function aonUpdateSummary() {
@@ -22568,35 +24005,89 @@
                 if (!roomId) { mm.remove(); aonActive = false; return; }
 
                 // Step 2 — Register room with backend so P2 can find it
-                await fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
-                    method: 'POST',
-                    headers: await getAuthHeaders(),
-                    body: JSON.stringify({
-                        playerId: playerSession?.playerId,
-                        roomId,
-                        entryFee: aonEntryFee,
-                        characterId: character.id,
-                    }),
-                }).catch(() => {}); // fire-and-forget
+                try {
+                    const openResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/room/open', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({
+                            playerId:    playerSession?.playerId,
+                            roomId,
+                            entryFee:    aonEntryFee,
+                            characterId: character.id,
+                            chain:       'monad',
+                        }),
+                    });
+                    const openData = await openResp.json();
+                    if (openData.matchId) _aonMatchId = openData.matchId;
+                } catch (_) {}
 
                 // Step 3 — Wait for opponent and contract resolution
                 statusEl.textContent = 'Waiting for opponent... (Room #' + roomId + ')';
-                const result = await aonWaitForResult(roomId, 3_600_000); // 1h timeout
+                const onChainResult = await aonWaitForResult(roomId, 3_600_000); // 1h timeout
                 mm.remove();
 
-                if (!result) {
+                if (!onChainResult) {
                     showNotice('Match cancelled or timed out.');
                     aonActive = false;
                     return;
                 }
 
-                // Step 4 — Show result
+                // Step 4 — Determine winner
                 const myAddress = await (new window.ethers.BrowserProvider(window.ethereum)).getSigner().then(s => s.getAddress());
-                const didWin    = result.winner.toLowerCase() === myAddress.toLowerCase();
+                const didWin    = onChainResult.winner.toLowerCase() === myAddress.toLowerCase();
+
+                // Step 5 — Try to fetch replay for animated battle
+                let replayData = null;
+                if (_aonMatchId) {
+                    try {
+                        const replayResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/replay', {
+                            method: 'POST',
+                            headers: await getAuthHeaders(),
+                            body: JSON.stringify({
+                                playerId:    playerSession.playerId,
+                                characterId: character.id,
+                                matchId:     _aonMatchId,
+                                roomId:      Number(roomId),
+                                chain:       'monad',
+                            }),
+                        }, 15000);
+                        if (replayResp.ok) {
+                            replayData = await replayResp.json();
+                        }
+                    } catch (replayErr) {
+                        console.warn('[aon-onchain] replay fetch failed:', replayErr);
+                    }
+                }
+
+                // Step 6 — Animate if replay available, else show static result
+                // In replay engine: player=P2(defender), cpu=P1(creator)
+                // For P1's UI: swap all labels so P1 appears as "player"
+                if (replayData && replayData.ok && replayData.events) {
+                    const jsWinner = didWin ? 'player' : 'cpu';
+                    const battleResult = {
+                        events:        swapReplayPerspective(replayData.events),
+                        winner:        jsWinner,
+                        turns:         replayData.turns,
+                        finalPlayerHp: replayData.finalCpuHp,    // P1=cpu in engine → our HP
+                        finalCpuHp:    replayData.finalPlayerHp,  // P2=player in engine → opponent HP
+                    };
+                    // Use server-computed rewards (EXP, wellness, morale, chest, Q-table, ranking)
+                    const rewards = replayData.rewards && Object.keys(replayData.rewards).length > 0
+                        ? replayData.rewards
+                        : { chestTier: null, tokensEarned: 0, newWinStreak: 0 };
+                    const opponentChar = replayData.p2Char || null; // P1's opponent is P2
+                    const opponentName = replayData.p2Name || 'Opponent';
+                    aonActive = false;
+                    _aonMatchId = 0;
+                    await startPvpBattle(battleResult, rewards, opponentChar, opponentName, character);
+                    return;
+                }
+
+                // Fallback: static result
                 showNotice(
                     (didWin ? '🏆 YOU WIN!' : '💀 YOU LOSE') +
-                    '\nPayout: ' + result.payout + ' CHUB' +
-                    '\nTurns: ' + result.turns
+                    '\nPayout: ' + onChainResult.payout + ' CHUB' +
+                    '\nTurns: ' + onChainResult.turns
                 );
                 aonActive = false;
             } catch (e) {
@@ -22841,6 +24332,13 @@
         }
 
         async function aonStartMatchmaking() {
+            // Block if pending level-ups — player must apply stat upgrades first
+            const _aonChar = getSelectedCharacter();
+            const _aonPending = getPendingLevelUpCount(_aonChar);
+            if (_aonPending > 0) {
+                showNotice(`Apply your pending stat upgrade${_aonPending > 1 ? 's' : ''} before fighting! (${_aonPending} pending)`);
+                return;
+            }
             // ── Solana on-chain mode: Phantom + deployed Solana program ───────────
             if (FIGHTCHUB_AON_SOLANA_PROGRAM_ID && window.solana?.isPhantom) {
                 return aonStartMatchmakingSolana();
@@ -23364,7 +24862,7 @@
                     </div>
                     ${levelUpNotice}
                     <div class="results-buttons">
-                        <button class="results-btn" id="results-play-again">PLAY AGAIN</button>
+                        ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -25076,6 +26574,7 @@
                 showNotice('Shop unlocks at Level ' + CONSUMABLE_MIN_LEVEL + '!');
                 return;
             }
+            closeVaultPanel(); // close vault if open
             renderShop();
             document.getElementById('shop-panel').classList.add('active');
         }
@@ -27599,6 +29098,22 @@
             });
         });
 
+        // Vault button + panel
+        document.getElementById('menu-vault-btn').addEventListener('click', () => {
+            closeShop(); // close shop if open
+            openVaultPanel();
+        });
+        document.getElementById('vault-close').addEventListener('click', () => {
+            closeVaultPanel();
+        });
+        // Vault tab switching
+        document.querySelectorAll('.vault-tab').forEach(tab => {
+            tab.addEventListener('click', () => setVaultTab(tab.dataset.tab));
+        });
+        // Vault chain switching
+        document.getElementById('vault-chain-sol').addEventListener('click', () => setVaultChain('solana'));
+        document.getElementById('vault-chain-mon').addEventListener('click', () => setVaultChain('monad'));
+
         // CARE button + panel
         document.getElementById('menu-care-btn').addEventListener('click', () => {
             openCarePanel();
@@ -27669,6 +29184,15 @@
             tab.addEventListener('click', () => aonSwitchTab(tab.dataset.tab));
         });
 
+        // ── PvP tab: entry type toggle ──────────────────────────────────────────
+        document.getElementById('aon-native-label').textContent = NATIVE_SYMBOL;
+        document.querySelectorAll('.aon-entry-btn:not(.disabled)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.aon-entry-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            });
+        });
+
         // ── PvP tab: fee buttons ─────────────────────────────────────────────────
         document.querySelectorAll('.aon-pvp-fee-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -27727,6 +29251,8 @@
                 parseInt(btn.dataset.rtw),
                 btn.dataset.cname,
                 parseInt(btn.dataset.pot),
+                btn.dataset.chain || null,
+                btn.dataset.onchainroomid || null,
             );
         });
 
@@ -27768,6 +29294,11 @@
         document.getElementById('menu-play-btn').addEventListener('click', async () => {
             const character = getSelectedCharacter();
             if (!character) return;
+            const pendingCount = getPendingLevelUpCount(character);
+            if (pendingCount > 0) {
+                showNotice(`Apply your pending stat upgrade${pendingCount > 1 ? 's' : ''} before fighting! (${pendingCount} pending)`);
+                return;
+            }
             if (!canFight(character)) {
                 showNotice('Fighter is critically injured! Feed or heal first.');
                 return;
