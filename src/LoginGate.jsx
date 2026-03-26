@@ -1,9 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import React, { useEffect, useState, useRef } from 'react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useSolanaWallets } from '@privy-io/react-auth/solana';
 
 export default function LoginGate() {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
+  const { wallets: evmWallets } = useWallets();
+  const { wallets: solanaWallets } = useSolanaWallets();
   const [visible, setVisible] = useState(false);
+
+  // Keep refs so vanilla JS always gets latest wallet arrays
+  const evmRef = useRef(evmWallets);
+  const solRef = useRef(solanaWallets);
+  evmRef.current = evmWallets;
+  solRef.current = solanaWallets;
 
   // user is in deps so handleAuthenticated() re-runs once user is populated
   useEffect(() => {
@@ -23,11 +32,40 @@ export default function LoginGate() {
     return () => window.removeEventListener('fightchub:showlogin', show);
   }, []);
 
-  // Expose Privy functions to vanilla JS
+  // Expose Privy functions + wallet providers to vanilla JS
   useEffect(() => {
     window.__privyLogout   = logout;
     window.__getPrivyToken = getAccessToken;
-    return () => { window.__privyLogout = null; window.__getPrivyToken = null; };
+
+    // Returns the EVM embedded wallet's EIP-1193 provider (for ethers.js BrowserProvider)
+    // Falls back to first available EVM wallet if no embedded found
+    window.__privyGetEvmProvider = async () => {
+      const wallets = evmRef.current;
+      const embedded = wallets.find(w => w.walletClientType === 'privy');
+      const wallet = embedded || wallets[0];
+      if (!wallet) return null;
+      return await wallet.getEthereumProvider();
+    };
+
+    // Returns the Solana embedded wallet (has .sendTransaction, .signTransaction)
+    window.__privyGetSolanaWallet = () => {
+      const wallets = solRef.current;
+      return wallets.find(w => w.walletClientType === 'privy') || wallets[0] || null;
+    };
+
+    // Quick check: does the user have an embedded wallet for a given chain?
+    window.__privyHasEmbeddedWallet = (chain) => {
+      if (chain === 'solana') return solRef.current.some(w => w.walletClientType === 'privy');
+      return evmRef.current.some(w => w.walletClientType === 'privy');
+    };
+
+    return () => {
+      window.__privyLogout = null;
+      window.__getPrivyToken = null;
+      window.__privyGetEvmProvider = null;
+      window.__privyGetSolanaWallet = null;
+      window.__privyHasEmbeddedWallet = null;
+    };
   }, [logout, getAccessToken]);
 
   async function handleAuthenticated() {
@@ -48,6 +86,15 @@ export default function LoginGate() {
       const linkedWallet = user.linkedAccounts?.find(a => a.type === 'wallet');
       const wallet = linkedWallet?.address || user.wallet?.address || '';
 
+      // Collect all wallet addresses (EVM + Solana) for playerSession
+      const allWallets = user.linkedAccounts
+        ?.filter(a => a.type === 'wallet')
+        .map(a => a.address)
+        .filter(Boolean) || [];
+      const hasEmbeddedWallet = user.linkedAccounts?.some(
+        a => a.type === 'wallet' && a.walletClientType === 'privy'
+      ) || false;
+
       // First-ever login: no wallet yet → redirect to backend for chain selection
       if (!wallet) {
         window.location.href = 'https://chub-champions-backend.vercel.app/';
@@ -62,7 +109,7 @@ export default function LoginGate() {
 
       const avatar = twitterAcc?.profilePictureUrl || '';
 
-      window.__privyLogin?.({ playerId, wallet, name, avatar, token });
+      window.__privyLogin?.({ playerId, wallet, wallets: allWallets, hasEmbeddedWallet, name, avatar, token });
       setVisible(false);
     } catch (err) {
       console.error('[LoginGate] handleAuthenticated error:', err);

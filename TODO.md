@@ -106,6 +106,30 @@
 - [ ] Generate CHARACTER_SIGNER_SOLANA keypair (`solana-keygen new`) → export as base58
 - [ ] Set env var CHARACTER_SIGNER_SOLANA_KEY in Vercel (base58, 64-byte keypair)
 
+### Wormhole Cross-Chain + Relay
+- [ ] Look up Wormhole chain ID for Monad (from Wormhole governance)
+- [ ] Look up Wormhole Core Bridge addresses (Solana devnet + Monad testnet)
+- [ ] Install backend deps: `npm install @solana/web3.js @solana/spl-token @certusone/wormhole-sdk`
+- [ ] Generate RELAYER wallet for Solana (`solana-keygen new`) → fund with devnet SOL
+- [ ] Set Vercel env vars:
+  - `RELAYER_PRIVATE_KEY` — EVM hex key (Monad relay txs)
+  - `RELAYER_PRIVATE_KEY_SOLANA` — base58 key (Solana relay txs)
+  - `AON_ESCROW_MONAD` — deployed AoNEscrow address on Monad
+  - `AON_PROGRAM_ID_SOLANA` — deployed program ID on Solana
+  - `WORMHOLE_CHAIN_ID_MONAD` — Wormhole chain ID for Monad
+  - `WORMHOLE_API_URL` — `https://api.testnet.wormholescan.io`
+  - `WORMHOLE_PROGRAM_SOLANA` — Core Bridge program ID on Solana devnet
+- [ ] Initialize Solana program: call `initialize` with Wormhole config (monad_emitter, chain_id, wormhole_program)
+- [ ] Initialize Monad contract: set `trustedSolanaEmitter` + `solanaChainId` in constructor
+- [x] Frontend: cross-chain join routing in `aonAcceptChallenge()` — detects P2 chain vs room chain
+- [x] Frontend: `aonJoinCrossChainFromMonad()` — Monad P2 → Solana room (joinCrossChain + relay)
+- [x] Frontend: `aonJoinSameChainMonad()` — Monad P2 → Monad room (joinRoom + wait)
+- [ ] Frontend: `aonJoinCrossChainFromSolana()` — Solana P2 → Monad room (needs deployed program)
+- [x] Backend: lobby returns `onChainRoomId` for cross-chain join routing
+- [x] Frontend: `joinCrossChain` added to AON_ESCROW_ABI
+- [ ] Test cross-chain flow: Solana P2 → Monad room → relay CROSS_JOIN → resolve → relay BATTLE_RESULT
+- [ ] Test cross-chain flow: Monad P2 → Solana room → relay CROSS_JOIN → resolve → relay BATTLE_RESULT
+
 ---
 
 ## 🔧 Backend / Infrastructure
@@ -253,9 +277,9 @@
       pero podría ajustarse más según sprites individuales. Considerar medir el bounding box
       real de cada sprite para un contact detection más preciso.
 
-- [ ] **Jump attack** — revisar animación completa: arco de salto, landing en posición
-      correcta del defensor (ya usa `getBoundingClientRect` pero verificar con las nuevas
-      posiciones escaladas), rotación del sprite al aterrizar/retornar.
+- [x] **Jump attack** — landing position usa server coords (`_homeX * scale`) en vez de
+      `getBoundingClientRect`; gap de ataque consistente con `_ATCK_GAP`; rotación reseteada
+      al aterrizar (no espera al return); fase 1 simplificada sin `zoom`/`getBoundingClientRect`.
 
 - [ ] **Q-Learning — posicionamiento preferido por build/arma**
       Actualmente `_ATCK_GAP` es fijo para todos. El CPU debería tener un "preferred range"
@@ -413,6 +437,7 @@ CREATE INDEX IF NOT EXISTS idx_characters_player_id ON characters(player_id);
 ```sql
 ALTER TABLE players ADD COLUMN IF NOT EXISTS total_free_rerolls_used integer not null default 0;
 ALTER TABLE players ADD COLUMN IF NOT EXISTS total_paid_rerolls      integer not null default 0;
+ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS rewards_applied_for text[] DEFAULT '{}';
 ```
 
 ---
@@ -498,6 +523,156 @@ COMBO_CHANCE_CAP       = 0.38   // cap total de comboChance (actualmente no hay 
 ### CORS
 - [x] `middleware.ts` (Edge) — maneja OPTIONS preflight y agrega headers CORS a todas las rutas `/api/*`
 - [x] `vercel.json` — headers CORS a nivel CDN como respaldo
+
+---
+
+## ⚡ Level-Up Fixes (2026-03-22)
+
+### ✅ Implementado
+- [x] **Fix false double level-up** — `battle/run.ts` ahora chequea `pending_levelup` y usa `effectiveLevel` para calcular el threshold correcto
+- [x] **Fix level exploit via sync.ts** — ignorar nivel del cliente completamente; siempre usar DB level
+- [x] **Fix pending level-ups perdidos al recargar página** — `fetchCharactersFromServer` restaura pending level-ups desde `hasPendingLevelUp` del servidor
+- [x] **Fix chain level-ups** — si el EXP acumulado alcanza para 2+ niveles, `levelup/apply` detecta y encadena automáticamente (sets `pending_levelup: true` de nuevo + descuenta EXP)
+- [x] **Bloqueo de matchmaking con level-ups pendientes** — BATTLE, AoN y PvP bloqueados si hay stat upgrades sin aplicar; pantalla de resultados oculta PLAY AGAIN si hay level-up pendiente
+
+### 🔴 Pendiente
+- [ ] **Deploy backend** con los fixes de level-up (battle/run.ts, character/sync.ts, character/levelup.ts)
+- [ ] **Deploy frontend** con los cambios de index.html (pending level-up restore, battle blocking, chain level-ups)
+
+---
+
+## 🏦 ChubVault — Deposit/Withdraw Bridge (2026-03-22)
+
+### ✅ Implementado
+- [x] **ChubVault.sol** (Monad/Foundry) — deposit burns CHUB via `token.spend()`, withdraw mints via EIP-712 signed permit + `token.reward()`, circuit breaker held payouts, daily caps, configurable limits
+- [x] **DeployVault.s.sol** — Forge deploy script, authorizes vault in ChubToken
+- [x] **Solana chub-vault Anchor program** — initialize, deposit (SPL burn), withdraw (Ed25519 sig verification via instruction introspection + CPI to chub-token reward), admin (set_signer, set_limits), UserNonce PDA per-user
+- [x] **`backend/pages/api/tokens/deposit.ts`** — chain-aware (monad + solana), verifies tx on-chain, prevents double-credit via `vault_deposits` table, credits Supabase tokens
+- [x] **`backend/pages/api/tokens/withdraw.ts`** — chain-aware, EIP-712 sig (monad) / Ed25519 sig (solana), daily cap enforcement, deducts Supabase tokens, records in `vault_withdrawals`
+- [x] **`backend/lib/chains.ts`** — Monad testnet chain definition for viem (id: 10143)
+- [x] **Frontend vault UI** — VAULT button in top nav, vault panel (slides from right), chain selector (Solana/Monad auto-detect), deposit/withdraw tabs, amount presets, status messages, ethers.js integration for Monad flows
+- [x] **Fix ERC712 → EIP712 typo** in ChubVault.sol constructor
+- [x] **Fix tokensCredired → tokensCredited** typo in deposit.ts
+- [x] **Removed unnecessary ERC20 approve** from Monad deposit (vault uses `spend()` as authorized contract)
+- [x] **`backend/pages/api/tokens/buy.ts`** — player sends SOL/MON to treasury wallet, backend verifies tx on-chain, credits CHUB in Supabase at configurable exchange rate. Anti-double-credit via `vault_deposits` table
+- [x] **Frontend BUY tab** in vault panel — input native amount, live CHUB preview, wallet selector (embedded Privy or external MetaMask/Phantom), calls `/api/tokens/buy`
+- [x] **Privy Solana config** — `solanaClusters` added to main.jsx (devnet + mainnet-beta), Solana enabled in Privy dashboard
+- [x] **Privy wallet bridge** — LoginGate.jsx exposes `__privyGetEvmProvider()`, `__privyGetSolanaWallet()`, `__privyHasEmbeddedWallet()` to vanilla JS for embedded wallet signing
+
+### 🔴 Pendiente — Activar BUY + AoN on-chain
+
+> **Decisión**: CHUB es moneda interna (Supabase). NO hay token ERC-20/SPL on-chain.
+> Los contratos de ChubToken/ChubVault quedan en el repo por si se tokeniza en el futuro, pero no se despliegan.
+> Lo que SÍ va on-chain: **AoN escrow** (apuestas PvP) y **torneos** (futuro).
+
+#### Supabase migrations
+- [ ] Crear/actualizar tabla `vault_deposits` (pack-based buy + USDC):
+  ```sql
+  CREATE TABLE IF NOT EXISTS vault_deposits (
+    id bigserial PRIMARY KEY,
+    tx_hash text UNIQUE NOT NULL,
+    player_id text NOT NULL,
+    wallet text NOT NULL,
+    chain text NOT NULL CHECK (chain IN ('solana', 'monad')),
+    tokens_credited integer NOT NULL,
+    type text NOT NULL DEFAULT 'buy' CHECK (type IN ('buy', 'deposit')),
+    native_amount numeric,
+    pack_id text,
+    currency text DEFAULT 'native' CHECK (currency IN ('native', 'usdc')),
+    created_at timestamptz DEFAULT now()
+  );
+  CREATE INDEX IF NOT EXISTS idx_vault_deposits_player ON vault_deposits(player_id);
+  CREATE INDEX IF NOT EXISTS idx_vault_deposits_tx ON vault_deposits(tx_hash);
+  ALTER TABLE vault_deposits ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Players read own deposits" ON vault_deposits FOR SELECT USING (player_id = auth.uid()::text);
+  ```
+  Si ya existe la tabla vieja, correr:
+  ```sql
+  ALTER TABLE vault_deposits ADD COLUMN IF NOT EXISTS pack_id text;
+  ALTER TABLE vault_deposits ADD COLUMN IF NOT EXISTS currency text DEFAULT 'native' CHECK (currency IN ('native', 'usdc'));
+  ```
+
+#### Treasury wallets (REQUERIDO para activar BUY)
+Necesitas **2 wallets treasury** (una por chain) que reciban los pagos de los jugadores.
+Estas wallets son tuyas — los jugadores envían SOL/MON a ellas y el backend verifica on-chain.
+
+- [ ] **Generar wallet treasury EVM (Monad)**:
+  - Crear nueva keypair EVM (MetaMask → crear cuenta, o `cast wallet new`)
+  - Guardar la **private key** en lugar seguro (NO en el código)
+  - Copiar la **dirección pública** (0x...) → poner en Vercel env var `TREASURY_WALLET_MONAD`
+  - También copiar a `index.html` constante `TREASURY_WALLET_MONAD`
+- [ ] **Generar wallet treasury Solana**:
+  - Crear nueva keypair Solana (`solana-keygen new -o treasury-sol.json`, o Phantom → crear cuenta)
+  - Guardar la **private key** en lugar seguro
+  - Copiar la **dirección pública** (base58) → poner en Vercel env var `TREASURY_WALLET_SOLANA`
+  - También copiar a `index.html` constante `TREASURY_WALLET_SOLANA`
+- [ ] `CHUB_RATE_MONAD` — cuántos CHUB por 1 MON (default: 10000)
+- [ ] `CHUB_RATE_SOLANA` — cuántos CHUB por 1 SOL (default: 10000)
+
+#### Vercel env vars (buy)
+- [ ] `TREASURY_WALLET_MONAD` — dirección EVM que recibe MON
+- [ ] `TREASURY_WALLET_SOLANA` — dirección Solana que recibe SOL
+- [ ] `SOLANA_RPC_URL` — RPC de Solana devnet (default: `https://api.devnet.solana.com`)
+
+#### AoN on-chain — Diseño "Verified Battle" (escrow + Q-learning verificable)
+
+**Arquitectura:**
+El backend corre la batalla completa con Q-learning y graba cada decisión.
+El contrato re-ejecuta la batalla con esas decisiones para verificar el resultado.
+Las decisiones (qué acción tomar) vienen del backend; los outcomes (crit, dodge success, dmg rolls)
+los resuelve el contrato con el seed de Pyth Entropy.
+
+```
+Flujo:
+  1. P1 createRoom() → deposita MON/SOL nativo como entry fee
+  2. P2 joinRoom()   → deposita MON/SOL, dispara Pyth Entropy → seed
+  3. Backend lee el seed + Q-tables de ambos personajes (Supabase)
+     → corre batalla completa con Q-learning
+     → graba array de decisiones: [kick, dodge, punch, block, ...]
+  4. Backend llama contrato.resolveBattle(roomId, decisions[])
+     → contrato re-ejecuta la batalla usando decisions[] + seed
+     → verifica que cada decisión era válida (stamina, cooldown, etc.)
+     → confirma resultado → paga al ganador en MON/SOL
+```
+
+**decisions[] = uint8[] (~100-250 entries por batalla, muy barato en gas)**
+- Solo las decisiones de Q-learning (qué acción: punch/kick/dodge/block/etc.)
+- Los outcomes (crit rolls, dodge success, dmg) siguen siendo del seed (RNG on-chain)
+- Si alguien pasa decisiones inválidas, el contrato las rechaza
+
+**Tareas:**
+- [x] Reescribir AoNEscrow para escrow de MON nativo (sin ChubToken dependency)
+- [x] Agregar `resolveBattle(roomId, uint8[] decisions)` al contrato (Monad + Solana)
+- [x] Modificar `BattleEngine.sol` para aceptar decisions[] en vez de RNG para elegir acciones
+- [ ] Agregar sistema posicional y stamina al engine on-chain (para paridad con backend)
+- [x] Backend: endpoint para submit decisions al contrato post-batalla
+  - `POST /api/aon/resolve-onchain` — internal, calls resolveBattle on-chain
+  - `POST /api/aon/poll-resolve` — cron-triggered, polls for WaitingResolution rooms
+  - `lib/aon/resolve.ts` — core resolve logic (Monad + Solana implemented)
+- [x] On-chain battle animated replay system
+  - `POST /api/aon/replay` — loads both characters from Supabase, runs JS engine with on-chain seed, returns event log
+  - `POST /api/aon/room/join` — P2 registers character ID when joining on-chain room (needed for replay)
+  - `room/open.ts` updated: returns matchId, accepts matchId=0 (finds by playerId+status)
+  - `resolve.ts` updated: updates aon_matches status to 'resolved' after on-chain resolution
+  - Frontend `aonJoinSameChainMonad`: registers P2 char → joins on-chain → waits for resolution → fetches replay → animates via startPvpBattle
+  - Frontend `aonStartMatchmakingOnChain` (P1): captures matchId from room/open → fetches replay after resolution → animates
+  - Fallback: if replay fetch fails, shows static result (winner/turns/payout)
+  - **Requires migration**: `ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS defender_char_id text; ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS defender_display_name text; ALTER TABLE aon_matches ADD COLUMN IF NOT EXISTS defender_player_id text;`
+- [x] Backend: integrar Q-learning decisions (Q-tables de Supabase → generateDecisions con chooseQLAction)
+  - `resolve.ts`: loadMatchQData() carga Q-tables de ambos chars desde Supabase
+  - generateDecisions() usa chooseQLAction + encodeState simplificado para generar uint8[]
+  - Fallback a seedQTableFromStats() si Q-tables vacías
+  - resolveOnSolana() implementado: lee Room PDA, genera decisions, envía resolve_battle tx
+- [ ] Deploy AoNEscrow en Monad testnet
+- [ ] Mismo diseño para Solana (Rust program con decisions[] input) — ya escrito, falta deploy
+- [ ] Frontend: adaptar AoN para apostar MON/SOL nativo (no CHUB tokens)
+
+#### Descartado (contratos en repo pero NO se despliegan)
+- ~~ChubToken.sol (ERC-20)~~ — CHUB es moneda interna
+- ~~ChubVault.sol (deposit/withdraw)~~ — no hay token on-chain
+- ~~Solana programs (chub_token, chub_nft)~~ — misma razón
+- ~~vault_withdrawals table~~ — no hay withdrawals
+- ~~Endpoints deposit.ts / withdraw.ts~~ — no se usan
 
 ---
 
