@@ -335,11 +335,11 @@
         }
         .fighter-name-label {
             position: absolute;
-            top: -22px;
+            top: -8px;
             left: 50%;
             transform: translateX(-50%);
             font-family: 'Press Start 2P', monospace;
-            font-size: 8px;
+            font-size: 10px;
             color: #fff;
             text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
             white-space: nowrap;
@@ -878,44 +878,24 @@
             100% { transform: translate(-50%, -50%) scaleX(1) scaleY(1); opacity: 0; }
         }
 
+        /* Block/hit pushback — direction driven by CSS custom property --push-dir
+           set dynamically in JS based on current positions (handles crossover). */
         .blocking {
-            animation: blockPushback 0.35s ease-out forwards;
+            animation: pushback-block 0.35s ease-out forwards;
         }
-
-        #cpu .blocking {
-            animation: blockPushbackCpu 0.35s ease-out forwards;
-        }
-
-        @keyframes blockPushback {
-            0% { transform: translate(0, 0); }
-            30% { transform: translate(-45px, 0); }
-            100% { transform: translate(-30px, 0); }
-        }
-
-        @keyframes blockPushbackCpu {
-            0% { transform: translate(0, 0); }
-            30% { transform: translate(45px, 0); }
-            100% { transform: translate(30px, 0); }
+        @keyframes pushback-block {
+            0%   { transform: translate(0, 0); }
+            30%  { transform: translate(calc(var(--push-dir, -1) * 45px), 0); }
+            100% { transform: translate(calc(var(--push-dir, -1) * 30px), 0); }
         }
 
         .taking-damage {
-            animation: hitPushback 0.3s ease-out forwards;
+            animation: pushback-hit 0.3s ease-out forwards;
         }
-
-        #cpu .taking-damage {
-            animation: hitPushbackCpu 0.3s ease-out forwards;
-        }
-
-        @keyframes hitPushback {
-            0% { transform: translate(0, 0); }
-            30% { transform: translate(-35px, 0); }
-            100% { transform: translate(-22px, 0); }
-        }
-
-        @keyframes hitPushbackCpu {
-            0% { transform: translate(0, 0); }
-            30% { transform: translate(35px, 0); }
-            100% { transform: translate(22px, 0); }
+        @keyframes pushback-hit {
+            0%   { transform: translate(0, 0); }
+            30%  { transform: translate(calc(var(--push-dir, -1) * 35px), 0); }
+            100% { transform: translate(calc(var(--push-dir, -1) * 22px), 0); }
         }
 
         .log-block {
@@ -17271,6 +17251,19 @@
             game.cpu.element.classList.toggle('facing-flipped', !onLeft);
         }
 
+        // Sets --push-dir CSS variable on a fighter-body so block/hit pushback
+        // goes in the correct direction regardless of crossover state.
+        // "who" = 'player' | 'cpu'; must be the defender receiving the hit/block.
+        function _setPushDir(who) {
+            const fb = game[who]?.element?.querySelector('.fighter-body');
+            if (!fb) return;
+            // Defender gets pushed AWAY from the attacker.
+            // If player is on left: player pushes left(-1), cpu pushes right(1).
+            // After crossover it flips.
+            const dir = (who === 'player') === _playerIsOnLeft() ? -1 : 1;
+            fb.style.setProperty('--push-dir', dir);
+        }
+
         async function _animateMoveEvent(event) {
             // Save pre-move facing BEFORE updating _homeX.
             // isBack must be based on the PRE-move orientation so the run sprite faces
@@ -18132,6 +18125,7 @@
                     updateFuryBar(attacker);
                 }
                 // Hit landed (or long-reach weapon through dodge)
+                _setPushDir(defender);
                 fighterBody.classList.add('taking-damage');
                 game.player.health = event.playerHp;
                 game.cpu.health    = event.cpuHp;
@@ -18165,6 +18159,7 @@
                         kdImg.src = kdImg._hurtFrames[0];
                         setTimeout(() => { if (kdImg._preKdSrc) kdImg.src = kdImg._preKdSrc; }, 600);
                     } else {
+                        _setPushDir(defender);
                         kdEl?.querySelector('.fighter-body')?.classList.add('taking-damage');
                         setTimeout(() => kdEl?.querySelector('.fighter-body')?.classList.remove('taking-damage'), 600);
                     }
@@ -18204,6 +18199,7 @@
             } else if (defense === 'block') {
                 stats[defender].blocks = (stats[defender].blocks || 0) + 1;
                 playBlockSound();
+                _setPushDir(defender);
                 fighterBody.classList.add('blocking'); // pushback on impact
                 // Block fills fury for both fighters
                 if (!game[attacker].furyActive) {
@@ -18250,21 +18246,25 @@
                         jImg.style.transform = (jIsCpu === _playerIsOnLeft()) ? 'scaleX(-1)' : '';
                         setTimeout(() => { jImg.style.transition = ''; }, 150);
                     }
-                    // Force reflow so .dashing transition is computed before left/right changes
-                    void attackerEl.offsetWidth;
                 }
+                // Restore a real transition for the return run (jump attack sets 'none !important')
+                const _retMs = Math.round(350 * atkMult);
+                attackerEl.style.setProperty('transition', `left ${_retMs}ms ease-out, right ${_retMs}ms ease-out`, 'important');
+                void attackerEl.offsetWidth;
                 // Return to current home position (server coords scaled to real arena width)
                 const _retScale = _arenaW / 1600;
                 const _retHomeX = (game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
                 attackerEl.style.left  = _retHomeX + 'px';
                 attackerEl.style.right = 'auto';
-                await sleep(Math.round(350 * atkMult));
+                await sleep(_retMs);
                 stopRunAnimation(attackerEl);
             }
             attackerEl.style.removeProperty('transition');
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
             defenderEl.style.zIndex = '';
+            // Ensure facing is correct after attack return (covers crossover during knockback)
+            _syncFacingDirection();
             startIdleBlink(defenderEl);
             startIdleBlink(attackerEl);
             await sleep(isComboFirst ? 80 : Math.round(500 * atkMult));
@@ -20530,6 +20530,7 @@
                         // jumped forward and dodged — no hit effect
                     } else if (targetDefense === 'block') {
                         const tFB = game[target].element.querySelector('.fighter-body');
+                        _setPushDir(target);
                         tFB.classList.add('blocking');
                         setTimeout(() => tFB.classList.remove('blocking'), 350);
                         showHitEffect(target, 'block');
