@@ -1,7 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import LoginGate from './LoginGate';
+
+const solanaConnectors = toSolanaWalletConnectors();
 
 const monadTestnet = {
   id: 10143,
@@ -34,6 +37,9 @@ root.render(
       },
       supportedChains: [monadTestnet],
       defaultChain: monadTestnet,
+      externalWallets: {
+        solana: { connectors: solanaConnectors },
+      },
       solanaClusters: [
         { name: 'mainnet-beta', rpcUrl: 'https://api.mainnet-beta.solana.com' },
         { name: 'devnet',       rpcUrl: 'https://api.devnet.solana.com' },
