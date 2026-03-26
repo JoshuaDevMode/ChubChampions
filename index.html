@@ -17767,15 +17767,13 @@
             worldEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                // Scale from center-bottom only — no translate.
-                // Translating #arena-bg in sync with the world layer creates transient gaps
-                // on the right side: both zoom and translate lerp independently at 0.07/frame,
-                // so their intermediate states can violate bgZoom*W + bgT >= W, briefly
-                // exposing the element behind. Scaling from center guarantees both left and
-                // right edges extend equally beyond the arena bounds at any zoom > 1.
-                const bgZoom = Math.max(1.0, _camZoom);
-                bgEl.style.transformOrigin = '50% 100%';
-                bgEl.style.transform       = `scale(${bgZoom.toFixed(4)})`;
+                // Base padding scale (1.1) ensures ~10% extra on each side so the
+                // background never shows gaps when translated with the camera.
+                const BG_PAD = 1.1;
+                const bgZoom = Math.max(BG_PAD, _camZoom * BG_PAD);
+                // Same origin + translate as world layer so BG tracks fighters 1:1
+                bgEl.style.transformOrigin = '0 100%';
+                bgEl.style.transform       = `translateX(${tStr}px) scale(${bgZoom.toFixed(4)})`;
             }
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -17799,9 +17797,10 @@
             if (worldEl) { worldEl.style.transformOrigin = '0 100%'; worldEl.style.transform = `translateX(${tStr}px) scale(${zStr})`; }
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                const bgZoom0 = Math.max(1.0, _camZoom);
-                bgEl.style.transformOrigin = '50% 100%';
-                bgEl.style.transform = `scale(${bgZoom0.toFixed(4)})`;
+                const BG_PAD = 1.1;
+                const bgZoom0 = Math.max(BG_PAD, _camZoom * BG_PAD);
+                bgEl.style.transformOrigin = '0 100%';
+                bgEl.style.transform = `translateX(${tStr}px) scale(${bgZoom0.toFixed(4)})`;
             }
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
