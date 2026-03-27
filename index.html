@@ -313,15 +313,16 @@
             pointer-events: none;
         }
         #arena-world .fighter { pointer-events: auto; }
-        /* Background layer — sits behind #arena-world, zooms with the camera
-           (center-bottom scale only, no translate) so it always covers the arena. */
+        /* Background layer — sits behind #arena-world, zooms with the camera.
+           Origin matches world (0 100%); JS adds a left offset so BG_PAD padding
+           is distributed evenly on both sides, preventing sub-pixel edge gaps. */
         #arena-bg {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
-            transform-origin: 50% 100%;
+            transform-origin: 0 100%;
             z-index: 0;
             pointer-events: none;
         }
@@ -9996,7 +9997,7 @@
             100% { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(1.02); }
         }
 
-        /* Fury darkness overlay - también con agujero */
+        /* Fury darkness overlay - also with cutout hole */
         .fury-darkness {
             position: absolute;
             top: 0;
@@ -10009,7 +10010,7 @@
             animation: fadeIn 0.3s ease-out forwards;
         }
 
-        /* Saturador - aumenta saturación en el área del personaje con furia */
+        /* Saturator - increases saturation in the fury character area */
         .fury-saturator {
             position: absolute;
             top: 0;
@@ -10032,7 +10033,7 @@
             80% { filter: saturate(1.70) brightness(1.28); }
         }
 
-        /* Overlay de grises con agujero para el personaje con furia */
+        /* Grayscale overlay with cutout for the fury character */
         .fury-grayscale-overlay {
             position: absolute;
             top: 0;
@@ -10054,7 +10055,7 @@
             100% { opacity: 1; }
         }
 
-        /* Personaje con furia - sobre la oscuridad */
+        /* Fury character - above the darkness */
         .fighter.fury-glow {
             z-index: 6;
         }
@@ -10072,7 +10073,7 @@
         }
 
 
-        /* Contrincante oscurecido durante furia del otro */
+        /* Opponent dimmed during the other's fury */
         .fighter.fury-dimmed {
             z-index: 6;
             filter: brightness(0.75);
@@ -11017,17 +11018,17 @@
 
             <!-- Tabs -->
             <div class="aon-tabs">
-                <button class="aon-tab active" data-tab="pvp">⚔️ CREAR DESAFÍO</button>
-                <button class="aon-tab" data-tab="lobby">🏟️ SALA</button>
+                <button class="aon-tab active" data-tab="pvp">⚔️ CREATE CHALLENGE</button>
+                <button class="aon-tab" data-tab="lobby">🏟️ LOBBY</button>
             </div>
 
             <!-- ── Tab: PvP Challenge ──────────────────────────────── -->
             <div class="aon-tab-content active" id="aon-tab-pvp">
                 <!-- My active challenge (shown if open challenge exists) -->
                 <div class="aon-my-challenge-box" id="aon-my-challenge-box" style="display:none;">
-                    <div class="aon-my-challenge-title">⏳ DESAFÍO PUBLICADO</div>
+                    <div class="aon-my-challenge-title">⏳ CHALLENGE POSTED</div>
                     <div class="aon-my-challenge-details" id="aon-my-challenge-details">–</div>
-                    <button class="aon-cancel-btn" id="aon-cancel-pvp-btn">CANCELAR</button>
+                    <button class="aon-cancel-btn" id="aon-cancel-pvp-btn">CANCEL</button>
                 </div>
                 <!-- Create form -->
                 <div id="aon-pvp-create-form">
@@ -11053,18 +11054,18 @@
                         <button class="aon-format-btn aon-pvp-format-btn" data-rtw="3">BEST OF 5</button>
                     </div>
                     <div class="aon-summary" id="aon-pvp-summary">
-                        <div class="aon-summary-row"><span>Apuesta</span><span class="aon-val" id="aon-pvp-sum-fee">🪙 --</span></div>
-                        <div class="aon-summary-row aon-winnings"><span>Premio Total</span><span class="aon-val" id="aon-pvp-sum-win">🪙 --</span></div>
-                        <div class="aon-summary-row aon-fee-row"><span>Comisión (4%)</span><span class="aon-val" id="aon-pvp-sum-platform">🪙 --</span></div>
+                        <div class="aon-summary-row"><span>Wager</span><span class="aon-val" id="aon-pvp-sum-fee">🪙 --</span></div>
+                        <div class="aon-summary-row aon-winnings"><span>Total Prize</span><span class="aon-val" id="aon-pvp-sum-win">🪙 --</span></div>
+                        <div class="aon-summary-row aon-fee-row"><span>Fee (4%)</span><span class="aon-val" id="aon-pvp-sum-platform">🪙 --</span></div>
                     </div>
-                    <button class="aon-create-btn" id="aon-pvp-create-btn" disabled>PUBLICAR DESAFÍO</button>
+                    <button class="aon-create-btn" id="aon-pvp-create-btn" disabled>POST CHALLENGE</button>
                 </div>
             </div>
 
             <!-- ── Tab: Sala / Lobby ──────────────────────────────── -->
             <div class="aon-tab-content" id="aon-tab-lobby">
                 <div class="aon-lobby-header">
-                    <div class="aon-section-label" style="margin:0;">DESAFÍOS ABIERTOS</div>
+                    <div class="aon-section-label" style="margin:0;">OPEN CHALLENGES</div>
                     <button class="aon-lobby-refresh" id="aon-lobby-refresh">↻ Actualizar</button>
                 </div>
                 <div class="aon-lobby-list" id="aon-lobby-list">
@@ -11728,7 +11729,7 @@
 
         let selectedCpuHue = 0;
         let selectedPlayerHue = 180; // Cyan - color base del jugador (el sprite original es cyan)
-        const FURY_ORB_BASE_HUE = 60; // El orbe de furia es amarillo (hue ~60°)
+        const FURY_ORB_BASE_HUE = 60; // Fury orb is yellow (hue ~60°)
         (function() {
             const randomColor = CPU_COLORS[Math.floor(Math.random() * CPU_COLORS.length)];
             selectedCpuHue = randomColor.hue;
@@ -13651,7 +13652,7 @@
         });
 
         function updateXpBoostSlots() {
-            // Widget de estado
+            // Status widget
             const statusEl = document.getElementById('xp-boost-status-text');
             if (!statusEl) return;
             if (xpBoostBattlesLeft > 0) {
@@ -13695,7 +13696,7 @@
             if (e.target === document.getElementById('boost-modal-overlay')) closeBoostModal();
         });
 
-        // Event delegation para botones de activar dentro del modal
+        // Event delegation for activate buttons inside the modal
         document.getElementById('boost-modal-list').addEventListener('click', (e) => {
             const btn = e.target.closest('.boost-activate-btn');
             if (btn && btn.dataset.slot != null) {
@@ -14217,7 +14218,7 @@
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
 
-        // Solo permite letras (incluyendo acentos), números, espacio, guión, guión bajo y !
+        // Only allows letters (including accents), numbers, space, hyphen, underscore and !
         // Bloquea automáticamente puntos (.com), HTML, URLs y cualquier símbolo raro
         function sanitizeName(str) {
             return String(str)
@@ -17882,13 +17883,17 @@
             worldEl.style.transform       = `translateX(${tStr}px) scale(${zStr})`;
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                // Base padding scale (1.1) ensures ~10% extra on each side so the
-                // background never shows gaps when translated with the camera.
-                const BG_PAD = 1.1;
+                // BG_PAD scales the background larger than the camera zoom so it always
+                // exceeds the viewport.  Origin 0 100% matches the world layer; the
+                // extra left-side buffer comes from a small negative translate offset.
+                const BG_PAD = 1.12;
                 const bgZoom = Math.max(BG_PAD, _camZoom * BG_PAD);
-                // Same origin + translate as world layer so BG tracks fighters 1:1
+                // Extra width produced by the padding = W*(bgZoom - camZoom).
+                // Shift the BG left by half that extra so the overshoot is even on
+                // both sides (left & right) instead of only extending to the right.
+                const bgTx = _camTransX - W * (bgZoom - _camZoom) * 0.5;
                 bgEl.style.transformOrigin = '0 100%';
-                bgEl.style.transform       = `translateX(${tStr}px) scale(${bgZoom.toFixed(4)})`;
+                bgEl.style.transform       = `translateX(${bgTx.toFixed(2)}px) scale(${bgZoom.toFixed(4)})`;
             }
             _camRaf = requestAnimationFrame(_camTick);
         }
@@ -17912,10 +17917,11 @@
             if (worldEl) { worldEl.style.transformOrigin = '0 100%'; worldEl.style.transform = `translateX(${tStr}px) scale(${zStr})`; }
             const bgEl = document.getElementById('arena-bg');
             if (bgEl) {
-                const BG_PAD = 1.1;
+                const BG_PAD = 1.12;
                 const bgZoom0 = Math.max(BG_PAD, _camZoom * BG_PAD);
+                const bgTx0 = _camTransX - W * (bgZoom0 - _camZoom) * 0.5;
                 bgEl.style.transformOrigin = '0 100%';
-                bgEl.style.transform = `translateX(${tStr}px) scale(${bgZoom0.toFixed(4)})`;
+                bgEl.style.transform = `translateX(${bgTx0.toFixed(2)}px) scale(${bgZoom0.toFixed(4)})`;
             }
             if (_camRaf) cancelAnimationFrame(_camRaf);
             _camRaf = requestAnimationFrame(_camTick);
@@ -17936,11 +17942,14 @@
             if (_camRaf) { cancelAnimationFrame(_camRaf); _camRaf = null; }
             const worldEl   = document.getElementById('arena-world');
             const bgEl      = document.getElementById('arena-bg');
+            const arenaEl   = document.getElementById('arena');
             const DURATION  = 350;
             const startZoom = _camZoom;
             const startTx   = _camTransX;
-            // bg uses center-bottom scale only (no translate), so its start state is just bgZoom.
-            const startBgZoom = Math.max(1.0, _camZoom);
+            const W         = arenaEl ? arenaEl.offsetWidth : 800;
+            const BG_PAD    = 1.12;
+            const startBgZoom = Math.max(BG_PAD, _camZoom * BG_PAD);
+            const startBgTx   = _camTransX - W * (startBgZoom - _camZoom) * 0.5;
             const t0   = performance.now();
             const ease = t => 1 - (1 - t) * (1 - t); // ease-out quad
             function step(now) {
@@ -17948,8 +17957,9 @@
                 const z    = startZoom  + (1.0 - startZoom)  * ease(t);
                 const tx   = startTx    + (0    - startTx)    * ease(t);
                 const bgZ  = startBgZoom + (1.0 - startBgZoom) * ease(t);
+                const bgTx = startBgTx   + (0    - startBgTx)  * ease(t);
                 if (worldEl) worldEl.style.transform = `translateX(${tx.toFixed(2)}px) scale(${z.toFixed(4)})`;
-                if (bgEl)    bgEl.style.transform    = `scale(${bgZ.toFixed(4)})`;
+                if (bgEl)    bgEl.style.transform    = `translateX(${bgTx.toFixed(2)}px) scale(${bgZ.toFixed(4)})`;
                 if (t < 1) { _camRaf = requestAnimationFrame(step); return; }
                 if (worldEl) { worldEl.style.transform = ''; worldEl.style.transformOrigin = ''; }
                 if (bgEl)    { bgEl.style.transform    = ''; bgEl.style.transformOrigin    = ''; }
@@ -22011,7 +22021,7 @@
             f.furyOrbEl.style.top = cy + 'px';
         }
 
-        // Variable global para el parpadeo constante del hueco
+        // Global variable for the constant hole blink effect
         let furyBlinkCounter = 0;
         let _lastFuryMask = '';
         // Cached overlay element refs — set in activateFury, cleared in deactivateFury
@@ -22027,26 +22037,26 @@
             const zoom = getGameZoom();
             const arenaRect = arena.getBoundingClientRect();
 
-            // Radio fijo del efecto
+            // Fixed effect radius
             const effectRadius = 306;
 
-            // Parpadeo constante: visible 10 frames, invisible 3 frames
+            // Constant blink: visible 10 frames, invisible 3 frames
             furyBlinkCounter++;
             const cycleLength = 13; // 10 visible + 3 invisible
             const holeVisible = (furyBlinkCounter % cycleLength) < 10;
 
-            // Recopilar posiciones de TODOS los orbes de furia activos
-            // El hueco de luz se centra en el orbe de furia
+            // Collect positions of ALL active fury orbs
+            // The light hole is centered on the fury orb
             const furyPositions = [];
             ['player', 'cpu'].forEach(f => {
                 if (game[f].furyActive && game[f].furyOrbEl) {
-                    // Usar la posición del orbe de furia
+                    // Use the fury orb position
                     const orbRect = game[f].furyOrbEl.getBoundingClientRect();
                     const fx = Math.round((orbRect.left - arenaRect.left) / zoom + (orbRect.width / zoom) / 2);
                     const fy = Math.round((orbRect.top - arenaRect.top) / zoom + (orbRect.height / zoom) / 2);
                     furyPositions.push({ x: fx, y: fy });
                 } else if (game[f].furyActive) {
-                    // Fallback al personaje si no hay orbe
+                    // Fallback to the character if no orb
                     const body = game[f].element.querySelector('.fighter-body') || game[f].element;
                     const fighterRect = body.getBoundingClientRect();
                     const fx = Math.round((fighterRect.left - arenaRect.left) / zoom + (fighterRect.width / zoom) / 2);
@@ -22057,20 +22067,20 @@
 
             if (furyPositions.length === 0) return;
 
-            // Crear máscara con agujeros para TODOS los personajes con furia
+            // Create mask with holes for ALL fury characters
             let maskGradient;
 
-            // Durante el parpadeo, el hueco desaparece momentáneamente (efecto rayo)
+            // During blink, the hole disappears momentarily (lightning effect)
             if (!holeVisible) {
-                // Sin hueco - todo oscuro (flash del rayo)
+                // No hole - all dark (lightning flash)
                 maskGradient = 'none';
             } else if (furyPositions.length === 1) {
-                // Solo un personaje con furia - un agujero
+                // Only one fury character - one hole
                 const pos = furyPositions[0];
                 maskGradient = `radial-gradient(circle ${effectRadius}px at ${pos.x}px ${pos.y}px, transparent 0%, transparent 25%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.8) 65%, rgba(0,0,0,1) 80%)`;
             } else {
-                // Dos personajes con furia - usar múltiples gradientes con composite
-                // Usamos mask-composite para combinar los agujeros
+                // Two fury characters - use multiple gradients with composite
+                // Use mask-composite to combine the holes
                 const gradients = furyPositions.map(pos =>
                     `radial-gradient(circle ${effectRadius}px at ${pos.x}px ${pos.y}px, transparent 0%, transparent 25%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.8) 65%, black 80%)`
                 );
@@ -22081,7 +22091,7 @@
             if (maskGradient === _lastFuryMask) return;
             _lastFuryMask = maskGradient;
 
-            // Aplicar máscara al overlay de grises
+            // Apply mask to grayscale overlay
             grayOverlay.style.maskImage = maskGradient;
             grayOverlay.style.webkitMaskImage = maskGradient;
             if (furyPositions.length > 1) {
@@ -22092,7 +22102,7 @@
                 grayOverlay.style.webkitMaskComposite = '';
             }
 
-            // Aplicar máscara también al darkness
+            // Apply mask also to the darkness overlay
             if (darkness) {
                 darkness.style.maskImage = maskGradient;
                 darkness.style.webkitMaskImage = maskGradient;
@@ -22105,13 +22115,13 @@
                 }
             }
 
-            // Ajustar brillo del oponente basado en distancia al hueco de luz (orbe de furia)
+            // Adjust opponent brightness based on distance to the light hole (fury orb)
             const opponent = fighter === 'player' ? 'cpu' : 'player';
             if (!game[opponent].furyActive) {
                 const opponentEl = game[opponent].element;
                 const f = game[fighter];
 
-                // Usar posición del orbe de furia como centro del hueco de luz
+                // Use fury orb position as center of the light hole
                 let fx, fy;
                 if (f.furyOrbEl) {
                     const orbRect = f.furyOrbEl.getBoundingClientRect();
@@ -22129,10 +22139,10 @@
 
                 const distance = Math.sqrt((fx - ox) ** 2 + (fy - oy) ** 2);
 
-                // Brillo basado en distancia al hueco de luz
-                // Dentro del hueco (< 60% del radio): completamente iluminado
-                // Transición (60-100% del radio): gradual
-                // Fuera (> 100%): oscurecido
+                // Brightness based on distance to the light hole
+                // Inside the hole (< 60% radius): fully illuminated
+                // Transition (60-100% radius): gradual
+                // Outside (> 100%): darkened
                 const innerRadius = effectRadius * 0.6;
                 const outerRadius = effectRadius;
                 const minBrightness = 0.70;
@@ -22140,14 +22150,14 @@
 
                 let brightness;
                 if (distance < innerRadius) {
-                    // Dentro del hueco de luz - completamente iluminado
+                    // Inside the light hole - fully illuminated
                     brightness = maxBrightness;
                 } else if (distance < outerRadius) {
-                    // Transición gradual
+                    // Gradual transition
                     const t = (distance - innerRadius) / (outerRadius - innerRadius);
                     brightness = maxBrightness - (maxBrightness - minBrightness) * t;
                 } else {
-                    // Fuera del hueco - oscurecido
+                    // Outside the hole - darkened
                     brightness = minBrightness;
                 }
 
@@ -22155,7 +22165,7 @@
                     opponentEl.style.filter = `brightness(${brightness})`;
                 }
             } else {
-                // Si el oponente tiene furia, quitar cualquier filtro de brillo
+                // If the opponent has fury, remove any brightness filter
                 game[opponent].element.style.filter = '';
             }
         }
@@ -22178,25 +22188,25 @@
             updateFuryBar(fighter);
             log(`${fighterName(fighter)} fury ended`, 'log-fury');
 
-            // Quitar el brillo del personaje
+            // Remove character glow
             f.element.classList.remove('fury-glow');
-            f.element.style.filter = ''; // Limpiar filtro inline
+            f.element.style.filter = ''; // Clear inline filter
 
-            // Verificar estado del oponente
+            // Check opponent state
             const opponent = fighter === 'player' ? 'cpu' : 'player';
             if (game[opponent].furyActive) {
-                // El oponente aún tiene furia - este personaje se oscurece
+                // Opponent still has fury - this character gets dimmed
                 f.element.classList.add('fury-dimmed');
-                // Asegurar que el oponente no esté oscurecido
+                // Ensure the opponent is not dimmed
                 game[opponent].element.classList.remove('fury-dimmed');
                 game[opponent].element.style.filter = '';
             } else {
-                // Ninguno tiene furia - quitar oscurecimiento de ambos
+                // Neither has fury - remove dimming from both
                 game[opponent].element.classList.remove('fury-dimmed');
                 f.element.classList.remove('fury-dimmed');
             }
 
-            // Quitar oscuridad y filtros si ninguno tiene furia activa
+            // Remove darkness and filters if neither has active fury
             if (!game.player.furyActive && !game.cpu.furyActive) {
                 const darkness = _furyDarknessEl || document.querySelector('.fury-darkness');
                 if (darkness) {
@@ -23540,7 +23550,7 @@
             const createBtn  = document.getElementById('aon-pvp-create-btn');
             if (aonPvpFee <= 0) {
                 feeEl.textContent = '🪙 --'; winEl.textContent = '🪙 --'; platEl.textContent = '🪙 --';
-                createBtn.disabled = true; createBtn.textContent = 'PUBLICAR DESAFÍO'; return;
+                createBtn.disabled = true; createBtn.textContent = 'POST CHALLENGE'; return;
             }
             const totalPool  = aonPvpFee * 2;
             const platform   = Math.floor(totalPool * 0.04);
@@ -23549,9 +23559,9 @@
             winEl.textContent  = '🪙 ' + prize;
             platEl.textContent = '-🪙 ' + platform;
             if (globalTokens < aonPvpFee) {
-                createBtn.disabled = true; createBtn.textContent = 'NO TIENES SUFICIENTES TOKENS';
+                createBtn.disabled = true; createBtn.textContent = 'NOT ENOUGH TOKENS';
             } else {
-                createBtn.disabled = false; createBtn.textContent = 'PUBLICAR DESAFÍO';
+                createBtn.disabled = false; createBtn.textContent = 'POST CHALLENGE';
             }
         }
 
@@ -23561,7 +23571,7 @@
             const detEl   = document.getElementById('aon-my-challenge-details');
             if (aonPvpMyChallenge) {
                 const fmt = aonPvpMyChallenge.roundsToWin === 3 ? 'BO5' : 'BO3';
-                detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — Esperando rival...';
+                detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — Waiting for opponent...';
                 boxEl.style.display  = 'block';
                 formEl.style.display = 'none';
             } else {
@@ -23574,7 +23584,7 @@
         async function aonCreatePvpChallenge() {
             if (!playerSession) return;
             const character = getSelectedCharacter();
-            if (!character) { showNotice('Selecciona un personaje primero.'); return; }
+            if (!character) { showNotice('Select a character first.'); return; }
             const _pendingCount = getPendingLevelUpCount(character);
             if (_pendingCount > 0) {
                 showNotice(`Apply your pending stat upgrade${_pendingCount > 1 ? 's' : ''} before fighting! (${_pendingCount} pending)`);
@@ -23602,15 +23612,15 @@
                 });
                 if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
                 const data = await resp.json();
-                if (!data.ok) { showNotice(data.error || 'No se pudo publicar el desafío.'); aonUpdatePvpSummary(); return; }
+                if (!data.ok) { showNotice(data.error || 'Could not post challenge.'); aonUpdatePvpSummary(); return; }
 
                 globalTokens = data.newTokens;
                 saveProgression();
                 aonPvpMyChallenge = { matchId: data.matchId, entryFee: aonPvpFee, roundsToWin: aonPvpRoundsToWin };
                 aonRefreshPvpTab();
-                showToast('¡Desafío publicado! Esperando rival...');
+                showToast('Challenge posted! Waiting for opponent...');
             } catch (e) {
-                showNotice('Error al conectar con el servidor.');
+                showNotice('Failed to connect to the server.');
                 aonUpdatePvpSummary();
             }
         }
@@ -23628,16 +23638,16 @@
                 });
                 if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
                 const data = await resp.json();
-                if (!data.ok) { showNotice(data.error || 'No se pudo cancelar.'); btn.disabled = false; btn.textContent = 'CANCELAR'; return; }
+                if (!data.ok) { showNotice(data.error || 'Could not cancel.'); btn.disabled = false; btn.textContent = 'CANCEL'; return; }
 
                 globalTokens = data.newTokens;
                 saveProgression();
                 aonPvpMyChallenge = null;
                 aonRefreshPvpTab();
-                showToast('Desafío cancelado. Tokens devueltos.');
+                showToast('Challenge cancelled. Tokens refunded.');
             } catch (e) {
-                showNotice('Error al conectar con el servidor.');
-                btn.disabled = false; btn.textContent = 'CANCELAR';
+                showNotice('Failed to connect to the server.');
+                btn.disabled = false; btn.textContent = 'CANCEL';
             }
         }
 
@@ -23660,7 +23670,7 @@
 
                 const challenges = data.challenges ?? [];
                 if (!challenges.length) {
-                    listEl.innerHTML = '<div class="aon-lobby-empty">No hay desafíos abiertos.<br>¡Sé el primero en publicar uno!</div>';
+                    listEl.innerHTML = '<div class="aon-lobby-empty">No open challenges.<br>Be the first to post one!</div>';
                     return;
                 }
 
@@ -23689,14 +23699,14 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                listEl.innerHTML = '<div class="aon-lobby-empty">Error al cargar. Intenta de nuevo.</div>';
+                listEl.innerHTML = '<div class="aon-lobby-empty">Failed to load. Try again.</div>';
             }
         }
 
         async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot, chain, onChainRoomId) {
             if (!playerSession) return;
             const character = getSelectedCharacter();
-            if (!character) { showNotice('Selecciona un personaje para unirte al desafío.'); return; }
+            if (!character) { showNotice('Select a character to join the challenge.'); return; }
 
             // ── Detect cross-chain scenario ─────────────────────────────────────
             // P2's chain is determined by which wallet is available
@@ -23713,7 +23723,7 @@
                 const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
                 showConfirm(
                     '⚔️ CROSS-CHAIN CHALLENGE',
-                    `vs ${challengerName} (${chain.toUpperCase()})\nApuesta: 🪙 ${entryFee} — ${fmt}\nTu wallet: ${p2Chain.toUpperCase()}\n\nSe bloqueará tu apuesta en ${p2Chain.toUpperCase()} hasta que se resuelva la batalla.`,
+                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nYour wallet: ${p2Chain.toUpperCase()}\n\nYour wager will be locked on ${p2Chain.toUpperCase()} until the battle resolves.`,
                     async () => {
                         if (p2Chain === 'monad') {
                             await aonJoinCrossChainFromMonad(character, onChainRoomId, entryFee, challengerName);
@@ -23730,7 +23740,7 @@
                 const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
                 showConfirm(
                     '⚔️ ON-CHAIN CHALLENGE',
-                    `vs ${challengerName} (${chain.toUpperCase()})\nApuesta: 🪙 ${entryFee} — ${fmt}\nPremio total: 🪙 ${pot}`,
+                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
                     async () => {
                         if (chain === 'monad') {
                             await aonJoinSameChainMonad(character, matchId, onChainRoomId, challengerName, entryFee);
@@ -23745,16 +23755,16 @@
 
             // ── Off-chain fallback (Supabase tokens) ────────────────────────────
             if (globalTokens < entryFee) {
-                showNotice('No tienes suficientes tokens. Necesitas 🪙 ' + entryFee + '.'); return;
+                showNotice('Not enough tokens. You need 🪙 ' + entryFee + '.'); return;
             }
 
             const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
             showConfirm(
-                '⚔️ ACEPTAR DESAFÍO',
-                `vs ${challengerName}\nApuesta: 🪙 ${entryFee} — ${fmt}\nPremio total: 🪙 ${pot}`,
+                '⚔️ ACCEPT CHALLENGE',
+                `vs ${challengerName}\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
                 async () => {
                     const listEl = document.getElementById('aon-lobby-list');
-                    listEl.innerHTML = '<div class="aon-lobby-empty">Luchando contra ' + challengerName + '...</div>';
+                    listEl.innerHTML = '<div class="aon-lobby-empty">Fighting against ' + challengerName + '...</div>';
                     try {
                         const resp = await fetchWithTimeout(BACKEND_URL + '/api/aon/accept', {
                             method: 'POST',
@@ -23767,7 +23777,7 @@
                         });
                         if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
                         const data = await resp.json();
-                        if (!data.ok) { showNotice(data.error || 'Error al aceptar el desafío.'); aonLoadLobby(); return; }
+                        if (!data.ok) { showNotice(data.error || 'Failed to accept the challenge.'); aonLoadLobby(); return; }
 
                         // Award tokens locally (server already updated the DB)
                         if (data.won) {
@@ -23780,22 +23790,22 @@
                         // Show result in lobby tab
                         const score = data.seriesScore;
                         const roundLines = (data.roundResults || []).map((r, i) =>
-                            `Round ${i + 1}: ${r.winner === 'player' ? '✓ ' + challengerName : '✓ Tú'} (${r.turns} turnos)`
+                            `Round ${i + 1}: ${r.winner === 'player' ? '✓ ' + challengerName : '✓ You'} (${r.turns} turns)`
                         ).join('<br>');
 
                         listEl.innerHTML = `
                             <div class="aon-pvp-result ${data.won ? 'win' : 'loss'}">
-                                <div class="aon-pvp-result-title">${data.won ? '🏆 ¡GANASTE!' : '💀 PERDISTE'}</div>
-                                <div class="aon-pvp-result-pot">${data.won ? '+🪙 ' + (data.potWon - entryFee) + ' ganancia neta' : '-🪙 ' + entryFee}</div>
+                                <div class="aon-pvp-result-title">${data.won ? '🏆 YOU WON!' : '💀 YOU LOST'}</div>
+                                <div class="aon-pvp-result-pot">${data.won ? '+🪙 ' + (data.potWon - entryFee) + ' net profit' : '-🪙 ' + entryFee}</div>
                                 <div class="aon-pvp-result-score">vs ${challengerName} — ${score.opponent}-${score.challenger}</div>
                                 <div class="aon-pvp-result-rounds" style="margin-top:8px;">${roundLines}</div>
                             </div>
-                            <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                            <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Browse more challenges</button>
                         `;
                         document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
                         updateTokenDisplay();
                     } catch (e) {
-                        showNotice('Error al conectar con el servidor.');
+                        showNotice('Failed to connect to the server.');
                         aonLoadLobby();
                     }
                 }
@@ -23920,11 +23930,11 @@
                 // 7. Fallback: show static result (no replay available)
                 listEl.innerHTML = `
                     <div class="aon-pvp-result ${didWin ? 'win' : 'loss'}">
-                        <div class="aon-pvp-result-title">${didWin ? '🏆 ¡GANASTE!' : '💀 PERDISTE'}</div>
-                        <div class="aon-pvp-result-pot">vs ${challengerName} — ${onChainResult.turns} turnos</div>
-                        <div class="aon-pvp-result-score">Pago: ${onChainResult.payout} MON</div>
+                        <div class="aon-pvp-result-title">${didWin ? '🏆 YOU WON!' : '💀 YOU LOST'}</div>
+                        <div class="aon-pvp-result-pot">vs ${challengerName} — ${onChainResult.turns} turns</div>
+                        <div class="aon-pvp-result-score">Payout: ${onChainResult.payout} MON</div>
                     </div>
-                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Browse more challenges</button>
                 `;
                 document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
             } catch (e) {
@@ -24042,7 +24052,7 @@
                         <div class="aon-pvp-result-pot">vs ${challengerName} (SOLANA)</div>
                         <div class="aon-pvp-result-score">Your MON is locked. Battle resolves on Solana.<br>Result will be relayed back to settle your lock.</div>
                     </div>
-                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Ver más desafíos</button>
+                    <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Browse more challenges</button>
                 `;
                 document.getElementById('aon-lobby-refresh').addEventListener('click', aonLoadLobby);
 
@@ -25248,22 +25258,22 @@
                 const w = img.width;
                 const h = img.height;
 
-                // Si se pasan columnas y filas forzadas (para running 2x5), las usamos directamente
-                let cols = forcedCols || Math.round(w / h); // fallback: asume frames cuadrados
+                // If forced cols/rows are passed (e.g. running 2x5), use them directly
+                let cols = forcedCols || Math.round(w / h); // fallback: assume square frames
                 let rows = forcedRows || 1;
 
-                // Si no forzamos, intentamos adivinar mejor
+                // If not forced, try to guess better
                 if (!forcedCols && !forcedRows) {
                     if (w > h * 1.5) {
-                        // Horizontal → más columnas que filas
+                        // Horizontal → more columns than rows
                         cols = Math.round(w / h);
                         rows = 1;
                     } else if (h > w * 1.5) {
-                        // Vertical → más filas que columnas
+                        // Vertical → more rows than columns
                         rows = Math.round(h / w);
                         cols = 1;
                     } else {
-                        // Cuadrado o casi → asumimos cuadrícula
+                        // Square or nearly square → assume grid
                         const side = Math.sqrt(w * h / (w/h)); // approx square frame
                         cols = Math.round(w / side);
                         rows = Math.round(h / side);
@@ -25285,24 +25295,24 @@
                         canvas.height = outH;
                         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-                        // Extraemos exactamente la región del frame
+                        // Extract exactly the frame region
                         ctx.drawImage(
                             img,
                             c * frameW,           // source x
                             r * frameH,           // source y
                             frameW, frameH,       // source width/height
-                            0, 0, outW, outH      // destino (escalado si necesario)
+                            0, 0, outW, outH      // destination (scaled if needed)
                         );
 
                         frames.push(await canvasToBlobURL(canvas));
                     }
                 }
 
-                console.log(`Extraídos ${frames.length} frames de ${imgSrc} (${cols}x${rows})`);
+                console.log(`Extracted ${frames.length} frames from ${imgSrc} (${cols}x${rows})`);
                 resolve(frames);
             } catch(e) {
-                console.warn("Error extrayendo frames:", e);
-                resolve([imgSrc]); // fallback: usar la imagen completa
+                console.warn("Error extracting frames:", e);
+                resolve([imgSrc]); // fallback: use the full image
             }
         };
         img.onerror = () => resolve([imgSrc]);
