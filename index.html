@@ -18068,8 +18068,11 @@
                     jaImg.style.transform  = baseXform.trim() || '';
                     setTimeout(() => { jaImg.style.transition = ''; }, 100);
                 }
-                // Restore CSS transition so the return run animates (was 'none' during RAF)
-                attackerEl.style.transition = '';
+                // KEEP transition: none !important — the landing position (style.left)
+                // must stay frozen through the defense phase. If we restore the .dashing
+                // CSS transition here, the browser will animate left back to the pre-jump
+                // value, causing the "teleport" bug. The return phase sets its own
+                // transition when it's time to run back.
                 stopRunAnimation(attackerEl);
                 playFootstep();
                 // Defer facing flip — character turns around only after returning to corner
