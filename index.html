@@ -14826,7 +14826,6 @@
                         // Decode JWT payload to detect userId mismatch (prevents 403)
                         try {
                             const payload = JSON.parse(atob(fresh.split('.')[1]));
-                            console.log('[auth debug] JWT payload keys:', Object.keys(payload), 'sub:', payload.sub, 'sid:', payload.sid, 'iss:', payload.iss, 'session playerId:', playerSession.playerId);
                             const tokenUserId = payload.sub || payload.userId;
                             if (tokenUserId && tokenUserId !== playerSession.playerId) {
                                 // Only auto-fix if both are Privy DIDs (same format)
@@ -26930,6 +26929,8 @@
                 _lloProgress(PHASE2_END, 'WEAPONS...');
 
                 // ── Phase 3 (55–96%): extract frames from cached blobs ──
+                // Yield to browser between weapons so the progress bar actually repaints.
+                const _yieldFrame = () => new Promise(r => requestAnimationFrame(r));
                 const total = allWeapons.length;
                 for (let i = 0; i < total; i++) {
                     const weapon    = allWeapons[i];
@@ -26937,6 +26938,7 @@
                     const attackUrl = weapon.img.replace('.png', ' Attack.png');
                     const pct = PHASE2_END + ((i + 1) / total) * (96 - PHASE2_END);
                     _lloProgress(Math.round(pct), 'WEAPONS...');
+                    await _yieldFrame();
                     if (!_weaponRunFramesCache[weapon.id]) {
                         try { _weaponRunFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[runUrl] || runUrl, 5, 2); }
                         catch(e) { _weaponRunFramesCache[weapon.id] = []; }
