@@ -14035,7 +14035,11 @@
             const effectiveLimit = getEffectiveBattleLimit(char);
             const remaining = Math.max(0, effectiveLimit - played);
             if (remaining === 0) {
-                el.textContent = `NO EXP BATTLES LEFT`;
+                const now = new Date();
+                const midnight = new Date(now);
+                midnight.setHours(24, 0, 0, 0);
+                const hoursLeft = Math.ceil((midnight - now) / 3600000);
+                el.textContent = `NO EXP BATTLES LEFT — resets in ${hoursLeft}h`;
                 el.classList.add('limit-reached');
             } else {
                 const suffix = effectiveLimit < DAILY_BATTLE_LIMIT ? ' (morale ↓)' : '';
@@ -14589,6 +14593,13 @@
             if (!character) return false;
             const w = character.wellness ?? 100;
             return w > 10; // Critically Injured (0-10) = can't fight
+        }
+
+        function hasBattlesRemaining(character) {
+            if (!character) return false;
+            const today = new Date().toDateString();
+            const played = (character.dailyBattleDate === today) ? (character.dailyBattlesPlayed || 0) : 0;
+            return played < getEffectiveBattleLimit(character);
         }
 
         // Returns the number of pending level-ups queued for this character.
@@ -19189,11 +19200,14 @@
                 updateInstinctDisplay(character);
 
                 const isDepressed = (character.morale ?? 100) < 20;
-                playBtn.disabled = !canFight(character) || isDepressed;
+                const noBattlesLeft = !hasBattlesRemaining(character);
+                playBtn.disabled = !canFight(character) || isDepressed || noBattlesLeft;
                 if (!canFight(character)) {
                     playBtn.title = 'Fighter is critically injured! Feed or heal first.';
                 } else if (isDepressed) {
                     playBtn.title = 'Fighter is too depressed to fight! Use activities to boost morale.';
+                } else if (noBattlesLeft) {
+                    playBtn.title = 'Daily battle limit reached! Try again tomorrow.';
                 } else {
                     playBtn.title = '';
                 }
@@ -29420,6 +29434,10 @@
             }
             if ((character.morale ?? 100) < 20) {
                 showNotice('Fighter is too depressed to fight! Use activities to boost morale.');
+                return;
+            }
+            if (!hasBattlesRemaining(character)) {
+                showNotice('Daily battle limit reached! Try again tomorrow.');
                 return;
             }
             await findPvpMatch(character);
