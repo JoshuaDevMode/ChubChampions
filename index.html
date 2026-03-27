@@ -19385,7 +19385,7 @@
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
-                    body: JSON.stringify({ action: 'apply', characterId: character.id, optionIndex: optIndex })
+                    body: JSON.stringify({ action: 'apply', characterId: character.id, playerId: playerSession?.playerId, optionIndex: optIndex })
                 });
                 const data = await resp.json();
                 if (data.ok && data.newStats) {
@@ -19424,6 +19424,13 @@
                         console.error('[levelup] no fallback option available, syncing current state');
                         syncCharacterToBackend(character);
                     }
+                    // Clear the stuck pending_levelup flag on the server so it doesn't
+                    // re-queue on next page load (stats were already applied locally).
+                    fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+                        body: JSON.stringify({ action: 'clear', characterId: character.id, playerId: playerSession?.playerId })
+                    }).catch(() => {});
                 }
             } catch(e) {
                 console.warn('[levelup] network error, applying locally as fallback:', e);
@@ -19433,6 +19440,12 @@
                 } else {
                     syncCharacterToBackend(character);
                 }
+                // Clear stuck pending_levelup flag (fire-and-forget)
+                fetchWithTimeout(BACKEND_URL + '/api/character/levelup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+                    body: JSON.stringify({ action: 'clear', characterId: character.id, playerId: playerSession?.playerId })
+                }).catch(() => {});
             }
 
             updateLobbyCharacterDisplay();
