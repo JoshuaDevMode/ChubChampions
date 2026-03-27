@@ -1871,7 +1871,7 @@
             100% { opacity: 0; transform: translate(-50%, -64%); }
         }
         .battle-combo-counter {
-            position: absolute; top: 52%; left: 58%;
+            position: absolute; top: 30%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 25; display: flex; flex-direction: column;
             align-items: center; line-height: 1; pointer-events: none;
@@ -17429,10 +17429,16 @@
 
             const cfFlash = document.createElement('div');
             cfFlash.className = 'battle-combo-counter';
+            // Position between fighters
+            const cfPX = game.player?._homeX ?? 128;
+            const cfCX = game.cpu?._homeX ?? 1252;
+            const cfMidX = (cfPX + cfCX) / 2 + 110;
+            cfFlash.style.left = (cfMidX / 1600 * 100) + '%';
             cfFlash.innerHTML =
                 '<span class="combo-x" style="color:#ff4500;text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 24px #ff4500">FINISH!</span>' +
                 '<span class="combo-label" style="color:#fff;letter-spacing:3px">COMBO FINISHER</span>';
-            cfArena.appendChild(cfFlash);
+            const cfWorld = document.getElementById('arena-world');
+            (cfWorld || cfArena).appendChild(cfFlash);
             cfFlash.addEventListener('animationend', () => cfFlash.remove(), { once: true });
 
             if (cfAttImg) {
@@ -17555,6 +17561,7 @@
             _fighterGroundY.cpu    = getCharacterFeetY('cpu');
 
             let _comboCount = 1; // tracks hits in current combo sequence
+            let _inCombo = false; // true between 'combo' event and last combo hit
             for (let _ei = 0; _ei < events.length; _ei++) {
                 const event = events[_ei];
                 if (game.gameOver) break;
@@ -17658,35 +17665,60 @@
                     }
 
                     case 'combo':
-                        _comboCount++;
-                        showComboHit(_comboCount);
+                        // combo event now arrives BEFORE the extra hits.
+                        // Set flag so subsequent attacks know they are part of a combo.
+                        _inCombo = true;
+                        _comboCount = 1; // first hit was already played; counter starts at 1
                         await sleep(20);
                         break;
 
                     case 'combo_finisher':
                         await _animateComboFinisher(event);
                         _comboCount = 0;
+                        _inCombo = false;
                         break;
 
                     case 'attack': {
-                        // Separate real combos (preceded/followed by 'combo' event)
-                        // from Light Step (consecutive attacks from same fighter, no combo event)
+                        // Determine if this attack is part of a real combo or a Light Step.
+                        // Real combo: _inCombo flag is set by a preceding 'combo' event.
+                        // Light Step: consecutive attacks from same fighter without a combo event.
                         let _isComboFirst = false, _isComboFollow = false;
                         let _isLSFirst    = false, _isLSFollow    = false;
-                        for (let _f = _ei + 1; _f < events.length; _f++) {
-                            const _fev = events[_f];
-                            if (_fev.type === 'combo')  { _isComboFirst = true; break; }
-                            if (_fev.type === 'attack') { _isLSFirst = _fev.attacker === event.attacker; break; }
-                            if (_fev.type !== 'log' && _fev.type !== 'skill_effect') break;
+
+                        if (_inCombo) {
+                            // All attacks after the combo event are combo follow-ups.
+                            // The very first attack in the combo (the one RIGHT AFTER the combo event)
+                            // is both a "follow" (combo already started) and needs to hold position
+                            // for the next hit (isComboFirst) if more attacks follow.
+                            _isComboFollow = true;
+                            _comboCount++;
+                            showComboHit(_comboCount);
+                            // Look ahead: is there another attack from the same attacker?
+                            for (let _f = _ei + 1; _f < events.length; _f++) {
+                                const _fev = events[_f];
+                                if (_fev.type === 'attack' && _fev.attacker === event.attacker) { _isComboFirst = true; break; }
+                                if (_fev.type === 'combo_finisher') { _isComboFirst = true; break; }
+                                if (_fev.type !== 'log' && _fev.type !== 'skill_effect') break;
+                            }
+                        } else {
+                            // Not in a combo — check for Light Step (consecutive same-attacker hits)
+                            for (let _f = _ei + 1; _f < events.length; _f++) {
+                                const _fev = events[_f];
+                                if (_fev.type === 'combo')  { _isComboFirst = true; break; }
+                                if (_fev.type === 'attack') { _isLSFirst = _fev.attacker === event.attacker; break; }
+                                if (_fev.type !== 'log' && _fev.type !== 'skill_effect') break;
+                            }
+                            for (let _b = _ei - 1; _b >= 0; _b--) {
+                                const _bev = events[_b];
+                                if (_bev.type === 'attack') { _isLSFollow = _bev.attacker === event.attacker; break; }
+                                if (_bev.type !== 'log' && _bev.type !== 'skill_effect') break;
+                            }
+                            if (_isComboFirst) _comboCount = 1;
                         }
-                        for (let _b = _ei - 1; _b >= 0; _b--) {
-                            const _bev = events[_b];
-                            if (_bev.type === 'combo')  { _isComboFollow = true; break; }
-                            if (_bev.type === 'attack') { _isLSFollow = _bev.attacker === event.attacker; break; }
-                            if (_bev.type !== 'log' && _bev.type !== 'skill_effect') break;
-                        }
-                        if (!_isComboFollow) _comboCount = 1; // new combo sequence — reset counter
+
                         await animateServerAttack(event, _isComboFirst, _isComboFollow, _isLSFirst, _isLSFollow);
+                        // If combo ended (last hit, no more follow-ups), clear flag
+                        if (_inCombo && !_isComboFirst) _inCombo = false;
                         break;
                     }
 
@@ -22580,10 +22612,17 @@
             const color  = colors[Math.min(count - 2, colors.length - 1)];
             const el = document.createElement('div');
             el.className = 'battle-combo-counter';
+            // Position between the two fighters (midpoint of their home positions)
+            const pX = game.player?._homeX ?? 128;
+            const cX = game.cpu?._homeX ?? 1252;
+            const midX = (pX + cX) / 2 + 110; // +110 = half FIGHTER_WIDTH to center
+            el.style.left = (midX / 1600 * 100) + '%';
             el.innerHTML =
                 '<span class="combo-x" style="color:' + color + ';text-shadow:3px 3px 0 rgba(0,0,0,0.85),0 0 18px ' + color + '">×' + count + '</span>' +
                 '<span class="combo-label">COMBO</span>';
-            document.getElementById('arena').appendChild(el);
+            // Append to arena-world so it follows camera zoom/pan
+            const world = document.getElementById('arena-world');
+            (world || document.getElementById('arena')).appendChild(el);
             el.addEventListener('animationend', () => el.remove(), { once: true });
         }
 
