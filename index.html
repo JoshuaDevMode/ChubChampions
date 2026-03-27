@@ -16923,7 +16923,8 @@
                 try {
                     const resp = await preFetch;
                     if (!resp.ok) {
-                        console.error('[server battle] pre-fetch API returned', resp.status);
+                        const errBody = await resp.json().catch(() => ({}));
+                        console.error('[server battle] pre-fetch API returned', resp.status, errBody);
                         stopMatchTimer();
                         game.inProgress = false;
                         game.gameOver = true;
