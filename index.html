@@ -14692,6 +14692,7 @@
                 }, 3000);
                 return;
             }
+            _lloProgress(1, 'LOADING SAVE DATA...');
             loadCharacters();
             fetchCharactersFromServer(); // async: merges server chars not in localStorage
             // One-time migration: push all local chars to server so player_id is set in DB.
@@ -14701,6 +14702,7 @@
                 characters.forEach(c => syncCharacterToBackend(c));
                 localStorage.setItem(syncFlag, '1');
             }
+            _lloProgress(1.5, 'APPLYING STATUS EFFECTS...');
             applyWellnessDecayAll();
             applyMoraleDecayAll();
             loadPendingLevelUps();
@@ -14802,7 +14804,9 @@
             if (playerSession) {
                 // Wait for LoginGate to expose __getPrivyToken so startup API calls
                 // get a fresh Privy token instead of the possibly-expired stored one.
+                _lloProgress(0.5, 'CONNECTING...');
                 await waitForTokenRefresh();
+                _lloProgress(1, 'SYNCING ACCOUNT...');
                 syncStateFromServer();
                 initGameWithSession();
             }
@@ -15103,16 +15107,31 @@
                         if (s) { const p = JSON.parse(s); p.preferredChain = data.preferredChain; localStorage.setItem('chubchampions_session', JSON.stringify(p)); }
                     } catch(e) {}
                 }
-                // Apply authoritative daily battle counts from server
+                // Apply authoritative battle stats from server
+                const today = new Date().toDateString();
+                let charsUpdated = false;
                 if (data.dailyBattleCounts && typeof data.dailyBattleCounts === 'object') {
-                    const today = new Date().toDateString();
                     for (const char of characters) {
                         const serverCount = data.dailyBattleCounts[String(char.id)] || 0;
                         char.dailyBattleDate = today;
                         char.dailyBattlesPlayed = serverCount;
                     }
+                    charsUpdated = true;
+                }
+                if (data.characterStats && typeof data.characterStats === 'object') {
+                    for (const char of characters) {
+                        const s = data.characterStats[String(char.id)];
+                        if (s) {
+                            char.gamesPlayed = s.played;
+                            char.gamesWon    = s.won;
+                        }
+                    }
+                    charsUpdated = true;
+                }
+                if (charsUpdated) {
                     saveCharacters();
                     updateDailyBattleCounter();
+                    updateCharacterUI(getSelectedCharacter());
                 }
 
                 saveProgression();
