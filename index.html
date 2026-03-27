@@ -10512,7 +10512,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/ChubChampions/assets/index-BkIULVS2.js"></script>
+  <script type="module" crossorigin src="/ChubChampions/assets/index-C8fvXP3X.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -10607,7 +10607,7 @@
                     </div>
                     <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;">⏻ DISCONNECT</button>
                 </div>
-                <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('fightchub:showlogin'))">🎮 LOGIN</button>
+                <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('chubchampions:showlogin'))">🎮 LOGIN</button>
             </div>
             <!-- Settings gear -->
             <button class="lobby-settings-btn" id="settings-btn-lobby" title="Settings"><img src="/ChubChampions/assets/Settings-Icon-CLXl9vr2.png" alt="⚙"></button>
@@ -12976,7 +12976,7 @@
 
         function loadProgression() {
             try {
-                const saved = localStorage.getItem('fightchub_progression');
+                const saved = localStorage.getItem('chubchampions_progression');
                 if (saved) {
                     const data = JSON.parse(saved);
                     globalUnlockedWeapons = data.globalUnlockedWeapons || [];
@@ -13074,7 +13074,7 @@
 
         function saveProgression() {
             try {
-                localStorage.setItem('fightchub_progression', JSON.stringify({
+                localStorage.setItem('chubchampions_progression', JSON.stringify({
                     globalUnlockedWeapons: globalUnlockedWeapons,
                     globalTokens: globalTokens,
                     globalCrystals: globalCrystals,
@@ -14282,7 +14282,7 @@
                     characterId: p.character ? p.character.id : null,
                     options: p.options
                 }));
-                localStorage.setItem('fightchub_pending_levelups', JSON.stringify(serializable));
+                localStorage.setItem('chubchampions_pending_levelups', JSON.stringify(serializable));
             } catch (e) {
                 console.error('Error saving pending level ups:', e);
             }
@@ -14290,7 +14290,7 @@
 
         function loadPendingLevelUps() {
             try {
-                const saved = localStorage.getItem('fightchub_pending_levelups');
+                const saved = localStorage.getItem('chubchampions_pending_levelups');
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     pendingLevelUps = parsed.map(p => ({
@@ -14684,7 +14684,7 @@
             fetchCharactersFromServer(); // async: merges server chars not in localStorage
             // One-time migration: push all local chars to server so player_id is set in DB.
             // Only runs once per player (flagged in localStorage to avoid spamming on every login).
-            const syncFlag = 'fightchub_chars_player_id_synced';
+            const syncFlag = 'chubchampions_chars_player_id_synced';
             if (!localStorage.getItem(syncFlag) && characters.length > 0) {
                 characters.forEach(c => syncCharacterToBackend(c));
                 localStorage.setItem(syncFlag, '1');
@@ -14709,7 +14709,7 @@
                 avatar:            data.avatar  || '',
                 token:             data.token   || '',
             };
-            localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
+            localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
             updatePlayerSessionUI();
             syncStateFromServer();
             initGameWithSession();
@@ -14720,11 +14720,11 @@
             if (!playerSession) return;
             playerSession.token = token;
             try {
-                const s = localStorage.getItem('fightchub_session');
+                const s = localStorage.getItem('chubchampions_session');
                 if (s) {
                     const p = JSON.parse(s);
                     p.token = token;
-                    localStorage.setItem('fightchub_session', JSON.stringify(p));
+                    localStorage.setItem('chubchampions_session', JSON.stringify(p));
                 }
             } catch(e) {}
         };
@@ -14738,7 +14738,7 @@
             if (_handlingUnauthorized) return;
             _handlingUnauthorized = true;
             console.warn('[auth] Session expired — redirecting to login');
-            localStorage.removeItem('fightchub_session');
+            localStorage.removeItem('chubchampions_session');
             playerSession = null;
             // Show a brief notice before redirecting
             const notice = document.createElement('div');
@@ -14778,11 +14778,11 @@
                     avatar:            params.get('avatar')  || '',
                     token:             params.get('token')   || '',
                 };
-                localStorage.setItem('fightchub_session', JSON.stringify(playerSession));
+                localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
                 window.history.replaceState({}, '', window.location.pathname);
             } else {
                 try {
-                    const saved = localStorage.getItem('fightchub_session');
+                    const saved = localStorage.getItem('chubchampions_session');
                     if (saved) playerSession = JSON.parse(saved);
                 } catch(e) {}
             }
@@ -14807,9 +14807,30 @@
                     const fresh = await window.__getPrivyToken();
                     if (fresh) {
                         playerSession.token = fresh;
-                        const s = localStorage.getItem('fightchub_session');
+                        // Decode JWT payload to detect userId mismatch (prevents 403)
+                        try {
+                            const payload = JSON.parse(atob(fresh.split('.')[1]));
+                            const tokenUserId = payload.sub || payload.userId;
+                            if (tokenUserId && tokenUserId !== playerSession.playerId) {
+                                // Only auto-fix if both are Privy DIDs (same format)
+                                const bothPrivy = tokenUserId.startsWith('did:privy:') && playerSession.playerId.startsWith('did:privy:');
+                                if (bothPrivy) {
+                                    console.warn('[auth] playerId mismatch — updating from', playerSession.playerId, 'to', tokenUserId);
+                                    playerSession.playerId = tokenUserId;
+                                } else {
+                                    // Format mismatch — force re-login to avoid data corruption
+                                    console.error('[auth] playerId format mismatch — token:', tokenUserId, 'session:', playerSession.playerId, '— forcing re-login');
+                                    localStorage.removeItem('chubchampions_session');
+                                    playerSession = null;
+                                    showNotice('Session expired. Redirecting to login...');
+                                    setTimeout(() => { window.location.href = BACKEND_URL + '/'; }, 1800);
+                                    return base;
+                                }
+                            }
+                        } catch(e) { /* non-standard JWT, skip check */ }
+                        const s = localStorage.getItem('chubchampions_session');
                         if (s) {
-                            try { const p = JSON.parse(s); p.token = fresh; localStorage.setItem('fightchub_session', JSON.stringify(p)); } catch(e) {}
+                            try { const p = JSON.parse(s); p.token = fresh; p.playerId = playerSession.playerId; localStorage.setItem('chubchampions_session', JSON.stringify(p)); } catch(e) {}
                         }
                     }
                 }
@@ -15033,7 +15054,7 @@
                 if (data.notFound) {
                     console.warn('[state] account not found on server — clearing local data');
                     Object.keys(localStorage)
-                        .filter(k => k.startsWith('fightchub_') && k !== 'fightchub_session')
+                        .filter(k => k.startsWith('chubchampions_') && k !== 'chubchampions_session')
                         .forEach(k => localStorage.removeItem(k));
                     globalTokens = 0; globalCrystals = 0;
                     pendingVictoryChests = []; winStreak = 0;
@@ -15065,8 +15086,8 @@
                 if (data.preferredChain && playerSession) {
                     playerSession.preferredChain = data.preferredChain;
                     try {
-                        const s = localStorage.getItem('fightchub_session');
-                        if (s) { const p = JSON.parse(s); p.preferredChain = data.preferredChain; localStorage.setItem('fightchub_session', JSON.stringify(p)); }
+                        const s = localStorage.getItem('chubchampions_session');
+                        if (s) { const p = JSON.parse(s); p.preferredChain = data.preferredChain; localStorage.setItem('chubchampions_session', JSON.stringify(p)); }
                     } catch(e) {}
                 }
                 saveProgression();
@@ -15222,8 +15243,8 @@
 
             playerSession.name = newName;
             try {
-                const s = localStorage.getItem('fightchub_session');
-                if (s) { const p = JSON.parse(s); p.name = newName; localStorage.setItem('fightchub_session', JSON.stringify(p)); }
+                const s = localStorage.getItem('chubchampions_session');
+                if (s) { const p = JSON.parse(s); p.name = newName; localStorage.setItem('chubchampions_session', JSON.stringify(p)); }
             } catch(e) {}
             updatePlayerSessionUI();
             if (row) row.style.display = 'none';
@@ -15234,12 +15255,12 @@
             document.getElementById('session-widget')?.classList.remove('sw-open');
             playerSession = null;
             Object.keys(localStorage)
-                .filter(k => k.startsWith('fightchub_'))
+                .filter(k => k.startsWith('chubchampions_'))
                 .forEach(k => localStorage.removeItem(k));
             updatePlayerSessionUI();
             // Trigger Privy logout and show React login gate
             window.__privyLogout?.();
-            window.dispatchEvent(new CustomEvent('fightchub:showlogin'));
+            window.dispatchEvent(new CustomEvent('chubchampions:showlogin'));
         }
 
         function toggleSessionMenu() {
@@ -16107,11 +16128,11 @@
 
         function loadCharacters() {
             try {
-                const saved = localStorage.getItem('fightchub_characters');
+                const saved = localStorage.getItem('chubchampions_characters');
                 if (saved) {
                     characters = JSON.parse(saved);
                 }
-                const savedSelected = localStorage.getItem('fightchub_selected_character');
+                const savedSelected = localStorage.getItem('chubchampions_selected_character');
                 if (savedSelected) {
                     selectedCharacterId = parseInt(savedSelected);
                 }
@@ -16260,9 +16281,9 @@
 
         function saveCharacters() {
             try {
-                localStorage.setItem('fightchub_characters', JSON.stringify(characters));
+                localStorage.setItem('chubchampions_characters', JSON.stringify(characters));
                 if (selectedCharacterId) {
-                    localStorage.setItem('fightchub_selected_character', selectedCharacterId.toString());
+                    localStorage.setItem('chubchampions_selected_character', selectedCharacterId.toString());
                 }
             } catch (e) {
                 console.error('Error saving characters:', e);
@@ -16393,7 +16414,7 @@
 
         // ── On-chain AoN — Solana program ─────────────────────────────────────
         // Fill these in after deploying with `anchor build && anchor deploy`
-        const FIGHTCHUB_AON_SOLANA_PROGRAM_ID = ''; // e.g. 'AoN111...' — fill after deploy
+        const CHUB_AON_SOLANA_PROGRAM_ID = ''; // e.g. 'AoN111...' — fill after deploy
         const CHARACTER_SIGNER_SOLANA_PUBKEY  = ''; // base58 pubkey of backend ed25519 key
         const SOLANA_RPC_URL = 'https://api.devnet.solana.com'; // switch to mainnet when ready
 
@@ -16515,7 +16536,7 @@
 
             // 2. Approve token spend (CHUB is burned — contract calls token.spend() directly,
             //    which requires the token contract to approve the escrow as authorized spender)
-            //    Note: FightChubToken.spend() is called by the escrow, no ERC-20 approval needed
+            //    Note: ChubToken.spend() is called by the escrow, no ERC-20 approval needed
             //    if escrow is setAuthorized(true). Keeping this comment for clarity.
 
             // 3. Call createRoom on-chain
@@ -16787,7 +16808,7 @@
                     applyMoraleDecayAll();
                     if (!selectedCharacterId || !characters.find(c => c.id === selectedCharacterId)) {
                         selectedCharacterId = characters[0]?.id ?? null;
-                        localStorage.setItem('fightchub_selected_character', String(selectedCharacterId));
+                        localStorage.setItem('chubchampions_selected_character', String(selectedCharacterId));
                     }
                     saveCharacters();
                     syncGlobalsFromChar(getSelectedCharacter());
@@ -17774,7 +17795,7 @@
         }
 
         let _camZoom = 1.0, _camTransX = 0, _camRaf = null;
-        let _cameraEnabled = localStorage.getItem('fightchub_camera_enabled') !== 'false';
+        let _cameraEnabled = localStorage.getItem('chubchampions_camera_enabled') !== 'false';
 
         function _camTick() {
             const arenaEl = document.getElementById('arena');
@@ -18461,7 +18482,7 @@
         }
 
         function applyForfeitPenalty(battleData) {
-            localStorage.removeItem('fightchub_battle_active');
+            localStorage.removeItem('chubchampions_battle_active');
             stopBattleHeartbeat();
             const char = characters.find(c => c.id === battleData.characterId) || getSelectedCharacter();
             if (char) {
@@ -18504,18 +18525,18 @@
 
         (function checkBattleResume() {
             try {
-                const raw = localStorage.getItem('fightchub_battle_active');
+                const raw = localStorage.getItem('chubchampions_battle_active');
                 if (!raw) return;
                 const battleData = JSON.parse(raw);
 
                 // Validate: must have characterId and game state (full snapshot, not old simple flag)
                 if (!battleData.characterId || !battleData.game) {
-                    localStorage.removeItem('fightchub_battle_active');
+                    localStorage.removeItem('chubchampions_battle_active');
                     return;
                 }
 
                 // Block if battle is actively running in another tab (heartbeat < 4s old)
-                const heartbeat = parseInt(localStorage.getItem('fightchub_battle_heartbeat'));
+                const heartbeat = parseInt(localStorage.getItem('chubchampions_battle_heartbeat'));
                 if (heartbeat && (Date.now() - heartbeat) < 4000) {
                     showForfeitToast('Battle is already running in another tab.');
                     return;
@@ -18524,7 +18545,7 @@
                 // Validate: character must still exist
                 const charExists = characters.some(c => c.id === battleData.characterId);
                 if (!charExists) {
-                    localStorage.removeItem('fightchub_battle_active');
+                    localStorage.removeItem('chubchampions_battle_active');
                     showForfeitToast('Saved battle character no longer exists.');
                     return;
                 }
@@ -18532,7 +18553,7 @@
                 // Show resume overlay (don't remove flag yet — resumeBattle uses it)
                 showResumeOverlay(battleData);
             } catch (e) {
-                localStorage.removeItem('fightchub_battle_active');
+                localStorage.removeItem('chubchampions_battle_active');
             }
         })();
 
@@ -18542,7 +18563,7 @@
 
         function loadMatchHistory() {
             try {
-                const saved = localStorage.getItem('fightchub_history');
+                const saved = localStorage.getItem('chubchampions_history');
                 if (saved) {
                     matchHistory = JSON.parse(saved);
                 }
@@ -18558,7 +18579,7 @@
                 if (matchHistory.length > MAX_HISTORY_ENTRIES) {
                     matchHistory = matchHistory.slice(-MAX_HISTORY_ENTRIES);
                 }
-                localStorage.setItem('fightchub_history', JSON.stringify(matchHistory));
+                localStorage.setItem('chubchampions_history', JSON.stringify(matchHistory));
             } catch (e) {
                 console.error('Error saving match history:', e);
             }
@@ -18736,14 +18757,14 @@
         // final authoritative stats when create_character is confirmed.
         function saveTempChar() {
             if (tempNewCharacter) {
-                localStorage.setItem('fightchub_temp_char', JSON.stringify(tempNewCharacter));
+                localStorage.setItem('chubchampions_temp_char', JSON.stringify(tempNewCharacter));
             } else {
-                localStorage.removeItem('fightchub_temp_char');
+                localStorage.removeItem('chubchampions_temp_char');
             }
         }
         function loadTempChar() {
             try {
-                const raw = localStorage.getItem('fightchub_temp_char');
+                const raw = localStorage.getItem('chubchampions_temp_char');
                 return raw ? JSON.parse(raw) : null;
             } catch(e) { return null; }
         }
@@ -19066,7 +19087,7 @@
             closeCharacterCreation();
             tempNewCharacter = null;
             serverPendingStats = null;
-            saveTempChar(); // clears fightchub_temp_char element
+            saveTempChar(); // clears chubchampions_temp_char element
             rerollsUsed = 0;
             saveProgression(); // persist reset rerollsUsed
             updateLobbyCharacterDisplay();
@@ -19568,7 +19589,7 @@
         async function startGameWithCharacter(character) {
             _activeBattleCharacter = character;
             // Mark battle as active for forfeit detection
-            localStorage.setItem('fightchub_battle_active', JSON.stringify({
+            localStorage.setItem('chubchampions_battle_active', JSON.stringify({
                 timestamp: Date.now(),
                 aon: aonActive,
                 aonEntryFee: aonActive ? aonEntryFee : 0
@@ -19734,7 +19755,7 @@
                 // Online-only: require login before battling
                 stopMatchTimer();
                 stopBattleHeartbeat();
-                localStorage.removeItem('fightchub_battle_active');
+                localStorage.removeItem('chubchampions_battle_active');
                 document.getElementById('game-container').style.display = 'none';
                 document.getElementById('lobby-wrapper').style.display = '';
                 showNotice('You need to login to play. Click LOGIN at the top of the screen.');
@@ -23162,7 +23183,7 @@
             if (aonActive) return;
 
             // Battle ended properly - clear forfeit flag
-            localStorage.removeItem('fightchub_battle_active');
+            localStorage.removeItem('chubchampions_battle_active');
             stopBattleHeartbeat();
 
             const arena = document.getElementById('arena');
@@ -23633,7 +23654,7 @@
             // P2's chain is determined by which wallet is available
             const p2HasEvm    = !!window.ethereum;
             const p2HasSolana = !!window.solana?.isPhantom;
-            const p2Chain     = (FIGHTCHUB_AON_SOLANA_PROGRAM_ID && p2HasSolana) ? 'solana'
+            const p2Chain     = (CHUB_AON_SOLANA_PROGRAM_ID && p2HasSolana) ? 'solana'
                               : (AON_ESCROW_ADDRESS && p2HasEvm) ? 'monad'
                               : null;
 
@@ -23988,7 +24009,7 @@
         // P2 locks SOL in Solana's join_room_cross_chain → posts CROSS_JOIN VAA
         // → frontend calls /api/relay/cross-join → relay delivers to Monad.
         async function aonJoinCrossChainFromSolana(character, foreignRoomId, entryFee, challengerName) {
-            if (!FIGHTCHUB_AON_SOLANA_PROGRAM_ID) {
+            if (!CHUB_AON_SOLANA_PROGRAM_ID) {
                 showNotice('Solana program not deployed yet');
                 return;
             }
@@ -24349,7 +24370,7 @@
                 const entryFeeBig  = BigInt(aonEntryFee);
 
                 // 3. Derive Room PDA: seeds = [b"room", room_id_le_bytes]
-                const programId  = new solanaWeb3.PublicKey(FIGHTCHUB_AON_SOLANA_PROGRAM_ID);
+                const programId  = new solanaWeb3.PublicKey(CHUB_AON_SOLANA_PROGRAM_ID);
                 const roomIdBuf  = new Uint8Array(8);
                 new DataView(roomIdBuf.buffer).setUint32(0, Number(roomIdBig & 0xFFFFFFFFn), true);
                 new DataView(roomIdBuf.buffer).setUint32(4, Number(roomIdBig >> 32n),        true);
@@ -24431,7 +24452,7 @@
                 return;
             }
             // ── Solana on-chain mode: Phantom + deployed Solana program ───────────
-            if (FIGHTCHUB_AON_SOLANA_PROGRAM_ID && window.solana?.isPhantom) {
+            if (CHUB_AON_SOLANA_PROGRAM_ID && window.solana?.isPhantom) {
                 return aonStartMatchmakingSolana();
             }
             // ── Monad on-chain mode: use contracts if deployed and wallet available ──
@@ -24839,7 +24860,7 @@
 
         async function aonShowFinalResults() {
             // AoN tournament ended properly - clear forfeit flag
-            localStorage.removeItem('fightchub_battle_active');
+            localStorage.removeItem('chubchampions_battle_active');
             stopBattleHeartbeat();
 
             const arena = document.getElementById('arena');
@@ -24990,7 +25011,7 @@
             saveCharacters();
 
             // Returning to lobby properly - clear forfeit flag
-            localStorage.removeItem('fightchub_battle_active');
+            localStorage.removeItem('chubchampions_battle_active');
             stopBattleHeartbeat();
             stopArenaCamera();
             stopStaminaAnim();
@@ -25138,7 +25159,7 @@
                     aonCpuStats: aonCpuStats ? { ...aonCpuStats } : null,
                     simSeed: Math.floor(Math.random() * 2147483647)
                 };
-                localStorage.setItem('fightchub_battle_active', JSON.stringify(snapshot));
+                localStorage.setItem('chubchampions_battle_active', JSON.stringify(snapshot));
             } catch (e) {
                 console.error('Error saving battle snapshot:', e);
             }
@@ -25991,9 +26012,9 @@
 
         function startBattleHeartbeat() {
             stopBattleHeartbeat();
-            localStorage.setItem('fightchub_battle_heartbeat', '' + Date.now());
+            localStorage.setItem('chubchampions_battle_heartbeat', '' + Date.now());
             battleHeartbeatInterval = setInterval(() => {
-                localStorage.setItem('fightchub_battle_heartbeat', '' + Date.now());
+                localStorage.setItem('chubchampions_battle_heartbeat', '' + Date.now());
             }, 1000);
         }
 
@@ -26002,14 +26023,14 @@
                 clearInterval(battleHeartbeatInterval);
                 battleHeartbeatInterval = null;
             }
-            localStorage.removeItem('fightchub_battle_heartbeat');
+            localStorage.removeItem('chubchampions_battle_heartbeat');
         }
 
         window.addEventListener('beforeunload', () => {
             if (battleHeartbeatInterval) {
                 clearInterval(battleHeartbeatInterval);
                 battleHeartbeatInterval = null;
-                localStorage.removeItem('fightchub_battle_heartbeat');
+                localStorage.removeItem('chubchampions_battle_heartbeat');
             }
         });
 
@@ -26196,7 +26217,7 @@
         _cameraToggleEl.checked = _cameraEnabled;
         _cameraToggleEl.addEventListener('change', () => {
             _cameraEnabled = _cameraToggleEl.checked;
-            localStorage.setItem('fightchub_camera_enabled', _cameraEnabled ? 'true' : 'false');
+            localStorage.setItem('chubchampions_camera_enabled', _cameraEnabled ? 'true' : 'false');
             if (game.inProgress) {
                 if (_cameraEnabled) {
                     startArenaCamera();
