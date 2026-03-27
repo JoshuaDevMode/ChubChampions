@@ -62,7 +62,7 @@
 
 ### Smart Contracts — Solana (Anchor 0.31, code complete)
 - [x] chub-token program (spend + reward CPIs)
-- [x] fightchub-aon program — 8 instructions (initialize, create_room, join_room, consume_randomness, cancel_room, refund_entropy_stuck, claim_held_payout, admin)
+- [x] chub-aon program — 8 instructions (initialize, create_room, join_room, consume_randomness, cancel_room, refund_entropy_stuck, claim_held_payout, admin)
 - [x] Rust battle engine port (rng.rs / engine.rs / skills.rs / constants.rs)
 - [x] Ed25519 char sig verification via Instructions sysvar precompile
 - [x] **Switchboard Classic VRF** migration (replaced Pyth Entropy — Pyth is EVM-only)
@@ -101,7 +101,7 @@
 - [ ] `anchor build` in contracts/solana-aon/ — verify clean compile with Switchboard crate
   - If anchor version conflict: add `[patch.crates-io]` pinning anchor-lang = "0.31.0"
 - [ ] `anchor deploy --provider.cluster devnet`
-- [ ] Fill FIGHTCHUB_AON_SOLANA_PROGRAM_ID in index.html
+- [ ] Fill CHUB_AON_SOLANA_PROGRAM_ID in index.html
 - [ ] Fill create_room + join_room account metas in frontend from generated IDL
 - [ ] Generate CHARACTER_SIGNER_SOLANA keypair (`solana-keygen new`) → export as base58
 - [ ] Set env var CHARACTER_SIGNER_SOLANA_KEY in Vercel (base58, 64-byte keypair)
@@ -174,7 +174,7 @@
 ### Solana
 - [ ] Update frontend join_room call: remove user_commitment param, add 12 Switchboard VRF accounts
   - P2 flow: VrfLite.create() → fund escrow (~0.002 SOL) → join_room (batch in sendAll)
-- [ ] fightchub-nft Metaplex program — character NFT + mutable metadata
+- [ ] chub-nft Metaplex program — character NFT + mutable metadata
 - [ ] Wormhole NTT setup for CHUB token bridging Monad ↔ Solana
 
 ---
@@ -219,9 +219,9 @@
 ## 🗑️ Delete Account / Reset
 
 - [x] **Botón "Delete Account" real** ✅ Done
-  - `deleteAccount()` en frontend: calls POST /api/player/delete, then clears all fightchub_ localStorage
+  - `deleteAccount()` en frontend: calls POST /api/player/delete, then clears all chubchampions_ localStorage
   - `POST /api/player/delete` endpoint: deletes aon_matches, battle_results, characters, players rows
-  - `logoutPlayerSession()` now clears ALL fightchub_* keys (not just fightchub_session)
+  - `logoutPlayerSession()` now clears ALL chubchampions_* keys (not just chubchampions_session)
   - `player/state.ts` returns `{ notFound: true }` when player doesn't exist → frontend clears local data
 
 ---

@@ -28,8 +28,8 @@ export default function LoginGate() {
   // Show gate on JS-side logout event
   useEffect(() => {
     const show = () => setVisible(true);
-    window.addEventListener('fightchub:showlogin', show);
-    return () => window.removeEventListener('fightchub:showlogin', show);
+    window.addEventListener('chubchampions:showlogin', show);
+    return () => window.removeEventListener('chubchampions:showlogin', show);
   }, []);
 
   // Expose Privy functions + wallet providers to vanilla JS
@@ -73,7 +73,7 @@ export default function LoginGate() {
       const token = await getAccessToken();
 
       // Returning user (session already in localStorage) — just refresh token, don't re-init game
-      const savedSession = localStorage.getItem('fightchub_session');
+      const savedSession = localStorage.getItem('chubchampions_session');
       if (savedSession) {
         if (token) window.__privyUpdateToken?.(token);
         setVisible(false);

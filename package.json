@@ -1,5 +1,5 @@
 {
-  "name": "fightchub",
+  "name": "chubchampions",
   "private": true,
   "scripts": {
     "dev": "vite",
