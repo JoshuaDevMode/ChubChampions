@@ -15103,6 +15103,18 @@
                         if (s) { const p = JSON.parse(s); p.preferredChain = data.preferredChain; localStorage.setItem('chubchampions_session', JSON.stringify(p)); }
                     } catch(e) {}
                 }
+                // Apply authoritative daily battle counts from server
+                if (data.dailyBattleCounts && typeof data.dailyBattleCounts === 'object') {
+                    const today = new Date().toDateString();
+                    for (const char of characters) {
+                        const serverCount = data.dailyBattleCounts[String(char.id)] || 0;
+                        char.dailyBattleDate = today;
+                        char.dailyBattlesPlayed = serverCount;
+                    }
+                    saveCharacters();
+                    updateDailyBattleCounter();
+                }
+
                 saveProgression();
                 updateCurrencyUI();
                 updateVictoryChestSlots();
