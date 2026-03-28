@@ -7374,6 +7374,22 @@
             text-align: right;
         }
 
+        .history-replay-btn {
+            font-size: 0.7em;
+            padding: 4px 10px;
+            background: rgba(251,191,36,0.12);
+            border: 1px solid #fbbf24;
+            border-radius: 5px;
+            color: #fbbf24;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .history-replay-btn:hover {
+            background: rgba(251,191,36,0.28);
+        }
+
         .history-empty {
             text-align: center;
             padding: 40px;
@@ -18755,13 +18771,16 @@
 
             // Show matches in reverse order (newest first)
             const reversedHistory = [...matchHistory].reverse();
-            listEl.innerHTML = reversedHistory.map(match => {
+            listEl.innerHTML = reversedHistory.map((match, i) => {
                 const resultText = match.result === 'win' ? 'WIN' : match.result === 'loss' ? 'LOSS' : 'DRAW';
                 const resultClass = match.result;
                 const playerHP = match.playerHP || 0;
                 const cpuHP = match.cpuHP || 0;
                 const ps = match.playerStats || {};
                 const cs = match.cpuStats || {};
+                const replayBtn = (i === 0 && _lastBattleReplay)
+                    ? `<button class="history-replay-btn" data-replay="latest">▶ REPLAY</button>`
+                    : '';
 
                 return `
                     <div class="history-match ${resultClass}">
@@ -18773,6 +18792,7 @@
                             </div>
                         </div>
                         <div class="history-match-date">${formatMatchDate(match.date)}</div>
+                        ${replayBtn}
                     </div>
                 `;
             }).join('');
@@ -18796,6 +18816,16 @@
         // Close history panel
         document.getElementById('history-close').addEventListener('click', () => {
             document.getElementById('history-panel').classList.remove('active');
+        });
+
+        // Replay button inside history list
+        document.getElementById('history-list').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-replay]');
+            if (!btn || !_lastBattleReplay) return;
+            document.getElementById('history-panel').classList.remove('active');
+            document.getElementById('game-container').style.display = '';
+            document.getElementById('lobby-wrapper').style.display = 'none';
+            watchReplay();
         });
 
         // Close history when clicking outside
@@ -23339,7 +23369,6 @@
                     ${levelUpNotice}
                     <div class="results-buttons">
                         ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
-                        ${_lastBattleReplay ? `<button class="results-btn results-btn-secondary" id="results-watch-replay">WATCH REPLAY</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -23348,7 +23377,6 @@
 
             // Use querySelector on the overlay to ensure we get the buttons from THIS overlay
             const playAgainBtn = overlay.querySelector('#results-play-again');
-            const watchReplayBtn = overlay.querySelector('#results-watch-replay');
             const goLobbyBtn = overlay.querySelector('#results-go-lobby');
 
             if (playAgainBtn) {
@@ -23356,14 +23384,6 @@
                     e.stopPropagation();
                     playAgainBtn.disabled = true; // Prevent double clicks
                     startNewMatch();
-                });
-            }
-            if (watchReplayBtn) {
-                watchReplayBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    watchReplayBtn.disabled = true;
-                    overlay.remove();
-                    watchReplay();
                 });
             }
             if (goLobbyBtn) {
@@ -25136,7 +25156,6 @@
                     ${levelUpNotice}
                     <div class="results-buttons">
                         ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
-                        ${_lastBattleReplay ? `<button class="results-btn results-btn-secondary" id="results-watch-replay">WATCH REPLAY</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -25144,7 +25163,6 @@
             arena.appendChild(overlay);
 
             const playAgainBtn = overlay.querySelector('#results-play-again');
-            const watchReplayBtn = overlay.querySelector('#results-watch-replay');
             const goLobbyBtn = overlay.querySelector('#results-go-lobby');
 
             if (playAgainBtn) {
@@ -25155,15 +25173,6 @@
                     aonActive = false;
                     goToLobby();
                     aonOpenPanel();
-                });
-            }
-            if (watchReplayBtn) {
-                watchReplayBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    watchReplayBtn.disabled = true;
-                    aonActive = false;
-                    overlay.remove();
-                    watchReplay();
                 });
             }
             if (goLobbyBtn) {
