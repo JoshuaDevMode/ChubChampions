@@ -26247,7 +26247,28 @@
         // Match timer (90 seconds countdown)
         let matchTimerInterval = null;
         let matchTimerRemaining = 90;
+        let _timerWasPaused = false;
         let battleHeartbeatInterval = null;
+
+        // Pause match timer and game loop when tab is hidden; resume on return.
+        // rAF stops when hidden so sleep() calls get throttled — pausing the
+        // timer prevents endByTimeout() from firing before events finish.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (matchTimerInterval) {
+                    clearInterval(matchTimerInterval);
+                    matchTimerInterval = null;
+                    _timerWasPaused = true;
+                }
+            } else {
+                if (_timerWasPaused && matchTimerRemaining > 0 && game && !game.gameOver) {
+                    _timerWasPaused = false;
+                    startMatchTimer(matchTimerRemaining);
+                } else {
+                    _timerWasPaused = false;
+                }
+            }
+        });
 
         function startBattleHeartbeat() {
             stopBattleHeartbeat();
@@ -26278,6 +26299,7 @@
                 clearInterval(matchTimerInterval);
                 matchTimerInterval = null;
             }
+            _timerWasPaused = false;
             const timerEl = document.getElementById('match-timer');
             if (timerEl) timerEl.style.visibility = 'hidden';
         }
