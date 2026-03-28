@@ -18686,14 +18686,15 @@
             }
         }
 
-        function addMatchToHistory(result, playerHP, cpuHP, playerStats, cpuStats) {
+        function addMatchToHistory(result, playerHP, cpuHP, playerStats, cpuStats, replayId) {
             const match = {
                 date: new Date().toISOString(),
                 result: result, // 'win', 'loss', 'draw'
                 playerHP: playerHP,
                 cpuHP: cpuHP,
                 playerStats: { ...playerStats },
-                cpuStats: { ...cpuStats }
+                cpuStats: { ...cpuStats },
+                replayId: replayId || null,
             };
             matchHistory.push(match);
             saveMatchHistory();
@@ -18779,8 +18780,8 @@
                 const cpuHP = match.cpuHP || 0;
                 const ps = match.playerStats || {};
                 const cs = match.cpuStats || {};
-                const replayBtn = (i === 0 && _lastBattleReplay)
-                    ? `<button class="history-replay-btn" data-replay="latest">▶ REPLAY</button>`
+                const replayBtn = match.replayId
+                    ? `<button class="history-replay-btn" data-replay-id="${match.replayId}">▶ REPLAY</button>`
                     : '';
 
                 return `
@@ -18820,13 +18821,30 @@
         });
 
         // Replay button inside history list
-        document.getElementById('history-list').addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-replay]');
-            if (!btn || !_lastBattleReplay) return;
-            document.getElementById('history-panel').classList.remove('active');
-            document.getElementById('game-container').style.display = '';
-            document.getElementById('lobby-wrapper').style.display = 'none';
-            watchReplay();
+        document.getElementById('history-list').addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-replay-id]');
+            if (!btn) return;
+            const replayId = btn.dataset.replayId;
+            btn.disabled = true;
+            btn.textContent = '⏳';
+            try {
+                const resp = await fetch(BACKEND_URL + '/api/battle/replay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ replayId }),
+                });
+                if (!resp.ok) throw new Error('Not found');
+                const data = await resp.json();
+                document.getElementById('history-panel').classList.remove('active');
+                document.getElementById('game-container').style.display = '';
+                document.getElementById('lobby-wrapper').style.display = 'none';
+                await watchReplay(data);
+            } catch (err) {
+                console.error('[replay]', err);
+                btn.disabled = false;
+                btn.textContent = '▶ REPLAY';
+                showNotice('Could not load replay. Please try again.');
+            }
         });
 
         // Close history when clicking outside
@@ -23218,7 +23236,7 @@
 
             // Save match to history
             const result = winner === 'player' ? 'win' : 'loss';
-            addMatchToHistory(result, game.player.health, game.cpu.health, stats.player, stats.cpu);
+            addMatchToHistory(result, game.player.health, game.cpu.health, stats.player, stats.cpu, lastBattleRewards?.replayId);
 
             // Track per-character match stats — use _activeBattleCharacter so stats
             // always go to the fighter who played, not the currently-selected one.
@@ -23284,7 +23302,7 @@
             }
 
             // Save draw to history
-            addMatchToHistory('draw', game.player.health, game.cpu.health, stats.player, stats.cpu);
+            addMatchToHistory('draw', game.player.health, game.cpu.health, stats.player, stats.cpu, lastBattleRewards?.replayId);
 
             // Track per-character match stats (draw counts as game played, not won)
             const charForStats = _activeBattleCharacter || getSelectedCharacter();
@@ -23397,8 +23415,7 @@
 
         }
 
-        async function watchReplay() {
-            const replay = _lastBattleReplay;
+        async function watchReplay(replay) {
             if (!replay) return;
 
             cleanupFighters();
