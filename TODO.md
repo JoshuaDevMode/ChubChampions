@@ -676,6 +676,64 @@ Flujo:
 
 ---
 
+## ⚔️ Sesión 2026-03-28 — Damage Refactor + Server-Authoritative Timer
+
+### ✅ Refactored damage formula (backend `engine.ts`)
+- [x] **Hybrid additive damage scaling** — stats ahora suman al daño base en vez de multiplicar
+  - Stage 1: `effectiveBase = baseDamage + softStat(ATK) * 0.35 + softStat(secondary) * 0.20/0.30`
+  - Stage 2: DEF reduction sin cambio (`dmg * 100 / (100 + effectiveDef)`)
+  - Stage 3: Buffs aditivos (crit, fury, elemental, war_tonic, position) → `dmg *= (1 + buffPool)`
+  - Stage 4: Reducción aditiva (earth, gaze, iron_skin) → `dmg *= max(0.10, 1 - reductionPool)`
+  - Stage 5: Skill bonuses (siguen multiplicativos)
+  - **Razón:** multiplicativo compuesto hacía que stats bajos fueran irrelevantes y altos explosivos; HP crece lineal (+66/lvl) pero daño crecía exponencial → batallas nunca terminaban en KO
+
+### ✅ Camera fix (frontend `index.html`)
+- [x] **Hard-clamp después del lerp** en `_camTick()` — zoom y translación lerpean independientemente, lo que causaba `_camTransX` fuera del rango válido durante transiciones → bordes negros en el BG
+- [x] **BG layer clamp** — `bgTx` también clampeado para evitar gaps en los bordes
+
+### ✅ AoN modal width
+- [x] `max-width: 740px; width: 94%` (era 620px/92%) — texto ya no desborda con flechas de scroll
+
+### ✅ Background tab battle fix (frontend `index.html`)
+- [x] **`battleRAF()` helper** — reemplaza `requestAnimationFrame` con fallback a `setTimeout(16ms)` cuando el tab está oculto → las animaciones no se congelan en background tabs
+- [x] **`_animPending` Set + `trackAnim`/`untrackAnim`** — rastreo de promesas de animación RAF para poder flushearlas en `endByTimeout`
+
+### ✅ Server-authoritative match timer (Option D)
+- [x] **`estimateEventDurationMs()`** en `engine.ts` — mapea CADA tipo de evento a su duración de animación en el frontend:
+  - `log`=40ms, `skill_effect`=180ms, `consumable`=280ms, `weapon_equip`=80ms, `weapon_throw`=220ms, `weapon_drop`=120ms
+  - `combo`=20ms, `combo_finisher`=1800ms (5 fases sumadas)
+  - `fury_power`=variable (450ms pasivos, 980ms-3800ms activos dependiendo del poder)
+  - `move`=variable (distancia/velocidad basado, 20ms-620ms)
+  - `attack`=variable (AGI-based `atkMult`, approach+attack+defense+return, ~1200-2300ms)
+  - `stamina`/`fury_update`/`turn_steal`/`game_over`=0ms
+- [x] **`MATCH_TIME_LIMIT_MS = 90_000`** en `constants.ts`
+- [x] **`animTimeMs` acumulador** en `BattleContext` — cada `emit()` suma la duración estimada
+- [x] **Auto-stop en 90s** — cuando `animTimeMs >= MATCH_TIME_LIMIT_MS`, `emit()` setea `gameOver=true` y snapshota HP
+- [x] **`timeLimitHp` snapshot** — captura HP exacto al momento del corte (no el HP final del turno que pudo seguir ejecutándose)
+- [x] **`matchDurationMs` en `BattleResult`** — retornado al frontend para sincronizar el timer
+- [x] **Frontend usa `matchDurationMs`** — `animateBattleFromLog` reinicia el timer con `ceil(matchDurationMs / 1000)` segundos del servidor
+- [x] **`matchmaking/join.ts`** actualizado — `resultToStore` incluye `matchDurationMs` para PvP
+- [x] **`flipBattleResult`** — pasa `matchDurationMs` automáticamente via spread
+
+### Cómo funciona el timer ahora
+```
+1. Server corre batalla, acumula tiempo de animación por cada evento emitido
+2. Cuando el acumulado llega a 90s → server para, elige ganador por HP
+3. Server retorna matchDurationMs + eventos + HP final
+4. Frontend inicia timer con el valor del server (no hardcoded 90s)
+5. Frontend reproduce eventos; si terminan antes del timer → game_over natural (KO)
+6. Si timer llega a 0 antes → endByTimeout muestra resultado del server
+7. Ambos lados SIEMPRE coinciden porque la misma función de duración corre en el server
+```
+
+### ⚠️ Cosas a verificar/calibrar
+- [ ] **Calibrar duraciones de `estimateEventDurationMs`** — los valores actuales son estimados de los `sleep()` del frontend. Si las animaciones cambian en el futuro, hay que actualizar los valores del backend para que sigan sincronizados.
+- [ ] **Combos en la estimación de attack** — la estimación de `attack` siempre cuenta approach+return completo, pero los combo follow-ups en realidad son más cortos (snap 15ms, no run 300ms). Esto puede hacer que el server sobreestime el tiempo → batallas terminan un poco antes de los 90s reales. Si se nota, refinar con contexto de combo (mirar evento previo).
+- [ ] **Probar battles largos (high DEF + healing)** — verificar que el timer realmente corta a ~90s y no antes/después. Si las batallas terminan consistentemente a 80s o 95s, ajustar los multiplicadores en `estimateEventDurationMs`.
+- [ ] **Background tab behavior** — verificar que cuando el usuario vuelve al tab, el `endByTimeout` muestra el resultado correcto si el timer ya expiró.
+
+---
+
 ## 🔍 Nice to Have
 
 - [ ] Battle replay (store event log, let player replay past fights)

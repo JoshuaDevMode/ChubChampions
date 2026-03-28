@@ -16946,6 +16946,8 @@
         // Server battle result — stored before animation starts so endByTimeout can
         // show the correct outcome if the timer expires before all events are replayed.
         let _serverBattleResult = null; // { winner, finalPlayerHp, finalCpuHp }
+        // Last battle replay data — stored after each battle so the player can re-watch it.
+        let _lastBattleReplay = null; // { events, finalPlayerHp, finalCpuHp, matchDurationMs, cpuName, playerMaxHp, cpuMaxHp }
         // Server-side AoN match ID returned by /api/aon/start; passed in each battle round
         let _aonMatchId = 0;
 
@@ -16956,6 +16958,7 @@
                 const { result, rewards } = _pvpBattleResult;
                 _pvpBattleResult = null;
                 lastBattleRewards = rewards;
+                _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 return;
             }
@@ -16987,6 +16990,7 @@
                         return;
                     }
                     lastBattleRewards = result.rewards || null;
+                    _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                     await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 } catch (err) {
                     console.error('[server battle] pre-fetch network error:', err);
@@ -17075,6 +17079,7 @@
                 }
 
                 lastBattleRewards = result.rewards || null;
+                _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
 
             } catch (err) {
@@ -23334,6 +23339,7 @@
                     ${levelUpNotice}
                     <div class="results-buttons">
                         ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
+                        ${_lastBattleReplay ? `<button class="results-btn results-btn-secondary" id="results-watch-replay">WATCH REPLAY</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -23342,6 +23348,7 @@
 
             // Use querySelector on the overlay to ensure we get the buttons from THIS overlay
             const playAgainBtn = overlay.querySelector('#results-play-again');
+            const watchReplayBtn = overlay.querySelector('#results-watch-replay');
             const goLobbyBtn = overlay.querySelector('#results-go-lobby');
 
             if (playAgainBtn) {
@@ -23349,6 +23356,14 @@
                     e.stopPropagation();
                     playAgainBtn.disabled = true; // Prevent double clicks
                     startNewMatch();
+                });
+            }
+            if (watchReplayBtn) {
+                watchReplayBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    watchReplayBtn.disabled = true;
+                    overlay.remove();
+                    watchReplay();
                 });
             }
             if (goLobbyBtn) {
@@ -23359,6 +23374,70 @@
                 });
             }
 
+        }
+
+        async function watchReplay() {
+            const replay = _lastBattleReplay;
+            if (!replay) return;
+
+            cleanupFighters();
+            stopMatchTimer();
+
+            // Reset positions (mirrors startGameWithCharacter)
+            game.player._homeX = 128;
+            game.cpu._homeX    = 1252;
+            game.player.element.classList.remove('facing-flipped');
+            game.cpu.element.classList.remove('facing-flipped');
+            game.player.element.style.transition = 'none';
+            game.cpu.element.style.transition    = 'none';
+            game.player.element.style.left  = '8%';
+            game.player.element.style.right = '';
+            game.cpu.element.style.right    = '8%';
+            game.cpu.element.style.left     = '';
+            void game.player.element.offsetWidth;
+            game.player.element.style.transition = '';
+            game.cpu.element.style.transition    = '';
+
+            // Restore name labels
+            for (const who of ['player', 'cpu']) {
+                const body = game[who].element.querySelector('.fighter-body');
+                body.querySelector('.fighter-name-label')?.remove();
+                const label = document.createElement('span');
+                label.className = 'fighter-name-label';
+                label.textContent = who === 'player' ? (_activeBattleCharacter?.name || 'Fighter') : (replay.cpuName || 'CPU');
+                body.appendChild(label);
+            }
+
+            // Reset HP
+            game.player.maxHealth = replay.playerMaxHp;
+            game.player.health    = replay.playerMaxHp;
+            game.cpu.maxHealth    = replay.cpuMaxHp;
+            game.cpu.health       = replay.cpuMaxHp;
+
+            // Reset fury and stamina
+            game.player.fury = 0; game.player.furyActive = false;
+            game.cpu.fury    = 0; game.cpu.furyActive    = false;
+            _staminaTarget.player  = 100; _staminaDisplay.player  = 100;
+            _staminaTarget.cpu     = 100; _staminaDisplay.cpu     = 100;
+            _staminaRenderBars();
+
+            // Reset game flags
+            game.gameOver        = false;
+            game.gameOverHandled = false;
+            game.inProgress      = false;
+
+            // Update HUD
+            updateBothFighters();
+            updateFuryBar('player');
+            updateFuryBar('cpu');
+            document.getElementById('game-log').innerHTML = '';
+
+            // Restart idle blink and camera
+            startIdleBlink(game.player.element);
+            startIdleBlink(game.cpu.element);
+            if (_cameraEnabled) startArenaCamera();
+
+            await animateBattleFromLog(replay.events, replay.finalPlayerHp, replay.finalCpuHp, replay.matchDurationMs);
         }
 
         // Complete cleanup of all fighter animations, timeouts, and state
@@ -25057,6 +25136,7 @@
                     ${levelUpNotice}
                     <div class="results-buttons">
                         ${!hasLevelUp ? `<button class="results-btn" id="results-play-again">PLAY AGAIN</button>` : ''}
+                        ${_lastBattleReplay ? `<button class="results-btn results-btn-secondary" id="results-watch-replay">WATCH REPLAY</button>` : ''}
                         ${!hasLevelUp ? `<button class="results-btn results-btn-secondary" id="results-go-lobby">GO TO LOBBY</button>` : ''}
                     </div>
                 </div>`;
@@ -25064,6 +25144,7 @@
             arena.appendChild(overlay);
 
             const playAgainBtn = overlay.querySelector('#results-play-again');
+            const watchReplayBtn = overlay.querySelector('#results-watch-replay');
             const goLobbyBtn = overlay.querySelector('#results-go-lobby');
 
             if (playAgainBtn) {
@@ -25074,6 +25155,15 @@
                     aonActive = false;
                     goToLobby();
                     aonOpenPanel();
+                });
+            }
+            if (watchReplayBtn) {
+                watchReplayBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    watchReplayBtn.disabled = true;
+                    aonActive = false;
+                    overlay.remove();
+                    watchReplay();
                 });
             }
             if (goLobbyBtn) {
