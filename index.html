@@ -15132,7 +15132,7 @@
                 if (charsUpdated) {
                     saveCharacters();
                     updateDailyBattleCounter();
-                    updateCharacterUI(getSelectedCharacter());
+                    updateLobbyCharacterDisplay();
                 }
 
                 saveProgression();
@@ -19554,7 +19554,7 @@
                     // wrote them — this ensures local and remote stay in agreement.
                     syncCharacterToBackend(character);
                 } else {
-                    console.warn('[levelup] server apply failed, applying locally as fallback');
+                    console.warn('[levelup] server apply failed (status=' + resp.status + ', detail=' + (data.detail || data.error || 'unknown') + '), applying locally as fallback');
                     // Use savedOption (captured before the state was cleared above)
                     const fallbackOpt = savedOption || (savedOptions ? savedOptions[optIndex] : null);
                     if (fallbackOpt) {
