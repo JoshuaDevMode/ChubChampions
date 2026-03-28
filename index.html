@@ -18735,25 +18735,56 @@
             return date.toLocaleDateString();
         }
 
-        function populateHistoryPanel() {
+        async function populateHistoryPanel() {
             const summaryEl = document.getElementById('history-stats-summary');
             const listEl = document.getElementById('history-list');
 
-            const stats = getHistoryStats();
-            const totalMatches = stats.wins + stats.losses + stats.draws;
-            const winRate = totalMatches > 0 ? Math.round((stats.wins / totalMatches) * 100) : 0;
+            // Try to load from server when logged in
+            const char = _activeBattleCharacter || getSelectedCharacter();
+            if (playerSession && char) {
+                listEl.innerHTML = '<div class="history-empty">Loading...</div>';
+                try {
+                    const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/history', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({ playerId: playerSession.playerId, characterId: char.id }),
+                    }, 8000);
+                    if (resp.ok) {
+                        const { history: serverHistory } = await resp.json();
+                        _renderHistoryList(summaryEl, listEl, serverHistory.map(r => ({
+                            date:        r.created_at,
+                            result:      r.winner === 'player' ? 'win' : 'loss',
+                            playerHP:    r.player_hp_end,
+                            cpuHP:       r.cpu_hp_end,
+                            playerStats: {},
+                            cpuStats:    {},
+                            replayId:    r.id,
+                        })));
+                        return;
+                    }
+                } catch (_) { /* fall through to localStorage */ }
+            }
+            _renderHistoryList(summaryEl, listEl, [...matchHistory].reverse());
+        }
+
+        function _renderHistoryList(summaryEl, listEl, entries) {
+            const wins   = entries.filter(m => m.result === 'win').length;
+            const losses = entries.filter(m => m.result === 'loss').length;
+            const draws  = entries.filter(m => m.result === 'draw').length;
+            const total  = entries.length;
+            const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
 
             summaryEl.innerHTML = `
                 <div class="history-stat-item">
-                    <span class="history-stat-value wins">${stats.wins}</span>
+                    <span class="history-stat-value wins">${wins}</span>
                     <div class="history-stat-label">WINS</div>
                 </div>
                 <div class="history-stat-item">
-                    <span class="history-stat-value losses">${stats.losses}</span>
+                    <span class="history-stat-value losses">${losses}</span>
                     <div class="history-stat-label">LOSSES</div>
                 </div>
                 <div class="history-stat-item">
-                    <span class="history-stat-value draws">${stats.draws}</span>
+                    <span class="history-stat-value draws">${draws}</span>
                     <div class="history-stat-label">DRAWS</div>
                 </div>
                 <div class="history-stat-item">
@@ -18761,31 +18792,26 @@
                     <div class="history-stat-label">WIN RATE</div>
                 </div>
                 <div class="history-stat-item">
-                    <span class="history-stat-value">${totalMatches}</span>
+                    <span class="history-stat-value">${total}</span>
                     <div class="history-stat-label">TOTAL</div>
                 </div>
             `;
 
-            if (matchHistory.length === 0) {
+            if (entries.length === 0) {
                 listEl.innerHTML = '<div class="history-empty">No matches played yet.<br>Start a battle to see your history!</div>';
                 return;
             }
 
-            // Show matches in reverse order (newest first)
-            const reversedHistory = [...matchHistory].reverse();
-            listEl.innerHTML = reversedHistory.map((match, i) => {
+            listEl.innerHTML = entries.map(match => {
                 const resultText = match.result === 'win' ? 'WIN' : match.result === 'loss' ? 'LOSS' : 'DRAW';
-                const resultClass = match.result;
                 const playerHP = match.playerHP || 0;
-                const cpuHP = match.cpuHP || 0;
-                const ps = match.playerStats || {};
-                const cs = match.cpuStats || {};
+                const cpuHP    = match.cpuHP || 0;
+                const ps       = match.playerStats || {};
                 const replayBtn = match.replayId
                     ? `<button class="history-replay-btn" data-replay-id="${match.replayId}">▶ REPLAY</button>`
                     : '';
-
                 return `
-                    <div class="history-match ${resultClass}">
+                    <div class="history-match ${match.result}">
                         <div class="history-match-result">${resultText}</div>
                         <div class="history-match-details">
                             <div class="history-match-score">PLAYER ${playerHP} HP - CPU ${cpuHP} HP</div>
