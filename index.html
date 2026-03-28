@@ -16957,7 +16957,7 @@
                 const { result, rewards } = _pvpBattleResult;
                 _pvpBattleResult = null;
                 lastBattleRewards = rewards;
-                await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+                await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 return;
             }
 
@@ -16988,7 +16988,7 @@
                         return;
                     }
                     lastBattleRewards = result.rewards || null;
-                    await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+                    await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 } catch (err) {
                     console.error('[server battle] pre-fetch network error:', err);
                     stopMatchTimer();
@@ -17076,7 +17076,7 @@
                 }
 
                 lastBattleRewards = result.rewards || null;
-                await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp);
+                await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
 
             } catch (err) {
                 console.error('[server battle] Network error:', err);
@@ -17587,7 +17587,7 @@
             await sleep(280);
         }
 
-        async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
+        async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs) {
             // Extract server winner from the game_over event so endByTimeout
             // can show the correct result if the timer expires mid-replay.
             const _goEvent = events.find(e => e.type === 'game_over');
@@ -17596,6 +17596,13 @@
                 finalPlayerHp: finalPlayerHp,
                 finalCpuHp:    finalCpuHp,
             };
+            // Server provides the authoritative match duration — restart the
+            // timer using the server's computed value so both sides agree.
+            if (matchDurationMs && matchDurationMs > 0) {
+                const secs = Math.ceil(matchDurationMs / 1000);
+                stopMatchTimer();
+                startMatchTimer(secs);
+            }
             // Convert both fighters to left-based px positioning immediately.
             // CSS cannot transition from right:% or left:auto → left:Xpx, which would
             // cause the first move/attack to snap instead of slide.
@@ -26173,9 +26180,10 @@
             const pendingAnims = [..._animPending];
             _animPending.clear();
             for (const res of pendingAnims) res();
-            // Use the server's authoritative result — the battle was already
-            // fully resolved on the backend; the timer just limits how much
-            // of the replay the player sees animated.
+            // Server-authoritative timer: the server computed the exact same
+            // match duration based on estimated animation times and stopped
+            // generating events at that point.  The result (winner + final HP)
+            // is therefore consistent with the timer — both sides agree.
             if (_serverBattleResult) {
                 game.player.health = _serverBattleResult.finalPlayerHp;
                 game.cpu.health    = _serverBattleResult.finalCpuHp;
