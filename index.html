@@ -4797,9 +4797,9 @@
             border-image-repeat: stretch;
             box-sizing: border-box;
             padding: 14px 28px;
-            max-width: 620px;
+            max-width: 740px;
             max-height: 90%;
-            width: 92%;
+            width: 94%;
             position: relative;
             overflow-y: auto;
         }
@@ -17474,11 +17474,11 @@
                         cfAttImg.style.transition = 'transform 0.06s ease-out';
                         cfAttImg.style.transform  = `${cfBaseXf}rotate(${cfIsCpu ? -38 : 38}deg)`;
                     }
-                    if (t < 1) { requestAnimationFrame(step); return; }
+                    if (t < 1) { battleRAF(step, res); return; }
                     cfAttEl.style.transform = '';
-                    res();
+                    untrackAnim(res); res();
                 };
-                requestAnimationFrame(step);
+                battleRAF(step, res);
             });
 
             // Phase 2: impact
@@ -17539,15 +17539,15 @@
                     const rot = 360 * cfSpinDir * ease(t);
                     cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
                     if (cfDefImg) cfDefImg.style.transform = `${cfDefBaseXf}rotate(${rot}deg)`;
-                    if (t < 1) { requestAnimationFrame(step); return; }
+                    if (t < 1) { battleRAF(step, res); return; }
                     cfDefEl.style.transform = '';
                     cfDefEl.style.left  = cfDefFinalX + 'px';
                     cfDefEl.style.right = 'auto';
                     // Clear inline style — CSS facing-flipped class handles idle facing correctly
                     if (cfDefImg) cfDefImg.style.transform = '';
-                    res();
+                    untrackAnim(res); res();
                 };
-                requestAnimationFrame(step);
+                battleRAF(step, res);
             });
 
             // Phase 4: landing impact
@@ -17875,6 +17875,10 @@
             const idealT  = W / 2 - midX * _camZoom;
             const targetT = Math.max(W * (1 - _camZoom), Math.min(0, idealT));
             _camTransX += (targetT - _camTransX) * 0.07;
+            // Hard-clamp after lerp: zoom may change faster than translation,
+            // leaving _camTransX temporarily out of the valid range for the
+            // current zoom level — which causes black borders on the BG layer.
+            _camTransX = Math.max(W * (1 - _camZoom), Math.min(0, _camTransX));
 
             const zStr = _camZoom.toFixed(4);
             const tStr = _camTransX.toFixed(2);
@@ -17890,7 +17894,9 @@
                 // Extra width produced by the padding = W*(bgZoom - camZoom).
                 // Shift the BG left by half that extra so the overshoot is even on
                 // both sides (left & right) instead of only extending to the right.
-                const bgTx = _camTransX - W * (bgZoom - _camZoom) * 0.5;
+                let bgTx = _camTransX - W * (bgZoom - _camZoom) * 0.5;
+                // Clamp so BG always covers the full viewport width
+                bgTx = Math.max(W * (1 - bgZoom), Math.min(0, bgTx));
                 bgEl.style.transformOrigin = '0 100%';
                 bgEl.style.transform       = `translateX(${bgTx.toFixed(2)}px) scale(${bgZoom.toFixed(4)})`;
             }
@@ -17918,7 +17924,8 @@
             if (bgEl) {
                 const BG_PAD = 1.12;
                 const bgZoom0 = Math.max(BG_PAD, _camZoom * BG_PAD);
-                const bgTx0 = _camTransX - W * (bgZoom0 - _camZoom) * 0.5;
+                let bgTx0 = _camTransX - W * (bgZoom0 - _camZoom) * 0.5;
+                bgTx0 = Math.max(W * (1 - bgZoom0), Math.min(0, bgTx0));
                 bgEl.style.transformOrigin = '0 100%';
                 bgEl.style.transform = `translateX(${bgTx0.toFixed(2)}px) scale(${bgZoom0.toFixed(4)})`;
             }
@@ -18090,14 +18097,14 @@
                     const runStep = now => {
                         const t = Math.min((now - r0) / jaRunMs, 1);
                         attackerEl.style.transform = `translateX(${runDelta * easeOut(t)}px)`;
-                        if (t < 1) { requestAnimationFrame(runStep); return; }
+                        if (t < 1) { battleRAF(runStep, res); return; }
                         attackerEl.style.setProperty('transition', 'none', 'important');
                         attackerEl.style.transform = '';
                         attackerEl.style.left  = runTarget + 'px';
                         attackerEl.style.right = 'auto';
-                        res();
+                        untrackAnim(res); res();
                     };
-                    requestAnimationFrame(runStep);
+                    battleRAF(runStep, res);
                 });
                 stopRunAnimation(attackerEl);
                 if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
@@ -18126,15 +18133,15 @@
                         const tx = deltaX * jaEase(t);
                         const ty = -Math.max(280, Math.min(450, Math.round(180 + jaStr * 0.27))) * Math.sin(Math.PI * t);
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
-                        if (t < 1) { requestAnimationFrame(step); return; }
+                        if (t < 1) { battleRAF(step, res); return; }
                         attackerEl.style.transform = '';
                         attackerEl.style.setProperty('transition', 'none', 'important'); // keep frozen at landing commit
                         const finalLeft = runTarget + deltaX;
                         attackerEl.style.left  = finalLeft + 'px';
                         attackerEl.style.right = 'auto';
-                        res();
+                        untrackAnim(res); res();
                     };
-                    requestAnimationFrame(step);
+                    battleRAF(step, res);
                 });
 
                 clearTimeout(peakTmr);
@@ -25226,21 +25233,47 @@
         // Pending sleep resolvers — flushed when the tab is hidden so all sleep()-based
         // sequences (loading screen, battle animations) fast-forward in background.
         const _sleepPending = new Set();
+        // Tracks in-flight animation promises (RAF-based) so they can be flushed
+        // when the tab becomes hidden — prevents the battle loop from stalling.
+        const _animPending  = new Set();
         function sleep(ms) {
             return new Promise(resolve => {
-                // Tab already hidden — resolve immediately so sequences don't stall.
-                if (document.hidden) { resolve(); return; }
                 const tid = setTimeout(() => { _sleepPending.delete(resolve); resolve(); }, ms);
                 resolve._tid = tid;
                 _sleepPending.add(resolve);
             });
         }
+        /** Register a resolve callback so it gets auto-flushed when the tab hides. */
+        function trackAnim(resolve) { _animPending.add(resolve); }
+        function untrackAnim(resolve) { _animPending.delete(resolve); }
+        /**
+         * Drop-in replacement for requestAnimationFrame that keeps working
+         * when the tab is hidden. Browsers suspend RAF in background tabs,
+         * which would stall the battle event loop. When hidden, we fall back
+         * to setTimeout(16ms) so the animation math still advances (nobody
+         * sees it, but the loop doesn't block). The match timer is paused
+         * separately, so timing stays consistent.
+         */
+        function battleRAF(callback, promiseResolve) {
+            if (promiseResolve) trackAnim(promiseResolve);
+            const wrapped = (...args) => {
+                if (promiseResolve) untrackAnim(promiseResolve);
+                callback(...args);
+            };
+            if (document.hidden) {
+                setTimeout(() => wrapped(performance.now()), 16);
+            } else {
+                requestAnimationFrame(wrapped);
+            }
+        }
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) return;
-            // Tab just hidden — flush any in-flight sleep so it doesn't block.
-            const pending = [..._sleepPending];
-            _sleepPending.clear();
-            for (const res of pending) { clearTimeout(res._tid); res(); }
+            if (document.hidden) return;
+            // Tab just became visible again — nothing to flush.
+            // The match timer is paused (see _pausedIntervals logic below),
+            // sleeps and RAF-based animations simply stall while hidden and
+            // resume naturally when the browser restores the tab. This keeps
+            // the battle playback fully in sync: player sees every animation
+            // from where they left off, and the timer picks up where it paused.
         });
 
         // Max frame size for extracted sprites (display is 220px, 512 gives 2x+ retina quality)
