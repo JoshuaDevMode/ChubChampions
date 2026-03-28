@@ -16962,6 +16962,7 @@
         // Server battle result — stored before animation starts so endByTimeout can
         // show the correct outcome if the timer expires before all events are replayed.
         let _serverBattleResult = null; // { winner, finalPlayerHp, finalCpuHp }
+        let _precomputedStats   = null; // pre-calculated from events[] so stats are always complete
         // Last battle replay data — stored after each battle so the player can re-watch it.
         let _lastBattleReplay = null; // { events, finalPlayerHp, finalCpuHp, matchDurationMs, cpuName, playerMaxHp, cpuMaxHp }
         // Server-side AoN match ID returned by /api/aon/start; passed in each battle round
@@ -17616,6 +17617,7 @@
                 finalPlayerHp: finalPlayerHp,
                 finalCpuHp:    finalCpuHp,
             };
+            _precomputedStats = computeStatsFromEvents(events);
             // Server provides the authoritative match duration — restart the
             // timer using the server's computed value so both sides agree.
             if (matchDurationMs && matchDurationMs > 0) {
@@ -17842,6 +17844,7 @@
                         updateBothFighters();
                         game.inProgress = false;
                         game.gameOver   = true;
+                        if (_precomputedStats) { stats.player = _precomputedStats.player; stats.cpu = _precomputedStats.cpu; _precomputedStats = null; }
                         const loser = event.winner === 'player' ? 'cpu' : 'player';
                         showGameOver(event.winner, loser);
                         return;
@@ -26293,6 +26296,38 @@
             }
         });
 
+        // Pre-compute battle stats from the server events[] so the results panel
+        // always shows the full fight totals, even if the animation was cut short
+        // (tab hidden, timeout, etc.).
+        function computeStatsFromEvents(events) {
+            const s = {
+                player: { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 },
+                cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 },
+            };
+            for (const ev of events) {
+                if (ev.type === 'attack') {
+                    const atk = ev.attacker, def = ev.defender;
+                    if (!s[atk] || !s[def]) continue;
+                    if (ev.defense === 'none' || (ev.defense === 'dodge' && ev.damage > 0)) {
+                        s[atk].hits++;
+                        s[atk].totalDamage += ev.damage || 0;
+                        if (ev.isCrit) s[atk].criticals++;
+                    } else if (ev.defense === 'dodge') {
+                        s[def].dodges++;
+                    } else if (ev.defense === 'block') {
+                        s[def].blocks++;
+                    }
+                } else if (ev.type === 'weapon_equip') {
+                    if (s[ev.fighter]) s[ev.fighter].weaponsUsed++;
+                } else if (ev.type === 'weapon_throw') {
+                    if (s[ev.fighter]) s[ev.fighter].weaponsThrown++;
+                } else if (ev.type === 'combo') {
+                    if (s[ev.attacker]) s[ev.attacker].combos++;
+                }
+            }
+            return s;
+        }
+
         function stopMatchTimer() {
             if (matchTimerInterval) {
                 clearInterval(matchTimerInterval);
@@ -26335,6 +26370,7 @@
 
         function endByTimeout() {
             game.gameOver = true;
+            if (_precomputedStats) { stats.player = _precomputedStats.player; stats.cpu = _precomputedStats.cpu; _precomputedStats = null; }
             // Flush any pending sleeps and animation promises so the battle
             // loop's `if (game.gameOver) break` fires immediately.
             const pendingSleeps = [..._sleepPending];
