@@ -16943,6 +16943,9 @@
         // PvP: pre-computed battle result set by findPvpMatch before startGameWithCharacter
         let _pvpBattleResult   = null;
         let _preBattleFetch   = null; // Fetch started during countdown to hide server latency
+        // Server battle result — stored before animation starts so endByTimeout can
+        // show the correct outcome if the timer expires before all events are replayed.
+        let _serverBattleResult = null; // { winner, finalPlayerHp, finalCpuHp }
         // Server-side AoN match ID returned by /api/aon/start; passed in each battle round
         let _aonMatchId = 0;
 
@@ -17584,6 +17587,14 @@
         }
 
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp) {
+            // Extract server winner from the game_over event so endByTimeout
+            // can show the correct result if the timer expires mid-replay.
+            const _goEvent = events.find(e => e.type === 'game_over');
+            _serverBattleResult = {
+                winner:        _goEvent ? _goEvent.winner : 'player',
+                finalPlayerHp: finalPlayerHp,
+                finalCpuHp:    finalCpuHp,
+            };
             // Convert both fighters to left-based px positioning immediately.
             // CSS cannot transition from right:% or left:auto → left:Xpx, which would
             // cause the first move/attack to snap instead of slide.
@@ -25083,6 +25094,7 @@
 
             // Clear match timer if running
             if (matchTimerInterval) { clearInterval(matchTimerInterval); matchTimerInterval = null; }
+            _serverBattleResult = null;
 
             // Clean up AoN state
             aonActive   = false;
@@ -25266,15 +25278,8 @@
                 requestAnimationFrame(wrapped);
             }
         }
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) return;
-            // Tab just became visible again — nothing to flush.
-            // The match timer is paused (see _pausedIntervals logic below),
-            // sleeps and RAF-based animations simply stall while hidden and
-            // resume naturally when the browser restores the tab. This keeps
-            // the battle playback fully in sync: player sees every animation
-            // from where they left off, and the timer picks up where it paused.
-        });
+        // No visibilitychange flush needed — the match timer runs in real time
+        // and endByTimeout() flushes pending sleeps/RAFs when it fires.
 
         // Max frame size for extracted sprites (display is 220px, 512 gives 2x+ retina quality)
         const MAX_FRAME_SIZE = 512;
@@ -25921,12 +25926,8 @@
                     battleHeartbeatInterval = null;
                     _pausedIntervals.push('heartbeat');
                 }
-                // Pause match timer
-                if (matchTimerInterval) {
-                    clearInterval(matchTimerInterval);
-                    matchTimerInterval = null;
-                    _pausedIntervals.push('matchTimer');
-                }
+                // Match timer keeps running in real time — do NOT pause it.
+                // When it expires, endByTimeout() shows the server's result.
             } else {
                 // Force re-scale on tab return (window may have resized while hidden)
                 currentGameZoom = -1;
@@ -25940,9 +25941,7 @@
                 if (_pausedIntervals.includes('heartbeat') && document.getElementById('arena').style.display !== 'none') {
                     startBattleHeartbeat();
                 }
-                if (_pausedIntervals.includes('matchTimer') && matchTimerRemaining > 0) {
-                    startMatchTimer(matchTimerRemaining);
-                }
+                // Match timer is never paused — nothing to resume.
                 _pausedIntervals = [];
             }
         });
@@ -26165,22 +26164,37 @@
 
         function endByTimeout() {
             game.gameOver = true;
-            const pHP = game.player.health;
-            const cHP = game.cpu.health;
-            if (pHP > cHP) {
-                log('TIME UP! PLAYER wins by health advantage!', 'log-critical');
-                showGameOver('player', 'cpu');
-            } else if (cHP > pHP) {
-                log(`TIME UP! ${currentCpuName.toUpperCase()} wins by health advantage!`, 'log-critical');
-                showGameOver('cpu', 'player');
+            // Flush any pending sleeps and animation promises so the battle
+            // loop's `if (game.gameOver) break` fires immediately.
+            const pendingSleeps = [..._sleepPending];
+            _sleepPending.clear();
+            for (const res of pendingSleeps) { clearTimeout(res._tid); res(); }
+            const pendingAnims = [..._animPending];
+            _animPending.clear();
+            for (const res of pendingAnims) res();
+            // Use the server's authoritative result — the battle was already
+            // fully resolved on the backend; the timer just limits how much
+            // of the replay the player sees animated.
+            if (_serverBattleResult) {
+                game.player.health = _serverBattleResult.finalPlayerHp;
+                game.cpu.health    = _serverBattleResult.finalCpuHp;
+                updateBothFighters();
+                const winner = _serverBattleResult.winner;
+                const loser  = winner === 'player' ? 'cpu' : 'player';
+                log('TIME UP!', 'log-critical');
+                game.inProgress = false;
+                showGameOver(winner, loser);
             } else {
-                log('TIME UP! DRAW!', 'log-critical');
-                const drawText = document.createElement('div');
-                drawText.className = 'draw-text';
-                drawText.textContent = 'DRAW!';
-                drawText.style.cssText = 'position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);font-family:\'Fuzzy Bubbles\',cursive;font-size:3.5em;font-weight:700;color:#ffd700;text-shadow:3px 3px 0 #000,0 0 20px rgba(255,215,0,0.7);z-index:20;animation:floatUp 3s forwards;pointer-events:none;';
-                document.getElementById('arena').appendChild(drawText);
-                showResultsDraw();
+                // Fallback: no server result (shouldn't happen, but be safe)
+                const pHP = game.player.health;
+                const cHP = game.cpu.health;
+                if (pHP >= cHP) {
+                    log('TIME UP!', 'log-critical');
+                    showGameOver('player', 'cpu');
+                } else {
+                    log('TIME UP!', 'log-critical');
+                    showGameOver('cpu', 'player');
+                }
             }
         }
 
