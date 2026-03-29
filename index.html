@@ -17705,6 +17705,15 @@
                             const cons = BATTLE_CONSUMABLES[event.consumableId];
                             if (cons) updateStaminaBar(event.fighter, Math.min(100, (game[event.fighter]?.stamina || 0) + event.staminaAmount), 100);
                         }
+                        // Update consumable HUD — add slot if not present (CPU consumables added on-the-fly)
+                        const _bcList = battleConsumables[event.fighter];
+                        if (_bcList) {
+                            if (!_bcList.find(s => s.id === event.consumableId)) {
+                                _bcList.push({ id: event.consumableId, used: false });
+                            }
+                            const _bcSlot = _bcList.find(s => s.id === event.consumableId && !s.used);
+                            if (_bcSlot) { _bcSlot.used = true; updateConsumableDisplay(event.fighter); }
+                        }
                         await sleep(280);
                         break;
                     }
@@ -19973,6 +19982,12 @@
             updateCombatEquipment();
 
             // Init consumables for battle
+            const _initChar = getSelectedCharacter();
+            const _equippedCons = (_initChar && _initChar.equippedConsumables) || [];
+            battleConsumables.player = _equippedCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
+            battleConsumables.cpu    = [];
+            updateConsumableDisplay('player');
+            updateConsumableDisplay('cpu');
         }
 
         function updateWeaponDisplay(fighter) {
