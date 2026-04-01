@@ -30430,7 +30430,59 @@
 
             document.getElementById('anim-debug-label').textContent = 'IDLE';
             document.querySelectorAll('.anim-debug-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('dbg-weapon-none').classList.add('active');
+
+            // Build weapon buttons once
+            const weaponBtnsEl = document.getElementById('dbg-weapon-btns');
+            if (!weaponBtnsEl.children.length) {
+                for (const tier of Object.values(WEAPON_TIERS)) {
+                    for (const w of tier) {
+                        if (!w.img) continue;
+                        const btn = document.createElement('button');
+                        btn.className = 'anim-debug-btn';
+                        btn.style.cssText = 'padding:4px;font-size:0.35em;display:flex;flex-direction:column;align-items:center;gap:2px;';
+                        btn.dataset.weaponId = w.id;
+                        btn.innerHTML = '<img src="' + w.img + '" style="width:28px;height:28px;object-fit:contain;"><span>' + w.name + '</span>';
+                        btn.onclick = function() { dbgSelectWeapon(w.id, this); };
+                        weaponBtnsEl.appendChild(btn);
+                    }
+                }
+            }
+
             document.getElementById('anim-debug-screen').style.display = 'flex';
+        }
+
+        async function dbgSelectWeapon(weaponId, btn) {
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!dbgImg) return;
+
+            // Update active state on weapon buttons
+            document.getElementById('dbg-weapon-none').classList.remove('active');
+            document.querySelectorAll('#dbg-weapon-btns .anim-debug-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            else document.getElementById('dbg-weapon-none').classList.add('active');
+
+            dbgImg._debugWeaponId = weaponId || null;
+
+            if (!weaponId) return;
+
+            const weapon = getWeaponById(weaponId);
+            if (!weapon?.img) return;
+
+            document.getElementById('anim-debug-label').textContent = 'LOADING ' + weapon.name.toUpperCase() + '...';
+
+            // Load run cache if missing
+            if (!_weaponRunFramesCache[weaponId]) {
+                try { _weaponRunFramesCache[weaponId] = await extractFrames(weapon.img.replace('.png', ' Run.png'), 5, 2); }
+                catch(e) { _weaponRunFramesCache[weaponId] = []; }
+            }
+            // Load attack cache if missing
+            if (!_weaponAttackFramesCache[weaponId] && weapon.attackOverlay) {
+                try { _weaponAttackFramesCache[weaponId] = await extractFrames(weapon.img.replace('.png', ' Attack.png'), 4, 1); }
+                catch(e) { _weaponAttackFramesCache[weaponId] = []; }
+            }
+
+            document.getElementById('anim-debug-label').textContent = weapon.name.toUpperCase() + ' SELECTED';
         }
 
         function closeAnimDebug() {
@@ -30587,6 +30639,11 @@
             </div>
         </div>
         <div class="anim-debug-controls">
+            <div class="anim-debug-row" style="align-items:center;gap:4px;">
+                <span style="color:#6b7280;font-size:0.4em;margin-right:4px;">WEAPON:</span>
+                <button class="anim-debug-btn active" id="dbg-weapon-none" onclick="dbgSelectWeapon(null,this)" style="font-size:0.4em;padding:5px 8px;">NONE</button>
+                <div id="dbg-weapon-btns" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;"></div>
+            </div>
             <div class="anim-debug-row">
                 <button class="anim-debug-btn" onclick="dbgAnim('idle',this)">IDLE</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('idleBlink',this)">IDLE BLINK</button>
