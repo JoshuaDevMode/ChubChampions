@@ -11671,7 +11671,7 @@
             <div id="arena-world">
             <div class="fighter" id="player">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                 </div>
@@ -11679,7 +11679,7 @@
 
             <div class="fighter" id="cpu">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                 </div>
@@ -11798,6 +11798,7 @@
             revokeBlobURLs(check(img._runFrames));
             revokeBlobURLs(check(img._weaponRunFrames));
             revokeBlobURLs(check(img._weaponAttackFrames));
+            revokeBlobURLs(check(img._heavyAttackFrames));
             revokeBlobURLs(check(img._hurtFrames));
             revokeBlobURLs(check(img._dodgeFrames));
             revokeBlobURLs(check(img._blockFrames));
@@ -12869,16 +12870,16 @@
         const WEAPON_TIERS = {
             5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi' }],
             10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi' }],
-            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08 },
+            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true },
                   { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
             20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true }],
             25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true }],
             30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06 }],
-            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09 }],
+            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true }],
             50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
-            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06 }],
+            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06, attackOverlay: true, heavyAttack: true }],
             70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true }],
-            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08 }],
+            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, attackOverlay: true, heavyAttack: true }],
             100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
         };
 
@@ -22645,10 +22646,12 @@
             fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
 
             // Determine if we should use weapon attack frames
-            const useWeaponAttack = weaponId && img._weaponAttackFrames && img._weaponAttackFrames.length > 0
+            const isHeavyWeapon = weaponId && !!WEAPONS[weaponId]?.heavyAttack;
+            const charFrames = isHeavyWeapon ? img._heavyAttackFrames : img._weaponAttackFrames;
+            const useWeaponAttack = weaponId && charFrames && charFrames.length > 0
                 && _weaponAttackFramesCache[weaponId] && _weaponAttackFramesCache[weaponId].length > 0;
 
-            const allFrames = useWeaponAttack ? img._weaponAttackFrames : (img['_' + attackType + 'Frames'] || [img.src]);
+            const allFrames = useWeaponAttack ? charFrames : (img['_' + attackType + 'Frames'] || [img.src]);
             const weaponFrames = useWeaponAttack ? _weaponAttackFramesCache[weaponId] : null;
 
             img._idleSrc = img._idleSrc || img.src;
@@ -25722,6 +25725,15 @@
                     }
                 }
 
+                // Process heavy-attack sprite sheet (4 cols x 1 row — used by heavy/slow weapons)
+                if (img.dataset.heavyAttack) {
+                    try {
+                        img._heavyAttackFrames = await exf(img.dataset.heavyAttack, 'punch', 4, 1);
+                    } catch(e) {
+                        img._heavyAttackFrames = [];
+                    }
+                }
+
                 // Process hurt sprite sheet (each frame is a different pose, picked randomly)
                 // Hurt.png is 4096x1024 → 4 frames of 1024x1024
                 img._hurtFrames = await exf(img.dataset.hurt, 'hurt', 4, 1);
@@ -25772,6 +25784,7 @@
                         run: [...img._runFrames],
                         weaponRun: img._weaponRunFrames ? [...img._weaponRunFrames] : [],
                         weaponAttack: img._weaponAttackFrames ? [...img._weaponAttackFrames] : [],
+                        heavyAttack: img._heavyAttackFrames ? [...img._heavyAttackFrames] : [],
                         hurt: [...img._hurtFrames],
                         dodge: [...img._dodgeFrames],
                         block: [...img._blockFrames],
@@ -25843,6 +25856,9 @@
             if (img._originalFrames.weaponAttack && img._originalFrames.weaponAttack.length > 0) {
                 img._weaponAttackFrames = await applyHueShiftToFrames(img._originalFrames.weaponAttack, hue, img._weaponAttackFrames);
             }
+            if (img._originalFrames.heavyAttack && img._originalFrames.heavyAttack.length > 0) {
+                img._heavyAttackFrames = await applyHueShiftToFrames(img._originalFrames.heavyAttack, hue, img._heavyAttackFrames);
+            }
             img._hurtFrames = await applyHueShiftToFrames(img._originalFrames.hurt, hue, img._hurtFrames);
             img._dodgeFrames = await applyHueShiftToFrames(img._originalFrames.dodge, hue, img._dodgeFrames);
             img._blockFrames = await applyHueShiftToFrames(img._originalFrames.block, hue, img._blockFrames);
@@ -25892,6 +25908,7 @@
                     cpuImg._runFrames = [...cpuImg._originalFrames.run];
                     if (cpuImg._originalFrames.weaponRun) cpuImg._weaponRunFrames = [...cpuImg._originalFrames.weaponRun];
                     if (cpuImg._originalFrames.weaponAttack) cpuImg._weaponAttackFrames = [...cpuImg._originalFrames.weaponAttack];
+                    if (cpuImg._originalFrames.heavyAttack) cpuImg._heavyAttackFrames = [...cpuImg._originalFrames.heavyAttack];
                     cpuImg._hurtFrames = [...cpuImg._originalFrames.hurt];
                     cpuImg._dodgeFrames = [...cpuImg._originalFrames.dodge];
                     cpuImg._blockFrames = [...cpuImg._originalFrames.block];
@@ -27226,7 +27243,8 @@
                     }
                     if (!_weaponAttackFramesCache[weapon.id]) {
                         if (weapon.attackOverlay) {
-                            try { _weaponAttackFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[attackUrl] || attackUrl, 4, 2); }
+                            const rows = weapon.heavyAttack ? 1 : 2;
+                            try { _weaponAttackFramesCache[weapon.id] = await extractFrames(window._imgBlobCache[attackUrl] || attackUrl, 4, rows); }
                             catch(e) { _weaponAttackFramesCache[weapon.id] = []; }
                         } else {
                             _weaponAttackFramesCache[weapon.id] = [];
@@ -27264,7 +27282,8 @@
                 }
                 if (!_weaponAttackFramesCache[weaponId]) {
                     if (WEAPONS[weaponId]?.attackOverlay) {
-                        try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                        const rows = WEAPONS[weaponId]?.heavyAttack ? 1 : 2;
+                        try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, rows); }
                         catch(e) { _weaponAttackFramesCache[weaponId] = []; }
                     } else {
                         _weaponAttackFramesCache[weaponId] = [];
@@ -30018,7 +30037,8 @@
                     catch(e) { _weaponRunFramesCache[weaponId] = []; }
                 }
                 if (weaponImg && !_weaponAttackFramesCache[weaponId]) {
-                    try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, 2); }
+                    const rows = WEAPONS[weaponId]?.heavyAttack ? 1 : 2;
+                    try { _weaponAttackFramesCache[weaponId] = await extractFrames(weaponImg.replace('.png', ' Attack.png'), 4, rows); }
                     catch(e) { _weaponAttackFramesCache[weaponId] = []; }
                 }
             })();
