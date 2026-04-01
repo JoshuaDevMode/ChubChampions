@@ -384,7 +384,7 @@
             width: 345px;
             height: 345px;
             top: 50%;
-            left: 72%;
+            left: 74%;
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
@@ -397,7 +397,7 @@
             width: 345px;
             height: 345px;
             top: 50%;
-            left: 72%;
+            left: 74%;
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
@@ -410,7 +410,7 @@
             width: 345px;
             height: 345px;
             top: 50%;
-            left: 72%;
+            left: 74%;
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
@@ -423,11 +423,11 @@
         }
 
         .heavy-attack-char-overlay.sprite-reversed {
-            transform: scaleX(-1) !important;
+            transform: translate(-50%, -50%) scaleX(-1) !important;
         }
 
         #cpu .heavy-attack-char-overlay.sprite-reversed {
-            transform: scaleX(1) !important;
+            transform: translate(-50%, -50%) scaleX(1) !important;
         }
 
         .blend-attack-canvas {
@@ -458,18 +458,24 @@
             right: 8%;
         }
 
-        .character-png.sprite-reversed,
+        /* character-png is in flex flow — no translate needed */
+        .character-png.sprite-reversed {
+            transform: scaleX(-1) !important;
+        }
+        #cpu .character-png.sprite-reversed {
+            transform: scaleX(1) !important;
+        }
+
+        /* Absolutely-positioned overlays must preserve translate(-50%,-50%) when flipped */
         .weapon-run-overlay.sprite-reversed,
         .weapon-attack-overlay.sprite-reversed,
         .weapon-attack-char-overlay.sprite-reversed {
-            transform: scaleX(-1) !important;
+            transform: translate(-50%, -50%) scaleX(-1) !important;
         }
-
-        #cpu .character-png.sprite-reversed,
         #cpu .weapon-run-overlay.sprite-reversed,
         #cpu .weapon-attack-overlay.sprite-reversed,
         #cpu .weapon-attack-char-overlay.sprite-reversed {
-            transform: scaleX(1) !important;
+            transform: translate(-50%, -50%) scaleX(1) !important;
         }
 
         #cpu .character-png {
@@ -30455,21 +30461,36 @@
             }
             const body = dbgEl.querySelector('.fighter-body');
             dbgImg.style.visibility = 'hidden';
-            const overlay = document.createElement('img');
-            overlay.className = cssClass;
-            overlay.src = frames[0];
-            body.appendChild(overlay);
+
+            const charOverlay = document.createElement('img');
+            charOverlay.className = cssClass;
+            charOverlay.src = frames[0];
+            body.appendChild(charOverlay);
+
+            // Also show weapon overlay if cached
+            const weaponId = dbgImg._debugWeaponId;
+            const weaponFrames = weaponId ? (_weaponAttackFramesCache[weaponId] || []) : [];
+            let weaponOverlay = null;
+            if (weaponFrames.length) {
+                weaponOverlay = document.createElement('img');
+                weaponOverlay.className = 'weapon-attack-overlay';
+                weaponOverlay.src = weaponFrames[0];
+                body.appendChild(weaponOverlay);
+            }
+
             let idx = 0;
             dbgImg._currentAnim = setInterval(() => {
                 idx++;
                 if (idx < frames.length) {
-                    overlay.src = frames[idx];
+                    charOverlay.src = frames[idx];
+                    if (weaponOverlay && weaponFrames.length) weaponOverlay.src = weaponFrames[idx % weaponFrames.length];
                 } else if (idx === frames.length) {
                     // hold last frame one extra tick
                 } else {
                     clearInterval(dbgImg._currentAnim);
                     dbgImg._currentAnim = null;
-                    overlay.remove();
+                    charOverlay.remove();
+                    if (weaponOverlay) weaponOverlay.remove();
                     dbgImg.style.visibility = '';
                     dbgImg.src = dbgImg._idleSrc;
                 }
