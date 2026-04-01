@@ -12826,6 +12826,15 @@
         const WEAPONS = {
         };
 
+        /** Looks up full weapon data object from WEAPON_TIERS by id. */
+        function getWeaponById(id) {
+            for (const tier of Object.keys(WEAPON_TIERS)) {
+                const found = WEAPON_TIERS[tier].find(w => w.id === id);
+                if (found) return found;
+            }
+            return null;
+        }
+
         /** Returns "MIN – MAX" damage range string from weapon's own dmgMin/dmgMax. */
         function weaponDmgRange(weapon) {
             return weapon.dmgMin + ' – ' + weapon.dmgMax;
@@ -13061,7 +13070,9 @@
                                     critBonus: weaponData.critBonus,
                                     longReach: weaponData.longReach || false,
                                     isShield: weaponData.isShield || false,
-                                    shieldHP: weaponData.shieldHP || 0
+                                    shieldHP: weaponData.shieldHP || 0,
+                                    attackOverlay: weaponData.attackOverlay || false,
+                                    heavyAttack: weaponData.heavyAttack || false
                                 };
                                 break;
                             }
@@ -13277,7 +13288,9 @@
                                 critBonus: w.critBonus,
                                 longReach: w.longReach || false,
                                 isShield: w.isShield || false,
-                                shieldHP: w.shieldHP || 0
+                                shieldHP: w.shieldHP || 0,
+                                attackOverlay: w.attackOverlay || false,
+                                heavyAttack: w.heavyAttack || false
                             };
                         }
                         cpuWeapons.push(w.id);
@@ -14158,7 +14171,9 @@
                     critBonus: newWeapon.critBonus,
                     longReach: newWeapon.longReach || false,
                     isShield: newWeapon.isShield || false,
-                    shieldHP: newWeapon.shieldHP || 0
+                    shieldHP: newWeapon.shieldHP || 0,
+                    attackOverlay: newWeapon.attackOverlay || false,
+                    heavyAttack: newWeapon.heavyAttack || false
                 };
             }
 
@@ -17774,6 +17789,16 @@
                             }
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
+                            // Ensure attack frames are cached — may not be loaded if weapon was unlocked after lobby preload
+                            if (!_weaponAttackFramesCache[event.weaponId] || _weaponAttackFramesCache[event.weaponId].length === 0) {
+                                const wData = getWeaponById(event.weaponId);
+                                if (wData?.attackOverlay && wData?.img) {
+                                    const rows = wData.heavyAttack ? 1 : 2;
+                                    extractFrames(wData.img.replace('.png', ' Attack.png'), 4, rows)
+                                        .then(f => { _weaponAttackFramesCache[event.weaponId] = f; })
+                                        .catch(() => { _weaponAttackFramesCache[event.weaponId] = []; });
+                                }
+                            }
                         }
                         await sleep(80);
                         break;
@@ -22672,7 +22697,7 @@
             fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
 
             // Determine if we should use weapon attack frames
-            const isHeavyWeapon = weaponId && !!WEAPONS[weaponId]?.heavyAttack;
+            const isHeavyWeapon = weaponId && !!getWeaponById(weaponId)?.heavyAttack;
             const charFrames = isHeavyWeapon ? img._heavyAttackFrames : img._weaponAttackFrames;
             const useWeaponAttack = weaponId && charFrames && charFrames.length > 0
                 && _weaponAttackFramesCache[weaponId] && _weaponAttackFramesCache[weaponId].length > 0;
@@ -22842,8 +22867,6 @@
             if (!el) return;
             const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
             if (overlay) overlay.style.display = 'none';
-            const img = el.querySelector('img.character-png');
-            if (img) { img.style.width = ''; img.style.height = ''; }
         }
 
         function showComboHit(count) {
@@ -25837,14 +25860,11 @@
             if (!skipWeapons) {
                 // Preload weapon run sprite sheets for all weapons (base + all tiers)
                 const allWeaponEntries = [];
-                for (const id of Object.keys(WEAPONS)) {
-                    allWeaponEntries.push({ id: id, img: WEAPONS[id].img });
-                }
                 for (const tier of CHEST_LEVEL_TIERS) {
                     if (WEAPON_TIERS[tier]) {
                         WEAPON_TIERS[tier].forEach(w => {
-                            if (!allWeaponEntries.some(e => e.img === w.img)) {
-                                allWeaponEntries.push({ id: w.id, img: w.img });
+                            if (!allWeaponEntries.some(e => e.id === w.id)) {
+                                allWeaponEntries.push(w);
                             }
                         });
                     }
@@ -25857,8 +25877,9 @@
                     }
                     if (!_weaponAttackFramesCache[entry.id]) {
                         if (entry.attackOverlay && entry.img) {
+                            const rows = entry.heavyAttack ? 1 : 2;
                             const attackPath = entry.img.replace('.png', ' Attack.png');
-                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 2); }
+                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, rows); }
                             catch(e) { _weaponAttackFramesCache[entry.id] = []; }
                         } else {
                             _weaponAttackFramesCache[entry.id] = [];
