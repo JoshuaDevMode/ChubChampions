@@ -378,6 +378,9 @@
             z-index: 1;
             filter: drop-shadow(0 0 4px rgba(168,85,247,0.6));
         }
+        .weapon-run-overlay.behind {
+            z-index: -1;
+        }
 
         .weapon-attack-overlay {
             position: absolute;
@@ -22675,6 +22678,7 @@
                 if (!overlay) {
                     overlay = document.createElement('img');
                     overlay.className = 'weapon-run-overlay';
+                    if (['tier_spear', 'tier_gun'].includes(weaponIdForRun)) overlay.classList.add('behind');
                     fighterEl.querySelector('.fighter-body').appendChild(overlay);
                 }
                 if (weaponFrames.length > 0) overlay.src = weaponFrames[0];
