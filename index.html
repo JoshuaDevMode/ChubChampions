@@ -10551,6 +10551,89 @@
         .combat-dur-fill.dur-green { background: #22c55e; }
         .combat-dur-fill.dur-yellow { background: #eab308; }
         .combat-dur-fill.dur-red { background: #ef4444; }
+
+        /* ===== ANIM DEBUG PANEL ===== */
+        #anim-debug-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.96);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .anim-debug-header {
+            color: #a78bfa;
+            font-size: 0.75em;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .anim-debug-stage {
+            background: #0f0f1a;
+            border: 2px solid #7c3aed;
+            border-radius: 12px;
+            width: 440px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 14px;
+            overflow: visible;
+        }
+        .anim-debug-anim-label {
+            position: absolute;
+            top: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.45em;
+            letter-spacing: 2px;
+        }
+        .anim-debug-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 580px;
+            width: 100%;
+            padding: 0 16px;
+        }
+        .anim-debug-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .anim-debug-btn {
+            background: #1e1b4b;
+            border: 1px solid #4c1d95;
+            color: #c4b5fd;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.42em;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.12s;
+            white-space: nowrap;
+        }
+        .anim-debug-btn:hover { background: #2e1065; border-color: #7c3aed; }
+        .anim-debug-btn.active { background: #4c1d95; border-color: #a78bfa; color: #fff; }
+        .anim-debug-close {
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55em;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .anim-debug-close:hover { background: #374151; color: #fff; }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
@@ -10598,6 +10681,7 @@
         <div class="lobby-currency-bar" id="lobby-currency-bar">
             <div class="top-nav-group">
                 <button class="top-nav-btn btn-shine" id="menu-history-btn">HISTORY</button>
+                <button class="top-nav-btn btn-shine" onclick="openAnimDebug()" title="Animation Debug" style="color:#a78bfa">🎬</button>
                 <button class="top-nav-btn btn-shine" id="menu-shop-btn">SHOP</button>
                 <button class="top-nav-btn btn-shine" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn btn-shine" id="menu-wardrobe-btn">👘 WARDROBE</button>
@@ -30316,7 +30400,195 @@
 
         // Initialize lobby display
         updateLobbyCharacterDisplay();
+
+        // ===== ANIM DEBUG =====
+        function openAnimDebug() {
+            const playerImg = document.querySelector('#player .character-png');
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!playerImg || !dbgImg) return;
+
+            // Copy all frame arrays from the player fighter
+            ['punch','kick','uppercut','headbutt','run','weaponRun','weaponAttack',
+             'heavyAttack','hurt','dodge','block','armedIdle','idleBlink','loser'].forEach(k => {
+                const src = playerImg['_' + k + 'Frames'];
+                if (src) dbgImg['_' + k + 'Frames'] = [...src];
+            });
+            dbgImg._idleSrc = playerImg._idleSrc || playerImg.src;
+            dbgImg.dataset.win = playerImg.dataset.win || '';
+            dbgImg.src = dbgImg._idleSrc;
+            dbgImg.style.visibility = '';
+
+            // Grab equipped weapon for run-weapon buttons
+            const char = getSelectedCharacter();
+            dbgImg._debugWeaponId = char?.equippedWeapons?.[0] || null;
+
+            document.getElementById('anim-debug-label').textContent = 'IDLE';
+            document.querySelectorAll('.anim-debug-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('anim-debug-screen').style.display = 'flex';
+        }
+
+        function closeAnimDebug() {
+            _dbgStop();
+            document.getElementById('anim-debug-screen').style.display = 'none';
+        }
+
+        function _dbgStop() {
+            const dbgEl = document.getElementById('anim-debug-fighter');
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!dbgEl || !dbgImg) return;
+            stopRunAnimation(dbgEl);
+            if (dbgImg._currentAnim) { clearInterval(dbgImg._currentAnim); dbgImg._currentAnim = null; }
+            if (dbgImg._blendRaf) { cancelAnimationFrame(dbgImg._blendRaf); dbgImg._blendRaf = null; }
+            dbgEl.querySelectorAll('.weapon-attack-char-overlay,.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
+            dbgImg.style.visibility = '';
+        }
+
+        function _dbgPlayFrames(frames, cssClass, msPerFrame) {
+            const dbgEl = document.getElementById('anim-debug-fighter');
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!frames?.length) {
+                document.getElementById('anim-debug-label').textContent += ' (NO FRAMES)';
+                return;
+            }
+            const body = dbgEl.querySelector('.fighter-body');
+            dbgImg.style.visibility = 'hidden';
+            const overlay = document.createElement('img');
+            overlay.className = cssClass;
+            overlay.src = frames[0];
+            body.appendChild(overlay);
+            let idx = 0;
+            dbgImg._currentAnim = setInterval(() => {
+                idx++;
+                if (idx < frames.length) {
+                    overlay.src = frames[idx];
+                } else if (idx === frames.length) {
+                    // hold last frame one extra tick
+                } else {
+                    clearInterval(dbgImg._currentAnim);
+                    dbgImg._currentAnim = null;
+                    overlay.remove();
+                    dbgImg.style.visibility = '';
+                    dbgImg.src = dbgImg._idleSrc;
+                }
+            }, msPerFrame);
+        }
+
+        function dbgAnim(type, btn) {
+            _dbgStop();
+            const dbgEl = document.getElementById('anim-debug-fighter');
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!dbgEl || !dbgImg) return;
+
+            document.getElementById('anim-debug-label').textContent = type.toUpperCase();
+            document.querySelectorAll('.anim-debug-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const weaponId = dbgImg._debugWeaponId || null;
+
+            switch (type) {
+                case 'idle':
+                    dbgImg.src = dbgImg._idleSrc;
+                    break;
+                case 'idleBlink':
+                    animateSprite(dbgEl, 'idleBlink', { loop: true, halfOnly: false, speed: 120 });
+                    break;
+                case 'armedIdle':
+                    if (dbgImg._armedIdleFrames?.length)
+                        animateSprite(dbgEl, 'armedIdle', { loop: true, halfOnly: false, speed: 150 });
+                    else dbgImg.src = dbgImg._idleSrc;
+                    break;
+                case 'hurt':
+                    animateSprite(dbgEl, 'hurt', { loop: false, halfOnly: false, speed: 100 });
+                    break;
+                case 'dodge':
+                    animateSprite(dbgEl, 'dodge', { loop: false, halfOnly: false, speed: 80 });
+                    break;
+                case 'block':
+                    animateSprite(dbgEl, 'block', { loop: true, halfOnly: false, speed: 120 });
+                    break;
+                case 'run-fwd':
+                    animateRun(dbgEl, false, null);
+                    break;
+                case 'run-back':
+                    animateRun(dbgEl, true, null);
+                    break;
+                case 'run-weapon-fwd':
+                    animateRun(dbgEl, false, weaponId);
+                    break;
+                case 'run-weapon-back':
+                    animateRun(dbgEl, true, weaponId);
+                    break;
+                case 'punch':
+                    animateAttack(dbgEl, 'punch', 800, null);
+                    break;
+                case 'kick':
+                    animateAttack(dbgEl, 'kick', 800, null);
+                    break;
+                case 'uppercut':
+                    animateAttack(dbgEl, 'uppercut', 800, null);
+                    break;
+                case 'headbutt':
+                    animateAttack(dbgEl, 'headbutt', 800, null);
+                    break;
+                case 'weapon-attack':
+                    _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
+                    break;
+                case 'heavy-attack':
+                    _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 200);
+                    break;
+                case 'win':
+                    if (dbgImg.dataset.win) dbgImg.src = dbgImg.dataset.win;
+                    break;
+                case 'loser':
+                    animateSprite(dbgEl, 'loser', { loop: true, halfOnly: false, speed: 120 });
+                    break;
+            }
+        }
     </script>
+
+    <!-- Animation Debug Panel -->
+    <div id="anim-debug-screen" style="display:none;">
+        <div class="anim-debug-header">
+            <span>🎬 ANIM DEBUG</span>
+            <button class="anim-debug-close" onclick="closeAnimDebug()">✕ CLOSE</button>
+        </div>
+        <div class="anim-debug-stage">
+            <div class="anim-debug-anim-label" id="anim-debug-label">IDLE</div>
+            <div id="anim-debug-fighter" style="position:relative;display:flex;align-items:center;justify-content:center;">
+                <div class="fighter-body" style="width:200px;height:200px;position:relative;display:flex;align-items:center;justify-content:center;">
+                    <img src="Assets/Player/Movement/Character.png" class="character-png" id="anim-debug-img" alt="Debug Fighter">
+                </div>
+            </div>
+        </div>
+        <div class="anim-debug-controls">
+            <div class="anim-debug-row">
+                <button class="anim-debug-btn" onclick="dbgAnim('idle',this)">IDLE</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('idleBlink',this)">IDLE BLINK</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('armedIdle',this)">ARMED IDLE</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('hurt',this)">HURT</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('dodge',this)">DODGE</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('block',this)">BLOCK</button>
+            </div>
+            <div class="anim-debug-row">
+                <button class="anim-debug-btn" onclick="dbgAnim('run-fwd',this)">RUN →</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('run-back',this)">RUN ←</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('run-weapon-fwd',this)">RUN WEAPON →</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('run-weapon-back',this)">RUN WEAPON ←</button>
+            </div>
+            <div class="anim-debug-row">
+                <button class="anim-debug-btn" onclick="dbgAnim('punch',this)">PUNCH</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('kick',this)">KICK</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('uppercut',this)">UPPERCUT</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('headbutt',this)">HEADBUTT</button>
+            </div>
+            <div class="anim-debug-row">
+                <button class="anim-debug-btn" onclick="dbgAnim('weapon-attack',this)">⚔️ WEAPON ATTACK (1H)</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('heavy-attack',this)">🪓 HEAVY ATTACK</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('win',this)">WIN</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('loser',this)">LOSE</button>
+            </div>
+        </div>
+    </div>
 
     <!-- React login gate (Privy auth — no redirect) -->
     <div id="privy-root"></div>
