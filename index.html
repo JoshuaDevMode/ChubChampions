@@ -10585,14 +10585,45 @@
             background: #0f0f1a;
             border: 2px solid #7c3aed;
             border-radius: 12px;
-            width: 440px;
+            width: 680px;
             height: 300px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-end;
+            justify-content: flex-start;
             position: relative;
             margin-bottom: 14px;
-            overflow: visible;
+            overflow: hidden;
+        }
+        .anim-debug-ground {
+            position: absolute;
+            bottom: 40px;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4c1d95 20%, #4c1d95 80%, transparent);
+            opacity: 0.4;
+        }
+        #anim-debug-target {
+            position: absolute;
+            bottom: 40px;
+            right: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        #anim-debug-target img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            transform: scaleX(-1);
+            filter: hue-rotate(200deg) brightness(0.8) sepia(0.4);
+            opacity: 0.85;
+        }
+        #anim-debug-target .dbg-target-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.35em;
+            color: #ef4444;
+            letter-spacing: 1px;
         }
         .anim-debug-anim-label {
             position: absolute;
@@ -30524,6 +30555,7 @@
             dbgImg.style.transform = '';
             dbgImg.style.transition = '';
             dbgEl.style.transform = '';
+            dbgEl.style.left = '40px';
             dbgEl.querySelectorAll('.weapon-run-overlay,.weapon-attack-char-overlay,.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
             dbgImg.style.visibility = '';
         }
@@ -30663,51 +30695,94 @@
             }
         }
 
-        function dbgJumpAttack(dbgEl, dbgImg, attackType) {
-            const frames = dbgImg['_' + attackType + 'Frames'] || [];
+        async function dbgJumpAttack(dbgEl, dbgImg, attackType) {
+            const frames    = dbgImg['_' + attackType + 'Frames'] || [];
             const peakFrame = frames.length > 0 ? frames[frames.length - 1] : null;
-            const rotAngle = attackType === 'kick' ? 45 : 35;
-            const arcMs = 900;
-            const peakAt = 0.36;
+            const rotAngle  = attackType === 'kick' ? 45 : 35;
 
-            // Show run frame as airborne pose
+            const stageEl   = document.querySelector('.anim-debug-stage');
+            const targetEl  = document.getElementById('anim-debug-target');
+            const stageW    = stageEl.offsetWidth;
+
+            // Fighter starts at left:40px, target right edge at stageW-60px
+            const startX    = 40;
+            const targetCX  = stageW - 60 - (targetEl.offsetWidth / 2);  // center of target
+            const landX     = targetCX - 120;   // land just in front of target
+            const centerX   = stageW * 0.42;    // run to ~center before jumping
+
+            const runMs  = 280;
+            const arcMs  = 900;
+            const backMs = 380;
+
+            const raf = (fn) => new Promise(res => {
+                let id;
+                function step(now) {
+                    if (fn(now) === false) { dbgImg._dbgJumpRaf = null; res(); return; }
+                    id = requestAnimationFrame(step);
+                    dbgImg._dbgJumpRaf = id;
+                }
+                id = requestAnimationFrame(step);
+                dbgImg._dbgJumpRaf = id;
+            });
+
+            // ── Phase 1: run to center ──────────────────────────────
+            animateRun(dbgEl, false, null);
+            const t0run = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0run) / runMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (startX + (centerX - startX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
             const airFrame = dbgImg._runFrames?.[8] || dbgImg._idleSrc;
             dbgImg.src = airFrame;
-            dbgImg.style.transform = '';
 
-            let peakTriggered = false;
-            let rafId;
-            const t0 = performance.now();
-
-            function step(now) {
-                const t = Math.min((now - t0) / arcMs, 1);
+            // ── Phase 2: jump arc toward target ─────────────────────
+            const deltaX    = landX - centerX;
+            let peakDone    = false;
+            const t0arc     = performance.now();
+            await raf(now => {
+                const t  = Math.min((now - t0arc) / arcMs, 1);
+                const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                const tx = deltaX * ease;
                 const ty = -320 * Math.sin(Math.PI * t);
+                dbgEl.style.left = (centerX + tx) + 'px';
+                dbgEl.style.top  = ty + 'px';          // vertical via top offset from bottom:40px baseline
+                // reuse transform only for Y so left handles X
                 dbgEl.style.transform = `translateY(${ty}px)`;
+                dbgEl.style.left = (centerX + tx) + 'px';
 
-                // At peak: show attack frame + rotation
-                if (!peakTriggered && t >= peakAt) {
-                    peakTriggered = true;
+                if (!peakDone && t >= 0.36) {
+                    peakDone = true;
                     if (peakFrame) dbgImg.src = peakFrame;
                     dbgImg.style.transition = 'transform 0.08s ease-out';
-                    dbgImg.style.transform = `rotate(${rotAngle}deg)`;
+                    dbgImg.style.transform  = `rotate(${rotAngle}deg)`;
                 }
+                return t < 1 ? true : false;
+            });
 
-                if (t < 1) {
-                    rafId = requestAnimationFrame(step);
-                } else {
-                    // Landing
-                    dbgEl.style.transform = '';
-                    dbgImg.style.transition = 'transform 0.08s ease-out';
-                    dbgImg.style.transform = '';
-                    setTimeout(() => {
-                        dbgImg.style.transition = '';
-                        dbgImg.src = dbgImg._idleSrc;
-                    }, 100);
-                }
-            }
+            // ── Landing ─────────────────────────────────────────────
+            dbgEl.style.transform = '';
+            dbgEl.style.left = landX + 'px';
+            dbgImg.style.transition = 'transform 0.08s ease-out';
+            dbgImg.style.transform  = '';
+            await new Promise(r => setTimeout(r, 180));
+            dbgImg.style.transition = '';
+            playFootstep();
 
-            dbgImg._dbgJumpRaf = rafId;
-            rafId = requestAnimationFrame(step);
+            // ── Phase 3: run back to start ───────────────────────────
+            animateRun(dbgEl, true, null);
+            const t0back = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0back) / backMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (landX + (startX - landX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
+            dbgEl.style.left = startX + 'px';
+            dbgImg.src = dbgImg._idleSrc;
         }
     </script>
 
@@ -30719,10 +30794,17 @@
         </div>
         <div class="anim-debug-stage">
             <div class="anim-debug-anim-label" id="anim-debug-label">IDLE</div>
-            <div id="anim-debug-fighter" style="position:relative;display:flex;align-items:center;justify-content:center;">
+            <div class="anim-debug-ground"></div>
+            <!-- Attacker -->
+            <div id="anim-debug-fighter" style="position:absolute;bottom:40px;left:40px;display:flex;align-items:center;justify-content:center;">
                 <div class="fighter-body" style="width:220px;height:220px;position:relative;display:flex;align-items:center;justify-content:center;">
                     <img src="Assets/Player/Movement/Character.png" class="character-png" id="anim-debug-img" alt="Debug Fighter">
                 </div>
+            </div>
+            <!-- Target dummy -->
+            <div id="anim-debug-target">
+                <img src="Assets/Player/Movement/Character.png" id="anim-debug-target-img" alt="Target">
+                <span class="dbg-target-label">TARGET</span>
             </div>
         </div>
         <div class="anim-debug-controls">
