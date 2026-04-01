@@ -18284,7 +18284,8 @@
                 playFootstep();
             } else if (event.jumpAttack) {
                 const jaImg        = attackerEl.querySelector('img.character-png');
-                const jaPeakFrames = jaImg?.['_' + attackType + 'Frames'] || [];
+                const isJumpHeavy  = !!getWeaponById(attackType)?.heavyAttack;
+                const jaPeakFrames = isJumpHeavy ? [] : (jaImg?.['_' + attackType + 'Frames'] || []);
                 const rotAngle     = attackType === 'kick' ? 45 : 35;
                 const isCpuAtt     = attacker === 'cpu';
                 // baseXform preserves the attacker's facing direction at jump peak.
@@ -18313,7 +18314,7 @@
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
                 // ── Phase 1: run to arena center (≈280ms) ───────────────────
-                animateRun(attackerEl, false, null);
+                animateRun(attackerEl, false, isJumpHeavy ? attackType : null);
                 const r0Left    = parseFloat(attackerEl.style.left) || 0;
                 const runTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
                 const runDelta  = runTarget - r0Left;
@@ -18334,7 +18335,25 @@
                     battleRAF(runStep, res);
                 });
                 stopRunAnimation(attackerEl);
-                if (jaImg) jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
+                if (isJumpHeavy && jaImg) {
+                    // Show heavy attack frame 3 (index 2) + weapon overlay during arc
+                    const jhCF = jaImg._heavyAttackFrames || [];
+                    const jhWF = _weaponAttackFramesCache[attackType] || [];
+                    const jaBody = attackerEl.querySelector('.fighter-body');
+                    jaBody.querySelectorAll('.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
+                    jaImg.style.visibility = 'hidden';
+                    const jaCo = document.createElement('img');
+                    jaCo.className = 'heavy-attack-char-overlay';
+                    jaCo.src = jhCF[2] || jhCF[0] || '';
+                    jaBody.appendChild(jaCo);
+                    const jaWo = document.createElement('img');
+                    jaWo.className = 'weapon-attack-overlay';
+                    jaWo.src = jhWF[2] || jhWF[0] || '';
+                    jaBody.appendChild(jaWo);
+                    jaImg._jaCo = jaCo; jaImg._jaWo = jaWo;
+                } else if (jaImg) {
+                    jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
+                }
 
                 // ── Phase 2: jump arc from center to defender position ─────────
                 const atkW   = attackerEl.offsetWidth;
@@ -18372,8 +18391,27 @@
                 });
 
                 clearTimeout(peakTmr);
-                // Reset rotation on landing (character slams down straight)
-                if (jaImg) {
+                if (isJumpHeavy && jaImg) {
+                    // Switch to last heavy frame on landing + 30° slam rotation
+                    const jhCF = jaImg._heavyAttackFrames || [];
+                    const jhWF = _weaponAttackFramesCache[attackType] || [];
+                    if (jaImg._jaCo) jaImg._jaCo.src = jhCF[jhCF.length - 1] || jhCF[2] || '';
+                    if (jaImg._jaWo) jaImg._jaWo.src = jhWF[jhWF.length - 1] || jhWF[2] || '';
+                    const jaBody2 = attackerEl.querySelector('.fighter-body');
+                    jaBody2.style.transition = 'transform 0.05s ease-out';
+                    jaBody2.style.transform  = 'rotate(30deg)';
+                    setTimeout(() => {
+                        jaBody2.style.transition = 'transform 0.12s ease-out';
+                        jaBody2.style.transform  = '';
+                        setTimeout(() => {
+                            jaBody2.style.transition = '';
+                            if (jaImg._jaCo) { jaImg._jaCo.remove(); jaImg._jaCo = null; }
+                            if (jaImg._jaWo) { jaImg._jaWo.remove(); jaImg._jaWo = null; }
+                            jaImg.style.visibility = '';
+                        }, 130);
+                    }, 220);
+                } else if (jaImg) {
+                    // Reset rotation on landing (character slams down straight)
                     jaImg.style.transition = 'transform 0.08s ease-out';
                     jaImg.style.transform  = baseXform.trim() || '';
                     setTimeout(() => { jaImg.style.transition = ''; }, 100);
@@ -30515,7 +30553,11 @@
 
             dbgImg._debugWeaponId = weaponId || null;
 
-            if (!weaponId) return;
+            if (!weaponId) {
+                const jhBtn = document.getElementById('dbg-jump-heavy-btn');
+                if (jhBtn) jhBtn.style.display = 'none';
+                return;
+            }
 
             const weapon = getWeaponById(weaponId);
             if (!weapon?.img) return;
@@ -30534,6 +30576,9 @@
             }
 
             document.getElementById('anim-debug-label').textContent = weapon.name.toUpperCase() + ' SELECTED';
+            // Show jump-heavy button only for heavy weapons
+            const jhBtn = document.getElementById('dbg-jump-heavy-btn');
+            if (jhBtn) jhBtn.style.display = weapon.heavyAttack ? '' : 'none';
         }
 
         function closeAnimDebug() {
@@ -30558,6 +30603,8 @@
             dbgEl.style.transform = '';
             dbgEl.style.left = '40px';
             dbgEl.querySelectorAll('.weapon-run-overlay,.weapon-attack-char-overlay,.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
+            const dbgBody = dbgEl.querySelector('.fighter-body');
+            if (dbgBody) { dbgBody.style.transition = ''; dbgBody.style.transform = ''; }
             dbgImg.style.visibility = '';
         }
 
@@ -30692,6 +30739,9 @@
                 case 'jump-headbutt':
                     dbgJumpAttack(dbgEl, dbgImg, type.replace('jump-', ''));
                     break;
+                case 'jump-heavy':
+                    dbgJumpHeavyAttack(dbgEl, dbgImg, dbgImg._debugWeaponId);
+                    break;
             }
         }
 
@@ -30781,6 +30831,97 @@
             dbgEl.style.left = startX + 'px';
             dbgImg.src = dbgImg._idleSrc;
         }
+
+        async function dbgJumpHeavyAttack(dbgEl, dbgImg, weaponId) {
+            if (!weaponId) return;
+            const heavyCF = dbgImg._heavyAttackFrames || [];
+            const heavyWF = _weaponAttackFramesCache[weaponId] || [];
+            if (heavyCF.length < 3) return;
+
+            const stageEl  = document.querySelector('.anim-debug-stage');
+            const targetEl = document.getElementById('anim-debug-target');
+            const stageW   = stageEl.offsetWidth;
+            const startX   = 40;
+            const targetCX = stageW - 60 - (targetEl.offsetWidth / 2);
+            const landX    = targetCX - 120;
+            const centerX  = stageW * 0.42;
+            const runMs = 300; const arcMs = 960; const backMs = 420;
+
+            const raf = fn => new Promise(res => {
+                let id;
+                function step(now) {
+                    if (fn(now) === false) { dbgImg._dbgJumpRaf = null; res(); return; }
+                    id = requestAnimationFrame(step);
+                    dbgImg._dbgJumpRaf = id;
+                }
+                id = requestAnimationFrame(step);
+                dbgImg._dbgJumpRaf = id;
+            });
+
+            // ── Phase 1: run with weapon ──────────────────────────────
+            animateRun(dbgEl, false, weaponId);
+            const t0run = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0run) / runMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (startX + (centerX - startX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
+
+            // Show heavy frame 3 (index 2) + weapon overlay
+            const dbgBody = dbgEl.querySelector('.fighter-body');
+            dbgBody.querySelectorAll('.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
+            dbgImg.style.visibility = 'hidden';
+            const jaCo = document.createElement('img');
+            jaCo.className = 'heavy-attack-char-overlay';
+            jaCo.src = heavyCF[2];
+            dbgBody.appendChild(jaCo);
+            const jaWo = document.createElement('img');
+            jaWo.className = 'weapon-attack-overlay';
+            jaWo.src = heavyWF[2] || heavyWF[0] || '';
+            dbgBody.appendChild(jaWo);
+
+            // ── Phase 2: arc toward target ────────────────────────────
+            dbgEl.style.left = centerX + 'px';
+            const deltaX = landX - centerX;
+            const t0arc = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0arc) / arcMs, 1);
+                const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                dbgEl.style.transform = `translateX(${deltaX * ease}px) translateY(${-320 * Math.sin(Math.PI * t)}px)`;
+                return t < 1 ? true : false;
+            });
+
+            // ── Landing: last frame + 30° slam ────────────────────────
+            dbgEl.style.transform = '';
+            dbgEl.style.left = landX + 'px';
+            jaCo.src = heavyCF[heavyCF.length - 1];
+            if (heavyWF.length) jaWo.src = heavyWF[heavyWF.length - 1];
+            dbgBody.style.transition = 'transform 0.05s ease-out';
+            dbgBody.style.transform  = 'rotate(30deg)';
+            playFootstep();
+            await new Promise(r => setTimeout(r, 220));
+            dbgBody.style.transition = 'transform 0.12s ease-out';
+            dbgBody.style.transform  = '';
+            await new Promise(r => setTimeout(r, 140));
+            dbgBody.style.transition = '';
+            jaCo.remove(); jaWo.remove();
+            dbgImg.style.visibility = '';
+
+            // ── Phase 3: run back ─────────────────────────────────────
+            animateRun(dbgEl, true, null);
+            const t0back = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0back) / backMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (landX + (startX - landX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
+            dbgEl.style.left = startX + 'px';
+            dbgImg.src = dbgImg._idleSrc;
+        }
     </script>
 
     <!-- Animation Debug Panel -->
@@ -30834,6 +30975,7 @@
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-punch',this)">↑ JUMP PUNCH</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-kick',this)">↑ JUMP KICK</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-headbutt',this)">↑ JUMP HEADBUTT</button>
+                <button class="anim-debug-btn" id="dbg-jump-heavy-btn" onclick="dbgAnim('jump-heavy',this)" style="display:none;">↑ JUMP HEAVY</button>
             </div>
             <div class="anim-debug-row">
                 <button class="anim-debug-btn" onclick="dbgAnim('weapon-attack',this)">⚔️ WEAPON ATTACK (1H)</button>
