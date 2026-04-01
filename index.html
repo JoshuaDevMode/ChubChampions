@@ -30581,9 +30581,11 @@
                     animateSprite(dbgEl, 'idleBlink', { loop: true, halfOnly: false, speed: 120 });
                     break;
                 case 'armedIdle':
-                    if (dbgImg._armedIdleFrames?.length)
+                    if (dbgImg._armedIdleFrames?.length) {
+                        dbgImg.style.visibility = 'hidden';
                         animateSprite(dbgEl, 'armedIdle', { loop: true, halfOnly: false, speed: 150 });
-                    else dbgImg.src = dbgImg._idleSrc;
+                        requestAnimationFrame(() => { dbgImg.style.visibility = ''; });
+                    } else dbgImg.src = dbgImg._idleSrc;
                     break;
                 case 'hurt':
                     animateSprite(dbgEl, 'hurt', { loop: false, halfOnly: false, speed: 100 });
