@@ -405,6 +405,31 @@
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
+        .heavy-attack-char-overlay {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        #cpu .heavy-attack-char-overlay {
+            transform: translate(-50%, -50%) scaleX(-1);
+        }
+
+        .heavy-attack-char-overlay.sprite-reversed {
+            transform: scaleX(-1) !important;
+        }
+
+        #cpu .heavy-attack-char-overlay.sprite-reversed {
+            transform: scaleX(1) !important;
+        }
+
         .blend-attack-canvas {
             position: absolute;
             top: 50%;
@@ -22670,7 +22695,7 @@
                 body.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(el => el.remove());
 
                 const charOverlay = document.createElement('img');
-                charOverlay.className = 'weapon-attack-char-overlay';
+                charOverlay.className = isHeavyWeapon ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
                 charOverlay.src = sequence[0];
                 body.appendChild(charOverlay);
 
