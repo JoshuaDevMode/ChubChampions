@@ -30722,10 +30722,12 @@
                     animateAttack(dbgEl, 'headbutt', 800, null);
                     break;
                 case 'weapon-attack':
-                    _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
+                    if (weaponId) dbgWeaponAttack(dbgEl, dbgImg, weaponId, false);
+                    else _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
                     break;
                 case 'heavy-attack':
-                    _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 160);
+                    if (weaponId) dbgWeaponAttack(dbgEl, dbgImg, weaponId, true);
+                    else _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 160);
                     break;
                 case 'win':
                     if (dbgImg.dataset.win) dbgImg.src = dbgImg.dataset.win;
@@ -30744,6 +30746,96 @@
             }
         }
 
+        async function dbgWeaponAttack(dbgEl, dbgImg, weaponId, isHeavy) {
+            const charFrames = isHeavy ? dbgImg._heavyAttackFrames : dbgImg._weaponAttackFrames;
+            if (!charFrames?.length) return;
+            const cssClass   = isHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
+            const msPerFrame = isHeavy ? 160 : 120;
+
+            const stageEl  = document.querySelector('.anim-debug-stage');
+            const targetEl = document.getElementById('anim-debug-target');
+            const stageW   = stageEl.offsetWidth;
+            const startX   = 40;
+            const targetCX = stageW - 60 - (targetEl.offsetWidth / 2);
+            const attackX  = targetCX - (isHeavy ? 175 : 165);
+            const runMs = 280; const backMs = 380;
+
+            const raf = fn => new Promise(res => {
+                let id;
+                function step(now) {
+                    if (fn(now) === false) { dbgImg._dbgJumpRaf = null; res(); return; }
+                    id = requestAnimationFrame(step);
+                    dbgImg._dbgJumpRaf = id;
+                }
+                id = requestAnimationFrame(step);
+                dbgImg._dbgJumpRaf = id;
+            });
+
+            // ── Phase 1: run to attack position ───────────────────────
+            animateRun(dbgEl, false, weaponId);
+            const t0run = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0run) / runMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (startX + (attackX - startX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
+            playFootstep();
+
+            // ── Phase 2: weapon attack animation ──────────────────────
+            const weaponFrames = _weaponAttackFramesCache[weaponId] || [];
+            await new Promise(res => {
+                const body = dbgEl.querySelector('.fighter-body');
+                dbgImg.style.visibility = 'hidden';
+                const charOverlay = document.createElement('img');
+                charOverlay.className = cssClass;
+                charOverlay.src = charFrames[0];
+                body.appendChild(charOverlay);
+                let weaponOverlay = null;
+                if (weaponFrames.length) {
+                    weaponOverlay = document.createElement('img');
+                    weaponOverlay.className = 'weapon-attack-overlay';
+                    weaponOverlay.src = weaponFrames[0];
+                    body.appendChild(weaponOverlay);
+                }
+                let idx = 0;
+                const anim = setInterval(() => {
+                    idx++;
+                    if (idx < charFrames.length) {
+                        charOverlay.src = charFrames[idx];
+                        if (weaponOverlay) weaponOverlay.src = weaponFrames[idx % weaponFrames.length];
+                    } else if (idx === charFrames.length) {
+                        // hold last frame one tick
+                    } else {
+                        clearInterval(anim);
+                        dbgImg._currentAnim = null;
+                        charOverlay.remove();
+                        if (weaponOverlay) weaponOverlay.remove();
+                        dbgImg.style.visibility = '';
+                        dbgImg.src = dbgImg._idleSrc;
+                        res();
+                    }
+                }, msPerFrame);
+                dbgImg._currentAnim = anim;
+            });
+
+            await new Promise(r => setTimeout(r, 120));
+
+            // ── Phase 3: run back ──────────────────────────────────────
+            animateRun(dbgEl, true, null);
+            const t0back = performance.now();
+            await raf(now => {
+                const t = Math.min((now - t0back) / backMs, 1);
+                const ease = 1 - (1 - t) * (1 - t);
+                dbgEl.style.left = (attackX + (startX - attackX) * ease) + 'px';
+                return t < 1 ? true : false;
+            });
+            stopRunAnimation(dbgEl);
+            dbgEl.style.left = startX + 'px';
+            dbgImg.src = dbgImg._idleSrc;
+        }
+
         async function dbgJumpAttack(dbgEl, dbgImg, attackType) {
             const frames    = dbgImg['_' + attackType + 'Frames'] || [];
             const peakFrame = frames.length > 0 ? frames[frames.length - 1] : null;
@@ -30756,7 +30848,7 @@
             // Fighter starts at left:40px, target right edge at stageW-60px
             const startX    = 40;
             const targetCX  = stageW - 60 - (targetEl.offsetWidth / 2);  // center of target
-            const landX     = targetCX - 120;   // land just in front of target
+            const landX     = targetCX - 165;   // land in front of target
             const centerX   = stageW * 0.42;    // run to ~center before jumping
 
             const runMs  = 280;
@@ -30842,7 +30934,7 @@
             const stageW   = stageEl.offsetWidth;
             const startX   = 40;
             const targetCX = stageW - 60 - (targetEl.offsetWidth / 2);
-            const landX    = targetCX - 120;
+            const landX    = targetCX - 195;   // weapon reaches, body stays further back
             const centerX  = stageW * 0.42;
             const runMs = 300; const arcMs = 960; const backMs = 420;
 
