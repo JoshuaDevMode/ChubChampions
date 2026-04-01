@@ -22917,14 +22917,29 @@
             const newIdle = isArmed && img._armedIdleFrames?.length > 0
                 ? img._armedIdleFrames[0]
                 : (img._unarmedIdleSrc || img._originalFrames?.idle || img.dataset.idle);
-            if (newIdle && img._idleSrc !== newIdle) {
-                img._idleSrc = newIdle;
-                if (!img._currentAnim && !img._blockAnim && !img._loserAnim) img.src = newIdle;
-            }
             // Compensate for armed idle frames being on a larger canvas (1408px vs 1024px idle)
             const armedSize = Math.round(200 * (1408 / 1024));
-            img.style.width  = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
-            img.style.height = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
+            const newW = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
+            const sizeChanging = img.style.width !== newW;
+            if (newIdle && img._idleSrc !== newIdle) {
+                img._idleSrc = newIdle;
+                if (!img._currentAnim && !img._blockAnim && !img._loserAnim) {
+                    if (sizeChanging) {
+                        img.style.visibility = 'hidden';
+                        img.src = newIdle;
+                        img.style.width  = newW;
+                        img.style.height = newW;
+                        requestAnimationFrame(() => { img.style.visibility = ''; });
+                    } else {
+                        img.src = newIdle;
+                        img.style.width  = newW;
+                        img.style.height = newW;
+                    }
+                }
+            } else {
+                img.style.width  = newW;
+                img.style.height = newW;
+            }
             // Show/hide weapon pose overlay
             const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
             if (!overlay) return;
