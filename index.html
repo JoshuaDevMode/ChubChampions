@@ -407,9 +407,9 @@
 
         .heavy-attack-char-overlay {
             position: absolute;
-            width: 220px;
-            height: 220px;
-            top: 50%;
+            width: 260px;
+            height: 260px;
+            top: 60%;
             left: 50%;
             transform: translate(-50%, -50%);
             object-fit: contain;
@@ -22803,6 +22803,10 @@
                 img._idleSrc = newIdle;
                 if (!img._currentAnim && !img._blockAnim && !img._loserAnim) img.src = newIdle;
             }
+            // Compensate for armed idle frames being on a larger canvas (1408px vs 1024px idle)
+            const armedSize = Math.round(200 * (1408 / 1024));
+            img.style.width  = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
+            img.style.height = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
             // Show/hide weapon pose overlay
             const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
             if (!overlay) return;
