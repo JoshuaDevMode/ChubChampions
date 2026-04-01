@@ -30518,8 +30518,12 @@
             // to armed idle (idleSrc at 275px looks zoomed before the armed idle frame loads)
             if (dbgImg._currentAnim) { clearInterval(dbgImg._currentAnim); dbgImg._currentAnim = null; }
             if (dbgImg._blendRaf) { cancelAnimationFrame(dbgImg._blendRaf); dbgImg._blendRaf = null; }
+            if (dbgImg._dbgJumpRaf) { cancelAnimationFrame(dbgImg._dbgJumpRaf); dbgImg._dbgJumpRaf = null; }
             if (dbgImg._footstepInterval) { clearInterval(dbgImg._footstepInterval); dbgImg._footstepInterval = null; }
             dbgImg.classList.remove('sprite-reversed');
+            dbgImg.style.transform = '';
+            dbgImg.style.transition = '';
+            dbgEl.style.transform = '';
             dbgEl.querySelectorAll('.weapon-run-overlay,.weapon-attack-char-overlay,.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
             dbgImg.style.visibility = '';
         }
@@ -30650,7 +30654,60 @@
                 case 'loser':
                     animateSprite(dbgEl, 'loser', { loop: true, halfOnly: false, speed: 120 });
                     break;
+                case 'jump-punch':
+                case 'jump-kick':
+                case 'jump-uppercut':
+                case 'jump-headbutt':
+                    dbgJumpAttack(dbgEl, dbgImg, type.replace('jump-', ''));
+                    break;
             }
+        }
+
+        function dbgJumpAttack(dbgEl, dbgImg, attackType) {
+            const frames = dbgImg['_' + attackType + 'Frames'] || [];
+            const peakFrame = frames.length > 0 ? frames[frames.length - 1] : null;
+            const rotAngle = attackType === 'kick' ? 45 : 35;
+            const arcMs = 900;
+            const peakAt = 0.36;
+
+            // Show run frame as airborne pose
+            const airFrame = dbgImg._runFrames?.[8] || dbgImg._idleSrc;
+            dbgImg.src = airFrame;
+            dbgImg.style.transform = '';
+
+            let peakTriggered = false;
+            let rafId;
+            const t0 = performance.now();
+
+            function step(now) {
+                const t = Math.min((now - t0) / arcMs, 1);
+                const ty = -320 * Math.sin(Math.PI * t);
+                dbgEl.style.transform = `translateY(${ty}px)`;
+
+                // At peak: show attack frame + rotation
+                if (!peakTriggered && t >= peakAt) {
+                    peakTriggered = true;
+                    if (peakFrame) dbgImg.src = peakFrame;
+                    dbgImg.style.transition = 'transform 0.08s ease-out';
+                    dbgImg.style.transform = `rotate(${rotAngle}deg)`;
+                }
+
+                if (t < 1) {
+                    rafId = requestAnimationFrame(step);
+                } else {
+                    // Landing
+                    dbgEl.style.transform = '';
+                    dbgImg.style.transition = 'transform 0.08s ease-out';
+                    dbgImg.style.transform = '';
+                    setTimeout(() => {
+                        dbgImg.style.transition = '';
+                        dbgImg.src = dbgImg._idleSrc;
+                    }, 100);
+                }
+            }
+
+            dbgImg._dbgJumpRaf = rafId;
+            rafId = requestAnimationFrame(step);
         }
     </script>
 
@@ -30693,6 +30750,12 @@
                 <button class="anim-debug-btn" onclick="dbgAnim('kick',this)">KICK</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('uppercut',this)">UPPERCUT</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('headbutt',this)">HEADBUTT</button>
+            </div>
+            <div class="anim-debug-row">
+                <button class="anim-debug-btn" onclick="dbgAnim('jump-punch',this)">↑ JUMP PUNCH</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('jump-kick',this)">↑ JUMP KICK</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('jump-uppercut',this)">↑ JUMP UPPERCUT</button>
+                <button class="anim-debug-btn" onclick="dbgAnim('jump-headbutt',this)">↑ JUMP HEADBUTT</button>
             </div>
             <div class="anim-debug-row">
                 <button class="anim-debug-btn" onclick="dbgAnim('weapon-attack',this)">⚔️ WEAPON ATTACK (1H)</button>
