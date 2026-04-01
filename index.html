@@ -10585,8 +10585,8 @@
             background: #0f0f1a;
             border: 2px solid #7c3aed;
             border-radius: 12px;
-            width: 680px;
-            height: 300px;
+            width: 860px;
+            height: 320px;
             display: flex;
             align-items: flex-end;
             justify-content: flex-start;
@@ -30689,7 +30689,6 @@
                     break;
                 case 'jump-punch':
                 case 'jump-kick':
-                case 'jump-uppercut':
                 case 'jump-headbutt':
                     dbgJumpAttack(dbgEl, dbgImg, type.replace('jump-', ''));
                     break;
@@ -30740,19 +30739,16 @@
             dbgImg.src = airFrame;
 
             // ── Phase 2: jump arc toward target ─────────────────────
+            dbgEl.style.left = centerX + 'px'; // fix left for duration of arc
             const deltaX    = landX - centerX;
             let peakDone    = false;
             const t0arc     = performance.now();
             await raf(now => {
-                const t  = Math.min((now - t0arc) / arcMs, 1);
+                const t    = Math.min((now - t0arc) / arcMs, 1);
                 const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-                const tx = deltaX * ease;
-                const ty = -320 * Math.sin(Math.PI * t);
-                dbgEl.style.left = (centerX + tx) + 'px';
-                dbgEl.style.top  = ty + 'px';          // vertical via top offset from bottom:40px baseline
-                // reuse transform only for Y so left handles X
-                dbgEl.style.transform = `translateY(${ty}px)`;
-                dbgEl.style.left = (centerX + tx) + 'px';
+                const tx   = deltaX * ease;
+                const ty   = -320 * Math.sin(Math.PI * t);
+                dbgEl.style.transform = `translateX(${tx}px) translateY(${ty}px)`;
 
                 if (!peakDone && t >= 0.36) {
                     peakDone = true;
@@ -30837,7 +30833,6 @@
             <div class="anim-debug-row">
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-punch',this)">↑ JUMP PUNCH</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-kick',this)">↑ JUMP KICK</button>
-                <button class="anim-debug-btn" onclick="dbgAnim('jump-uppercut',this)">↑ JUMP UPPERCUT</button>
                 <button class="anim-debug-btn" onclick="dbgAnim('jump-headbutt',this)">↑ JUMP HEADBUTT</button>
             </div>
             <div class="anim-debug-row">
