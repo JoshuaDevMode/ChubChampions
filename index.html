@@ -13162,6 +13162,28 @@
             100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
         };
 
+        // Pre-populate WEAPONS from all WEAPON_TIERS so CPU weapons (which can be
+        // any tier) always resolve — even if the player hasn't unlocked them yet.
+        Object.values(WEAPON_TIERS).forEach(tierList => {
+            tierList.forEach(w => {
+                if (!WEAPONS[w.id]) {
+                    WEAPONS[w.id] = {
+                        name: w.name,
+                        img: w.img,
+                        dmgMin: w.dmgMin,
+                        dmgMax: w.dmgMax,
+                        critBonus: w.critBonus,
+                        longReach: w.longReach || false,
+                        isShield: w.isShield || false,
+                        shieldHP: w.shieldHP || 0,
+                        attackOverlay: w.attackOverlay || false,
+                        heavyAttack: w.heavyAttack || false,
+                        statScale: w.statScale || null,
+                    };
+                }
+            });
+        });
+
         // Which weapons have been unlocked globally
         let globalUnlockedWeapons = [];
 
