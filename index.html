@@ -17191,6 +17191,9 @@
                     saveCharacters();
                     syncGlobalsFromChar(getSelectedCharacter());
                     updateLobbyCharacterDisplay();
+                    populateInventoryPanel();
+                    updateInvEquipmentSlots();
+                    updateMenuEquipmentPanel();
                 }
             } catch (e) {
                 console.error('[fetchChars]', e);
