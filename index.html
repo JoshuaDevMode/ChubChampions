@@ -10605,7 +10605,7 @@
         #anim-debug-target {
             position: absolute;
             bottom: 40px;
-            right: 60px;
+            left: 672px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17592,6 +17592,7 @@
                     animateRun(movEl, isBack, null, event.speed);
                     await sleep(moveDur);
                     stopRunAnimation(movEl);
+                    syncArmedIdle(event.fighter);
                     movEl.style.transition = '';
                 }
             } else {
@@ -30754,11 +30755,10 @@
             const msPerFrame = isHeavy ? 160 : 120;
 
             const stageEl  = document.querySelector('.anim-debug-stage');
-            const targetEl = document.getElementById('anim-debug-target');
             const stageW   = stageEl.offsetWidth;
             const startX   = 40;
-            const targetCX = stageW - 60 - (targetEl.offsetWidth / 2);
-            const attackX  = targetCX - (isHeavy ? 175 : 165);
+            // Mirror battle formula: (CPU_HOME_X - _ATCK_GAP) * scale = 1152 * (stageW/1600)
+            const attackX  = Math.round(1152 * stageW / 1600);
             const runMs = 280; const backMs = 380;
 
             const raf = fn => new Promise(res => {
@@ -30846,10 +30846,9 @@
             const targetEl  = document.getElementById('anim-debug-target');
             const stageW    = stageEl.offsetWidth;
 
-            // Fighter starts at left:40px, target right edge at stageW-60px
             const startX    = 40;
-            const targetCX  = stageW - 60 - (targetEl.offsetWidth / 2);  // center of target
-            const landX     = targetCX - 165;   // land in front of target
+            // Mirror battle formula: (CPU_HOME_X - _ATCK_GAP) * scale = 1152 * (stageW/1600)
+            const landX     = Math.round(1152 * stageW / 1600);
             const centerX   = stageW * 0.42;    // run to ~center before jumping
 
             const runMs  = 280;
@@ -30931,11 +30930,10 @@
             if (heavyCF.length < 3) return;
 
             const stageEl  = document.querySelector('.anim-debug-stage');
-            const targetEl = document.getElementById('anim-debug-target');
             const stageW   = stageEl.offsetWidth;
             const startX   = 40;
-            const targetCX = stageW - 60 - (targetEl.offsetWidth / 2);
-            const landX    = targetCX - 195;   // weapon reaches, body stays further back
+            // Mirror battle formula: (CPU_HOME_X - _ATCK_GAP) * scale = 1152 * (stageW/1600)
+            const landX    = Math.round(1152 * stageW / 1600);
             const centerX  = stageW * 0.42;
             const runMs = 300; const arcMs = 960; const backMs = 420;
 
