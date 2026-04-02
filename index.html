@@ -25903,7 +25903,7 @@
                             turnsRemaining: weaponState.cpu.turnsRemaining
                         }
                     },
-                    battleState.consumables: {
+                    consumables: {
                         player: battleState.consumables.player.map(c => ({ id: c.id, used: c.used })),
                         cpu: battleState.consumables.cpu.map(c => ({ id: c.id, used: c.used }))
                     },
@@ -25911,8 +25911,8 @@
                         player: { ...battleState.matchStats.player },
                         cpu: { ...battleState.matchStats.cpu }
                     },
-                    battleState.cpuName: battleState.cpuName,
-                    battleState.cpuStats: { ...battleState.cpuStats },
+                    cpuName: battleState.cpuName,
+                    cpuStats: { ...battleState.cpuStats },
                     matchTimerRemaining: matchTimerRemaining,
                     aon: aonActive,
                     aonEntryFee: aonEntryFee,
