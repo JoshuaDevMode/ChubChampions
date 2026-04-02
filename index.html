@@ -23774,7 +23774,9 @@
             // Load sprite frames if not already extracted (e.g. page reload before any battle)
             const _replayImg = game.player.element.querySelector('img');
             if (!_replayImg?._punchFrames) {
+                showLoadingScreen();
                 await processAllFighterImages();
+                hideLoadingScreen();
             }
 
             // Restart idle blink and camera
