@@ -12328,11 +12328,12 @@
                 const randomHurt = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
                 defenderImg.style.width  = '';
                 defenderImg.style.height = '';
+                defenderImg._hurtActive  = true;
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
+                    defenderImg._hurtActive = false;
                     if (game[defender].health > 0 && defenderImg._idleSrc) {
                         defenderImg.src = defenderImg._idleSrc;
-                        // Restore size in case it changed while hurt frame was showing
                         defenderImg.style.width  = defenderImg._armedIdleW || '';
                         defenderImg.style.height = defenderImg._armedIdleW || '';
                     }
@@ -17654,6 +17655,7 @@
                     if (hurtFrames?.length) {
                         movImg.style.width  = '';
                         movImg.style.height = '';
+                        movImg._hurtActive  = true;
                         movImg.src = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
                     }
                     const bounceDur = Math.max(80, Math.min(280, Math.round(distServer * 0.9)));
@@ -17674,7 +17676,7 @@
                     movEl.style.transition = '';
                     // Return to idle after brief hurt pause
                     const _bounceFighter = event.fighter;
-                    setTimeout(() => { if (movImg && movImg._idleSrc) { movImg.src = movImg._idleSrc; syncArmedIdle(_bounceFighter); } }, 120);
+                    setTimeout(() => { if (movImg) { movImg._hurtActive = false; if (movImg._idleSrc) { movImg.src = movImg._idleSrc; } syncArmedIdle(_bounceFighter); } }, 120);
                 } else {
                     // Normal move.
                     // isBack = sprite faces opposite its natural forward direction.
@@ -18660,9 +18662,10 @@
                         kdImg._preKdSrc = kdImg.src;
                         kdImg.style.width  = '';
                         kdImg.style.height = '';
+                        kdImg._hurtActive  = true;
                         kdImg.src = kdImg._hurtFrames[0];
                         const _kdFighter = defender;
-                        setTimeout(() => { if (kdImg._preKdSrc) { kdImg.src = kdImg._preKdSrc; syncArmedIdle(_kdFighter); } }, 600);
+                        setTimeout(() => { kdImg._hurtActive = false; if (kdImg._preKdSrc) { kdImg.src = kdImg._preKdSrc; syncArmedIdle(_kdFighter); } }, 600);
                     } else {
                         _setPushDir(defender);
                         kdEl?.querySelector('.fighter-body')?.classList.add('taking-damage');
@@ -21730,6 +21733,7 @@
                                 if (tImgSp && tImgSp._hurtFrames && tImgSp._hurtFrames.length > 0) {
                                     tImgSp.style.width  = '';
                                     tImgSp.style.height = '';
+                                    tImgSp._hurtActive  = true;
                                     tImgSp.src = tImgSp._hurtFrames[Math.floor(Math.random() * tImgSp._hurtFrames.length)];
                                 }
 
@@ -21776,9 +21780,14 @@
                                         targetElSp._spikeAirborne = false;
                                         targetElSp.style.transition = '';
                                         if (tImgSp) {
+                                            tImgSp._hurtActive = false;
                                             tImgSp.style.transition = 'transform 0.35s ease-out';
                                             tImgSp.style.transform  = '';
-                                            if (tImgSp._idleSrc) tImgSp.src = tImgSp._idleSrc;
+                                            if (tImgSp._idleSrc) {
+                                                tImgSp.src = tImgSp._idleSrc;
+                                                tImgSp.style.width  = tImgSp._armedIdleW || '';
+                                                tImgSp.style.height = tImgSp._armedIdleW || '';
+                                            }
                                             setTimeout(() => {
                                                 tImgSp.style.transition      = '';
                                                 tImgSp.style.transformOrigin = '';
@@ -21951,6 +21960,7 @@
                                     if (tImg._hurtFrames && tImg._hurtFrames.length > 0) {
                                         tImg.style.width  = '';
                                         tImg.style.height = '';
+                                        tImg._hurtActive  = true;
                                         tImg.src = tImg._hurtFrames[Math.floor(Math.random() * tImg._hurtFrames.length)];
                                     }
                                     const isCpu = target === 'cpu';
@@ -21963,6 +21973,7 @@
                                         tImg.style.transition = 'transform 0.15s ease-in';
                                         tImg.style.transform = '';
                                         tImg.style.transformOrigin = '';
+                                        tImg._hurtActive = false;
                                         if (tImg._idleSrc) {
                                             tImg.src = tImg._idleSrc;
                                             tImg.style.width  = tImg._armedIdleW || '';
@@ -23127,7 +23138,7 @@
             const newW = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
             // Always store the intended idle size — applied on idle restore even if we can't set it now
             img._armedIdleW = newW;
-            const notAnimating = !img._currentAnim && !img._blockAnim && !img._loserAnim && !img._blendRaf;
+            const notAnimating = !img._currentAnim && !img._blockAnim && !img._loserAnim && !img._blendRaf && !img._hurtActive;
             const sizeChanging = img.style.width !== newW;
             if (newIdle && img._idleSrc !== newIdle) {
                 img._idleSrc = newIdle;
