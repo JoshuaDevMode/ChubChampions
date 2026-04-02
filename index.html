@@ -475,10 +475,18 @@
         .weapon-attack-char-overlay.sprite-reversed {
             transform: translate(-50%, -50%) scaleX(-1) !important;
         }
+        /* CPU weapon-run-overlay must match the character's default scaleX(-1) */
+        #cpu .weapon-run-overlay {
+            transform: translate(-50%, -50%) scaleX(-1);
+        }
         #cpu .weapon-run-overlay.sprite-reversed,
         #cpu .weapon-attack-overlay.sprite-reversed,
         #cpu .weapon-attack-char-overlay.sprite-reversed {
             transform: translate(-50%, -50%) scaleX(1) !important;
+        }
+        /* When CPU crosses over (facing-flipped), character faces right — no flip needed */
+        #cpu.facing-flipped .weapon-run-overlay {
+            transform: translate(-50%, -50%) scaleX(1);
         }
 
         #cpu .character-png {
@@ -23162,6 +23170,16 @@
             // Show/hide weapon pose overlay
             const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
             if (!overlay) return;
+            // Overlay must match armed-idle size (both sprites are 1408px canvas)
+            overlay.style.width  = newW || '200px';
+            overlay.style.height = newW || '200px';
+            // Flip overlay to match the character's facing direction
+            const facingFlipped = el.classList.contains('facing-flipped');
+            const isCpuEl = el.id === 'cpu';
+            const needsFlip = (isCpuEl && !facingFlipped) || (!isCpuEl && facingFlipped);
+            overlay.style.transform = needsFlip
+                ? 'translate(-50%,-50%) scaleX(-1)'
+                : 'translate(-50%,-50%)';
             if (isArmed) {
                 const poseFrames = _weaponIdlePoseCache[equippedId];
                 if (poseFrames && poseFrames.length > 0) {
@@ -23177,6 +23195,15 @@
                             overlay.classList.remove('weapon-equip-flash');
                         }, { once: true });
                     }
+                } else if (WEAPON_POSE_MAP[equippedId]) {
+                    // Pose not cached yet (e.g. CPU weapon) — load on demand then re-sync
+                    extractFrames(WEAPON_POSE_MAP[equippedId], 4, 1)
+                        .then(f => {
+                            _weaponIdlePoseCache[equippedId] = f;
+                            if (weaponState[fighter]?.equippedWeapon === equippedId) syncArmedIdle(fighter);
+                        })
+                        .catch(() => { _weaponIdlePoseCache[equippedId] = []; });
+                    overlay.style.display = 'none';
                 } else {
                     overlay.style.display = 'none';
                 }
