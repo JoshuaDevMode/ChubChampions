@@ -23003,11 +23003,13 @@
             // Determine if we should use weapon attack frames
             const isHeavyWeapon = weaponId && !!getWeaponById(weaponId)?.heavyAttack;
             const charFrames = isHeavyWeapon ? img._heavyAttackFrames : img._weaponAttackFrames;
-            const useWeaponAttack = weaponId && charFrames && charFrames.length > 0
-                && _weaponAttackFramesCache[weaponId] && _weaponAttackFramesCache[weaponId].length > 0;
+            // useWeaponAttack: character has weapon attack frames loaded (always use them when armed)
+            const useWeaponAttack = !!(weaponId && charFrames && charFrames.length > 0);
+            // useWeaponOverlay: weapon sprite overlay also cached — shown on top of char
+            const useWeaponOverlay = useWeaponAttack && !!(_weaponAttackFramesCache[weaponId]?.length > 0);
 
             const allFrames = useWeaponAttack ? charFrames : (img['_' + attackType + 'Frames'] || [img.src]);
-            const weaponFrames = useWeaponAttack ? _weaponAttackFramesCache[weaponId] : null;
+            const weaponFrames = useWeaponOverlay ? _weaponAttackFramesCache[weaponId] : null;
 
             img._idleSrc = img._idleSrc || img.src;
             img._attackDone = false;
@@ -23015,11 +23017,10 @@
             img.style.height = '';
 
             if (useWeaponAttack) {
-                // Weapon attacks: original setInterval logic unchanged
+                // Weapon attacks: character overlay always shown; weapon overlay only if cached
                 const speed = Math.max(20, Math.floor(duration / allFrames.length));
-                const midIndex = Math.ceil(allFrames.length / 2);
                 const sequence = allFrames.slice();
-                const weaponSequence = weaponFrames.slice();
+                const weaponSequence = weaponFrames ? weaponFrames.slice() : null;
                 let idx = 0;
 
                 const body = fighterEl.querySelector('.fighter-body');
@@ -23031,16 +23032,19 @@
                 charOverlay.src = sequence[0];
                 body.appendChild(charOverlay);
 
-                const weaponOverlay = document.createElement('img');
-                weaponOverlay.className = 'weapon-attack-overlay';
-                weaponOverlay.src = weaponSequence[0];
-                body.appendChild(weaponOverlay);
+                let weaponOverlay = null;
+                if (weaponSequence) {
+                    weaponOverlay = document.createElement('img');
+                    weaponOverlay.className = 'weapon-attack-overlay';
+                    weaponOverlay.src = weaponSequence[0];
+                    body.appendChild(weaponOverlay);
+                }
 
                 img._currentAnim = setInterval(function() {
                     idx++;
                     if (idx < sequence.length) {
                         charOverlay.src = sequence[idx];
-                        weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
+                        if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
                     } else if (idx === sequence.length) {
                         // Hold last frame for 2x speed (extra tick)
                     } else {
@@ -23048,7 +23052,7 @@
                         img._currentAnim = null;
                         img._attackDone = true;
                         charOverlay.remove();
-                        weaponOverlay.remove();
+                        if (weaponOverlay) weaponOverlay.remove();
                         img.style.visibility = '';
                     }
                 }, speed);
@@ -23197,7 +23201,7 @@
                     }
                 } else if (WEAPON_POSE_MAP[equippedId]) {
                     // Pose not cached yet (e.g. CPU weapon) — load on demand then re-sync
-                    extractFrames(WEAPON_POSE_MAP[equippedId], 4, 1)
+                    extractFrames(WEAPON_POSE_MAP[equippedId], 1, 1)
                         .then(f => {
                             _weaponIdlePoseCache[equippedId] = f;
                             if (weaponState[fighter]?.equippedWeapon === equippedId) syncArmedIdle(fighter);
@@ -26420,7 +26424,7 @@
                     }
                     // Preload idle weapon pose overlay
                     if (!_weaponIdlePoseCache[entry.id] && WEAPON_POSE_MAP[entry.id]) {
-                        try { _weaponIdlePoseCache[entry.id] = await extractFrames(WEAPON_POSE_MAP[entry.id], 4, 1); }
+                        try { _weaponIdlePoseCache[entry.id] = await extractFrames(WEAPON_POSE_MAP[entry.id], 1, 1); }
                         catch(e) { _weaponIdlePoseCache[entry.id] = []; }
                     }
                 }
