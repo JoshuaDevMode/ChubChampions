@@ -17090,6 +17090,8 @@
                             local.maxHp  = sc.maxHp;
                             local.skills = sc.skills;
                             // Forge state is per-character and server-authoritative
+                            local.equippedWeapons      = sc.equippedWeapons      || [];
+                            local.weaponDurability     = sc.weaponDurability     || {};
                             local.unlockedWeapons      = sc.unlockedWeapons      || [];
                             local.fragmentChestsOpened = sc.fragmentChestsOpened || 0;
                             local.fragments            = sc.fragments            || 0;
