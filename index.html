@@ -16537,7 +16537,15 @@
                         c.equippedConsumables = [];
                         needsSave = true;
                     }
-                    // Migrate: add weaponDurability if missing
+                    // Migrate: add weapon fields if missing
+                    if (!Array.isArray(c.equippedWeapons)) {
+                        c.equippedWeapons = [];
+                        needsSave = true;
+                    }
+                    if (!Array.isArray(c.unlockedWeapons)) {
+                        c.unlockedWeapons = [];
+                        needsSave = true;
+                    }
                     if (c.weaponDurability === undefined) {
                         c.weaponDurability = {};
                         needsSave = true;
