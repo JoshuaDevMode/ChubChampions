@@ -12326,6 +12326,8 @@
             const hurtFrames = defenderImg._hurtFrames;
             if (hurtFrames && hurtFrames.length > 0) {
                 const randomHurt = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
+                defenderImg.style.width  = '';
+                defenderImg.style.height = '';
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
                     if (game[defender].health > 0 && defenderImg._idleSrc) {
@@ -21959,7 +21961,11 @@
                                         tImg.style.transition = 'transform 0.15s ease-in';
                                         tImg.style.transform = '';
                                         tImg.style.transformOrigin = '';
-                                        if (tImg._idleSrc) tImg.src = tImg._idleSrc;
+                                        if (tImg._idleSrc) {
+                                            tImg.src = tImg._idleSrc;
+                                            tImg.style.width  = tImg._armedIdleW || '';
+                                            tImg.style.height = tImg._armedIdleW || '';
+                                        }
                                     }, 1000);
                                 }
                             }
@@ -22753,6 +22759,9 @@
             const img = fighterEl.querySelector('img');
             if (!img) return;
             img._idleSrc = img._idleSrc || img.src;
+            // Clear armed-idle size compensation — all non-idle frames use the CSS default (200px)
+            img.style.width  = '';
+            img.style.height = '';
             const allFrames = img['_' + framesKey + 'Frames'] || [img.src];
             // Only play up to middle frame unless full loop requested
             const halfOnly = options.halfOnly !== false;
@@ -22981,6 +22990,8 @@
 
             img._idleSrc = img._idleSrc || img.src;
             img._attackDone = false;
+            img.style.width  = '';
+            img.style.height = '';
 
             if (useWeaponAttack) {
                 // Weapon attacks: original setInterval logic unchanged
@@ -23060,6 +23071,9 @@
             function doBlink() {
                 if (img._idleBlinkStopped) return;
                 let frame = 0;
+                // Blink frames are 1024px canvas — clear armed-idle size compensation
+                img.style.width  = '';
+                img.style.height = '';
                 img.src = blinkFrames[0];
                 if (img._currentAnim) clearInterval(img._currentAnim);
                 img._currentAnim = setInterval(() => {
@@ -23070,6 +23084,9 @@
                         clearInterval(img._currentAnim);
                         img._currentAnim = null;
                         img.src = img._idleSrc;
+                        // Restore armed-idle size when returning to idle
+                        img.style.width  = img._armedIdleW || '';
+                        img.style.height = img._armedIdleW || '';
                         if (!img._idleBlinkStopped) {
                             img._blinkTimeout = setTimeout(doBlink, 500 + Math.random() * 1500);
                         }
