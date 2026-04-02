@@ -23766,17 +23766,40 @@
             game.gameOverHandled = false;
             game.inProgress      = false;
 
+            // Reset weapon state — weapons are populated by weapon_equip events as replay plays
+            for (const side of ['player', 'cpu']) {
+                weaponState[side].inventory      = [];
+                weaponState[side].usedWeapons    = [];
+                weaponState[side].equippedWeapon = null;
+                weaponState[side].turnsRemaining = 0;
+                weaponState[side].shieldHP       = 0;
+                weaponState[side].shieldMaxHP    = 0;
+            }
+            updateWeaponDisplay('player');
+            updateWeaponDisplay('cpu');
+
+            // Reset consumable state
+            const _replayChar = _activeBattleCharacter;
+            const _replayCons = (_replayChar && _replayChar.equippedConsumables) || [];
+            battleConsumables.player = _replayCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
+            battleConsumables.cpu    = [];
+            updateConsumableDisplay('player');
+            updateConsumableDisplay('cpu');
+
             // Update HUD
+            currentCpuName = replay.cpuName || 'CPU';
             updateBothFighters();
+            updateCombatHud(_activeBattleCharacter);
             updateFuryBar('player');
             updateFuryBar('cpu');
             document.getElementById('game-log').innerHTML = '';
 
-            // Load sprite frames if not already extracted (e.g. page reload before any battle)
+            // Load sprite frames / effect frames if not yet extracted (e.g. page reload before any battle)
             const _replayImg = game.player.element.querySelector('img');
-            if (!_replayImg?._punchFrames) {
+            if (!_replayImg?._punchFrames || FURY_ORB_FRAMES.length === 0) {
                 showLoadingScreen();
-                await processAllFighterImages();
+                if (!_replayImg?._punchFrames) await processAllFighterImages();
+                if (FURY_ORB_FRAMES.length === 0) await processEffectImages();
                 hideLoadingScreen();
             }
 
