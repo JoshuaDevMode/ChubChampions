@@ -23445,8 +23445,8 @@
                     if (img._blinkTimeout) { clearTimeout(img._blinkTimeout); img._blinkTimeout = null; }
                     img._idleBlinkStopped = true;
                 });
-                if (winnerEl && winnerEl.dataset.win) winnerEl.src = winnerEl.dataset.win;
-                if (loserEl && loserEl.dataset.lose) loserEl.src = loserEl.dataset.lose;
+                if (winnerEl && winnerEl.dataset.win) { winnerEl.style.width = ''; winnerEl.style.height = ''; winnerEl.src = winnerEl.dataset.win; }
+                if (loserEl && loserEl.dataset.lose)  { loserEl.style.width  = ''; loserEl.style.height  = ''; loserEl.src  = loserEl.dataset.lose;  }
                 game[winner].element.style.animation = 'victoryBounce 0.4s ease-in-out infinite';
 
                 const winText = document.createElement('div');
@@ -23687,10 +23687,11 @@
                 img._idleBlinkStopped = true;
             });
 
-            if (winnerEl && winnerEl.dataset.win) winnerEl.src = winnerEl.dataset.win;
+            if (winnerEl && winnerEl.dataset.win) { winnerEl.style.width = ''; winnerEl.style.height = ''; winnerEl.src = winnerEl.dataset.win; }
             // Animate loser sprite sheet
             if (loserEl && loserEl._loserFrames && loserEl._loserFrames.length > 1) {
                 let frame = 0;
+                loserEl.style.width = ''; loserEl.style.height = '';
                 loserEl.src = loserEl._loserFrames[0];
                 let loserDir = 1;
                 // Store interval for cleanup
@@ -24098,8 +24099,16 @@
                 // Reset sprite classes
                 img.classList.remove('sprite-reversed');
                 img.style.visibility = '';
-                // Reset to idle sprite
-                if (img._idleSrc) img.src = img._idleSrc;
+                // Reset to unarmed idle sprite and clear armed-idle size compensation
+                const unarmedSrc = img._unarmedIdleSrc || img._idleSrc;
+                if (unarmedSrc) {
+                    img.src       = unarmedSrc;
+                    img._idleSrc  = unarmedSrc;
+                }
+                img._armedIdleW  = '';
+                img._hurtActive  = false;
+                img.style.width  = '';
+                img.style.height = '';
             });
 
             // Reset fighter elements
@@ -24111,10 +24120,12 @@
                 el.style.zIndex = '';
                 el.style.filter = ''; // Reset inline filter from fury effects
                 el.classList.remove('fury-glow', 'fury-dimmed', 'dashing');
-                // Remove weapon overlays
+                // Remove weapon overlays (run, attack, and idle pose)
                 const wOverlay = el.querySelector('.weapon-run-overlay');
                 if (wOverlay) wOverlay.remove();
                 el.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(o => o.remove());
+                const idlePoseOverlay = el.querySelector('.weapon-idle-overlay');
+                if (idlePoseOverlay) { idlePoseOverlay.style.display = 'none'; idlePoseOverlay.src = ''; }
             });
 
             // Reset fighter body classes
