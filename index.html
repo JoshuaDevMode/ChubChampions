@@ -3100,6 +3100,57 @@
             transform: translateY(-2px);
         }
 
+        /* ===== REPLAY SCRUB BAR ===== */
+        #replay-scrub-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 900;
+            background: rgba(0,0,0,0.82);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-top: 1px solid rgba(239,68,68,0.25);
+        }
+        .replay-scrub-tag {
+            color: #ef4444;
+            font-size: 0.65em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            opacity: 0.9;
+        }
+        .replay-scrub-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            cursor: pointer;
+            outline: none;
+        }
+        .replay-scrub-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            cursor: pointer;
+        }
+        .replay-scrub-slider::-moz-range-thumb {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            cursor: pointer;
+            border: none;
+        }
+        .replay-scrub-pct {
+            color: #664433;
+            font-size: 0.65em;
+            min-width: 30px;
+            text-align: right;
+        }
+
         /* Matchmaking Overlay */
         #matchmaking-overlay {
             position: absolute;
@@ -11833,6 +11884,14 @@
                 </div>
             </div>
             </div><!-- #arena-world -->
+
+            <!-- Replay scrubber — visible only during watchReplay mode -->
+            <div id="replay-scrub-bar" style="display:none;">
+                <span class="replay-scrub-tag">◀ REPLAY ▶</span>
+                <input type="range" class="replay-scrub-slider" id="replay-scrub-slider" min="0" value="0" step="1">
+                <span class="replay-scrub-pct" id="replay-scrub-pct">0%</span>
+            </div>
+
         </div>
     </div>
 
@@ -12266,19 +12325,69 @@
             const hurtFrames = defenderImg._hurtFrames;
             if (hurtFrames && hurtFrames.length > 0) {
                 const randomHurt = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
-                // Reset armed-idle size — hurt frames are on a 1024px canvas (200px display)
-                defenderImg.style.width  = '';
-                defenderImg.style.height = '';
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
                     if (game[defender].health > 0 && defenderImg._idleSrc) {
                         defenderImg.src = defenderImg._idleSrc;
-                        syncArmedIdle(defender); // restore armed-idle size if weapon equipped
+                        // Restore size in case it changed while hurt frame was showing
+                        defenderImg.style.width  = defenderImg._armedIdleW || '';
+                        defenderImg.style.height = defenderImg._armedIdleW || '';
                     }
                 }, 400);
             }
         }
 
+
+        // ===== CENTRAL BATTLE STATE (serializable snapshot) =====
+        // Non-serializable values (DOM refs, Promises, timers) stay in `game`.
+        let battleState = {
+            // CPU opponent
+            cpuName:         'CPU',
+            cpuStats:        { hp: 1000, attack: 25, strength: 25, agility: 25, defense: 25, tier: 0 },
+            cpuCharacter:    null,
+            cpuSkills:       {},
+            battleState.cpuSkillState:   {},
+            // Player
+            playerCharacter:    null,
+            playerSkills:       {},
+            playerSkillState:   {},
+            // Match session
+            aonMatchId:       0,
+            pvpResult:        null,
+            serverResult:     null,   // { winner, finalPlayerHp, finalCpuHp }
+            precomputedStats: null,
+            replay:           null,   // { events, finalPlayerHp, finalCpuHp, matchDurationMs, cpuName, playerMaxHp, cpuMaxHp }
+            rewards:          null,
+            // In-match stats
+            matchStats: {
+                player: { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 },
+                cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 }
+            },
+            // Consumables
+            consumables: { player: [], cpu: [] },
+        };
+
+        function resetBattleState() {
+            battleState.cpuName         = 'CPU';
+            battleState.cpuStats        = { hp: 1000, attack: 25, strength: 25, agility: 25, defense: 25, tier: 0 };
+            battleState.cpuCharacter    = null;
+            battleState.cpuSkills       = {};
+            battleState.battleState.cpuSkillState   = {};
+            battleState.playerCharacter = null;
+            battleState.playerSkills    = {};
+            battleState.playerSkillState= {};
+            battleState.aonMatchId      = 0;
+            battleState.pvpResult       = null;
+            battleState.serverResult    = null;
+            battleState.precomputedStats= null;
+            battleState.replay          = null;
+            battleState.rewards         = null;
+            battleState.matchStats = {
+                player: { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 },
+                cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 }
+            };
+            battleState.consumables = { player: [], cpu: [] };
+        }
 
         const game = {
             player: {
@@ -12309,10 +12418,7 @@
             gameOverHandled: false
         };
 
-        const stats = {
-            player: { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 },
-            cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 }
-        };
+        // matchStats → battleState.matchStats
 
         const DAMAGE = {
             punch: 50,
@@ -13445,8 +13551,7 @@
             'Maverick', 'Rogue', 'Bandit', 'Outlaw', 'Vandal', 'Raider', 'Nomad', 'Drifter',
             'Ember', 'Ash', 'Cinder', 'Inferno', 'Blitz', 'Surge', 'Volt', 'Spark'
         ];
-        let currentCpuName = 'CPU';
-        let currentCpuStats = { hp: 1000, attack: 25, strength: 25, agility: 25, defense: 25, tier: 0 };
+        // cpuName/cpuStats → battleState.cpuName / battleState.cpuStats
         let hudEl = {}; // Cached HUD element references, populated by cacheHudElements()
         let _fighterGroundY = {}; // Cached ground-level Y per fighter, set at battle start
 
@@ -16614,8 +16719,8 @@
             console.log(`[devBattle] winner=${result.winner}  turns=${result.turns}  playerHp=${result.finalPlayerHp}/${P.maxHp}  cpuHp=${result.finalCpuHp}/${C.maxHp}`);
 
             // Set CPU display globals before startGameWithCharacter reads them
-            currentCpuName  = C.name;
-            currentCpuStats = {
+            battleState.cpuName  = C.name;
+            battleState.cpuStats = {
                 hp: C.maxHp, attack: C.stats.attack, strength: C.stats.strength,
                 agility: C.stats.agility, defense: C.stats.defense, level, tier: 3,
             };
@@ -16630,7 +16735,7 @@
                     wellness: P.wellness, morale: P.morale, adaptability: P.adaptability }
                 : P;
 
-            _pvpBattleResult = { result, rewards: null };
+            battleState.pvpResult = { result, rewards: null };
             await startGameWithCharacter(battlePlayer);
         };
 
@@ -17119,32 +17224,17 @@
         // the server and the result is replayed visually.  Falls back to the
         // local engine if the API is unreachable.
 
-        // Rewards returned by the last server battle (chest tier, streak tokens)
-        let lastBattleRewards = null;
-        // Character that is currently (or was last) battling — set by startGameWithCharacter.
-        // Used by showGameOver / showResultsDraw so stats go to the right character
-        // regardless of which character is selected in the lobby.
-        let _activeBattleCharacter = null;
-        // PvP: pre-computed battle result set by findPvpMatch before startGameWithCharacter
-        let _pvpBattleResult   = null;
-        let _preBattleFetch   = null; // Fetch started during countdown to hide server latency
-        // Server battle result — stored before animation starts so endByTimeout can
-        // show the correct outcome if the timer expires before all events are replayed.
-        let _serverBattleResult = null; // { winner, finalPlayerHp, finalCpuHp }
-        let _precomputedStats   = null; // pre-calculated from events[] so stats are always complete
-        // Last battle replay data — stored after each battle so the player can re-watch it.
-        let _lastBattleReplay = null; // { events, finalPlayerHp, finalCpuHp, matchDurationMs, cpuName, playerMaxHp, cpuMaxHp }
-        // Server-side AoN match ID returned by /api/aon/start; passed in each battle round
-        let _aonMatchId = 0;
+        // Session battle vars → battleState.*  (see resetBattleState)
+        let _preBattleFetch = null; // Promise — not serializable, lives outside battleState
 
         async function startServerBattle(character) {
             game.inProgress = true;
             // PvP: result was pre-computed during matchmaking — replay it directly
-            if (_pvpBattleResult) {
-                const { result, rewards } = _pvpBattleResult;
-                _pvpBattleResult = null;
-                lastBattleRewards = rewards;
-                _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
+            if (battleState.pvpResult) {
+                const { result, rewards } = battleState.pvpResult;
+                battleState.pvpResult = null;
+                battleState.rewards = rewards;
+                battleState.replay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: battleState.cpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 return;
             }
@@ -17175,8 +17265,8 @@
                         setTimeout(() => goToLobby(), 2000);
                         return;
                     }
-                    lastBattleRewards = result.rewards || null;
-                    _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
+                    battleState.rewards = result.rewards || null;
+                    battleState.replay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: battleState.cpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                     await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
                 } catch (err) {
                     console.error('[server battle] pre-fetch network error:', err);
@@ -17214,18 +17304,18 @@
 
             const cpuData = {
                 id:      0,
-                name:    currentCpuName || 'CPU',
-                level:   currentCpuStats.level || 1,
+                name:    battleState.cpuName || 'CPU',
+                level:   battleState.cpuStats.level || 1,
                 stats: {
-                    attack:   currentCpuStats.attack   || 35,
-                    strength: currentCpuStats.strength || 35,
-                    agility:  currentCpuStats.agility  || 35,
-                    defense:  currentCpuStats.defense  || 35,
+                    attack:   battleState.cpuStats.attack   || 35,
+                    strength: battleState.cpuStats.strength || 35,
+                    agility:  battleState.cpuStats.agility  || 35,
+                    defense:  battleState.cpuStats.defense  || 35,
                 },
-                maxHp:               currentCpuStats.hp || 1000,
+                maxHp:               battleState.cpuStats.hp || 1000,
                 skills:              {},
                 equippedConsumables: [],
-                element:             currentCpuStats.element || undefined,
+                element:             battleState.cpuStats.element || undefined,
             };
 
             try {
@@ -17239,7 +17329,7 @@
                         player:      playerData,
                         cpu:         cpuData,
                         // AoN: include matchId so the server can track rounds server-side
-                        ...(aonActive && _aonMatchId ? { aonMatchId: _aonMatchId } : {}),
+                        ...(aonActive && battleState.aonMatchId ? { aonMatchId: battleState.aonMatchId } : {}),
                     }),
                 }, 20000);
 
@@ -17264,8 +17354,8 @@
                     return;
                 }
 
-                lastBattleRewards = result.rewards || null;
-                _lastBattleReplay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: currentCpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
+                battleState.rewards = result.rewards || null;
+                battleState.replay = { events: result.events, finalPlayerHp: result.finalPlayerHp, finalCpuHp: result.finalCpuHp, matchDurationMs: result.matchDurationMs, cpuName: battleState.cpuName, playerMaxHp: game.player.maxHealth, cpuMaxHp: game.cpu.maxHealth };
                 await animateBattleFromLog(result.events, result.finalPlayerHp, result.finalCpuHp, result.matchDurationMs);
 
             } catch (err) {
@@ -17282,13 +17372,13 @@
 
         /**
          * Sets the PvP opponent display info then kicks off startGameWithCharacter.
-         * The pre-computed battle result is stored in _pvpBattleResult so it is
+         * The pre-computed battle result is stored in battleState.pvpResult so it is
          * picked up and replayed by the startServerBattle interceptor above.
          */
         async function startPvpBattle(result, rewards, opponentChar, opponentName, character) {
-            currentCpuName = opponentName || 'Opponent';
+            battleState.cpuName = opponentName || 'Opponent';
             if (opponentChar) {
-                currentCpuStats = {
+                battleState.cpuStats = {
                     hp:       opponentChar.maxHp,
                     attack:   opponentChar.stats?.attack   || 35,
                     strength: opponentChar.stats?.strength || 35,
@@ -17299,9 +17389,9 @@
                 };
             } else {
                 // P1 path: opponent char not available from server — generate visuals only
-                currentCpuStats = generateCpuStats(character);
+                battleState.cpuStats = generateCpuStats(character);
             }
-            _pvpBattleResult = { result, rewards };
+            battleState.pvpResult = { result, rewards };
             await startGameWithCharacter(character);
         }
 
@@ -17455,8 +17545,8 @@
 
             const _fpTargetEl = game[event.target]?.element;
             // Store caster STR so the spike animation can use it
-            const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : currentCpuStats;
-            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = (event.caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (currentCpuStats?.strength || 35));
+            const _spikeCasterChar = event.caster === 'player' ? getSelectedCharacter() : battleState.cpuStats;
+            if (_fpTargetEl) _fpTargetEl._spikeCasterStr = (event.caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (battleState.cpuStats?.strength || 35));
 
             // Earth spike: check if target is airborne at pillar impact moment
             if (event.power.includes('earth_spike')) {
@@ -17783,26 +17873,33 @@
             await sleep(280);
         }
 
-        async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs) {
-            // Extract server winner from the game_over event so endByTimeout
-            // can show the correct result if the timer expires mid-replay.
-            const _goEvent = events.find(e => e.type === 'game_over');
-            _serverBattleResult = {
-                winner:        _goEvent ? _goEvent.winner : 'player',
-                finalPlayerHp: finalPlayerHp,
-                finalCpuHp:    finalCpuHp,
-            };
-            _precomputedStats = computeStatsFromEvents(events);
-            // Server provides the authoritative match duration — restart the
-            // timer using the server's computed value so both sides agree.
-            if (matchDurationMs && matchDurationMs > 0) {
-                const secs = Math.ceil(matchDurationMs / 1000);
-                stopMatchTimer();
-                startMatchTimer(secs);
+        async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs, _startIdx = 0) {
+            const _myGen = _replayAbortGen; // captured at entry — any scrub increments this
+
+            // First-time setup (skip on scrub resume to avoid resetting mid-replay state)
+            if (_startIdx === 0) {
+                // Extract server winner from the game_over event so endByTimeout
+                // can show the correct result if the timer expires mid-replay.
+                const _goEvent = events.find(e => e.type === 'game_over');
+                battleState.serverResult = {
+                    winner:        _goEvent ? _goEvent.winner : 'player',
+                    finalPlayerHp: finalPlayerHp,
+                    finalCpuHp:    finalCpuHp,
+                };
+                battleState.precomputedStats = computeStatsFromEvents(events);
+                // Server provides the authoritative match duration — restart the
+                // timer using the server's computed value so both sides agree.
+                if (matchDurationMs && matchDurationMs > 0) {
+                    const secs = Math.ceil(matchDurationMs / 1000);
+                    stopMatchTimer();
+                    startMatchTimer(secs);
+                }
+            } else {
+                // Scrub resume: serverResult was already set; just refresh timer display
+                battleState.serverResult = battleState.serverResult || { winner: 'player', finalPlayerHp, finalCpuHp };
             }
             // Convert both fighters to left-based px positioning immediately.
-            // CSS cannot transition from right:% or left:auto → left:Xpx, which would
-            // cause the first move/attack to snap instead of slide.
+            // On scrub resume (_startIdx > 0) positions were already set by _scrubReplayTo.
             {
                 const _initArenaW = document.getElementById('arena').offsetWidth;
                 const _initScale  = _initArenaW / 1600;
@@ -17810,9 +17907,9 @@
                 const cEl = game.cpu.element;
                 pEl.style.transition = 'none';
                 cEl.style.transition = 'none';
-                pEl.style.left  = (game.player._homeX * _initScale) + 'px';
+                pEl.style.left  = (_visualPos(game.player._homeX) * _initScale) + 'px';
                 pEl.style.right = 'auto';
-                cEl.style.left  = (game.cpu._homeX * _initScale) + 'px';
+                cEl.style.left  = (_visualPos(game.cpu._homeX) * _initScale) + 'px';
                 cEl.style.right = 'auto';
                 void pEl.offsetWidth;
                 pEl.style.transition = '';
@@ -17845,9 +17942,11 @@
 
             let _comboCount = 1; // tracks hits in current combo sequence
             let _inCombo = false; // true between 'combo' event and last combo hit
-            for (let _ei = 0; _ei < events.length; _ei++) {
+            for (let _ei = _startIdx; _ei < events.length; _ei++) {
+                if (_myGen !== _replayAbortGen) return; // scrub interrupted this playback
                 const event = events[_ei];
                 if (game.gameOver) break;
+                if (_replayIsWatch) _updateReplayScrubBar(_ei, events.length);
 
                 switch (event.type) {
                     case 'log':
@@ -17880,7 +17979,7 @@
                             if (cons) updateStaminaBar(event.fighter, Math.min(100, (game[event.fighter]?.stamina || 0) + event.staminaAmount), 100);
                         }
                         // Update consumable HUD — add slot if not present (CPU consumables added on-the-fly)
-                        const _bcList = battleConsumables[event.fighter];
+                        const _bcList = battleState.consumables[event.fighter];
                         if (_bcList) {
                             if (!_bcList.find(s => s.id === event.consumableId)) {
                                 _bcList.push({ id: event.consumableId, used: false });
@@ -18038,7 +18137,7 @@
                         updateBothFighters();
                         game.inProgress = false;
                         game.gameOver   = true;
-                        if (_precomputedStats) { stats.player = _precomputedStats.player; stats.cpu = _precomputedStats.cpu; _precomputedStats = null; }
+                        if (battleState.precomputedStats) { battleState.matchStats.player = battleState.precomputedStats.player; battleState.matchStats.cpu = battleState.precomputedStats.cpu; battleState.precomputedStats = null; }
                         const loser = event.winner === 'player' ? 'cpu' : 'player';
                         showGameOver(event.winner, loser);
                         return;
@@ -18302,8 +18401,8 @@
                 const baseXform    = (_playerIsOnLeft() === (attacker === 'player')) ? '' : 'scaleX(-1) ';
 
                 // Run speed scales with AGI (approach), arc speed scales with STR (jump power)
-                const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (currentCpuStats?.agility  || 35);
-                const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (currentCpuStats?.strength || 35);
+                const jaAgi     = attacker === 'player' ? (playerChar?.stats?.agility  || 35) : (battleState.cpuStats?.agility  || 35);
+                const jaStr     = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (battleState.cpuStats?.strength || 35);
                 const jaRunSpd  = 1 + Math.min(0.8, (jaAgi - 35) * 0.00155); // AGI 35=1.0x → AGI 550=1.8x
                 const jaArcSpd  = 1 + Math.min(0.5, (jaStr - 35) * 0.004); // STR 35=1.0x → STR 160=1.5x
                 const jaRunMs   = Math.round(280 / jaRunSpd);  // 280ms → ~156ms at high AGI
@@ -18495,7 +18594,7 @@
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
                 if (jumpDodge) {
-                    const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (currentCpuStats?.agility || 68);
+                    const _defAgi = defender === 'player' ? (playerChar?.stats?.agility || 68) : (battleState.cpuStats?.agility || 68);
                     const _jumpH  = Math.min(600, Math.round(240 + _defAgi * 0.4));
                     const _hitMs  = Math.round(300 * atkMult);
                     const _rise   = Math.max(220, _hitMs);
@@ -18540,14 +18639,14 @@
                     const jwX = defRect.left - arenaRect.left + defRect.width  * 0.5;
                     const jwY = defRect.top  - arenaRect.top  + defRect.height * 0.85;
                     const attackerChar = attacker === 'player' ? getSelectedCharacter() : null;
-                    const attackerElem = attackerChar?.element || currentCpuStats?.element || 'none';
+                    const attackerElem = attackerChar?.element || battleState.cpuStats?.element || 'none';
                     const jwColor = (ELEMENT_DATA[attackerElem] || {}).color || '#ffffff';
                     spawnJumpShockwave(jwX, jwY, jwColor);
                     if (hasFury) triggerArenaShake();
                 }
-                stats[attacker].hits        = (stats[attacker].hits        || 0) + 1;
-                stats[attacker].totalDamage = (stats[attacker].totalDamage || 0) + damage;
-                if (isCrit) stats[attacker].criticals = (stats[attacker].criticals || 0) + 1;
+                battleState.matchStats[attacker].hits        = (battleState.matchStats[attacker].hits        || 0) + 1;
+                battleState.matchStats[attacker].totalDamage = (battleState.matchStats[attacker].totalDamage || 0) + damage;
+                if (isCrit) battleState.matchStats[attacker].criticals = (battleState.matchStats[attacker].criticals || 0) + 1;
                 // Knockdown: the attacker (now the defender in this event) shows hurt frame
                 if (event.knockdown) {
                     const kdEl  = game[defender].element;
@@ -18590,7 +18689,7 @@
                 await sleep(isComboFirst ? Math.round(70 * atkMult) : Math.round(300 * Math.max(0.35, atkMult)));
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
-                stats[defender].dodges = (stats[defender].dodges || 0) + 1;
+                battleState.matchStats[defender].dodges = (battleState.matchStats[defender].dodges || 0) + 1;
                 playDodgeSound();
                 await sleep(jumpDodge ? (fighterBody._jumpLandMs || 300) : 200);
                 fighterBody.classList.remove('dodging');
@@ -18598,7 +18697,7 @@
                 delete fighterBody.dataset.jumping;
                 if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
             } else if (defense === 'block') {
-                stats[defender].blocks = (stats[defender].blocks || 0) + 1;
+                battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
                 playBlockSound();
                 _setPushDir(defender);
                 fighterBody.classList.add('blocking'); // pushback on impact
@@ -18977,7 +19076,7 @@
             const listEl = document.getElementById('history-list');
 
             // Try to load from server when logged in
-            const char = _activeBattleCharacter || getSelectedCharacter();
+            const char = battleState.playerCharacter || getSelectedCharacter();
             if (playerSession && char) {
                 listEl.innerHTML = '<div class="history-empty">Loading...</div>';
                 try {
@@ -19986,7 +20085,7 @@
         });
 
         async function startGameWithCharacter(character) {
-            _activeBattleCharacter = character;
+            battleState.playerCharacter = character;
             // Mark battle as active for forfeit detection
             localStorage.setItem('chubchampions_battle_active', JSON.stringify({
                 timestamp: Date.now(),
@@ -20002,12 +20101,12 @@
             game.player.health = maxHp;
 
             // Generate CPU stats and name based on player (skip if PvP battle is pre-computed)
-            if (!_pvpBattleResult) {
-                currentCpuName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)];
-                currentCpuStats = generateCpuStats(character);
+            if (!battleState.pvpResult) {
+                battleState.cpuName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)];
+                battleState.cpuStats = generateCpuStats(character);
             }
-            game.cpu.maxHealth = currentCpuStats.hp;
-            game.cpu.health = currentCpuStats.hp;
+            game.cpu.maxHealth = battleState.cpuStats.hp;
+            game.cpu.health = battleState.cpuStats.hp;
             game.player.fury = 0;
             game.cpu.fury = 0;
             game.player.furyActive = false;
@@ -20037,7 +20136,7 @@
                 body.querySelector('.fighter-name-label')?.remove();
                 const label = document.createElement('span');
                 label.className = 'fighter-name-label';
-                label.textContent = who === 'player' ? (character.name || 'Fighter') : (currentCpuName || 'CPU');
+                label.textContent = who === 'player' ? (character.name || 'Fighter') : (battleState.cpuName || 'CPU');
                 body.appendChild(label);
             }
             // Start camera now that _homeX and element positions are correct
@@ -20049,8 +20148,8 @@
             startStaminaAnim();
 
             // Reset stats
-            stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
-            stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             // Cache HUD element references once per battle
             cacheHudElements();
@@ -20098,13 +20197,13 @@
             // Ensure the character exists in Supabase before the battle fetch.
             // Characters created locally may not have been synced yet — upsert now
             // so battle/run never returns 403 "Character not found".
-            if (!_pvpBattleResult && playerSession) {
+            if (!battleState.pvpResult && playerSession) {
                 try { await syncCharacterToBackend(character); } catch (_) {}
             }
 
             // Start the backend battle fetch NOW so it runs in parallel with the countdown
             _preBattleFetch = null;
-            if (!_pvpBattleResult && playerSession) {
+            if (!battleState.pvpResult && playerSession) {
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
                 _preBattleFetch = fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
@@ -20131,16 +20230,16 @@
                             furyPassiveEnabled:  getFuryPassiveEnabled(character),
                         },
                         cpu: {
-                            id: 0, name: currentCpuName || 'CPU', level: currentCpuStats.level || 1,
+                            id: 0, name: battleState.cpuName || 'CPU', level: battleState.cpuStats.level || 1,
                             stats: {
-                                attack:   currentCpuStats.attack   || 35,
-                                strength: currentCpuStats.strength || 35,
-                                agility:  currentCpuStats.agility  || 35,
-                                defense:  currentCpuStats.defense  || 35,
+                                attack:   battleState.cpuStats.attack   || 35,
+                                strength: battleState.cpuStats.strength || 35,
+                                agility:  battleState.cpuStats.agility  || 35,
+                                defense:  battleState.cpuStats.defense  || 35,
                             },
-                            maxHp: currentCpuStats.hp || 1000, skills: {}, equippedConsumables: [],
+                            maxHp: battleState.cpuStats.hp || 1000, skills: {}, equippedConsumables: [],
                         },
-                        ...(aonActive && _aonMatchId ? { aonMatchId: _aonMatchId } : {}),
+                        ...(aonActive && battleState.aonMatchId ? { aonMatchId: battleState.aonMatchId } : {}),
                     }),
                 }, 20000);
             }
@@ -20186,7 +20285,7 @@
             const playerLevel = character ? character.level : 1;
             let cpuWeapons = [];
             if (playerLevel >= 5) {
-                const allCpuWeapons = getCpuWeapons(currentCpuStats.tier || 5);
+                const allCpuWeapons = getCpuWeapons(battleState.cpuStats.tier || 5);
                 // CPU only gets 1 random weapon from the pool
                 if (allCpuWeapons.length > 0) {
                     const randomWeapon = allCpuWeapons[Math.floor(Math.random() * allCpuWeapons.length)];
@@ -20209,8 +20308,8 @@
             // Init consumables for battle
             const _initChar = getSelectedCharacter();
             const _equippedCons = (_initChar && _initChar.equippedConsumables) || [];
-            battleConsumables.player = _equippedCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
-            battleConsumables.cpu    = [];
+            battleState.consumables.player = _equippedCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
+            battleState.consumables.cpu    = [];
             updateConsumableDisplay('player');
             updateConsumableDisplay('cpu');
         }
@@ -20307,15 +20406,15 @@
                 if (fighter === 'player') {
                     const c = getSelectedCharacter();
                     if (c) maxHP = c.maxHp || BASE_HP;
-                } else if (currentCpuStats) {
-                    maxHP = currentCpuStats.hp || BASE_HP;
+                } else if (battleState.cpuStats) {
+                    maxHP = battleState.cpuStats.hp || BASE_HP;
                 }
                 const scaledHP = Math.round(maxHP * 0.35);
                 state.shieldHP = scaledHP;
                 state.shieldMaxHP = scaledHP;
             }
 
-            stats[fighter].weaponsUsed++;
+            battleState.matchStats[fighter].weaponsUsed++;
             updateWeaponDisplay(fighter);
 
             log(fighterName(fighter) + ' wields ' + weaponIconHTML(weapon, 16) + ' ' + weapon.name + '!' + (weapon.isShield ? ' (Shield: ' + state.shieldHP + ' HP)' : ' (' + state.turnsRemaining + ' turns)'), 'log-weapon');
@@ -20362,7 +20461,7 @@
         }
 
         function fighterName(fighter) {
-            if (fighter === 'cpu') return currentCpuName.toUpperCase();
+            if (fighter === 'cpu') return battleState.cpuName.toUpperCase();
             const c = getSelectedCharacter();
             return c ? c.name.toUpperCase() : 'PLAYER';
         }
@@ -20396,19 +20495,8 @@
         }
 
 
-        // Battle consumable state
-        const battleConsumables = {
-            player: [],
-            cpu: []
-        };
-
-
+        // consumables/skills/cpuCharacter → battleState.*
         // ===== BATTLE SKILL STUBS (tooltips only — calculations run server-side) =====
-        let battleSkills    = {};
-        let skillState      = {};
-        let cpuBattleSkills = {};
-        let cpuSkillState   = {};
-        let currentCpuCharacter = null;
 
         function getCpuBuildBranches(cpuStats) {
             const atk = cpuStats.attack || 0, def = cpuStats.defense || 0;
@@ -20450,9 +20538,9 @@
         }
 
         function initCpuBattleSkills(character) {
-            if (!character) { cpuBattleSkills = {}; return; }
+            if (!character) { battleState.cpuSkills = {}; return; }
             const sv = (b, n) => getSkillValue(character, b, n);
-            cpuBattleSkills = {
+            battleState.cpuSkills = {
                 // ATTACK TREE
                 powerStrikeBonus:       sv('attack',  'power_strike'),
                 heavyBlowBonus:         sv('attack',  'heavy_blow'),
@@ -20491,7 +20579,7 @@
         }
 
         function initCpuSkillState() {
-            cpuSkillState = {
+            battleState.cpuSkillState = {
                 rendStacks: 0,
                 escalationStacks: 0,
                 momentumStacks: 0,
@@ -20634,7 +20722,7 @@
             if (!playerInfo || !cpuInfo) return;
 
             playerInfo.addEventListener('mouseenter', (e) => {
-                if (!battleSkills || !Object.keys(battleSkills).length) return;
+                if (!battleState.playerSkills || !Object.keys(battleState.playerSkills).length) return;
                 const char = getSelectedCharacter();
                 if (!char) return;
                 showSkillTooltip(char, char.name.toUpperCase() + '  LVL ' + char.level, e);
@@ -20643,10 +20731,10 @@
             playerInfo.addEventListener('mouseleave', hideSkillTooltip);
 
             cpuInfo.addEventListener('mouseenter', (e) => {
-                if (!cpuBattleSkills || !Object.keys(cpuBattleSkills).length) return;
-                if (!currentCpuCharacter) return;
-                const lvl = (currentCpuStats && currentCpuStats.level) || 1;
-                showSkillTooltip(currentCpuCharacter, (currentCpuName || 'CPU').toUpperCase() + '  LVL ' + lvl, e);
+                if (!battleState.cpuSkills || !Object.keys(battleState.cpuSkills).length) return;
+                if (!battleState.cpuCharacter) return;
+                const lvl = (battleState.cpuStats && battleState.cpuStats.level) || 1;
+                showSkillTooltip(battleState.cpuCharacter, (battleState.cpuName || 'CPU').toUpperCase() + '  LVL ' + lvl, e);
             });
             cpuInfo.addEventListener('mousemove', positionSkillTooltip);
             cpuInfo.addEventListener('mouseleave', hideSkillTooltip);
@@ -20657,7 +20745,7 @@
             if (!container) return;
             container.innerHTML = '';
 
-            const slots = battleConsumables[fighter];
+            const slots = battleState.consumables[fighter];
             const slotCount = slots.length || 2;
             for (let i = 0; i < slotCount; i++) {
                 const slot = document.createElement('div');
@@ -21502,7 +21590,7 @@
                                     targetEl.style.right = 'auto';
                                 } else {
                                     // Fallback visual only (no server position)
-                                    const _grStr = caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (currentCpuStats?.strength || 35);
+                                    const _grStr = caster === 'player' ? (getSelectedCharacter()?.stats?.strength || 35) : (battleState.cpuStats?.strength || 35);
                                     const _grKbPx       = Math.min(250, Math.floor(_grStr * 2));
                                     const _grKbDir      = caster === 'player' ? 1 : -1;
                                     targetEl.style.transition = 'transform 0.38s cubic-bezier(0.2,0,0.6,1)';
@@ -22064,16 +22152,16 @@
             // Update player name and level
             const playerName = character ? character.name.toUpperCase() : 'PLAYER';
             const playerLevel = character ? character.level : 1;
-            const cpuLevel = currentCpuStats ? currentCpuStats.level : playerLevel;
+            const cpuLevel = battleState.cpuStats ? battleState.cpuStats.level : playerLevel;
 
             hudEl.playerName.innerHTML = `${escapeHTML(playerName)} <span class="player-level">LVL ${playerLevel}</span>`;
-            hudEl.cpuName.innerHTML = `${currentCpuName.toUpperCase()} <span class="player-level">LVL ${cpuLevel}</span>`;
+            hudEl.cpuName.innerHTML = `${battleState.cpuName.toUpperCase()} <span class="player-level">LVL ${cpuLevel}</span>`;
 
             // Element badges in HUD
             const pBadge = document.getElementById('player-element-badge');
             const cBadge = document.getElementById('cpu-element-badge');
             if (pBadge) pBadge.innerHTML = elementBadgeHTML(character?.element);
-            if (cBadge) cBadge.innerHTML = elementBadgeHTML(currentCpuStats?.element);
+            if (cBadge) cBadge.innerHTML = elementBadgeHTML(battleState.cpuStats?.element);
 
             // Fury powers + adaptability in HUD
             function hudPowersHTML(char, isRight) {
@@ -22103,17 +22191,17 @@
             const pPowers = document.getElementById('player-hud-powers');
             const cPowers = document.getElementById('cpu-hud-powers');
             if (pPowers) pPowers.innerHTML = hudPowersHTML(character, false);
-            if (cPowers) cPowers.innerHTML = hudPowersHTML(currentCpuStats, true);
+            if (cPowers) cPowers.innerHTML = hudPowersHTML(battleState.cpuStats, true);
 
             // Update all stats in HUD
             const playerAtk = character ? (character.stats.attack || 35) : 35;
             const playerDef = character ? (character.stats.defense || 35) : 35;
             const playerStr = character ? (character.stats.strength || 35) : 35;
             const playerAgi = character ? (character.stats.agility || 35) : 35;
-            const cpuAtk = currentCpuStats ? (currentCpuStats.attack || 35) : 35;
-            const cpuDef = currentCpuStats ? (currentCpuStats.defense || 35) : 35;
-            const cpuStr = currentCpuStats ? (currentCpuStats.strength || 35) : 35;
-            const cpuAgi = currentCpuStats ? (currentCpuStats.agility || 35) : 35;
+            const cpuAtk = battleState.cpuStats ? (battleState.cpuStats.attack || 35) : 35;
+            const cpuDef = battleState.cpuStats ? (battleState.cpuStats.defense || 35) : 35;
+            const cpuStr = battleState.cpuStats ? (battleState.cpuStats.strength || 35) : 35;
+            const cpuAgi = battleState.cpuStats ? (battleState.cpuStats.agility || 35) : 35;
 
             hudEl.playerAtk.textContent = playerAtk;
             hudEl.playerDef.textContent = playerDef;
@@ -22165,7 +22253,7 @@
 
         function getFighterElement(fighter) {
             if (fighter === 'player') return getSelectedCharacter()?.element || null;
-            return currentCpuStats?.element || null;
+            return battleState.cpuStats?.element || null;
         }
 
         function startFuryAuraParticles(fighter, element) {
@@ -22329,7 +22417,7 @@
                     if (!touching) return;
                     let fighterLevel = 1;
                     if (fighter === 'player') { const ch = getSelectedCharacter(); if (ch) fighterLevel = ch.level; }
-                    else if (currentCpuStats) { fighterLevel = currentCpuStats.level; }
+                    else if (battleState.cpuStats) { fighterLevel = battleState.cpuStats.level; }
                     const orbDamage = Math.max(1, Math.round(3 + fighterLevel * 0.5));
                     game[opponent].health = Math.max(0, game[opponent].health - orbDamage);
                     updateHealth(opponent);
@@ -22702,6 +22790,9 @@
             }
             if (img._idleSrc) {
                 img.src = img._idleSrc;
+                // Restore armed-idle display size now that we're back to idle
+                img.style.width  = img._armedIdleW || '';
+                img.style.height = img._armedIdleW || '';
             }
         }
 
@@ -22957,6 +23048,9 @@
             // Reset to idle sprite immediately (only if not showing loser/winner)
             if (img._idleSrc && !img._loserAnim) {
                 img.src = img._idleSrc;
+                // Restore armed-idle display size now that we're back to idle
+                img.style.width  = img._armedIdleW || '';
+                img.style.height = img._armedIdleW || '';
             }
 
             const blinkFrames = img._idleBlinkFrames;
@@ -23011,15 +23105,15 @@
             // Compensate for armed idle frames being on a larger canvas (1408px vs 1024px idle)
             const armedSize = Math.round(200 * (1408 / 1024));
             const newW = isArmed && img._armedIdleFrames?.length > 0 ? armedSize + 'px' : '';
+            // Always store the intended idle size — applied on idle restore even if we can't set it now
+            img._armedIdleW = newW;
+            const notAnimating = !img._currentAnim && !img._blockAnim && !img._loserAnim && !img._blendRaf;
             const sizeChanging = img.style.width !== newW;
             if (newIdle && img._idleSrc !== newIdle) {
                 img._idleSrc = newIdle;
-                // Always update size — even if a blink animation is running.
-                // Without this, equipping a weapon mid-blink leaves the armed idle
-                // at 200px (CSS default) instead of the correct ~275px.
-                img.style.width  = newW;
-                img.style.height = newW;
-                if (!img._currentAnim && !img._blockAnim && !img._loserAnim) {
+                if (notAnimating) {
+                    img.style.width  = newW;
+                    img.style.height = newW;
                     if (sizeChanging) {
                         img.style.visibility = 'hidden';
                         img.src = newIdle;
@@ -23028,7 +23122,9 @@
                         img.src = newIdle;
                     }
                 }
-            } else {
+                // If animating: _armedIdleW is stored; size + src will be applied
+                // when the animation ends via stopSpriteAnimation / startIdleBlink.
+            } else if (notAnimating) {
                 img.style.width  = newW;
                 img.style.height = newW;
             }
@@ -23356,14 +23452,14 @@
                 if (character && character.level < MAX_LEVEL) {
                     // Use server-authoritative EXP if available (prevents client-side exploit).
                     // Fall back to local random only for dev/offline runs where server isn't called.
-                    const serverExp       = lastBattleRewards?.expGained;
-                    const serverRemaining = lastBattleRewards?.remainingExp;
-                    const serverLeveledUp = lastBattleRewards?.leveledUp;
+                    const serverExp       = battleState.rewards?.expGained;
+                    const serverRemaining = battleState.rewards?.remainingExp;
+                    const serverLeveledUp = battleState.rewards?.leveledUp;
 
                     if (serverExp !== undefined) {
                         // Apply XP boost multiplier for display only
                         // Server applies and tracks the boost — use appliedBoostMult for display only.
-                        const appliedMult = lastBattleRewards?.appliedBoostMult ?? 1;
+                        const appliedMult = battleState.rewards?.appliedBoostMult ?? 1;
                         const hadBoost    = appliedMult > 1;
                         lastExpGained     = serverExp; // already boosted by server
                         if (hadBoost) {
@@ -23423,13 +23519,13 @@
             }
 
             // Victory chest + win streak — server is the authority
-            if (lastBattleRewards) {
+            if (battleState.rewards) {
                 // Wellness loss from battle
-                if (lastBattleRewards.wellnessLoss !== undefined && lastBattleRewards.wellnessLoss > 0) {
+                if (battleState.rewards.wellnessLoss !== undefined && battleState.rewards.wellnessLoss > 0) {
                     const wChar = getSelectedCharacter();
                     if (wChar) {
-                        applyPostBattleWellnessLoss(wChar, lastBattleRewards.wellnessLoss);
-                        log('Fighter condition: -' + lastBattleRewards.wellnessLoss + ' wellness', 'log-info');
+                        applyPostBattleWellnessLoss(wChar, battleState.rewards.wellnessLoss);
+                        log('Fighter condition: -' + battleState.rewards.wellnessLoss + ' wellness', 'log-info');
                         const wStatus = getWellnessStatus(wChar.wellness);
                         if (wChar.wellness <= 10) {
                             addNotification('🚨', wChar.name + ' is critically injured!', 'wellness');
@@ -23441,7 +23537,7 @@
                     }
                 }
                 // Morale change from battle
-                if (lastBattleRewards.moraleDelta !== undefined && lastBattleRewards.moraleDelta !== 0) {
+                if (battleState.rewards.moraleDelta !== undefined && battleState.rewards.moraleDelta !== 0) {
                     const mChar = getSelectedCharacter();
                     if (mChar) {
                         const playerWon = winner === 'player';
@@ -23457,12 +23553,12 @@
                     }
                 }
                 // Ranking points — stored on the character (level 10+ only)
-                if (lastBattleRewards.rankingDelta !== undefined && lastBattleRewards.rankingDelta !== 0) {
-                    const delta   = lastBattleRewards.rankingDelta;
+                if (battleState.rewards.rankingDelta !== undefined && battleState.rewards.rankingDelta !== 0) {
+                    const delta   = battleState.rewards.rankingDelta;
                     const sign    = delta > 0 ? '+' : '';
                     const rkChar  = getSelectedCharacter();
                     if (rkChar) {
-                        rkChar.rankingPoints = lastBattleRewards.newRankingPoints ?? Math.max(0, (rkChar.rankingPoints || 0) + delta);
+                        rkChar.rankingPoints = battleState.rewards.newRankingPoints ?? Math.max(0, (rkChar.rankingPoints || 0) + delta);
                         saveCharacters();
                         const tierName = getRankTierName(rkChar.rankingPoints);
                         const cls = delta > 0 ? 'log-ranking' : 'log-ranking-loss';
@@ -23472,32 +23568,32 @@
                 // Chest
                 const _chestChar = getSelectedCharacter();
                 const _charChestCount = _chestChar ? pendingVictoryChests.filter(c => !c.characterId || c.characterId === _chestChar.id).length : pendingVictoryChests.length;
-                if (lastBattleRewards.chestTier && _charChestCount < 4) {
-                    pendingVictoryChests.push({ tier: lastBattleRewards.chestTier, characterId: _chestChar?.id, unlockStart: null, unlockDuration: null });
-                    const tierName = lastBattleRewards.chestTier.charAt(0).toUpperCase() + lastBattleRewards.chestTier.slice(1);
+                if (battleState.rewards.chestTier && _charChestCount < 4) {
+                    pendingVictoryChests.push({ tier: battleState.rewards.chestTier, characterId: _chestChar?.id, unlockStart: null, unlockDuration: null });
+                    const tierName = battleState.rewards.chestTier.charAt(0).toUpperCase() + battleState.rewards.chestTier.slice(1);
                     addNotification('📦', tierName + ' chest earned!', 'chest');
                 }
                 // Win streak token bonus
-                winStreak = lastBattleRewards.newWinStreak;
+                winStreak = battleState.rewards.newWinStreak;
                 const _mChar = getSelectedCharacter();
                 if (_mChar) { syncGlobalsToChar(_mChar); saveCharacters(); }
-                if (lastBattleRewards.tokensEarned > 0) {
-                    globalTokens += lastBattleRewards.tokensEarned;
+                if (battleState.rewards.tokensEarned > 0) {
+                    globalTokens += battleState.rewards.tokensEarned;
                     if (winStreak === 5) {
-                        showNotice('🔥 5 WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙');
+                        showNotice('🔥 5 WIN STREAK! +' + battleState.rewards.tokensEarned + ' 🪙');
                     } else if (winStreak === 3) {
-                        showNotice('🔥 3 WIN STREAK! +' + lastBattleRewards.tokensEarned + ' 🪙');
+                        showNotice('🔥 3 WIN STREAK! +' + battleState.rewards.tokensEarned + ' 🪙');
                     } else {
-                        showNotice('+' + lastBattleRewards.tokensEarned + ' 🪙');
+                        showNotice('+' + battleState.rewards.tokensEarned + ' 🪙');
                     }
                 }
                 // Q-learning: apply Battle Instinct updates to character
-                if (lastBattleRewards.playerQTable !== undefined) {
+                if (battleState.rewards.playerQTable !== undefined) {
                     const qlChar = getSelectedCharacter();
                     if (qlChar) {
                         const oldAdapt = Math.round(qlChar.adaptability || 0);
-                        qlChar.qTable       = lastBattleRewards.playerQTable;
-                        qlChar.adaptability = lastBattleRewards.newAdaptability ?? qlChar.adaptability;
+                        qlChar.qTable       = battleState.rewards.playerQTable;
+                        qlChar.adaptability = battleState.rewards.newAdaptability ?? qlChar.adaptability;
                         const newAdapt = Math.round(qlChar.adaptability || 0);
                         if (newAdapt > oldAdapt) {
                             log('🧠 Battle Instinct ↑ ' + newAdapt + ' BP', 'log-buff');
@@ -23512,7 +23608,7 @@
                     const NORMAL_DUR_LOSS = 3; // % lost per weapon used in battle
                     const FURY_EXTRA_LOSS = 4; // additional % for fury throws (total 7%)
                     const durChar = getSelectedCharacter();
-                    const furyThrown = new Set(lastBattleRewards.furyThrownWeapons || []);
+                    const furyThrown = new Set(battleState.rewards.furyThrownWeapons || []);
                     if (durChar && weaponState.player.usedWeapons.length > 0) {
                         for (const wId of weaponState.player.usedWeapons) {
                             const extra = furyThrown.has(wId) ? FURY_EXTRA_LOSS : 0;
@@ -23526,7 +23622,7 @@
                         saveCharacters();
                     }
                 }
-                lastBattleRewards = null;
+                battleState.rewards = null;
             } else {
                 // Fallback (shouldn't happen with server battles)
                 if (winner === 'player') winStreak++;
@@ -23536,11 +23632,11 @@
 
             // Save match to history
             const result = winner === 'player' ? 'win' : 'loss';
-            addMatchToHistory(result, game.player.health, game.cpu.health, stats.player, stats.cpu, lastBattleRewards?.replayId);
+            addMatchToHistory(result, game.player.health, game.cpu.health, battleState.matchStats.player, battleState.matchStats.cpu, battleState.rewards?.replayId);
 
-            // Track per-character match stats — use _activeBattleCharacter so stats
+            // Track per-character match stats — use battleState.playerCharacter so stats
             // always go to the fighter who played, not the currently-selected one.
-            const charForStats = _activeBattleCharacter || getSelectedCharacter();
+            const charForStats = battleState.playerCharacter || getSelectedCharacter();
             if (charForStats) {
                 charForStats.gamesPlayed = (charForStats.gamesPlayed || 0) + 1;
                 if (winner === 'player') {
@@ -23602,10 +23698,10 @@
             }
 
             // Save draw to history
-            addMatchToHistory('draw', game.player.health, game.cpu.health, stats.player, stats.cpu, lastBattleRewards?.replayId);
+            addMatchToHistory('draw', game.player.health, game.cpu.health, battleState.matchStats.player, battleState.matchStats.cpu, battleState.rewards?.replayId);
 
             // Track per-character match stats (draw counts as game played, not won)
-            const charForStats = _activeBattleCharacter || getSelectedCharacter();
+            const charForStats = battleState.playerCharacter || getSelectedCharacter();
             if (charForStats) {
                 charForStats.gamesPlayed = (charForStats.gamesPlayed || 0) + 1;
                 saveCharacters();
@@ -23642,7 +23738,7 @@
             const titleClass = isDraw ? 'draw' : 'win';
 
             function statBlock(who, label, showExp = false) {
-                const s = stats[who];
+                const s = battleState.matchStats[who];
                 const dailyLimitLine = (who === 'player' && !lastBattleWithinLimit)
                     ? `<div class="results-stat"><span class="results-stat-label">EXP</span><span class="results-stat-value" style="color:#888;">Daily limit (${DAILY_BATTLE_LIMIT}/${DAILY_BATTLE_LIMIT})</span></div>`
                     : '';
@@ -23683,7 +23779,7 @@
                     <div class="results-columns">
                         ${statBlock('player', 'PLAYER', !isDraw)}
                         <div class="results-divider"></div>
-                        ${statBlock('cpu', currentCpuName.toUpperCase(), false)}
+                        ${statBlock('cpu', battleState.cpuName.toUpperCase(), false)}
                     </div>
                     ${levelUpNotice}
                     <div class="results-buttons">
@@ -23715,6 +23811,118 @@
 
         }
 
+        // ===== REPLAY SCRUBBER =====
+        let _replayAbortGen = 0;  // incremented to abort the current animateBattleFromLog loop
+        let _replayIsWatch  = false; // true only inside watchReplay — enables scrub bar
+        let _replayScrub    = null;  // { events, finalPlayerHp, finalCpuHp, matchDurationMs, replay }
+
+        // Applies a single event's state changes instantly, with no animation.
+        // Used to fast-forward to a scrub position.
+        function _applyEventHeadless(ev) {
+            if (ev.playerHp !== undefined) game.player.health = ev.playerHp;
+            if (ev.cpuHp    !== undefined) game.cpu.health    = ev.cpuHp;
+            switch (ev.type) {
+                case 'fury_update':
+                    if (!ev.changed) break;
+                    game[ev.fighter].furyActive = ev.active;
+                    game[ev.fighter].fury = ev.active ? game[ev.fighter].maxFury : 0;
+                    break;
+                case 'stamina':
+                    _staminaTarget[ev.fighter]  = ev.stamina;
+                    _staminaDisplay[ev.fighter] = ev.stamina;
+                    break;
+                case 'weapon_equip':
+                    if (weaponState[ev.fighter]) {
+                        if (!weaponState[ev.fighter].inventory.includes(ev.weaponId))
+                            weaponState[ev.fighter].inventory.push(ev.weaponId);
+                        weaponState[ev.fighter].equippedWeapon = ev.weaponId;
+                        weaponState[ev.fighter].turnsRemaining = ev.turns;
+                    }
+                    break;
+                case 'weapon_throw':
+                case 'weapon_drop':
+                    if (weaponState[ev.fighter]) {
+                        weaponState[ev.fighter].usedWeapons.push(ev.weaponId);
+                        weaponState[ev.fighter].equippedWeapon = null;
+                    }
+                    break;
+                case 'consumable': {
+                    const _bc = battleState.consumables[ev.fighter];
+                    if (_bc) {
+                        if (!_bc.find(s => s.id === ev.consumableId))
+                            _bc.push({ id: ev.consumableId, used: false });
+                        const _slot = _bc.find(s => s.id === ev.consumableId && !s.used);
+                        if (_slot) _slot.used = true;
+                    }
+                    break;
+                }
+                case 'move':
+                    game.player._homeX = ev.playerX;
+                    game.cpu._homeX    = ev.cpuX;
+                    break;
+            }
+        }
+
+        function _updateReplayScrubBar(idx, total) {
+            const slider = document.getElementById('replay-scrub-slider');
+            const pct    = document.getElementById('replay-scrub-pct');
+            if (slider) slider.value = idx;
+            if (pct)    pct.textContent = (total > 0 ? Math.round(idx / total * 100) : 0) + '%';
+        }
+
+        async function _scrubReplayTo(targetIdx) {
+            if (!_replayScrub) return;
+            const { events, finalPlayerHp, finalCpuHp, matchDurationMs, replay } = _replayScrub;
+            const clampedIdx = Math.max(0, Math.min(targetIdx, events.length));
+
+            // Abort current playback and wait for it to exit the loop
+            const myGen = ++_replayAbortGen;
+            await new Promise(r => setTimeout(r, 60));
+            if (myGen !== _replayAbortGen) return; // another scrub overtook us
+
+            // Reset to battle-start state
+            game.player.health    = replay.playerMaxHp;
+            game.player.maxHealth = replay.playerMaxHp;
+            game.cpu.health       = replay.cpuMaxHp;
+            game.cpu.maxHealth    = replay.cpuMaxHp;
+            game.player.fury = 0; game.player.furyActive = false;
+            game.cpu.fury    = 0; game.cpu.furyActive    = false;
+            game.gameOver    = false;
+            game.inProgress  = false;
+            _staminaTarget.player  = 100; _staminaDisplay.player  = 100;
+            _staminaTarget.cpu     = 100; _staminaDisplay.cpu     = 100;
+            for (const side of ['player', 'cpu']) {
+                weaponState[side].inventory      = [];
+                weaponState[side].usedWeapons    = [];
+                weaponState[side].equippedWeapon = null;
+                weaponState[side].turnsRemaining = 0;
+                weaponState[side].shieldHP       = 0;
+                weaponState[side].shieldMaxHP    = 0;
+            }
+            const _sc = battleState.playerCharacter;
+            battleState.consumables.player = ((_sc && _sc.equippedConsumables) || []).filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
+            battleState.consumables.cpu    = [];
+
+            // Apply events 0..clampedIdx-1 headlessly
+            for (let i = 0; i < clampedIdx; i++) _applyEventHeadless(events[i]);
+
+            // Refresh all displays
+            updateBothFighters();
+            updateFuryBar('player');
+            updateFuryBar('cpu');
+            updateWeaponDisplay('player');
+            updateWeaponDisplay('cpu');
+            updateConsumableDisplay('player');
+            updateConsumableDisplay('cpu');
+            _staminaRenderBars();
+            _updateReplayScrubBar(clampedIdx, events.length);
+
+            // Resume playback from scrub point if not at the end
+            if (clampedIdx < events.length) {
+                await animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs, clampedIdx);
+            }
+        }
+
         async function watchReplay(replay) {
             if (!replay) return;
 
@@ -23743,7 +23951,7 @@
                 body.querySelector('.fighter-name-label')?.remove();
                 const label = document.createElement('span');
                 label.className = 'fighter-name-label';
-                label.textContent = who === 'player' ? (_activeBattleCharacter?.name || 'Fighter') : (replay.cpuName || 'CPU');
+                label.textContent = who === 'player' ? (battleState.playerCharacter?.name || 'Fighter') : (replay.cpuName || 'CPU');
                 body.appendChild(label);
             }
 
@@ -23778,17 +23986,17 @@
             updateWeaponDisplay('cpu');
 
             // Reset consumable state
-            const _replayChar = _activeBattleCharacter;
+            const _replayChar = battleState.playerCharacter;
             const _replayCons = (_replayChar && _replayChar.equippedConsumables) || [];
-            battleConsumables.player = _replayCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
-            battleConsumables.cpu    = [];
+            battleState.consumables.player = _replayCons.filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
+            battleState.consumables.cpu    = [];
             updateConsumableDisplay('player');
             updateConsumableDisplay('cpu');
 
             // Update HUD
-            currentCpuName = replay.cpuName || 'CPU';
+            battleState.cpuName = replay.cpuName || 'CPU';
             updateBothFighters();
-            updateCombatHud(_activeBattleCharacter);
+            updateCombatHud(battleState.playerCharacter);
             updateFuryBar('player');
             updateFuryBar('cpu');
             document.getElementById('game-log').innerHTML = '';
@@ -23807,7 +24015,33 @@
             startIdleBlink(game.cpu.element);
             if (_cameraEnabled) startArenaCamera();
 
+            // Set up scrubber
+            _replayIsWatch = true;
+            _replayScrub = { events: replay.events, finalPlayerHp: replay.finalPlayerHp, finalCpuHp: replay.finalCpuHp, matchDurationMs: replay.matchDurationMs, replay };
+            const _scrubBar    = document.getElementById('replay-scrub-bar');
+            const _scrubSlider = document.getElementById('replay-scrub-slider');
+            if (_scrubBar && _scrubSlider) {
+                _scrubSlider.max   = replay.events.length;
+                _scrubSlider.value = 0;
+                _scrubBar.style.display = '';
+                _scrubSlider.addEventListener('input', function _onScrub() {
+                    _scrubSlider._scrubPending = true;
+                    clearTimeout(_scrubSlider._scrubTimer);
+                    _scrubSlider._scrubTimer = setTimeout(() => {
+                        _scrubSlider._scrubPending = false;
+                        _scrubReplayTo(+_scrubSlider.value);
+                    }, 120);
+                }, { signal: (_scrubSlider._abortCtrl = new AbortController()).signal });
+            }
+            _updateReplayScrubBar(0, replay.events.length);
+
             await animateBattleFromLog(replay.events, replay.finalPlayerHp, replay.finalCpuHp, replay.matchDurationMs);
+
+            // Teardown scrubber
+            _replayIsWatch = false;
+            _replayScrub   = null;
+            if (_scrubBar)    _scrubBar.style.display = 'none';
+            if (_scrubSlider?._abortCtrl) { _scrubSlider._abortCtrl.abort(); _scrubSlider._abortCtrl = null; }
         }
 
         // Complete cleanup of all fighter animations, timeouts, and state
@@ -23895,10 +24129,10 @@
                 game.player.health = maxHp;
 
                 // Regenerate CPU stats and name for new match
-                currentCpuName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)];
-                currentCpuStats = generateCpuStats(character);
-                game.cpu.maxHealth = currentCpuStats.hp;
-                game.cpu.health = currentCpuStats.hp;
+                battleState.cpuName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)];
+                battleState.cpuStats = generateCpuStats(character);
+                game.cpu.maxHealth = battleState.cpuStats.hp;
+                game.cpu.health = battleState.cpuStats.hp;
             } else {
                 game.player.maxHealth = 1000;
                 game.player.health = 1000;
@@ -23914,8 +24148,8 @@
             game.inProgress = false;
 
             // Reset stats
-            stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
-            stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             // Cache HUD element references once per battle
             cacheHudElements();
@@ -24395,7 +24629,7 @@
                     const opponentChar = replayData.p1Char || null;
                     // Exit AoN lobby UI and enter arena for animation
                     aonActive = false;
-                    _aonMatchId = 0;
+                    battleState.aonMatchId = 0;
                     await startPvpBattle(battleResult, rewards, opponentChar, challengerName, character);
                     return;
                 }
@@ -24661,7 +24895,7 @@
                         }),
                     });
                     const openData = await openResp.json();
-                    if (openData.matchId) _aonMatchId = openData.matchId;
+                    if (openData.matchId) battleState.aonMatchId = openData.matchId;
                 } catch (_) {}
 
                 // Step 3 — Wait for opponent and contract resolution
@@ -24681,7 +24915,7 @@
 
                 // Step 5 — Try to fetch replay for animated battle
                 let replayData = null;
-                if (_aonMatchId) {
+                if (battleState.aonMatchId) {
                     try {
                         const replayResp = await fetchWithTimeout(BACKEND_URL + '/api/aon/replay', {
                             method: 'POST',
@@ -24689,7 +24923,7 @@
                             body: JSON.stringify({
                                 playerId:    playerSession.playerId,
                                 characterId: character.id,
-                                matchId:     _aonMatchId,
+                                matchId:     battleState.aonMatchId,
                                 roomId:      Number(roomId),
                                 chain:       'monad',
                             }),
@@ -24721,7 +24955,7 @@
                     const opponentChar = replayData.p2Char || null; // P1's opponent is P2
                     const opponentName = replayData.p2Name || 'Opponent';
                     aonActive = false;
-                    _aonMatchId = 0;
+                    battleState.aonMatchId = 0;
                     await startPvpBattle(battleResult, rewards, opponentChar, opponentName, character);
                     return;
                 }
@@ -25015,7 +25249,7 @@
                 return;
             }
             if (!startData.ok) { showNotice(startData.error || 'Not enough tokens!'); return; }
-            _aonMatchId    = startData.matchId;
+            battleState.aonMatchId    = startData.matchId;
             globalTokens   = startData.newTokens;
             saveProgression();
 
@@ -25068,8 +25302,8 @@
             // Generate CPU once for all rounds
             aonCpuName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)];
             aonCpuStats = generateCpuStats(character);
-            currentCpuName = aonCpuName;
-            currentCpuStats = aonCpuStats;
+            battleState.cpuName = aonCpuName;
+            battleState.cpuStats = aonCpuStats;
 
             aonCurrentRound = 1;
 
@@ -25087,8 +25321,8 @@
             game.gameOverHandled = false;
             game.inProgress = false;
 
-            stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
-            stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             updateBothFighters();
             updateFuryBar('player');
@@ -25152,8 +25386,8 @@
             const maxHp = getCharacterMaxHp(character);
             game.player.maxHealth = maxHp;
             game.player.health = maxHp;
-            currentCpuName = aonCpuName;
-            currentCpuStats = aonCpuStats;
+            battleState.cpuName = aonCpuName;
+            battleState.cpuStats = aonCpuStats;
             game.cpu.maxHealth = aonCpuStats.hp;
             game.cpu.health = aonCpuStats.hp;
             game.player.fury = 0;
@@ -25165,8 +25399,8 @@
             game.inProgress = false;
 
             // Reset round stats
-            stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
-            stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             cacheHudElements();
             updateBothFighters();
@@ -25207,8 +25441,8 @@
             const overlay = document.createElement('div');
             overlay.className = 'aon-round-overlay';
 
-            const pS = stats.player;
-            const cS = stats.cpu;
+            const pS = battleState.matchStats.player;
+            const cS = battleState.matchStats.cpu;
             const winnerText = roundWinner === 'player' ? 'YOU WON THIS ROUND!' : `${aonCpuName.toUpperCase()} WON THIS ROUND!`;
             const winnerClass = roundWinner === 'player' ? 'player-won' : 'cpu-won';
 
@@ -25346,8 +25580,8 @@
             const maxHp = getCharacterMaxHp(character);
             game.player.maxHealth = maxHp;
             game.player.health = maxHp;
-            currentCpuName = aonCpuName;
-            currentCpuStats = aonCpuStats;
+            battleState.cpuName = aonCpuName;
+            battleState.cpuStats = aonCpuStats;
             game.cpu.maxHealth = aonCpuStats.hp;
             game.cpu.health = aonCpuStats.hp;
             game.player.fury = 0;
@@ -25358,8 +25592,8 @@
             game.gameOverHandled = false;
             game.inProgress = false;
 
-            stats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
-            stats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.player = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
+            battleState.matchStats.cpu = { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 };
 
             cacheHudElements();
             updateBothFighters();
@@ -25405,9 +25639,9 @@
             let lastAonExp = 0;
 
             // AoN payout was already applied server-side in battle/run.ts
-            // when the decisive round was played. Read it from lastBattleRewards.
+            // when the decisive round was played. Read it from battleState.rewards.
             if (playerWon) {
-                const aonPayout = lastBattleRewards?.aonPayout ?? 0;
+                const aonPayout = battleState.rewards?.aonPayout ?? 0;
                 if (aonPayout > 0) {
                     globalTokens += aonPayout;
                 }
@@ -25415,7 +25649,7 @@
                 updateCurrencyUI();
             }
             // Clear server-side match reference
-            _aonMatchId = 0;
+            battleState.aonMatchId = 0;
 
             // Grant EXP (win or loss), respecting daily limit
             {
@@ -25427,10 +25661,10 @@
                 const character = getSelectedCharacter();
                 if (character && character.level < MAX_LEVEL && aonDailyWins < DAILY_AON_LIMIT) {
                     if (playerWon) aonDailyWins++;
-                    const serverExp = lastBattleRewards?.expGained;
+                    const serverExp = battleState.rewards?.expGained;
                     if (serverExp !== undefined) {
                         lastAonExp = serverExp; // already boosted by server
-                        const aonBoostMult = lastBattleRewards?.appliedBoostMult ?? 1;
+                        const aonBoostMult = battleState.rewards?.appliedBoostMult ?? 1;
                         if (aonBoostMult > 1) {
                             xpBoostBattlesLeft = Math.max(0, xpBoostBattlesLeft - 1);
                             if (xpBoostBattlesLeft <= 0) xpBoostMultiplier = 1.0;
@@ -25439,10 +25673,10 @@
                             saveProgression();
                             updateCurrencyUI();
                         }
-                        const aonRemaining = lastBattleRewards?.remainingExp;
+                        const aonRemaining = battleState.rewards?.remainingExp;
                         if (aonRemaining !== undefined) {
                             character.exp = aonRemaining;
-                            if (lastBattleRewards?.leveledUp) {
+                            if (battleState.rewards?.leveledUp) {
                                 character.level = Math.min(MAX_LEVEL, character.level + 1);
                             }
                         } else {
@@ -25450,7 +25684,7 @@
                             addExpToCharacter(character.id, serverExp);
                         }
                         saveCharacters();
-                        if (lastBattleRewards?.leveledUp) {
+                        if (battleState.rewards?.leveledUp) {
                             addNotification('⭐', (character.name || 'Fighter') + ' reached Lv.' + character.level + '!', 'levelup');
                             fetchAndQueueLevelUp(character);
                         }
@@ -25550,11 +25784,11 @@
 
             // Clear match timer if running
             if (matchTimerInterval) { clearInterval(matchTimerInterval); matchTimerInterval = null; }
-            _serverBattleResult = null;
+            battleState.serverResult = null;
 
             // Clean up AoN state
             aonActive   = false;
-            _aonMatchId = 0;
+            battleState.aonMatchId = 0;
             aonScore = { player: 0, cpu: 0 };
             aonCurrentRound = 0;
             aonRoundResults = [];
@@ -25669,16 +25903,16 @@
                             turnsRemaining: weaponState.cpu.turnsRemaining
                         }
                     },
-                    battleConsumables: {
-                        player: battleConsumables.player.map(c => ({ id: c.id, used: c.used })),
-                        cpu: battleConsumables.cpu.map(c => ({ id: c.id, used: c.used }))
+                    battleState.consumables: {
+                        player: battleState.consumables.player.map(c => ({ id: c.id, used: c.used })),
+                        cpu: battleState.consumables.cpu.map(c => ({ id: c.id, used: c.used }))
                     },
                     stats: {
-                        player: { ...stats.player },
-                        cpu: { ...stats.cpu }
+                        player: { ...battleState.matchStats.player },
+                        cpu: { ...battleState.matchStats.cpu }
                     },
-                    currentCpuName: currentCpuName,
-                    currentCpuStats: { ...currentCpuStats },
+                    battleState.cpuName: battleState.cpuName,
+                    battleState.cpuStats: { ...battleState.cpuStats },
                     matchTimerRemaining: matchTimerRemaining,
                     aon: aonActive,
                     aonEntryFee: aonEntryFee,
@@ -26425,13 +26659,13 @@
                 const character = getSelectedCharacter();
                 const playerName = character ? character.name.toUpperCase() : 'PLAYER';
                 const playerLevel = character ? character.level : 1;
-                const cpuLevel = currentCpuStats ? currentCpuStats.level : playerLevel;
+                const cpuLevel = battleState.cpuStats ? battleState.cpuStats.level : playerLevel;
 
                 // Get STR/AGI stats for VS screen
                 const playerStr = character ? (character.stats.strength || 35) : 35;
                 const playerAgi = character ? (character.stats.agility || 35) : 35;
-                const cpuStr = currentCpuStats ? (currentCpuStats.strength || 35) : 35;
-                const cpuAgi = currentCpuStats ? (currentCpuStats.agility || 35) : 35;
+                const cpuStr = battleState.cpuStats ? (battleState.cpuStats.strength || 35) : 35;
+                const cpuAgi = battleState.cpuStats ? (battleState.cpuStats.agility || 35) : 35;
 
                 // Element, adaptability and fury powers for VS screen
                 const playerElem    = character?.element;
@@ -26441,13 +26675,13 @@
                 const playerChoice  = getFuryPowerChoice(character);
                 const playerPassive = getFuryPassiveEnabled(character);
 
-                const cpuElem    = currentCpuStats?.element;
-                const cpuAdapt   = Math.round(currentCpuStats?.adaptability || 0);
+                const cpuElem    = battleState.cpuStats?.element;
+                const cpuAdapt   = Math.round(battleState.cpuStats?.adaptability || 0);
                 const cpuElemD   = ELEMENT_DATA[cpuElem] || {};
                 const cpuFP      = FURY_POWERS_FRONTEND[cpuElem];
-                const cpuChoice  = (currentCpuStats?.furyPowerChoice && (currentCpuStats?.level || 1) >= 10)
-                                     ? currentCpuStats.furyPowerChoice : undefined;
-                const cpuPassive = currentCpuStats?.furyPassiveEnabled !== false;
+                const cpuChoice  = (battleState.cpuStats?.furyPowerChoice && (battleState.cpuStats?.level || 1) >= 10)
+                                     ? battleState.cpuStats.furyPowerChoice : undefined;
+                const cpuPassive = battleState.cpuStats?.furyPassiveEnabled !== false;
 
                 function vsInfoRowHTML(elemD, fp, choice, passive, adapt, str, agi) {
                     const color = elemD.color || '';
@@ -26479,7 +26713,7 @@
                     </div>
                     <div class="vs-side vs-side-right">
                         <img class="vs-portrait" id="vs-portrait-cpu" src="${cpuFrames[0]}" alt="CPU">
-                        <div class="vs-name">${currentCpuName.toUpperCase()}</div>
+                        <div class="vs-name">${battleState.cpuName.toUpperCase()}</div>
                         <div class="vs-level">LVL ${cpuLevel}</div>
                         ${vsInfoRowHTML(cpuElemD, cpuFP, cpuChoice, cpuPassive, cpuAdapt, cpuStr, cpuAgi)}
                     </div>
@@ -26686,7 +26920,7 @@
 
         function endByTimeout() {
             game.gameOver = true;
-            if (_precomputedStats) { stats.player = _precomputedStats.player; stats.cpu = _precomputedStats.cpu; _precomputedStats = null; }
+            if (battleState.precomputedStats) { battleState.matchStats.player = battleState.precomputedStats.player; battleState.matchStats.cpu = battleState.precomputedStats.cpu; battleState.precomputedStats = null; }
             // Flush any pending sleeps and animation promises so the battle
             // loop's `if (game.gameOver) break` fires immediately.
             const pendingSleeps = [..._sleepPending];
@@ -26699,11 +26933,11 @@
             // match duration based on estimated animation times and stopped
             // generating events at that point.  The result (winner + final HP)
             // is therefore consistent with the timer — both sides agree.
-            if (_serverBattleResult) {
-                game.player.health = _serverBattleResult.finalPlayerHp;
-                game.cpu.health    = _serverBattleResult.finalCpuHp;
+            if (battleState.serverResult) {
+                game.player.health = battleState.serverResult.finalPlayerHp;
+                game.cpu.health    = battleState.serverResult.finalCpuHp;
                 updateBothFighters();
-                const winner = _serverBattleResult.winner;
+                const winner = battleState.serverResult.winner;
                 const loser  = winner === 'player' ? 'cpu' : 'player';
                 log('TIME UP!', 'log-critical');
                 game.inProgress = false;
@@ -26750,7 +26984,7 @@
             const messagesEl = document.getElementById('chat-messages');
             const msgEl = document.createElement('div');
             msgEl.className = 'chat-message ' + (author === 'player' ? 'player' : 'cpu');
-            msgEl.innerHTML = '<div class="msg-author">' + (author === 'player' ? 'You' : currentCpuName) + '</div>' + text;
+            msgEl.innerHTML = '<div class="msg-author">' + (author === 'player' ? 'You' : battleState.cpuName) + '</div>' + text;
             messagesEl.appendChild(msgEl);
             messagesEl.scrollTop = messagesEl.scrollHeight;
 
