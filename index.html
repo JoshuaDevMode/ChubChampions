@@ -23041,6 +23041,12 @@
                 : img._weaponAttackFrames;
             // useWeaponAttack: character has weapon attack frames loaded (always use them when armed)
             const useWeaponAttack = !!(weaponId && charFrames && charFrames.length > 0);
+            if (weaponId && !useWeaponAttack) {
+                console.warn('[animateAttack] weapon attack fallback to basic — weaponId:', weaponId,
+                    '_heavyAttackFrames:', img._heavyAttackFrames?.length ?? 'undef',
+                    '_weaponAttackFrames:', img._weaponAttackFrames?.length ?? 'undef',
+                    'isHeavyWeapon:', isHeavyWeapon);
+            }
             // useWeaponOverlay: weapon sprite overlay also cached — shown on top of char
             const useWeaponOverlay = useWeaponAttack && !!(_weaponAttackFramesCache[weaponId]?.length > 0);
 
@@ -26367,6 +26373,9 @@
                         img._heavyAttackFrames = [];
                     }
                 }
+                console.log('[processAllFighterImages]', isCpu ? 'CPU' : 'Player',
+                    'weaponAttackFrames:', img._weaponAttackFrames?.length ?? 'undef',
+                    'heavyAttackFrames:', img._heavyAttackFrames?.length ?? 'undef');
 
                 // Process hurt sprite sheet (each frame is a different pose, picked randomly)
                 // Hurt.png is 4096x1024 → 4 frames of 1024x1024
@@ -26457,7 +26466,7 @@
                     if (!_weaponAttackFramesCache[entry.id]) {
                         if (entry.attackOverlay && entry.img) {
                             const attackPath = entry.img.replace('.png', ' Attack.png');
-                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, rows); }
+                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 1); }
                             catch(e) { _weaponAttackFramesCache[entry.id] = []; }
                         } else {
                             _weaponAttackFramesCache[entry.id] = [];
