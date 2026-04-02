@@ -23036,7 +23036,10 @@
 
             // Determine if we should use weapon attack frames
             const isHeavyWeapon = weaponId && !!getWeaponById(weaponId)?.heavyAttack;
-            const charFrames = isHeavyWeapon ? img._heavyAttackFrames : img._weaponAttackFrames;
+            // Fallback: if heavy attack frames aren't loaded yet, use regular weapon attack frames
+            const charFrames = isHeavyWeapon
+                ? (img._heavyAttackFrames?.length > 0 ? img._heavyAttackFrames : img._weaponAttackFrames)
+                : img._weaponAttackFrames;
             // useWeaponAttack: character has weapon attack frames loaded (always use them when armed)
             const useWeaponAttack = !!(weaponId && charFrames && charFrames.length > 0);
             // useWeaponOverlay: weapon sprite overlay also cached — shown on top of char
