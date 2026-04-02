@@ -23719,6 +23719,7 @@
         async function watchReplay(replay) {
             if (!replay) return;
 
+            cacheHudElements();
             cleanupFighters();
             stopMatchTimer();
 
