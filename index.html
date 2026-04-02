@@ -23771,6 +23771,12 @@
             updateFuryBar('cpu');
             document.getElementById('game-log').innerHTML = '';
 
+            // Load sprite frames if not already extracted (e.g. page reload before any battle)
+            const _replayImg = game.player.element.querySelector('img');
+            if (!_replayImg?._punchFrames) {
+                await processAllFighterImages();
+            }
+
             // Restart idle blink and camera
             startIdleBlink(game.player.element);
             startIdleBlink(game.cpu.element);
