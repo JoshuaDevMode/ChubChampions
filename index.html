@@ -23228,8 +23228,9 @@
                             overlay.classList.remove('weapon-equip-flash');
                         }, { once: true });
                     }
-                } else if (WEAPON_POSE_MAP[equippedId]) {
-                    // Pose not cached yet (e.g. CPU weapon) — load on demand then re-sync
+                } else if (_weaponIdlePoseCache[equippedId] === undefined && WEAPON_POSE_MAP[equippedId]) {
+                    // Pose not yet attempted (undefined = never tried) — load on demand then re-sync
+                    // Note: [] means already tried and failed — don't retry endlessly
                     extractFrames(WEAPON_POSE_MAP[equippedId], 1, 1)
                         .then(f => {
                             _weaponIdlePoseCache[equippedId] = f;
@@ -26443,7 +26444,7 @@
                     }
                     if (!_weaponAttackFramesCache[entry.id]) {
                         if (entry.attackOverlay && entry.img) {
-                            const rows = 1;
+                            const rows = entry.heavyAttack ? 1 : 2;
                             const attackPath = entry.img.replace('.png', ' Attack.png');
                             try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, rows); }
                             catch(e) { _weaponAttackFramesCache[entry.id] = []; }
