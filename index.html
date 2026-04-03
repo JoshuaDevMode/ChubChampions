@@ -17653,6 +17653,9 @@
             const cImg = game.cpu.element.querySelector('img.character-png');
             if (pImg) pImg.style.transform = '';
             if (cImg) cImg.style.transform = '';
+            // Re-sync weapon idle overlay transform to match the new facing direction
+            syncArmedIdle('player');
+            syncArmedIdle('cpu');
         }
 
         // Sets --push-dir CSS variable on a fighter-body so block/hit pushback
@@ -18497,12 +18500,15 @@
                     const jaBody = attackerEl.querySelector('.fighter-body');
                     jaBody.querySelectorAll('.weapon-attack-overlay,.heavy-attack-char-overlay').forEach(e => e.remove());
                     jaImg.style.visibility = 'hidden';
+                    const _jaFacingFlipped = attackerEl.classList.contains('facing-flipped');
                     const jaCo = document.createElement('img');
                     jaCo.className = 'heavy-attack-char-overlay';
+                    if (_jaFacingFlipped) jaCo.classList.add('sprite-reversed');
                     jaCo.src = jhCF[2] || jhCF[0] || '';
                     jaBody.appendChild(jaCo);
                     const jaWo = document.createElement('img');
                     jaWo.className = 'weapon-attack-overlay';
+                    if (_jaFacingFlipped) jaWo.classList.add('sprite-reversed');
                     jaWo.src = jhWF[2] || jhWF[0] || '';
                     jaBody.appendChild(jaWo);
                     jaImg._jaCo = jaCo; jaImg._jaWo = jaWo;
@@ -23070,8 +23076,10 @@
                 img.style.visibility = 'hidden';
                 body.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(el => el.remove());
 
+                const _overlayFacingFlipped = fighterEl.classList.contains('facing-flipped');
                 const charOverlay = document.createElement('img');
                 charOverlay.className = isHeavyWeapon ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
+                if (_overlayFacingFlipped) charOverlay.classList.add('sprite-reversed');
                 charOverlay.src = sequence[0];
                 body.appendChild(charOverlay);
 
@@ -23079,6 +23087,7 @@
                 if (weaponSequence) {
                     weaponOverlay = document.createElement('img');
                     weaponOverlay.className = 'weapon-attack-overlay';
+                    if (_overlayFacingFlipped) weaponOverlay.classList.add('sprite-reversed');
                     weaponOverlay.src = weaponSequence[0];
                     body.appendChild(weaponOverlay);
                 }
