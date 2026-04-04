@@ -22916,6 +22916,9 @@
             img.style.visibility = '';
             img.style.width = '';
             img.style.height = '';
+            // Hide weapon-idle-overlay during run — weapon-run-overlay takes over visually
+            const _runIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+            if (_runIdleOv) { _runIdleOv._suppressEquipFlash = true; _runIdleOv.style.display = 'none'; }
             fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay, .heavy-attack-char-overlay').forEach(el => el.remove());
 
             const weaponFrames = weaponIdForRun ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
@@ -23073,18 +23076,19 @@
 
             img._idleSrc = img._idleSrc || img.src;
             img._attackDone = false;
-            img.style.width  = '';
-            img.style.height = '';
 
             if (useWeaponAttack) {
                 // Weapon attacks: character overlay always shown; weapon overlay only if cached
+                // Hide BEFORE clearing size so we never paint the armed-idle at 200px
+                img.style.visibility = 'hidden';
+                img.style.width  = '';
+                img.style.height = '';
                 const speed = Math.max(20, Math.floor(duration / allFrames.length));
                 const sequence = allFrames.slice();
                 const weaponSequence = weaponFrames ? weaponFrames.slice() : null;
                 let idx = 0;
 
                 const body = fighterEl.querySelector('.fighter-body');
-                img.style.visibility = 'hidden';
                 body.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(el => el.remove());
 
                 const _overlayFacingFlipped = fighterEl.classList.contains('facing-flipped');
@@ -23124,6 +23128,9 @@
                 }, speed);
             } else {
                 // Basic attacks: canvas frame blending via RAF
+                // Clear size here (img stays visible, basic frames are 1024px canvas → 200px)
+                img.style.width  = '';
+                img.style.height = '';
                 _blendAttack(fighterEl, img, allFrames, duration);
             }
         }
