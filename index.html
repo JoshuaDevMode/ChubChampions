@@ -17739,7 +17739,9 @@
                     movEl.style.left  = _movTargetX + 'px';
                     movEl.style.right = 'auto';
                     // Frame rate driven by AGI speed (px/turn), not distance
-                    animateRun(movEl, isBack, null, event.speed);
+                    // Pass equipped weapon so the weapon-run sprite is used when armed
+                    const _movWeaponId = weaponState[event.fighter]?.equippedWeapon || null;
+                    animateRun(movEl, isBack, _movWeaponId, event.speed);
                     await sleep(moveDur);
                     stopRunAnimation(movEl);
                     syncArmedIdle(event.fighter);
@@ -18473,7 +18475,7 @@
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
                 // ── Phase 1: run to arena center (≈280ms) ───────────────────
-                animateRun(attackerEl, false, isJumpHeavy ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 const r0Left    = parseFloat(attackerEl.style.left) || 0;
                 const runTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
                 const runDelta  = runTarget - r0Left;
