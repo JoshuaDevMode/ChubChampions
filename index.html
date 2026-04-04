@@ -22998,6 +22998,17 @@
                 if (reverse) overlay.classList.add('sprite-reversed');
                 else overlay.classList.remove('sprite-reversed');
             }
+            // Flip idle overlay to match run direction (syncArmedIdle only runs at idle restore)
+            const _runIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+            if (_runIdleOv && _runIdleOv.style.display !== 'none') {
+                const _facingFlipped = fighterEl.classList.contains('facing-flipped');
+                const _isCpu = fighterEl.id === 'cpu';
+                const _needsFlipBase = (_isCpu && !_facingFlipped) || (!_isCpu && _facingFlipped);
+                const _needsFlip = reverse ? !_needsFlipBase : _needsFlipBase;
+                _runIdleOv.style.transform = _needsFlip
+                    ? 'translate(-50%,-50%) scaleX(-1)'
+                    : 'translate(-50%,-50%)';
+            }
 
             // Footstep sounds synced to run cycle
             if (img._footstepInterval) clearInterval(img._footstepInterval);
