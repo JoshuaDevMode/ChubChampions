@@ -15048,7 +15048,9 @@
                 avatar:            data.avatar  || '',
                 token:             data.token   || '',
             };
-            localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
+            // Don't persist avatar — CDN URLs (e.g. Twitter) expire and cause 404s on reload
+            const { avatar: _av1, ...sessionToSave1 } = playerSession;
+            localStorage.setItem('chubchampions_session', JSON.stringify(sessionToSave1));
             updatePlayerSessionUI();
             syncStateFromServer();
             initGameWithSession();
@@ -15117,12 +15119,17 @@
                     avatar:            params.get('avatar')  || '',
                     token:             params.get('token')   || '',
                 };
-                localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
+                // Don't persist avatar — CDN URLs expire and cause 404s on reload
+                const { avatar: _av2, ...sessionToSave2 } = playerSession;
+                localStorage.setItem('chubchampions_session', JSON.stringify(sessionToSave2));
                 window.history.replaceState({}, '', window.location.pathname);
             } else {
                 try {
                     const saved = localStorage.getItem('chubchampions_session');
-                    if (saved) playerSession = JSON.parse(saved);
+                    if (saved) {
+                        playerSession = JSON.parse(saved);
+                        playerSession.avatar = ''; // never use cached avatar — CDN URLs expire
+                    }
                 } catch(e) {}
             }
             updatePlayerSessionUI();
