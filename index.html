@@ -18527,6 +18527,21 @@
                     jaImg._jaCo = jaCo; jaImg._jaWo = jaWo;
                 } else if (jaImg) {
                     jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose
+                    // Show weapon overlay during airborne phase (heavy weapons use their own overlays above)
+                    const _jaEquipped = weaponState[attacker]?.equippedWeapon;
+                    const _jaIdleOv   = attackerEl.querySelector('.fighter-body .weapon-idle-overlay');
+                    if (_jaEquipped && _jaIdleOv) {
+                        const _jaPf = _weaponIdlePoseCache[_jaEquipped];
+                        if (_jaPf && _jaPf.length > 0) {
+                            const _jaFF = attackerEl.classList.contains('facing-flipped');
+                            const _jaIsCpu = attackerEl.id === 'cpu';
+                            const _jaNeedsFlip = (_jaIsCpu && !_jaFF) || (!_jaIsCpu && _jaFF);
+                            _jaIdleOv.style.transform = _jaNeedsFlip ? 'translate(-50%,-50%) scaleX(-1)' : 'translate(-50%,-50%)';
+                            _jaIdleOv._suppressEquipFlash = true;
+                            _jaIdleOv.src = _jaPf[0];
+                            _jaIdleOv.style.display = 'block';
+                        }
+                    }
                 }
 
                 // ── Phase 2: jump arc from center to defender position ─────────
@@ -23213,6 +23228,9 @@
                 img.style.height = img._armedIdleW || '';
             }
 
+            // Always re-show weapon overlay on idle restore, even when blink frames are unavailable
+            if (fighterEl.id) syncArmedIdle(fighterEl.id);
+
             const blinkFrames = img._idleBlinkFrames;
             if (!blinkFrames || blinkFrames.length === 0) return;
             // Show idle most of the time, blink occasionally
@@ -23244,8 +23262,6 @@
             img._idleBlinkStopped = false;
             // Start first blink after a random delay to desync fighters
             img._blinkTimeout = setTimeout(doBlink, 300 + Math.random() * 800);
-            // Re-show weapon idle overlay now that we're back in idle
-            if (fighterEl.id) syncArmedIdle(fighterEl.id);
         }
         function stopIdleBlink(fighterEl) {
             const img = fighterEl.querySelector('img');
