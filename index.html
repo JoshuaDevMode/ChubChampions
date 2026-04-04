@@ -15489,6 +15489,7 @@
                         : w.slice(0, 4) + '…' + w.slice(-4);
                 }
                 if (avatarEl && playerSession.avatar) {
+                    avatarEl.onerror = function() { this.style.display = 'none'; };
                     avatarEl.src = playerSession.avatar;
                     avatarEl.style.display = '';
                 }
@@ -23114,6 +23115,9 @@
                         charOverlay.remove();
                         if (weaponOverlay) weaponOverlay.remove();
                         img.style.visibility = '';
+                        // Restore armed-idle display size (was cleared at attack start)
+                        img.style.width  = img._armedIdleW || '';
+                        img.style.height = img._armedIdleW || '';
                     }
                 }, speed);
             } else {
@@ -23253,10 +23257,12 @@
                 const poseFrames = _weaponIdlePoseCache[equippedId];
                 if (poseFrames && poseFrames.length > 0) {
                     const wasHidden = overlay.style.display === 'none';
+                    // Only flash on genuine equip — not when restoring after hideWeaponIdleOverlay
+                    const doFlash = wasHidden && !overlay._suppressEquipFlash;
+                    overlay._suppressEquipFlash = false;
                     overlay.src = poseFrames[0];
                     overlay.style.display = 'block';
-                    // Flash white → normal on equip (only when newly shown)
-                    if (wasHidden) {
+                    if (doFlash) {
                         overlay.classList.remove('weapon-equip-flash');
                         void overlay.offsetWidth; // force reflow to restart animation
                         overlay.classList.add('weapon-equip-flash');
@@ -23288,7 +23294,11 @@
             const el = game[fighter]?.element;
             if (!el) return;
             const overlay = el.querySelector('.fighter-body .weapon-idle-overlay');
-            if (overlay) overlay.style.display = 'none';
+            if (overlay) {
+                // Mark as suppressed so syncArmedIdle skips the equip-flash on restore
+                overlay._suppressEquipFlash = true;
+                overlay.style.display = 'none';
+            }
         }
 
         function showComboHit(count) {
