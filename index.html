@@ -18603,6 +18603,9 @@
             if (defense === 'dodge') {
                 if (defImg && defImg._dodgeFrames && defImg._dodgeFrames.length > 0) {
                     defImg._preDefenseSrc = defImg.src;
+                    // Dodge frames are 1024px canvas — clear armed-idle size so they render at 200px
+                    defImg.style.width  = '';
+                    defImg.style.height = '';
                     defImg.src = defImg._dodgeFrames[0];
                 }
                 if (!jumpDodge) {
@@ -18749,7 +18752,12 @@
                 fighterBody.classList.remove('dodging');
                 if (fighterBody._jumpAnim) { fighterBody._jumpAnim.cancel(); fighterBody._jumpAnim = null; }
                 delete fighterBody.dataset.jumping;
-                if (defImg && defImg._preDefenseSrc) defImg.src = defImg._preDefenseSrc;
+                if (defImg && defImg._preDefenseSrc) {
+                    defImg.src = defImg._preDefenseSrc;
+                    // Restore armed-idle size if the character has a weapon equipped
+                    defImg.style.width  = defImg._armedIdleW || '';
+                    defImg.style.height = defImg._armedIdleW || '';
+                }
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
                 playBlockSound();
@@ -26406,8 +26414,10 @@
                 }
 
                 // Process armed-idle sprite sheet (4 frames, used when a weapon is equipped)
+                // Armed idle is 1408px canvas — skip appearance layers (skin files are 1024px and
+                // would be stretched if composited onto the larger canvas, causing visual distortion)
                 if (img.dataset.armedIdle) {
-                    try { img._armedIdleFrames = await exf(img.dataset.armedIdle, 'idle', 4, 1); } catch(e) { img._armedIdleFrames = []; }
+                    try { img._armedIdleFrames = await extractFrames(img.dataset.armedIdle, 4, 1); } catch(e) { img._armedIdleFrames = []; }
                 }
 
                 // Process idle blink sprite sheet
