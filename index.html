@@ -12337,6 +12337,7 @@
                 defenderImg.style.width  = '';
                 defenderImg.style.height = '';
                 defenderImg._hurtActive  = true;
+                hideWeaponIdleOverlay(defender);
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
                     defenderImg._hurtActive = false;
@@ -12345,6 +12346,7 @@
                         defenderImg.style.width  = defenderImg._armedIdleW || '';
                         defenderImg.style.height = defenderImg._armedIdleW || '';
                     }
+                    syncArmedIdle(defender);
                 }, 400);
             }
         }
@@ -17708,6 +17710,7 @@
                         movImg.style.width  = '';
                         movImg.style.height = '';
                         movImg._hurtActive  = true;
+                        hideWeaponIdleOverlay(event.fighter);
                         movImg.src = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
                     }
                     const bounceDur = Math.max(80, Math.min(280, Math.round(distServer * 0.9)));
@@ -18725,6 +18728,7 @@
                         kdImg.style.width  = '';
                         kdImg.style.height = '';
                         kdImg._hurtActive  = true;
+                        hideWeaponIdleOverlay(defender);
                         kdImg.src = kdImg._hurtFrames[0];
                         const _kdFighter = defender;
                         setTimeout(() => { kdImg._hurtActive = false; if (kdImg._preKdSrc) { kdImg.src = kdImg._preKdSrc; syncArmedIdle(_kdFighter); } }, 600);
