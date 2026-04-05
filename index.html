@@ -23206,9 +23206,9 @@
                 img._currentAnim = null;
             }
 
-            // Clean up any lingering weapon attack overlays (may still be in DOM if interval was
-            // interrupted before its own cleanup ran — e.g. fast combo attacks)
-            fighterEl.querySelectorAll('.weapon-attack-char-overlay, .heavy-attack-char-overlay, .weapon-attack-overlay').forEach(el => el.remove());
+            // Clean up any lingering weapon overlays (attack overlays from interrupted combos,
+            // weapon-run-overlay from jump dodge when damage went through the dodge, etc.)
+            fighterEl.querySelectorAll('.weapon-attack-char-overlay, .heavy-attack-char-overlay, .weapon-attack-overlay, .weapon-run-overlay').forEach(el => el.remove());
             img.style.visibility = '';
 
             // Clear any pending blink timeout
