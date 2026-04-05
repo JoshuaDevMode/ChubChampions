@@ -24257,8 +24257,14 @@
             const _replayImg = game.player.element.querySelector('img');
             if (!_replayImg?._punchFrames || FURY_ORB_FRAMES.length === 0) {
                 showLoadingScreen();
+                updateLoadingProgress(10, 'Loading fighter sprites...');
+                await sleep(50);
                 if (!_replayImg?._punchFrames) await processAllFighterImages();
+                updateLoadingProgress(70, 'Loading effects...');
+                await sleep(50);
                 if (FURY_ORB_FRAMES.length === 0) await processEffectImages();
+                updateLoadingProgress(100, 'Ready!');
+                await sleep(300);
                 hideLoadingScreen();
             }
 
