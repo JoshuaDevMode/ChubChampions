@@ -23265,7 +23265,7 @@
                 if (img._idleBlinkStopped) return;
                 // When armed, blink frames are unarmed — skip to avoid showing wrong pose.
                 // The character won't blink while holding a weapon.
-                const _bIsArmed = !!(fighterEl.id && weaponState[fighterEl.id]?.equippedWeapon && img._armedIdleFrames?.length > 0);
+                const _bIsArmed = !!(fighterEl.id && weaponState[fighterEl.id]?.equippedWeapon);
                 if (_bIsArmed) {
                     if (!img._idleBlinkStopped) img._blinkTimeout = setTimeout(doBlink, 500 + Math.random() * 1500);
                     return;
