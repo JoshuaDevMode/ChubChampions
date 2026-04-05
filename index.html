@@ -18090,13 +18090,13 @@
                             }
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
-                            // Ensure attack frames are cached — may not be loaded if weapon was unlocked after lobby preload
-                            if (!_weaponAttackFramesCache[event.weaponId] || _weaponAttackFramesCache[event.weaponId].length === 0) {
+                            // Ensure attack overlay frames are cached — retry if null (prev load failed)
+                            if (!_weaponAttackFramesCache[event.weaponId]) {
                                 const wData = getWeaponById(event.weaponId);
                                 if (wData?.attackOverlay && wData?.img) {
                                     extractFrames(wData.img.replace('.png', ' Attack.png'), 4, 1)
                                         .then(f => { _weaponAttackFramesCache[event.weaponId] = f; })
-                                        .catch(() => { _weaponAttackFramesCache[event.weaponId] = []; });
+                                        .catch(() => { _weaponAttackFramesCache[event.weaponId] = null; }); // null = retryable
                                 }
                             }
                         }
@@ -23382,15 +23382,15 @@
                             overlay.classList.remove('weapon-equip-flash');
                         }, { once: true });
                     }
-                } else if (_weaponIdlePoseCache[equippedId] === undefined && WEAPON_POSE_MAP[equippedId]) {
-                    // Pose not yet attempted (undefined = never tried) — load on demand then re-sync
-                    // Note: [] means already tried and failed — don't retry endlessly
+                } else if (_weaponIdlePoseCache[equippedId] == null && WEAPON_POSE_MAP[equippedId]) {
+                    // null/undefined = not yet loaded or prev load failed — retry on demand
+                    // [] = weapon intentionally has no idle pose overlay
                     extractFrames(WEAPON_POSE_MAP[equippedId], 1, 1)
                         .then(f => {
                             _weaponIdlePoseCache[equippedId] = f;
                             if (weaponState[fighter]?.equippedWeapon === equippedId) syncArmedIdle(fighter);
                         })
-                        .catch(() => { _weaponIdlePoseCache[equippedId] = []; });
+                        .catch(() => { _weaponIdlePoseCache[equippedId] = null; }); // null = retryable
                     overlay.style.display = 'none';
                 } else {
                     overlay.style.display = 'none';
@@ -26433,24 +26433,22 @@
                 // Skip if already processed (just apply new color for CPU)
                 if (img._originalFrames || img._punchFrames) {
                     if (!isCpu) {
-                        // Player: retry weapon attack frames if they failed to load the first time
-                        // (catch sets them to [], skip path never retries — this fixes the inconsistency)
-                        if (img.dataset.weaponAttack && (!img._weaponAttackFrames || img._weaponAttackFrames.length === 0)) {
-                            try {
-                                const _layers = playerCharacter ? getAppearanceLayers(playerCharacter, 'punch') : [];
-                                img._weaponAttackFrames = _layers.length > 0
-                                    ? await extractFramesWithLayers(img.dataset.weaponAttack, _layers, 4, 1)
-                                    : await extractFrames(img.dataset.weaponAttack, 4, 1);
-                            } catch(e) { img._weaponAttackFrames = []; }
-                        }
-                        if (img.dataset.heavyAttack && (!img._heavyAttackFrames || img._heavyAttackFrames.length === 0)) {
-                            try {
-                                const _layers = playerCharacter ? getAppearanceLayers(playerCharacter, 'punch') : [];
-                                img._heavyAttackFrames = _layers.length > 0
-                                    ? await extractFramesWithLayers(img.dataset.heavyAttack, _layers, 4, 1)
-                                    : await extractFrames(img.dataset.heavyAttack, 4, 1);
-                            } catch(e) { img._heavyAttackFrames = []; }
-                        }
+                        // Player: retry weapon frames if null (prev load failed) or missing.
+                        // null = retryable failure. undefined = asset not configured (skip).
+                        const _pLayers = playerCharacter ? getAppearanceLayers(playerCharacter, 'punch') : [];
+                        const _pExf = (src, c, r) => _pLayers.length > 0
+                            ? extractFramesWithLayers(src, _pLayers, c, r)
+                            : extractFrames(src, c, r);
+                        const [_rAtk, _rHvy] = await Promise.all([
+                            (img.dataset.weaponAttack && !img._weaponAttackFrames?.length)
+                                ? _pExf(img.dataset.weaponAttack, 4, 1).catch(() => null)
+                                : Promise.resolve(img._weaponAttackFrames),
+                            (img.dataset.heavyAttack && !img._heavyAttackFrames?.length)
+                                ? _pExf(img.dataset.heavyAttack, 4, 1).catch(() => null)
+                                : Promise.resolve(img._heavyAttackFrames),
+                        ]);
+                        img._weaponAttackFrames = _rAtk;
+                        img._heavyAttackFrames  = _rHvy;
                     }
                     if (isCpu && img._originalFrames) {
                         // Pick new random color (unless keepCpuHue is true, e.g. battle resume)
@@ -26511,32 +26509,20 @@
                 // Process running sprite sheet
                 img._runFrames = await exf(img.dataset.run, 'run', 5, 2);
 
-                // Process weapon-run sprite sheet (applies outfit layers so armed running
-                // matches the character's skin — same as normal run)
-                if (img.dataset.weaponRun) {
-                    img._weaponRunFrames = await exf(img.dataset.weaponRun, 'run', 5, 2);
-                }
-
-                // Process weapon-attack sprite sheet (outfit layers applied for consistency)
-                if (img.dataset.weaponAttack) {
-                    try {
-                        img._weaponAttackFrames = await exf(img.dataset.weaponAttack, 'punch', 4, 1);
-                    } catch(e) {
-                        img._weaponAttackFrames = [];
-                    }
-                }
-
-                // Process heavy-attack sprite sheet (4 cols x 1 row — used by heavy/slow weapons)
-                if (img.dataset.heavyAttack) {
-                    try {
-                        img._heavyAttackFrames = await exf(img.dataset.heavyAttack, 'punch', 4, 1);
-                    } catch(e) {
-                        img._heavyAttackFrames = [];
-                    }
-                }
+                // Load weapon-related character frames in parallel — null on failure (retryable)
+                // vs [] which means intentionally empty (no asset for this slot).
+                const [_wRun, _wAtk, _wHvy] = await Promise.all([
+                    img.dataset.weaponRun    ? exf(img.dataset.weaponRun,    'run',   5, 2).catch(() => null) : Promise.resolve(null),
+                    img.dataset.weaponAttack ? exf(img.dataset.weaponAttack, 'punch', 4, 1).catch(() => null) : Promise.resolve(null),
+                    img.dataset.heavyAttack  ? exf(img.dataset.heavyAttack,  'punch', 4, 1).catch(() => null) : Promise.resolve(null),
+                ]);
+                if (_wRun)  img._weaponRunFrames    = _wRun;
+                // null = failed (retryable). undefined = asset not configured (skip).
+                img._weaponAttackFrames = _wAtk;
+                img._heavyAttackFrames  = _wHvy;
                 console.log('[processAllFighterImages]', isCpu ? 'CPU' : 'Player',
-                    'weaponAttackFrames:', img._weaponAttackFrames?.length ?? 'undef',
-                    'heavyAttackFrames:', img._heavyAttackFrames?.length ?? 'undef');
+                    'weaponAttackFrames:', img._weaponAttackFrames?.length ?? 'null/undef',
+                    'heavyAttackFrames:', img._heavyAttackFrames?.length ?? 'null/undef');
 
                 // Process hurt sprite sheet (each frame is a different pose, picked randomly)
                 // Hurt.png is 4096x1024 → 4 frames of 1024x1024
@@ -26609,38 +26595,36 @@
                 }
             }
             if (!skipWeapons) {
-                // Preload weapon run sprite sheets for all weapons (base + all tiers)
+                // Collect unique weapon entries across all tiers
                 const allWeaponEntries = [];
                 for (const tier of CHEST_LEVEL_TIERS) {
                     if (WEAPON_TIERS[tier]) {
                         WEAPON_TIERS[tier].forEach(w => {
-                            if (!allWeaponEntries.some(e => e.id === w.id)) {
-                                allWeaponEntries.push(w);
-                            }
+                            if (!allWeaponEntries.some(e => e.id === w.id)) allWeaponEntries.push(w);
                         });
                     }
                 }
-                for (const entry of allWeaponEntries) {
-                    if (!_weaponRunFramesCache[entry.id] && entry.img) {
-                        const runPath = entry.img.replace('.png', ' Run.png');
-                        try { _weaponRunFramesCache[entry.id] = await extractFrames(runPath, 5, 2); }
-                        catch(e) { _weaponRunFramesCache[entry.id] = []; }
+                // Load all weapon overlay sprite sheets in parallel.
+                // null = failed (retryable next battle). [] = weapon has no overlay (intentional).
+                await Promise.all(allWeaponEntries.map(async entry => {
+                    if (!entry.img) return;
+                    // Run overlay
+                    if (!_weaponRunFramesCache[entry.id]) {
+                        _weaponRunFramesCache[entry.id] =
+                            await extractFrames(entry.img.replace('.png', ' Run.png'), 5, 2).catch(() => null);
                     }
+                    // Attack overlay
                     if (!_weaponAttackFramesCache[entry.id]) {
-                        if (entry.attackOverlay && entry.img) {
-                            const attackPath = entry.img.replace('.png', ' Attack.png');
-                            try { _weaponAttackFramesCache[entry.id] = await extractFrames(attackPath, 4, 1); }
-                            catch(e) { _weaponAttackFramesCache[entry.id] = []; }
-                        } else {
-                            _weaponAttackFramesCache[entry.id] = [];
-                        }
+                        _weaponAttackFramesCache[entry.id] = entry.attackOverlay
+                            ? await extractFrames(entry.img.replace('.png', ' Attack.png'), 4, 1).catch(() => null)
+                            : []; // intentionally no attack overlay for this weapon
                     }
-                    // Preload idle weapon pose overlay
+                    // Idle pose overlay
                     if (!_weaponIdlePoseCache[entry.id] && WEAPON_POSE_MAP[entry.id]) {
-                        try { _weaponIdlePoseCache[entry.id] = await extractFrames(WEAPON_POSE_MAP[entry.id], 1, 1); }
-                        catch(e) { _weaponIdlePoseCache[entry.id] = []; }
+                        _weaponIdlePoseCache[entry.id] =
+                            await extractFrames(WEAPON_POSE_MAP[entry.id], 1, 1).catch(() => null);
                     }
-                }
+                }));
             }
             console.log('Fighter sprite sheets processed (skipWeapons=' + skipWeapons + '). Active blob URLs: ' + _activeBlobURLs.size);
         }
