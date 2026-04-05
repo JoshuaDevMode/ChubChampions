@@ -22939,6 +22939,9 @@
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
+            // If no explicit weapon id passed, check if fighter is armed and use that weapon
+            const _armedWepId = weaponIdForRun ?? (fighterEl.id ? (weaponState[fighterEl.id]?.equippedWeapon ?? null) : null);
+
             img._idleSrc = img._idleSrc || img.src;
             if (img._currentAnim) { clearInterval(img._currentAnim); img._currentAnim = null; }
             // Cancel blend attack RAF and remove canvas before restoring img visibility
@@ -22960,8 +22963,8 @@
                 const _existingRunOv = fighterEl.querySelector('.weapon-run-overlay');
                 if (_existingRunOv) _existingRunOv.remove();
                 // Re-show weapon-idle-overlay if it was hidden (attack run) — it always aligns correctly
-                if (_idleOvHidden && weaponIdForRun && _idleOv) {
-                    const _pf = _weaponIdlePoseCache[weaponIdForRun];
+                if (_idleOvHidden && _armedWepId && _idleOv) {
+                    const _pf = _weaponIdlePoseCache[_armedWepId];
                     if (_pf && _pf.length > 0) {
                         _idleOv._suppressEquipFlash = true;
                         _idleOv.src = _pf[0];
@@ -22969,8 +22972,8 @@
                     }
                 }
             }
-            const weaponFrames = (weaponIdForRun && _idleOvHidden && !reverse) ? (_weaponRunFramesCache[weaponIdForRun] || []) : [];
-            const hasWeaponRun = weaponIdForRun && img._weaponRunFrames && img._weaponRunFrames.length > 0;
+            const weaponFrames = (_armedWepId && _idleOvHidden && !reverse) ? (_weaponRunFramesCache[_armedWepId] || []) : [];
+            const hasWeaponRun = _armedWepId && img._weaponRunFrames && img._weaponRunFrames.length > 0;
 
             // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn):
             //   speed  62 (AGI~15)  → ~293ms frames / ~214ms steps  (slow, lumbering)
@@ -22990,7 +22993,7 @@
                 if (!overlay) {
                     overlay = document.createElement('img');
                     overlay.className = 'weapon-run-overlay';
-                    if (['tier_spear', 'tier_gun'].includes(weaponIdForRun)) overlay.classList.add('behind');
+                    if (['tier_spear', 'tier_gun'].includes(_armedWepId)) overlay.classList.add('behind');
                     fighterEl.querySelector('.fighter-body').appendChild(overlay);
                 }
                 if (weaponFrames.length > 0) overlay.src = weaponFrames[0];
@@ -23228,6 +23231,9 @@
             }
 
             // Always re-show weapon overlay on idle restore, even when blink frames are unavailable
+            // Clear animation-hide flag so syncArmedIdle can restore the overlay
+            const _sibIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+            if (_sibIdleOv) _sibIdleOv._hiddenByAnimation = false;
             if (fighterEl.id) syncArmedIdle(fighterEl.id);
 
             const blinkFrames = img._idleBlinkFrames;
@@ -23252,6 +23258,7 @@
                         // Restore armed-idle size when returning to idle
                         img.style.width  = img._armedIdleW || '';
                         img.style.height = img._armedIdleW || '';
+                        if (fighterEl.id) syncArmedIdle(fighterEl.id);
                         if (!img._idleBlinkStopped) {
                             img._blinkTimeout = setTimeout(doBlink, 500 + Math.random() * 1500);
                         }
@@ -23324,17 +23331,19 @@
                 : 'translate(-50%,-50%)';
             if (isArmed) {
                 const poseFrames = _weaponIdlePoseCache[equippedId];
-                // Don't show overlay while an attack/run animation is active — avoids race where
-                // a deferred syncArmedIdle (e.g. showHitEffect timeout) fires mid-attack on the
-                // same fighter after they switched from defender to attacker.
-                const _syncNotAnimating = !img._currentAnim && !img._blendRaf && !img._hurtActive;
+                // _hiddenByAnimation flag prevents showing overlay while an attack/run animation
+                // is active — avoids race where a deferred syncArmedIdle (e.g. showHitEffect timeout)
+                // fires mid-attack on the same fighter after they switched from defender to attacker.
+                // The flag is set by hideWeaponIdleOverlay and cleared by startIdleBlink.
                 if (poseFrames && poseFrames.length > 0) {
                     const wasHidden = overlay.style.display === 'none';
                     // Only flash on genuine equip — not when restoring after hideWeaponIdleOverlay
-                    const doFlash = wasHidden && !overlay._suppressEquipFlash && _syncNotAnimating;
+                    const doFlash = wasHidden && !overlay._suppressEquipFlash && !overlay._hiddenByAnimation;
                     overlay._suppressEquipFlash = false;
                     overlay.src = poseFrames[0];
-                    if (_syncNotAnimating) overlay.style.display = 'block';
+                    if (!overlay._hiddenByAnimation) {
+                        overlay.style.display = 'block';
+                    }
                     if (doFlash) {
                         overlay.classList.remove('weapon-equip-flash');
                         void overlay.offsetWidth; // force reflow to restart animation
@@ -23370,6 +23379,7 @@
             if (overlay) {
                 // Mark as suppressed so syncArmedIdle skips the equip-flash on restore
                 overlay._suppressEquipFlash = true;
+                overlay._hiddenByAnimation = true;
                 overlay.style.display = 'none';
             }
         }
