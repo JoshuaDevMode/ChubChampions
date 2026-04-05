@@ -1055,16 +1055,21 @@
             font-weight: bold;
         }
 
-        /* Weapon Inventory Bar - Below HUD */
-        .weapon-bar {
-            position: absolute;
-            top: 130px;
-            left: 0;
-            right: 0;
+        /* Weapon + Consumable slots embedded inside each HUD panel */
+        .hud-slots {
             display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-            z-index: 9;
+            align-items: center;
+            gap: 4px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+        .hud-slots-right {
+            justify-content: flex-end;
+        }
+
+        /* Weapon Inventory Bar - kept for legacy references but no longer rendered */
+        .weapon-bar {
+            display: none;
         }
 
         .weapon-inventory {
@@ -1074,6 +1079,11 @@
             padding: 6px 10px;
             border-radius: 8px;
             border: none;
+        }
+        .hud-slots .weapon-inventory,
+        .hud-slots .consumable-slots {
+            padding: 2px 0;
+            gap: 5px;
         }
 
         .weapon-slot {
@@ -1108,16 +1118,9 @@
             box-shadow: none;
         }
 
-        /* Consumable slots in arena */
+        /* Consumable slots in arena — no longer a standalone bar */
         .consumable-bar {
-            position: absolute;
-            top: 190px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-            z-index: 9;
+            display: none;
         }
 
         .consumable-slots {
@@ -11800,6 +11803,10 @@
                     <span>STR: <span id="player-str-display">35</span></span>
                     <span>AGI: <span id="player-agi-display">35</span></span>
                 </div>
+                <div class="hud-slots">
+                    <div class="weapon-inventory" id="player-weapons"></div>
+                    <div class="consumable-slots" id="player-consumables"></div>
+                </div>
             </div>
 
             <div class="hud-center">
@@ -11828,15 +11835,11 @@
                     <span id="cpu-hud-powers"></span>
                     <span id="cpu-element-badge"></span>
                 </div>
+                <div class="hud-slots hud-slots-right">
+                    <div class="consumable-slots" id="cpu-consumables"></div>
+                    <div class="weapon-inventory" id="cpu-weapons"></div>
+                </div>
             </div>
-        </div>
-        <div class="weapon-bar">
-            <div class="weapon-inventory" id="player-weapons"></div>
-            <div class="weapon-inventory" id="cpu-weapons"></div>
-        </div>
-        <div class="consumable-bar">
-            <div class="consumable-slots" id="player-consumables"></div>
-            <div class="consumable-slots" id="cpu-consumables"></div>
         </div>
             <!-- Equipment Display -->
             <div class="combat-equipment" id="combat-equipment">
