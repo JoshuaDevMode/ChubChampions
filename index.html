@@ -18621,7 +18621,21 @@
                     defImg.style.height = '';
                     defImg.src = defImg._dodgeFrames[0];
                 }
-                if (!jumpDodge) {
+                if (jumpDodge) {
+                    // Jump dodge: keep weapon visible — re-show the weapon-run-overlay using the weapon's run frame
+                    const _jdEquipped = weaponState[defender]?.equippedWeapon;
+                    if (_jdEquipped) {
+                        const _jdWF = _weaponRunFramesCache[_jdEquipped];
+                        if (_jdWF && _jdWF.length > 0) {
+                            const _jdBody = defenderEl.querySelector('.fighter-body');
+                            const _jdWOv = document.createElement('img');
+                            _jdWOv.className = 'weapon-run-overlay';
+                            if (['tier_spear', 'tier_gun'].includes(_jdEquipped)) _jdWOv.classList.add('behind');
+                            _jdWOv.src = _jdWF[0];
+                            _jdBody.appendChild(_jdWOv);
+                        }
+                    }
+                } else {
                     fighterBody.classList.add('dodging');
                 }
                 await sleep(150);
@@ -18769,6 +18783,8 @@
                 fighterBody.classList.remove('dodging');
                 if (fighterBody._jumpAnim) { fighterBody._jumpAnim.cancel(); fighterBody._jumpAnim = null; }
                 delete fighterBody.dataset.jumping;
+                // Remove jump-dodge weapon overlay (syncArmedIdle via startIdleBlink will restore correctly)
+                defenderEl.querySelector('.weapon-run-overlay')?.remove();
                 if (defImg && defImg._preDefenseSrc) {
                     defImg.src = defImg._preDefenseSrc;
                     // Restore armed-idle size if the character has a weapon equipped
