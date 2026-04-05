@@ -18614,28 +18614,25 @@
             const fighterBody = defenderEl.querySelector('.fighter-body');
 
             if (defense === 'dodge') {
-                if (defImg && defImg._dodgeFrames && defImg._dodgeFrames.length > 0) {
-                    defImg._preDefenseSrc = defImg.src;
-                    // Dodge frames are 1024px canvas — clear armed-idle size so they render at 200px
-                    defImg.style.width  = '';
-                    defImg.style.height = '';
+                defImg._preDefenseSrc = defImg.src;
+                // Dodge frames are 1024px canvas — clear armed-idle size so they render at 200px
+                defImg.style.width  = '';
+                defImg.style.height = '';
+                const _jdEquipped = jumpDodge ? weaponState[defender]?.equippedWeapon : null;
+                const _jdWRunF    = _jdEquipped ? _weaponRunFramesCache[_jdEquipped] : null;
+                if (jumpDodge && _jdEquipped && defImg._weaponRunFrames?.length > 0 && _jdWRunF?.length > 0) {
+                    // Jump dodge with weapon: show weapon-run frame (char + weapon, same index)
+                    const _jdIdx = Math.min(2, defImg._weaponRunFrames.length - 1);
+                    defImg.src = defImg._weaponRunFrames[_jdIdx];
+                    const _jdWOv = document.createElement('img');
+                    _jdWOv.className = 'weapon-run-overlay';
+                    if (['tier_spear', 'tier_gun'].includes(_jdEquipped)) _jdWOv.classList.add('behind');
+                    _jdWOv.src = _jdWRunF[Math.min(_jdIdx, _jdWRunF.length - 1)];
+                    defenderEl.querySelector('.fighter-body').appendChild(_jdWOv);
+                } else if (defImg._dodgeFrames?.length > 0) {
                     defImg.src = defImg._dodgeFrames[0];
                 }
-                if (jumpDodge) {
-                    // Jump dodge: keep weapon visible — re-show the weapon-run-overlay using the weapon's run frame
-                    const _jdEquipped = weaponState[defender]?.equippedWeapon;
-                    if (_jdEquipped) {
-                        const _jdWF = _weaponRunFramesCache[_jdEquipped];
-                        if (_jdWF && _jdWF.length > 0) {
-                            const _jdBody = defenderEl.querySelector('.fighter-body');
-                            const _jdWOv = document.createElement('img');
-                            _jdWOv.className = 'weapon-run-overlay';
-                            if (['tier_spear', 'tier_gun'].includes(_jdEquipped)) _jdWOv.classList.add('behind');
-                            _jdWOv.src = _jdWF[0];
-                            _jdBody.appendChild(_jdWOv);
-                        }
-                    }
-                } else {
+                if (!jumpDodge) {
                     fighterBody.classList.add('dodging');
                 }
                 await sleep(150);
