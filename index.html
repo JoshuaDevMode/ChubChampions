@@ -18526,23 +18526,7 @@
                     jaBody.appendChild(jaWo);
                     jaImg._jaCo = jaCo; jaImg._jaWo = jaWo;
                 } else if (jaImg) {
-                    // Airborne pose: prefer weapon-run frame so the weapon stays visible mid-arc
-                    const _jaAirFrame = (isWeaponAnim && jaImg._weaponRunFrames?.length > 0)
-                        ? jaImg._weaponRunFrames[Math.min(8, jaImg._weaponRunFrames.length - 1)]
-                        : (jaImg._runFrames?.[Math.min(8, (jaImg._runFrames?.length ?? 1) - 1)] || jaImg.src);
-                    jaImg.src = _jaAirFrame;
-                    // Weapon is a separate overlay — re-create weapon-run-overlay for the arc
-                    if (isWeaponAnim) {
-                        const _jaWF = _weaponRunFramesCache[attackType];
-                        if (_jaWF && _jaWF.length > 0) {
-                            const _jaBody = attackerEl.querySelector('.fighter-body');
-                            const _jaWOv = document.createElement('img');
-                            _jaWOv.className = 'weapon-run-overlay';
-                            if (['tier_spear', 'tier_gun'].includes(attackType)) _jaWOv.classList.add('behind');
-                            _jaWOv.src = _jaWF[Math.min(8, _jaWF.length - 1)];
-                            _jaBody.appendChild(_jaWOv);
-                        }
-                    }
+                    jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose (weapon already in sprite)
                 }
 
                 // ── Phase 2: jump arc from center to defender position ─────────
