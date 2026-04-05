@@ -22964,8 +22964,7 @@
             const _idleOvHidden = !_idleOv || _idleOv.style.display === 'none';
             if (reverse) {
                 // Return run: remove any weapon-run-overlay left from the approach
-                const _existingRunOv = fighterEl.querySelector('.weapon-run-overlay');
-                if (_existingRunOv) _existingRunOv.remove();
+                fighterEl.querySelector('.weapon-run-overlay')?.remove();
                 // Re-show weapon-idle-overlay if it was hidden (attack run) — it always aligns correctly
                 if (_idleOvHidden && _armedWepId && _idleOv) {
                     const _pf = _weaponIdlePoseCache[_armedWepId];
@@ -22976,8 +22975,14 @@
                     }
                 }
             }
-            const weaponFrames = (_armedWepId && _idleOvHidden && !reverse) ? (_weaponRunFramesCache[_armedWepId] || []) : [];
             const hasWeaponRun = _armedWepId && img._weaponRunFrames && img._weaponRunFrames.length > 0;
+            // Weapon overlay frames — only used on forward runs; remove idle overlay first so it doesn't double
+            const weaponFrames = (hasWeaponRun && !reverse) ? (_weaponRunFramesCache[_armedWepId] || []) : [];
+            if (hasWeaponRun && !reverse && _idleOv && !_idleOvHidden) {
+                // Hide idle overlay for forward weapon run (run overlay takes over)
+                _idleOv.style.display = 'none';
+                _idleOv._hiddenByAnimation = true;
+            }
 
             // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn):
             //   speed  62 (AGI~15)  → ~293ms frames / ~214ms steps  (slow, lumbering)
@@ -22993,19 +22998,33 @@
                 let frame = 0;
                 img.src = charFrames[0];
 
-                let overlay = fighterEl.querySelector('.weapon-run-overlay');
-                if (!overlay) {
-                    overlay = document.createElement('img');
-                    overlay.className = 'weapon-run-overlay';
-                    if (['tier_spear', 'tier_gun'].includes(_armedWepId)) overlay.classList.add('behind');
-                    fighterEl.querySelector('.fighter-body').appendChild(overlay);
+                // Only create weapon-run-overlay when we have weapon frames to put in it.
+                // An overlay with no src renders as an empty rectangle with drop-shadow — avoid.
+                let overlay = null;
+                if (weaponFrames.length > 0) {
+                    overlay = fighterEl.querySelector('.weapon-run-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('img');
+                        overlay.className = 'weapon-run-overlay';
+                        if (['tier_spear', 'tier_gun'].includes(_armedWepId)) overlay.classList.add('behind');
+                        fighterEl.querySelector('.fighter-body').appendChild(overlay);
+                    }
+                    overlay.src = weaponFrames[0];
+                } else {
+                    // No weapon run frames — remove any stale overlay
+                    fighterEl.querySelector('.weapon-run-overlay')?.remove();
                 }
-                if (weaponFrames.length > 0) overlay.src = weaponFrames[0];
+
+                // Both character and weapon advance at the same index — use the shorter length
+                // so they never drift out of sync when frame counts differ.
+                const _cycleLen = overlay
+                    ? Math.min(charFrames.length, weaponFrames.length)
+                    : charFrames.length;
 
                 img._currentAnim = setInterval(function() {
-                    frame = (frame + 1) % charFrames.length;
+                    frame = (frame + 1) % _cycleLen;
                     img.src = charFrames[frame];
-                    if (weaponFrames.length > 0) overlay.src = weaponFrames[frame % weaponFrames.length];
+                    if (overlay) overlay.src = weaponFrames[frame];
                 }, _frameMs);
             } else {
                 // Normal run (no weapon)
@@ -23245,6 +23264,13 @@
             // Show idle most of the time, blink occasionally
             function doBlink() {
                 if (img._idleBlinkStopped) return;
+                // When armed, blink frames are unarmed — skip to avoid showing wrong pose.
+                // The character won't blink while holding a weapon.
+                const _bIsArmed = !!(fighterEl.id && weaponState[fighterEl.id]?.equippedWeapon && img._armedIdleFrames?.length > 0);
+                if (_bIsArmed) {
+                    if (!img._idleBlinkStopped) img._blinkTimeout = setTimeout(doBlink, 500 + Math.random() * 1500);
+                    return;
+                }
                 let frame = 0;
                 // Blink frames are 1024px canvas — clear armed-idle size compensation
                 img.style.width  = '';
