@@ -26432,6 +26432,26 @@
 
                 // Skip if already processed (just apply new color for CPU)
                 if (img._originalFrames || img._punchFrames) {
+                    if (!isCpu) {
+                        // Player: retry weapon attack frames if they failed to load the first time
+                        // (catch sets them to [], skip path never retries — this fixes the inconsistency)
+                        if (img.dataset.weaponAttack && (!img._weaponAttackFrames || img._weaponAttackFrames.length === 0)) {
+                            try {
+                                const _layers = playerCharacter ? getAppearanceLayers(playerCharacter, 'punch') : [];
+                                img._weaponAttackFrames = _layers.length > 0
+                                    ? await extractFramesWithLayers(img.dataset.weaponAttack, _layers, 4, 1)
+                                    : await extractFrames(img.dataset.weaponAttack, 4, 1);
+                            } catch(e) { img._weaponAttackFrames = []; }
+                        }
+                        if (img.dataset.heavyAttack && (!img._heavyAttackFrames || img._heavyAttackFrames.length === 0)) {
+                            try {
+                                const _layers = playerCharacter ? getAppearanceLayers(playerCharacter, 'punch') : [];
+                                img._heavyAttackFrames = _layers.length > 0
+                                    ? await extractFramesWithLayers(img.dataset.heavyAttack, _layers, 4, 1)
+                                    : await extractFrames(img.dataset.heavyAttack, 4, 1);
+                            } catch(e) { img._heavyAttackFrames = []; }
+                        }
+                    }
                     if (isCpu && img._originalFrames) {
                         // Pick new random color (unless keepCpuHue is true, e.g. battle resume)
                         if (!keepCpuHue) {
