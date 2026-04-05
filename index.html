@@ -12340,8 +12340,11 @@
             const hurtFrames = defenderImg._hurtFrames;
             if (hurtFrames && hurtFrames.length > 0) {
                 const randomHurt = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
-                defenderImg.style.width  = '';
-                defenderImg.style.height = '';
+                // Keep the current size — clearing it would cause a zoom flash when the
+                // fighter holds a heavy weapon (armed-idle canvas is 1408px = 275px display,
+                // hurt sheet is 1024px = 200px natural; reset → visible shrink/zoom glitch).
+                defenderImg.style.width  = defenderImg._armedIdleW || '';
+                defenderImg.style.height = defenderImg._armedIdleW || '';
                 defenderImg._hurtActive  = true;
                 hideWeaponIdleOverlay(defender);
                 defenderImg.src = randomHurt;
@@ -17713,8 +17716,8 @@
                     const movImg     = movEl.querySelector('img.character-png');
                     const hurtFrames = movImg?._hurtFrames;
                     if (hurtFrames?.length) {
-                        movImg.style.width  = '';
-                        movImg.style.height = '';
+                        movImg.style.width  = movImg._armedIdleW || '';
+                        movImg.style.height = movImg._armedIdleW || '';
                         movImg._hurtActive  = true;
                         hideWeaponIdleOverlay(event.fighter);
                         movImg.src = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
@@ -18757,8 +18760,8 @@
                     const kdImg = kdEl?.querySelector('img.character-png');
                     if (kdImg && kdImg._hurtFrames?.length > 0) {
                         kdImg._preKdSrc = kdImg.src;
-                        kdImg.style.width  = '';
-                        kdImg.style.height = '';
+                        kdImg.style.width  = kdImg._armedIdleW || '';
+                        kdImg.style.height = kdImg._armedIdleW || '';
                         kdImg._hurtActive  = true;
                         hideWeaponIdleOverlay(defender);
                         kdImg.src = kdImg._hurtFrames[0];
@@ -21840,8 +21843,8 @@
                                 // Set hurt frame directly — do NOT use showHitEffect (it auto-resets the frame)
                                 // Frame stays until character stands back up
                                 if (tImgSp && tImgSp._hurtFrames && tImgSp._hurtFrames.length > 0) {
-                                    tImgSp.style.width  = '';
-                                    tImgSp.style.height = '';
+                                    tImgSp.style.width  = tImgSp._armedIdleW || '';
+                                    tImgSp.style.height = tImgSp._armedIdleW || '';
                                     tImgSp._hurtActive  = true;
                                     tImgSp.src = tImgSp._hurtFrames[Math.floor(Math.random() * tImgSp._hurtFrames.length)];
                                 }
@@ -22067,8 +22070,8 @@
                                 const tImg = tEl && tEl.querySelector('img');
                                 if (tImg) {
                                     if (tImg._hurtFrames && tImg._hurtFrames.length > 0) {
-                                        tImg.style.width  = '';
-                                        tImg.style.height = '';
+                                        tImg.style.width  = tImg._armedIdleW || '';
+                                        tImg.style.height = tImg._armedIdleW || '';
                                         tImg._hurtActive  = true;
                                         tImg.src = tImg._hurtFrames[Math.floor(Math.random() * tImg._hurtFrames.length)];
                                     }
