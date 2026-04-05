@@ -6287,7 +6287,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            cursor: grab;
         }
+        .skills-map-col:active { cursor: grabbing; }
         .skills-map-col::-webkit-scrollbar { width: 4px; }
         .skills-map-col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
@@ -30002,6 +30004,41 @@
         document.getElementById('skills-branch-content').addEventListener('click', () => {
             // Popups are handled per-node; this catches backdrop clicks
         });
+
+        // ── Skill map drag-to-pan ────────────────────────────────────────────────
+        // Click+drag on the background pans the map; clicking skill nodes is unaffected.
+        {
+            const mapEl = document.getElementById('skills-branch-content');
+            let _stDragging = false;
+            let _stStartX = 0, _stStartY = 0;
+            let _stScrollX = 0, _stScrollY = 0;
+
+            mapEl.addEventListener('mousedown', e => {
+                // Only pan when the click lands on the background (not a skill node or its children)
+                if (e.target.closest('.skill-node')) return;
+                _stDragging = true;
+                _stStartX  = e.clientX;
+                _stStartY  = e.clientY;
+                _stScrollX = mapEl.scrollLeft;
+                _stScrollY = mapEl.scrollTop;
+                mapEl.style.cursor = 'grabbing';
+                mapEl.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', e => {
+                if (!_stDragging) return;
+                mapEl.scrollLeft = _stScrollX - (e.clientX - _stStartX);
+                mapEl.scrollTop  = _stScrollY - (e.clientY - _stStartY);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!_stDragging) return;
+                _stDragging = false;
+                mapEl.style.cursor = '';
+                mapEl.style.userSelect = '';
+            });
+        }
 
         // Skills panel open/close
         document.getElementById('menu-skills-btn').addEventListener('click', () => {
