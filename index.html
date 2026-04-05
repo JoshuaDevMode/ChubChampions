@@ -18402,9 +18402,10 @@
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
 
-            // Hide weapon idle overlays during attack animation
+            // Hide attacker's weapon overlay (replaced by weapon-run/attack overlays during animation).
+            // Defender's overlay stays visible during approach — it's hidden per-reaction:
+            // showHitEffect → hideWeaponIdleOverlay on hit, knockdown handler on knockdown.
             hideWeaponIdleOverlay(attacker);
-            hideWeaponIdleOverlay(defender);
 
             // Midpoint position: ~44% from the attacker's side
             const midPos = '44%';
