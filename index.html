@@ -23324,13 +23324,17 @@
                 : 'translate(-50%,-50%)';
             if (isArmed) {
                 const poseFrames = _weaponIdlePoseCache[equippedId];
+                // Don't show overlay while an attack/run animation is active — avoids race where
+                // a deferred syncArmedIdle (e.g. showHitEffect timeout) fires mid-attack on the
+                // same fighter after they switched from defender to attacker.
+                const _syncNotAnimating = !img._currentAnim && !img._blendRaf && !img._hurtActive;
                 if (poseFrames && poseFrames.length > 0) {
                     const wasHidden = overlay.style.display === 'none';
                     // Only flash on genuine equip — not when restoring after hideWeaponIdleOverlay
-                    const doFlash = wasHidden && !overlay._suppressEquipFlash;
+                    const doFlash = wasHidden && !overlay._suppressEquipFlash && _syncNotAnimating;
                     overlay._suppressEquipFlash = false;
                     overlay.src = poseFrames[0];
-                    overlay.style.display = 'block';
+                    if (_syncNotAnimating) overlay.style.display = 'block';
                     if (doFlash) {
                         overlay.classList.remove('weapon-equip-flash');
                         void overlay.offsetWidth; // force reflow to restart animation
