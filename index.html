@@ -1055,15 +1055,15 @@
             font-weight: bold;
         }
 
-        /* Weapon Inventory Bar - bottom-left / bottom-right of arena */
+        /* Weapon Inventory Bar - just below HUD, clear of right-side buttons */
         .weapon-bar {
             position: absolute;
-            bottom: 60px;
+            top: 140px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 0 10px 0 10px;
+            padding: 0 85px 0 10px;
             z-index: 9;
             pointer-events: none;
         }
@@ -5208,14 +5208,14 @@
         }
         .aon-tab {
             flex: 1;
-            padding: 10px 6px;
+            padding: 6px 4px;
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
             margin-bottom: -2px;
             color: #554433;
             font-family: inherit;
-            font-size: 0.82em;
+            font-size: 0.72em;
             font-weight: bold;
             letter-spacing: 1px;
             cursor: pointer;
@@ -18489,11 +18489,25 @@
                 const defCx     = (defHomeX + jaGapSign * _ATCK_GAP) * jaScale + (attackerEl.offsetWidth / 2);
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
-                // ── Phase 1: run to arena center (≈280ms) ───────────────────
+                // ── Phase 0: snap back to home corner for running start ──────
+                // Jump attack needs distance to build momentum — always start from _homeX.
+                const jaHomeLeftPx = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * jaScale;
+                attackerEl.style.setProperty('transition', 'none', 'important');
+                attackerEl.style.left  = jaHomeLeftPx + 'px';
+                attackerEl.style.right = 'auto';
+                void attackerEl.offsetWidth; // force reflow before run starts
+
+                // ── Phase 1: run from home corner to arena center (≈280ms) ─────
+                // Cap runTarget so the arc always travels FORWARD — never overshoot
+                // past the landing point (which would produce a backwards-in-air arc).
+                // defCx is the attacker's center at landing; keep run stop at least
+                // one fighter-width behind it so deltaX in Phase 2 is always positive.
+                const jaRunCenterTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
+                const jaRunMaxTarget    = defCx - attackerEl.offsetWidth * 1.5; // stay behind landing
+                const runTarget = Math.min(jaRunCenterTarget, Math.max(jaHomeLeftPx, jaRunMaxTarget));
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
-                const r0Left    = parseFloat(attackerEl.style.left) || 0;
-                const runTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
-                const runDelta  = runTarget - r0Left;
+                const r0Left   = jaHomeLeftPx;
+                const runDelta = runTarget - r0Left;
 
                 await new Promise(res => {
                     const r0 = performance.now();
