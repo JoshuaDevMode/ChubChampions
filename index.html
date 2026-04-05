@@ -18525,11 +18525,7 @@
                     jaBody.appendChild(jaWo);
                     jaImg._jaCo = jaCo; jaImg._jaWo = jaWo;
                 } else if (jaImg) {
-                    // Airborne pose: prefer weapon-run frame so the weapon stays visible mid-arc
-                    const _jaAirFrame = (isWeaponAnim && jaImg._weaponRunFrames?.length > 0)
-                        ? jaImg._weaponRunFrames[Math.min(8, jaImg._weaponRunFrames.length - 1)]
-                        : (jaImg._runFrames?.[Math.min(8, (jaImg._runFrames?.length ?? 1) - 1)] || jaImg.src);
-                    jaImg.src = _jaAirFrame;
+                    jaImg.src = jaImg._runFrames?.[8] || jaImg.src; // airborne pose (weapon already in sprite)
                 }
 
                 // ── Phase 2: jump arc from center to defender position ─────────
