@@ -12340,20 +12340,23 @@
             const hurtFrames = defenderImg._hurtFrames;
             if (hurtFrames && hurtFrames.length > 0) {
                 const randomHurt = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
-                // Keep the current size — clearing it would cause a zoom flash when the
-                // fighter holds a heavy weapon (armed-idle canvas is 1408px = 275px display,
-                // hurt sheet is 1024px = 200px natural; reset → visible shrink/zoom glitch).
-                defenderImg.style.width  = defenderImg._armedIdleW || '';
-                defenderImg.style.height = defenderImg._armedIdleW || '';
+                // Hurt sheet is 1024px canvas — always show at natural size ('').
+                // On restore we hide for one rAF so the size change to armed-idle (275px)
+                // is invisible instead of flashing as a zoom.
+                defenderImg.style.width  = '';
+                defenderImg.style.height = '';
                 defenderImg._hurtActive  = true;
                 hideWeaponIdleOverlay(defender);
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
                     defenderImg._hurtActive = false;
                     if (game[defender].health > 0 && defenderImg._idleSrc) {
+                        const targetW = defenderImg._armedIdleW || '';
+                        defenderImg.style.visibility = 'hidden';
                         defenderImg.src = defenderImg._idleSrc;
-                        defenderImg.style.width  = defenderImg._armedIdleW || '';
-                        defenderImg.style.height = defenderImg._armedIdleW || '';
+                        defenderImg.style.width  = targetW;
+                        defenderImg.style.height = targetW;
+                        requestAnimationFrame(() => { defenderImg.style.visibility = ''; });
                     }
                     syncArmedIdle(defender);
                 }, 400);
@@ -17665,13 +17668,15 @@
             const onLeft = _playerIsOnLeft();
             game.player.element.classList.toggle('facing-flipped', !onLeft);
             game.cpu.element.classList.toggle('facing-flipped', !onLeft);
-            // Clear leftover inline transforms on character sprites so the
-            // CSS facing-flipped class is not overridden by higher-specificity
-            // inline styles left behind by attack/jump animations.
+            // Clear leftover inline transforms AND transitions on character sprites so the
+            // CSS facing-flipped class is not overridden by higher-specificity inline styles
+            // left behind by attack/jump animations — and so the scaleX flip is instant
+            // (a leftover 'transform 0.08s' transition would animate through scaleX(0),
+            // producing the "paper flip" thin-image effect).
             const pImg = game.player.element.querySelector('img.character-png');
             const cImg = game.cpu.element.querySelector('img.character-png');
-            if (pImg) pImg.style.transform = '';
-            if (cImg) cImg.style.transform = '';
+            if (pImg) { pImg.style.transform = ''; pImg.style.transition = ''; }
+            if (cImg) { cImg.style.transform = ''; cImg.style.transition = ''; }
             // Re-sync weapon idle overlay transform to match the new facing direction
             syncArmedIdle('player');
             syncArmedIdle('cpu');
@@ -17716,8 +17721,8 @@
                     const movImg     = movEl.querySelector('img.character-png');
                     const hurtFrames = movImg?._hurtFrames;
                     if (hurtFrames?.length) {
-                        movImg.style.width  = movImg._armedIdleW || '';
-                        movImg.style.height = movImg._armedIdleW || '';
+                        movImg.style.width  = '';
+                        movImg.style.height = '';
                         movImg._hurtActive  = true;
                         hideWeaponIdleOverlay(event.fighter);
                         movImg.src = hurtFrames[Math.floor(Math.random() * hurtFrames.length)];
@@ -18760,8 +18765,8 @@
                     const kdImg = kdEl?.querySelector('img.character-png');
                     if (kdImg && kdImg._hurtFrames?.length > 0) {
                         kdImg._preKdSrc = kdImg.src;
-                        kdImg.style.width  = kdImg._armedIdleW || '';
-                        kdImg.style.height = kdImg._armedIdleW || '';
+                        kdImg.style.width  = '';
+                        kdImg.style.height = '';
                         kdImg._hurtActive  = true;
                         hideWeaponIdleOverlay(defender);
                         kdImg.src = kdImg._hurtFrames[0];
@@ -21843,8 +21848,8 @@
                                 // Set hurt frame directly — do NOT use showHitEffect (it auto-resets the frame)
                                 // Frame stays until character stands back up
                                 if (tImgSp && tImgSp._hurtFrames && tImgSp._hurtFrames.length > 0) {
-                                    tImgSp.style.width  = tImgSp._armedIdleW || '';
-                                    tImgSp.style.height = tImgSp._armedIdleW || '';
+                                    tImgSp.style.width  = '';
+                                    tImgSp.style.height = '';
                                     tImgSp._hurtActive  = true;
                                     tImgSp.src = tImgSp._hurtFrames[Math.floor(Math.random() * tImgSp._hurtFrames.length)];
                                 }
@@ -22070,8 +22075,8 @@
                                 const tImg = tEl && tEl.querySelector('img');
                                 if (tImg) {
                                     if (tImg._hurtFrames && tImg._hurtFrames.length > 0) {
-                                        tImg.style.width  = tImg._armedIdleW || '';
-                                        tImg.style.height = tImg._armedIdleW || '';
+                                        tImg.style.width  = '';
+                                        tImg.style.height = '';
                                         tImg._hurtActive  = true;
                                         tImg.src = tImg._hurtFrames[Math.floor(Math.random() * tImg._hurtFrames.length)];
                                     }
