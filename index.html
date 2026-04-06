@@ -18125,6 +18125,14 @@
                             weaponState[event.fighter].equippedWeapon = null;
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
+                            // Belt-and-suspenders: force-clear any weapon overlays that may still
+                            // be mid-animation (e.g. if throw interrupted a run/attack anim).
+                            const _throwEl = game[event.fighter]?.element;
+                            if (_throwEl) {
+                                _throwEl.querySelector('.weapon-run-overlay')?.remove();
+                                const _throwIdleOv = _throwEl.querySelector('.fighter-body .weapon-idle-overlay');
+                                if (_throwIdleOv) { _throwIdleOv.style.display = 'none'; _throwIdleOv._hiddenByAnimation = false; }
+                            }
                         }
                         await sleep(220);
                         break;
@@ -18137,6 +18145,13 @@
                             weaponState[event.fighter].equippedWeapon = null;
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
+                            // Belt-and-suspenders: force-clear any weapon overlays.
+                            const _dropEl = game[event.fighter]?.element;
+                            if (_dropEl) {
+                                _dropEl.querySelector('.weapon-run-overlay')?.remove();
+                                const _dropIdleOv = _dropEl.querySelector('.fighter-body .weapon-idle-overlay');
+                                if (_dropIdleOv) { _dropIdleOv.style.display = 'none'; _dropIdleOv._hiddenByAnimation = false; }
+                            }
                         }
                         await sleep(120);
                         break;
@@ -22979,8 +22994,18 @@
             fighterEl.querySelector('.fighter-body')?.querySelector('.blend-attack-canvas')?.remove();
             // Restore visibility and remove attack overlays in case a weapon attack was interrupted mid-animation
             img.style.visibility = '';
-            img.style.width = '';
-            img.style.height = '';
+            // If transitioning from armed-idle size (larger canvas ~275px) to normal run size (~200px),
+            // hide for one frame so the zoom-out jump is not visible.
+            const _prevImgW = img.style.width;
+            if (_prevImgW && _prevImgW !== '') {
+                img.style.visibility = 'hidden';
+                img.style.width = '';
+                img.style.height = '';
+                requestAnimationFrame(() => { img.style.visibility = ''; });
+            } else {
+                img.style.width = '';
+                img.style.height = '';
+            }
             fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay, .heavy-attack-char-overlay').forEach(el => el.remove());
 
             // weapon-run-overlay positioning only works reliably on forward runs.
@@ -22988,6 +23013,11 @@
             // lands in the wrong position, so we remove the overlay and re-show the idle overlay instead.
             const _idleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
             const _idleOvHidden = !_idleOv || _idleOv.style.display === 'none';
+            // If unarmed, ensure the idle overlay stays hidden regardless of any prior animation state
+            if (!_armedWepId && _idleOv && !_idleOvHidden) {
+                _idleOv.style.display = 'none';
+                _idleOv._hiddenByAnimation = false;
+            }
             if (reverse) {
                 // Return run: remove any weapon-run-overlay left from the approach
                 fighterEl.querySelector('.weapon-run-overlay')?.remove();
@@ -23100,6 +23130,14 @@
             const _sraImg = fighterEl.querySelector('img');
             if (_sraImg) _sraImg.style.visibility = '';
             stopSpriteAnimation(fighterEl);
+            // If unarmed, ensure idle overlay is hidden after run ends
+            if (fighterEl.id && !weaponState[fighterEl.id]?.equippedWeapon) {
+                const _sraIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+                if (_sraIdleOv && _sraIdleOv.style.display !== 'none') {
+                    _sraIdleOv.style.display = 'none';
+                    _sraIdleOv._hiddenByAnimation = false;
+                }
+            }
         }
 
         // Non-uniform frame timing for basic attacks.
