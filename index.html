@@ -18441,9 +18441,11 @@
             const _arenaW   = document.getElementById('arena').offsetWidth;
             const _scale    = _arenaW / 1600;
             const _elW      = attackerEl.offsetWidth;
-            // Attack position: overlap attacker 120px into defender's div (120px sprite overlap → ~5px visible contact)
-            // _ATCK_GAP = FIGHTER_WIDTH(220) - 120 = 100; physical gap = _ATCK_GAP - 220 = -120px overlap
-            const _ATCK_GAP = 100;
+            // Attack position: overlap attacker into defender's div.
+            // Heavy weapons have a larger overlay that extends beyond the sprite, so they
+            // stop further back — _ATCK_GAP = 180 (≈40px overlap) vs 100 (≈120px overlap).
+            const _isHeavyWepAnim = !!getWeaponById(attackType)?.heavyAttack;
+            const _ATCK_GAP = _isHeavyWepAnim ? 180 : 100;
             // After a crossover player._homeX > cpu._homeX, so the approach side flips.
             // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
             const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
@@ -24369,10 +24371,10 @@
                 el.style.zIndex = '';
                 el.style.filter = ''; // Reset inline filter from fury effects
                 el.classList.remove('fury-glow', 'fury-dimmed', 'dashing');
-                // Remove weapon overlays (run, attack, and idle pose)
+                // Remove weapon overlays (run, attack, heavy-attack, and idle pose)
                 const wOverlay = el.querySelector('.weapon-run-overlay');
                 if (wOverlay) wOverlay.remove();
-                el.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay').forEach(o => o.remove());
+                el.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay, .heavy-attack-char-overlay').forEach(o => o.remove());
                 const idlePoseOverlay = el.querySelector('.weapon-idle-overlay');
                 if (idlePoseOverlay) { idlePoseOverlay.style.display = 'none'; idlePoseOverlay.src = ''; }
             });
