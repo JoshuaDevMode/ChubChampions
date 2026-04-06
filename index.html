@@ -10071,6 +10071,18 @@
             100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
         }
 
+        /* Weapon drop effect */
+        @keyframes weaponLandDust {
+            0%   { opacity: 0.7; transform: scale(1) scaleY(0.5); }
+            60%  { opacity: 0.4; transform: scale(1.7) scaleY(0.4); }
+            100% { opacity: 0;   transform: scale(2.2) scaleY(0.3); }
+        }
+        @keyframes weaponFragment {
+            0%   { transform: translate(0,0) rotate(var(--fr,0deg)) scale(1); opacity: 1; }
+            70%  { opacity: 0.6; }
+            100% { transform: translate(var(--fx),var(--fy)) rotate(var(--fe,180deg)) scale(0.2); opacity: 0; }
+        }
+
         /* Fury Lightning Effect */
         .fury-lightning {
             position: absolute;
@@ -12928,20 +12940,10 @@
             updateFuryPowerSelector(char);
         }
 
-        function toggleFuryPassive() {
-            const char = selectedCharacter;
-            if (!char) return;
-            // Passive can only be toggled once unlocked (level >= 5)
-            if ((char.level || 1) < FURY_PASSIVE_UNLOCK_LEVEL) return;
-            const current = _furyPassiveActive[char.id] !== false;
-            _furyPassiveActive[char.id] = !current;
-            updateFuryPowerSelector(char);
-        }
+        function toggleFuryPassive() { /* passive always active — no-op */ }
 
         function getFuryPassiveEnabled(character) {
-            if (!character) return false;
-            if ((character.level || 1) < FURY_PASSIVE_UNLOCK_LEVEL) return false;
-            return _furyPassiveActive[character.id] !== false; // default true once unlocked
+            return !!character; // always active
         }
 
         function updateFuryPowerSelector(character) {
@@ -12962,28 +12964,25 @@
             const elemD          = ELEMENT_DATA[character.element] || {};
             const color          = elemD.color || '#ffd700';
             const icon           = elemD.icon  || '⚡';
-            const level          = character.level || 1;
-            const passiveUnlocked = level >= FURY_PASSIVE_UNLOCK_LEVEL;
-            const p1Unlocked      = level >= FURY_P1_UNLOCK_LEVEL;
-            const p2Unlocked      = level >= FURY_P2_UNLOCK_LEVEL;
-            const passiveLocked   = !passiveUnlocked;
-            const passiveEnabled = getFuryPassiveEnabled(character);
-            const choice         = getFuryPowerChoice(character); // respects level gating
+            const level      = character.level || 1;
+            const p1Unlocked = level >= FURY_P1_UNLOCK_LEVEL;
+            const p2Unlocked = level >= FURY_P2_UNLOCK_LEVEL;
+            const choice     = getFuryPowerChoice(character); // respects level gating
 
             row.style.display = 'none'; // always hidden — pips in left column are the UI
             row.querySelector('.fury-power-label').innerHTML =
                 `<span style="color:${color};">${icon}</span> FURY:`;
 
-            // Passive button
+            // Passive button (hidden row — kept for compat)
             if (passBtn) {
-                passBtn.textContent = passiveEnabled ? 'PASSIVE ✓' : 'PASSIVE ✗';
-                passBtn.classList.toggle('selected', passiveEnabled);
-                passBtn.style.opacity      = passiveLocked ? '0.5' : '';
-                passBtn.style.cursor       = passiveLocked ? 'not-allowed' : '';
-                passBtn.style.background   = passiveEnabled ? `rgba(${hexToRgb(color)},0.12)` : '';
-                passBtn.style.color        = passiveEnabled ? color : 'rgba(255,255,255,0.35)';
-                passBtn.style.borderColor  = passiveEnabled ? `rgba(${hexToRgb(color)},0.4)` : '';
-                passBtn.title = passiveLocked ? `Unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}` : '';
+                passBtn.textContent = 'PASSIVE ✓';
+                passBtn.classList.add('selected');
+                passBtn.style.opacity     = '';
+                passBtn.style.cursor      = 'default';
+                passBtn.style.background  = `rgba(${hexToRgb(color)},0.12)`;
+                passBtn.style.color       = color;
+                passBtn.style.borderColor = `rgba(${hexToRgb(color)},0.4)`;
+                passBtn.title = 'Always active on fury';
             }
 
             // P1 button
@@ -13036,22 +13035,20 @@
 
             // ── Left-column pips ─────────────────────────────────────────────
             if (col) {
-                const passClass = passiveLocked ? 'pip-off pip-locked'
-                                : passiveEnabled ? 'pip-on' : 'pip-off';
+                const passClass = 'pip-on';
                 const p1Class   = !p1Unlocked ? 'pip-locked'
                                 : choice === 'p1' ? 'pip-on' : 'pip-off';
                 const p2Class   = !p2Unlocked ? 'pip-locked'
                                 : choice === 'p2' ? 'pip-on' : 'pip-off';
 
                 const passLabel = 'PASSIVE';
-                const passData  = passiveLocked ? `Unlocks at Lvl ${FURY_PASSIVE_UNLOCK_LEVEL}`
-                                : passiveEnabled ? `Passive: ON\nClick to disable` : `Passive: OFF\nClick to enable`;
+                const passData  = `Passive: Always active on fury`;
                 const p1Data    = p1Unlocked ? `${powers.p1.name}\n${powers.p1.desc}` : `${powers.p1.name}\nUnlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}`;
                 const p2Data    = p2Unlocked ? `${powers.p2.name}\n${powers.p2.desc}` : `${powers.p2.name}\nUnlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}`;
 
                 col.innerHTML = `
                     <span class="elem-powers-icon" style="color:${color};">${icon}</span>
-                    <button class="power-pip ${passClass}" onclick="toggleFuryPassive()" data-tip="${passData}">${passLabel}</button>
+                    <button class="power-pip ${passClass}" style="cursor:default;" data-tip="${passData}">${passLabel}</button>
                     <button class="power-pip ${p1Class}" onclick="selectFuryPower('p1')" data-tip="${p1Data}">${powers.p1.name}</button>
                     <button class="power-pip ${p2Class}" onclick="selectFuryPower('p2')" data-tip="${p2Data}">${powers.p2.name}</button>`;
             }
@@ -17599,9 +17596,8 @@
             const fpColor = fpElemD.color || '#ffd700';
             // Derive display name: everything after the first underscore, title-cased
             const fpName = event.power.split('_').slice(1).join(' ').replace(/\b\w/g, c => c.toUpperCase());
-            // Passive effects skip the name flash
             const isPassive = event.power.includes('stone_skin') || event.power.includes('burn_aura') || event.power.includes('orb_active');
-            if (!isPassive) showFuryPowerFlash(event.caster, fpName, fpColor);
+            showFuryPowerFlash(event.caster, fpName, fpColor);
 
             // Aerial counter (jump_fury)
             if (event.aerial) {
@@ -18131,6 +18127,8 @@
                                 _throwEl.querySelector('.weapon-run-overlay')?.remove();
                                 const _throwIdleOv = _throwEl.querySelector('.fighter-body .weapon-idle-overlay');
                                 if (_throwIdleOv) { _throwIdleOv.style.display = 'none'; _throwIdleOv._hiddenByAnimation = false; }
+                                // Weapon-drop visual effect
+                                spawnWeaponDropEffect(_throwEl, event.weaponId);
                             }
                         }
                         await sleep(220);
@@ -18150,6 +18148,8 @@
                                 _dropEl.querySelector('.weapon-run-overlay')?.remove();
                                 const _dropIdleOv = _dropEl.querySelector('.fighter-body .weapon-idle-overlay');
                                 if (_dropIdleOv) { _dropIdleOv.style.display = 'none'; _dropIdleOv._hiddenByAnimation = false; }
+                                // Weapon-drop visual effect
+                                spawnWeaponDropEffect(_dropEl, event.weaponId);
                             }
                         }
                         await sleep(120);
@@ -18517,7 +18517,16 @@
 
                 // ── Phase 0: snap back to home corner for running start ──────
                 // Jump attack needs distance to build momentum — always start from _homeX.
-                const jaHomeLeftPx = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * jaScale;
+                // Clamp snap so we never start past the landing point: if fighters have been
+                // pushed close together by move events the raw _homeX can be beyond the landing
+                // position, which would make the arc travel backward.  Always keep at least one
+                // body-width of approach distance so Phase 2 deltaX is in the right direction.
+                const _jaLandingLeft = (defHomeX + jaGapSign * _ATCK_GAP) * jaScale;
+                const _jaHomeRaw     = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * jaScale;
+                const _jaSafeGap     = attackerEl.offsetWidth; // min arc distance = 1 body width
+                const jaHomeLeftPx   = jaGapSign < 0
+                    ? Math.min(_jaHomeRaw, _jaLandingLeft - _jaSafeGap)  // normal: snap before landing
+                    : Math.max(_jaHomeRaw, _jaLandingLeft + _jaSafeGap); // crossover: snap after landing
                 attackerEl.style.setProperty('transition', 'none', 'important');
                 attackerEl.style.left  = jaHomeLeftPx + 'px';
                 attackerEl.style.right = 'auto';
@@ -18644,6 +18653,62 @@
                 playFootstep();
                 // Defer facing flip — character turns around only after returning to corner
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
+            } else if (event.hopAttack) {
+                // ── Hop attack: short leap from current position, no run phase ────────
+                const haImg       = attackerEl.querySelector('img.character-png');
+                const isCpuHop    = attacker === 'cpu';
+                const haBaseXform = (_playerIsOnLeft() === (attacker === 'player')) ? '' : 'scaleX(-1) ';
+                const haStr       = attacker === 'player' ? (playerChar?.stats?.strength || 35) : (battleState.cpuStats?.strength || 35);
+
+                // Arc parameters: shorter and quicker than full jump
+                const haArcMs   = Math.round(500 / (1 + Math.min(0.5, (haStr - 35) * 0.004)));
+                const haPeakH   = Math.max(120, Math.min(220, Math.round(100 + haStr * 0.18)));
+
+                // Landing position (same gap logic as full jump attack)
+                const haArenaEl = document.getElementById('arena');
+                const haArenaW  = haArenaEl.offsetWidth;
+                const haScale   = haArenaW / 1600;
+                const haDefHomeX = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
+                const haGapSign  = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
+                const haLandLeft = (haDefHomeX + haGapSign * _ATCK_GAP) * haScale;
+                const haCurrLeft = parseFloat(attackerEl.style.left) || (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * haScale;
+                const haDeltaX   = haLandLeft - haCurrLeft;
+
+                // Airborne pose
+                if (haImg) {
+                    haImg._idleSrc = haImg._idleSrc || haImg.src;
+                    haImg.src = haImg._runFrames?.[8] || haImg.src;
+                }
+
+                attackerEl.style.setProperty('transition', 'none', 'important');
+                void attackerEl.offsetWidth;
+
+                await new Promise(res => {
+                    const t0  = performance.now();
+                    const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                    const step = now => {
+                        const t  = Math.min((now - t0) / haArcMs, 1);
+                        const tx = haDeltaX * ease(t);
+                        const ty = -haPeakH * Math.sin(Math.PI * t);
+                        attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
+                        if (t < 1) { battleRAF(step, res); return; }
+                        attackerEl.style.transform = '';
+                        attackerEl.style.left  = haLandLeft + 'px';
+                        attackerEl.style.right = 'auto';
+                        untrackAnim(res); res();
+                    };
+                    battleRAF(step, res);
+                });
+
+                // Reset pose on landing
+                if (haImg) {
+                    haImg.style.transition = 'transform 0.06s ease-out';
+                    haImg.style.transform  = haBaseXform.trim() || '';
+                    setTimeout(() => { haImg.style.transition = ''; }, 80);
+                }
+                stopRunAnimation(attackerEl);
+                playFootstep();
+                attackerEl._jumpReturn = { img: haImg, isCpu: isCpuHop };
             } else {
                 // Normal first hit: run from starting corner to opponent
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
@@ -23272,6 +23337,14 @@
                         // Restore armed-idle display size (was cleared at attack start)
                         img.style.width  = img._armedIdleW || '';
                         img.style.height = img._armedIdleW || '';
+                        // Restore weapon idle overlay immediately so it doesn't vanish
+                        // during the post-hit pause before the return run starts.
+                        const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+                        if (_postAtkIdleOv) {
+                            _postAtkIdleOv._hiddenByAnimation = false;
+                            _postAtkIdleOv._suppressEquipFlash = true;
+                        }
+                        if (fighterEl.id) syncArmedIdle(fighterEl.id);
                     }
                 }, speed);
             } else {
@@ -23706,6 +23779,144 @@
                 arena.appendChild(spark);
                 spark.addEventListener('animationend', () => spark.remove(), { once: true });
             }
+        }
+
+        // Spawns a weapon-drop visual: weapon falls to the ground, rotates to horizontal,
+        // then dissolves into metallic fragment particles.
+        function spawnWeaponDropEffect(fighterEl, weaponId) {
+            const wData = WEAPONS[weaponId] || getWeaponById(weaponId);
+            if (!wData?.img) return;
+
+            const arena = document.getElementById('arena');
+            if (!arena) return;
+            const zoom = getGameZoom();
+            const arenaRect = arena.getBoundingClientRect();
+            const fRect = fighterEl.getBoundingClientRect();
+
+            // Starting position: fighter's hand area (~upper-center of sprite)
+            const startX = (fRect.left - arenaRect.left) / zoom + (fRect.width  / zoom) * 0.5;
+            const startY = (fRect.top  - arenaRect.top)  / zoom + (fRect.height / zoom) * 0.30;
+            // Ground = bottom of fighter element
+            const groundY = (fRect.bottom - arenaRect.top) / zoom;
+
+            // CPU is on the right (faces left), player on the left (faces right).
+            // Weapon drifts inward (toward arena center).
+            const isCpu  = fighterEl.id === 'cpu';
+            const driftX = isCpu ? -45 : 45;
+
+            const wSize = 58;
+
+            // Weapon image element
+            const wImg = document.createElement('img');
+            wImg.src = wData.img;
+            // Weapons are drawn as diagonal icons (~-40° for a "held" look).
+            // CPU sprite is mirrored so we apply scaleX(-1) to match visual direction.
+            const initRot = isCpu ? 40 : -40;
+            wImg.style.cssText =
+                `position:absolute;` +
+                `left:${startX - wSize/2}px;top:${startY - wSize/2}px;` +
+                `width:${wSize}px;height:${wSize}px;object-fit:contain;` +
+                `pointer-events:none;z-index:14;` +
+                `transform-origin:center center;` +
+                `transform:${isCpu ? 'scaleX(-1) ' : ''}rotate(${initRot}deg);` +
+                `filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55));`;
+            arena.appendChild(wImg);
+
+            // ── Phase 1: fall + rotate ──────────────────────────────────────────
+            const FALL_MS = 440;
+            const endRot  = isCpu ? -8 : 8;   // nearly horizontal, slight ground tilt
+            let tFall = null;
+
+            function animFall(now) {
+                if (!tFall) tFall = now;
+                const raw = Math.min((now - tFall) / FALL_MS, 1);
+                const gravT = raw * raw;            // ease-in (gravity)
+                const rotT  = Math.min(raw * 1.4, 1); // rotation finishes a bit before landing
+
+                const curX = startX + driftX * raw;
+                const curY = startY + (groundY - startY) * gravT;
+                const curR = initRot + (endRot - initRot) * rotT;
+
+                wImg.style.left      = (curX - wSize/2) + 'px';
+                wImg.style.top       = (curY - wSize/2) + 'px';
+                wImg.style.transform = `${isCpu ? 'scaleX(-1) ' : ''}rotate(${curR}deg)`;
+
+                if (raw < 1) {
+                    requestAnimationFrame(animFall);
+                } else {
+                    _onWeaponLand(arena, curX, groundY, wImg, isCpu, endRot, wSize);
+                }
+            }
+            requestAnimationFrame(animFall);
+        }
+
+        function _onWeaponLand(arena, landX, landY, wImg, isCpu, finalRot, wSize) {
+            // ── Ground dust puff ────────────────────────────────────────────────
+            const dust = document.createElement('div');
+            dust.style.cssText =
+                `position:absolute;left:${landX - 22}px;top:${landY - 6}px;` +
+                `width:44px;height:12px;border-radius:50%;pointer-events:none;z-index:13;` +
+                `background:radial-gradient(ellipse,rgba(210,190,130,0.65) 0%,transparent 70%);` +
+                `animation:weaponLandDust 0.38s ease-out forwards;`;
+            arena.appendChild(dust);
+            dust.addEventListener('animationend', () => dust.remove(), { once: true });
+
+            // ── Fragment particles ──────────────────────────────────────────────
+            // Metallic colors: silver/gold/brass tones
+            const fragColors = ['#d4c478','#e8e0a0','#b0a050','#c8c8c8','#f0e8b0','#a89840'];
+            const fragCount  = 13;
+            for (let i = 0; i < fragCount; i++) {
+                // Spread mostly horizontal (weapon is on the ground), slight upward arc
+                const a   = (i / fragCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.7;
+                const d   = 20 + Math.random() * 50;
+                const fx  = Math.cos(a) * d;
+                const fy  = Math.sin(a) * d * 0.35 - (8 + Math.random() * 14); // flatten + upward bias
+                const col = fragColors[i % fragColors.length];
+                const sz  = 3 + Math.random() * 4;
+                const dur = 0.38 + Math.random() * 0.30;
+                const del = Math.random() * 0.09;
+                const fr  = Math.random() * 60 - 30;   // initial rotation of fragment
+                const fe  = fr + (Math.random() > 0.5 ? 180 : -180); // end rotation
+
+                const frag = document.createElement('div');
+                // Mix of square/rect fragments for metallic shard look
+                const isRect = Math.random() > 0.5;
+                frag.style.cssText =
+                    `position:absolute;` +
+                    `left:${landX}px;top:${landY}px;` +
+                    `width:${isRect ? Math.round(sz * 1.8) : Math.round(sz)}px;` +
+                    `height:${Math.round(sz)}px;` +
+                    `background:${col};` +
+                    `box-shadow:0 0 3px ${col};` +
+                    `pointer-events:none;z-index:15;border-radius:1px;` +
+                    `animation:weaponFragment ${dur}s ease-out ${del}s both;`;
+                frag.style.setProperty('--fx', fx + 'px');
+                frag.style.setProperty('--fy', fy + 'px');
+                frag.style.setProperty('--fr', fr + 'deg');
+                frag.style.setProperty('--fe', fe + 'deg');
+                arena.appendChild(frag);
+                frag.addEventListener('animationend', () => frag.remove(), { once: true });
+            }
+
+            // ── Dissolve weapon image ──────────────────────────────────────────
+            // Brief hold on ground, then fade out with a brightness flash
+            const HOLD_MS    = 60;
+            const DISSOLVE_MS = 520;
+            setTimeout(() => {
+                let tDis = null;
+                function animDissolve(now) {
+                    if (!tDis) tDis = now;
+                    const t = Math.min((now - tDis) / DISSOLVE_MS, 1);
+                    const easeIn = t * t;
+                    wImg.style.opacity = '' + (1 - easeIn);
+                    wImg.style.filter  =
+                        `drop-shadow(0 4px 12px rgba(0,0,0,0.55)) ` +
+                        `brightness(${1 + easeIn * 2.5}) saturate(${1 - easeIn * 0.6})`;
+                    if (t < 1) requestAnimationFrame(animDissolve);
+                    else wImg.remove();
+                }
+                requestAnimationFrame(animDissolve);
+            }, HOLD_MS);
         }
 
         let lastExpGained = 0; // Track last exp gained for results display
