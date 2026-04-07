@@ -422,14 +422,17 @@
         }
 
         #cpu .heavy-attack-char-overlay {
+            left: 26%; /* mirror of 74%: lean shifts toward player (who is on the left) */
             transform: translate(-50%, -50%) scaleX(-1);
         }
 
         .heavy-attack-char-overlay.sprite-reversed {
+            left: 26% !important; /* crossover: player on right, enemy on left — mirror offset */
             transform: translate(-50%, -50%) scaleX(-1) !important;
         }
 
         #cpu .heavy-attack-char-overlay.sprite-reversed {
+            left: 74% !important; /* CPU is on left, player is on right — standard forward offset */
             transform: translate(-50%, -50%) scaleX(1) !important;
         }
 
@@ -444,6 +447,7 @@
         }
 
         #cpu .weapon-attack-char-overlay {
+            left: 26%; /* mirror of 74%: lean shifts toward player (who is on the left) */
             transform: translate(-50%, -50%) scaleX(-1);
         }
 
@@ -471,8 +475,11 @@
 
         /* Absolutely-positioned overlays must preserve translate(-50%,-50%) when flipped */
         .weapon-run-overlay.sprite-reversed,
-        .weapon-attack-overlay.sprite-reversed,
+        .weapon-attack-overlay.sprite-reversed {
+            transform: translate(-50%, -50%) scaleX(-1) !important;
+        }
         .weapon-attack-char-overlay.sprite-reversed {
+            left: 26% !important; /* crossover: player on right, enemy on left — mirror offset */
             transform: translate(-50%, -50%) scaleX(-1) !important;
         }
         /* CPU weapon-run-overlay must match the character's default scaleX(-1) */
@@ -480,8 +487,11 @@
             transform: translate(-50%, -50%) scaleX(-1);
         }
         #cpu .weapon-run-overlay.sprite-reversed,
-        #cpu .weapon-attack-overlay.sprite-reversed,
+        #cpu .weapon-attack-overlay.sprite-reversed {
+            transform: translate(-50%, -50%) scaleX(1) !important;
+        }
         #cpu .weapon-attack-char-overlay.sprite-reversed {
+            left: 74% !important; /* CPU is on left, player is on right — standard forward offset */
             transform: translate(-50%, -50%) scaleX(1) !important;
         }
         /* When CPU crosses over (facing-flipped), character faces right — no flip needed */
@@ -12369,6 +12379,17 @@
                         defenderImg.style.height = targetW;
                         requestAnimationFrame(() => { defenderImg.style.visibility = ''; });
                     }
+                    // Restore weapon idle overlay immediately if not in an attack animation.
+                    // Without this, _hiddenByAnimation stays true and the overlay stays hidden
+                    // until startIdleBlink fires, causing the weapon to appear missing briefly.
+                    const _defEl = game[defender]?.element;
+                    if (_defEl) {
+                        const _defIdleOv = _defEl.querySelector('.fighter-body .weapon-idle-overlay');
+                        if (_defIdleOv?._hiddenByAnimation) {
+                            const _notAttacking = !defenderImg._currentAnim && !defenderImg._blockAnim && !defenderImg._blendRaf;
+                            if (_notAttacking) _defIdleOv._hiddenByAnimation = false;
+                        }
+                    }
                     syncArmedIdle(defender);
                 }, 400);
             }
@@ -18755,6 +18776,9 @@
                     // Block frames are 1024px canvas — clear armed-idle size so they render at 200px
                     defImg.style.width  = '';
                     defImg.style.height = '';
+                    // Hide weapon idle overlay during block: avoids double-shield (overlay + shield-block-overlay)
+                    // and avoids the overlay floating at armed-idle size while body is at 200px
+                    hideWeaponIdleOverlay(defender);
                     const blockFrames = isShieldBlock ? defImg._shieldBlockFrames : defImg._blockFrames;
                     if (blockFrames && blockFrames.length > 0) {
                         let fi = 0;
@@ -18926,6 +18950,10 @@
                 }
                 const _shieldOverlay = fighterBody.querySelector('.shield-block-overlay');
                 if (_shieldOverlay) { _shieldOverlay.style.display = 'none'; _shieldOverlay.src = ''; }
+                // Restore weapon idle overlay hidden at block start
+                const _blkIdleOv = fighterBody.querySelector('.weapon-idle-overlay');
+                if (_blkIdleOv) { _blkIdleOv._hiddenByAnimation = false; _blkIdleOv._suppressEquipFlash = true; }
+                syncArmedIdle(defender);
             }
 
             // Return phase
