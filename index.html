@@ -18535,11 +18535,10 @@
                 // ── Phase 1: run from home corner to arena center (≈280ms) ─────
                 // Cap runTarget so the arc always travels FORWARD — never overshoot
                 // past the landing point (which would produce a backwards-in-air arc).
-                // defCx is the attacker's center at landing; keep run stop at least
-                // one fighter-width behind it so deltaX in Phase 2 is always positive.
-                const jaRunCenterTarget = arenaW * 0.5 - attackerEl.offsetWidth * 0.5;
-                const jaRunMaxTarget    = defCx - attackerEl.offsetWidth * 1.5; // stay behind landing
-                const runTarget = Math.min(jaRunCenterTarget, Math.max(jaHomeLeftPx, jaRunMaxTarget));
+                // Run to the midpoint between home and landing (50/50 split).
+                // This makes both the run and the arc proportional to the actual gap,
+                // so a 300px gap = short run + short arc, 900px gap = long run + long arc.
+                const runTarget = (jaHomeLeftPx + _jaLandingLeft) / 2;
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 const r0Left   = jaHomeLeftPx;
                 const runDelta = runTarget - r0Left;
