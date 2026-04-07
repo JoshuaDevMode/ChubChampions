@@ -452,6 +452,7 @@
         }
 
         #cpu .weapon-attack-overlay {
+            left: 26%; /* mirror of 74% — matches weapon-attack-char-overlay offset */
             transform: translate(-50%, -50%) scaleX(-1);
         }
 
@@ -474,29 +475,39 @@
         }
 
         /* Absolutely-positioned overlays must preserve translate(-50%,-50%) when flipped */
-        .weapon-run-overlay.sprite-reversed,
+        .weapon-run-overlay.sprite-reversed {
+            transform: translate(-50%, -50%) scaleX(-1) !important;
+        }
         .weapon-attack-overlay.sprite-reversed {
+            left: 26% !important; /* crossover: player on right, enemy on left — mirror offset */
             transform: translate(-50%, -50%) scaleX(-1) !important;
         }
         .weapon-attack-char-overlay.sprite-reversed {
-            left: 26% !important; /* crossover: player on right, enemy on left — mirror offset */
+            left: 26% !important;
             transform: translate(-50%, -50%) scaleX(-1) !important;
         }
         /* CPU weapon-run-overlay must match the character's default scaleX(-1) */
         #cpu .weapon-run-overlay {
             transform: translate(-50%, -50%) scaleX(-1);
         }
-        #cpu .weapon-run-overlay.sprite-reversed,
+        #cpu .weapon-run-overlay.sprite-reversed {
+            transform: translate(-50%, -50%) scaleX(1) !important;
+        }
         #cpu .weapon-attack-overlay.sprite-reversed {
+            left: 74% !important; /* CPU is on left, player is on right — standard forward offset */
             transform: translate(-50%, -50%) scaleX(1) !important;
         }
         #cpu .weapon-attack-char-overlay.sprite-reversed {
-            left: 74% !important; /* CPU is on left, player is on right — standard forward offset */
+            left: 74% !important;
             transform: translate(-50%, -50%) scaleX(1) !important;
         }
         /* When CPU crosses over (facing-flipped), character faces right — no flip needed */
         #cpu.facing-flipped .weapon-run-overlay {
             transform: translate(-50%, -50%) scaleX(1);
+        }
+        /* When player crosses over (facing-flipped), character faces left — flip run overlay */
+        #player.facing-flipped .weapon-run-overlay {
+            transform: translate(-50%, -50%) scaleX(-1);
         }
 
         #cpu .character-png {
@@ -18695,10 +18706,40 @@
                 const haCurrLeft = parseFloat(attackerEl.style.left) || (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * haScale;
                 const haDeltaX   = haLandLeft - haCurrLeft;
 
-                // Airborne pose
+                // Airborne pose — use weapon/heavy attack overlay if armed, run frame otherwise
+                const isHopHeavy  = isWeaponAnim && !!getWeaponById(attackType)?.heavyAttack;
+                const isHopWeapon = isWeaponAnim && !isHopHeavy;
+                const haBody = attackerEl.querySelector('.fighter-body');
+                let haCo = null, haWo = null;
                 if (haImg) {
                     haImg._idleSrc = haImg._idleSrc || haImg.src;
-                    haImg.src = haImg._runFrames?.[8] || haImg.src;
+                    if (isWeaponAnim) {
+                        const haCF = isHopHeavy
+                            ? (haImg._heavyAttackFrames || [])
+                            : (haImg._weaponAttackFrames || []);
+                        const haWF = _weaponAttackFramesCache[attackType] || [];
+                        if (haCF.length > 0) {
+                            const _haFacingFlipped = attackerEl.classList.contains('facing-flipped');
+                            haBody.querySelectorAll('.weapon-attack-overlay,.heavy-attack-char-overlay,.weapon-attack-char-overlay').forEach(e => e.remove());
+                            haImg.style.visibility = 'hidden';
+                            haCo = document.createElement('img');
+                            haCo.className = isHopHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
+                            if (_haFacingFlipped) haCo.classList.add('sprite-reversed');
+                            haCo.src = haCF[2] || haCF[0];
+                            haBody.appendChild(haCo);
+                            if (haWF.length > 0) {
+                                haWo = document.createElement('img');
+                                haWo.className = 'weapon-attack-overlay';
+                                if (_haFacingFlipped) haWo.classList.add('sprite-reversed');
+                                haWo.src = haWF[2] || haWF[0];
+                                haBody.appendChild(haWo);
+                            }
+                        } else {
+                            haImg.src = haImg._runFrames?.[8] || haImg.src;
+                        }
+                    } else {
+                        haImg.src = haImg._runFrames?.[8] || haImg.src;
+                    }
                 }
 
                 attackerEl.style.setProperty('transition', 'none', 'important');
@@ -18720,6 +18761,16 @@
                     };
                     battleRAF(step, res);
                 });
+
+                // Switch to last attack frame on landing, then animateAttack takes over
+                if (haCo) {
+                    const haCF = isHopHeavy
+                        ? (haImg._heavyAttackFrames || [])
+                        : (haImg._weaponAttackFrames || []);
+                    const haWF = _weaponAttackFramesCache[attackType] || [];
+                    haCo.src = haCF[haCF.length - 1] || haCF[2] || haCo.src;
+                    if (haWo) haWo.src = haWF[haWF.length - 1] || haWF[2] || haWo.src;
+                }
 
                 // Reset pose on landing
                 if (haImg) {
@@ -18749,6 +18800,9 @@
                 // Dodge frames are 1024px canvas — clear armed-idle size so they render at 200px
                 defImg.style.width  = '';
                 defImg.style.height = '';
+                // Hide weapon idle overlay: avoids it floating at armed-idle size (275px)
+                // over the dodge frame (200px). For jump dodge the weapon-run-overlay takes over.
+                hideWeaponIdleOverlay(defender);
                 const _jdEquipped = jumpDodge ? weaponState[defender]?.equippedWeapon : null;
                 const _jdWRunF    = _jdEquipped ? _weaponRunFramesCache[_jdEquipped] : null;
                 if (jumpDodge && _jdEquipped && defImg._weaponRunFrames?.length > 0 && _jdWRunF?.length > 0) {
@@ -18765,6 +18819,20 @@
                 }
                 if (!jumpDodge) {
                     fighterBody.classList.add('dodging');
+                    // Normal dodge with weapon: show weapon pose slightly above idle position
+                    const _dodgeWepId = weaponState[defender]?.equippedWeapon;
+                    const _dodgePoseF = _dodgeWepId && _weaponIdlePoseCache[_dodgeWepId];
+                    if (_dodgePoseF?.length > 0) {
+                        const _dodgeWOv = document.createElement('img');
+                        _dodgeWOv.className = 'dodge-weapon-overlay';
+                        const _dwSize = defImg._armedIdleW || '275px';
+                        const _facingFlipped = defenderEl.classList.contains('facing-flipped');
+                        const _isCpuDef = defenderEl.id === 'cpu';
+                        const _needsFlip = (_isCpuDef && !_facingFlipped) || (!_isCpuDef && _facingFlipped);
+                        _dodgeWOv.style.cssText = `position:absolute;top:37%;left:50%;width:${_dwSize};height:${_dwSize};object-fit:contain;pointer-events:none;z-index:1;transform:translate(-50%,-50%)${_needsFlip ? ' scaleX(-1)' : ''};opacity:0.9;`;
+                        _dodgeWOv.src = _dodgePoseF[0];
+                        fighterBody.appendChild(_dodgeWOv);
+                    }
                 }
                 await sleep(150);
             } else if (defense === 'block') {
@@ -18914,14 +18982,19 @@
                 fighterBody.classList.remove('dodging');
                 if (fighterBody._jumpAnim) { fighterBody._jumpAnim.cancel(); fighterBody._jumpAnim = null; }
                 delete fighterBody.dataset.jumping;
-                // Remove jump-dodge weapon overlay (syncArmedIdle via startIdleBlink will restore correctly)
+                // Remove jump-dodge weapon overlay and dodge-weapon overlay
                 defenderEl.querySelector('.weapon-run-overlay')?.remove();
+                defenderEl.querySelector('.dodge-weapon-overlay')?.remove();
                 if (defImg && defImg._preDefenseSrc) {
                     defImg.src = defImg._preDefenseSrc;
                     // Restore armed-idle size if the character has a weapon equipped
                     defImg.style.width  = defImg._armedIdleW || '';
                     defImg.style.height = defImg._armedIdleW || '';
                 }
+                // Restore weapon idle overlay hidden at dodge start
+                const _dodgeIdleOv = fighterBody.querySelector('.weapon-idle-overlay');
+                if (_dodgeIdleOv) { _dodgeIdleOv._hiddenByAnimation = false; _dodgeIdleOv._suppressEquipFlash = true; }
+                syncArmedIdle(defender);
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
                 playBlockSound();
@@ -23832,7 +23905,7 @@
             const isCpu  = fighterEl.id === 'cpu';
             const driftX = isCpu ? -45 : 45;
 
-            const wSize = 58;
+            const wSize = 96;
 
             // Weapon image element
             const wImg = document.createElement('img');
