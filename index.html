@@ -23208,14 +23208,24 @@
                 _idleOv.style.display = 'none';
                 _idleOv._hiddenByAnimation = false;
             }
-            // For both approach and return: show weapon-idle-overlay if armed
             if (_armedWepId && _idleOv) {
                 const _pf = _weaponIdlePoseCache[_armedWepId];
                 if (_pf && _pf.length > 0) {
-                    _idleOv._suppressEquipFlash = true;
-                    _idleOv.src = _pf[0];
-                    _idleOv.style.display = 'block';
-                    _idleOv._hiddenByAnimation = false;
+                    if (reverse) {
+                        // Return run: always re-show idle overlay and clear the suppression flag
+                        // so it's visible when the fighter arrives back at their corner.
+                        _idleOv._suppressEquipFlash = true;
+                        _idleOv.src = _pf[0];
+                        _idleOv.style.display = 'block';
+                        _idleOv._hiddenByAnimation = false;
+                    } else if (!_idleOv._hiddenByAnimation) {
+                        // Approach run: only show if hideWeaponIdleOverlay() wasn't called first
+                        // (attack runs call it before animateRun to suppress the overlay while the
+                        // weapon-attack overlays take over — re-showing here would double the weapon).
+                        _idleOv._suppressEquipFlash = true;
+                        _idleOv.src = _pf[0];
+                        _idleOv.style.display = 'block';
+                    }
                 }
             }
             const hasWeaponRun = _armedWepId && img._weaponRunFrames && img._weaponRunFrames.length > 0;
