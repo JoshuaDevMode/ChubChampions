@@ -371,8 +371,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
+            width: 275px;
+            height: 275px;
             object-fit: contain;
             pointer-events: none;
             z-index: 1;
@@ -18746,12 +18746,21 @@
                                 haBody.appendChild(haWo);
                             }
                         } else {
+                            haImg.style.width  = '';
+                            haImg.style.height = '';
                             haImg.src = haImg._runFrames?.[8] || haImg.src;
                         }
                     } else {
+                        // Clear armed-idle size before using run frame — otherwise the run frame
+                        // renders at 275px (armed-idle canvas size) instead of normal 200px.
+                        haImg.style.width  = '';
+                        haImg.style.height = '';
                         haImg.src = haImg._runFrames?.[8] || haImg.src;
                     }
                 }
+                // Hide weapon-idle-overlay during the hop — the hop bypasses animateRun so
+                // the overlay would otherwise float visibly over the run frame.
+                hideWeaponIdleOverlay(attacker);
 
                 attackerEl.style.setProperty('transition', 'none', 'important');
                 void attackerEl.offsetWidth;
