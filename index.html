@@ -27470,6 +27470,17 @@
                 } else {
                     _timerWasPaused = false;
                 }
+                // Flush battle event loop on tab return so HP catches up.
+                // While hidden, setTimeout gets throttled — pending sleeps stall
+                // the loop and HP bars freeze. Flushing resolves them immediately.
+                if (game && !game.gameOver && (_sleepPending.size > 0 || _animPending.size > 0)) {
+                    const pendingSleeps = [..._sleepPending];
+                    _sleepPending.clear();
+                    for (const res of pendingSleeps) { clearTimeout(res._tid); res(); }
+                    const pendingAnims = [..._animPending];
+                    _animPending.clear();
+                    for (const res of pendingAnims) res();
+                }
             }
         });
 
