@@ -17842,6 +17842,9 @@
             // Phase 0: defender lifted + tilted
             const cfDefIsCpu   = event.defender === 'cpu';
             const cfLiftAngle  = cfDefIsCpu ? 65 : -65;
+            // Stop blink BEFORE setting the hurt frame — otherwise the blink cycle's
+            // cleanup (img.src = _idleSrc) can fire during Phase 1/2 and wipe it.
+            stopIdleBlink(cfDefEl);
             if (cfDefImg) {
                 cfDefImg._idleSrc = cfDefImg._idleSrc || cfDefImg.src;
                 const cfHurtF = cfDefImg._hurtFrames;
@@ -17923,6 +17926,8 @@
             const cfSpinDir   = cfDefIsCpu ? 1 : -1;
 
             cfDefEl.style.transition = 'none';
+            // Clear the Phase 0 transition on the img so CSS doesn't fight the RAF rotation.
+            if (cfDefImg) cfDefImg.style.transition = 'none';
             await new Promise(res => {
                 const t0     = performance.now();
                 const DUR    = 580;
