@@ -23194,37 +23194,33 @@
             }
             fighterEl.querySelectorAll('.weapon-attack-char-overlay, .weapon-attack-overlay, .heavy-attack-char-overlay').forEach(el => el.remove());
 
-            // weapon-run-overlay positioning only works reliably on forward runs.
-            // On return runs (reverse=true) the sprite flips via scaleX(-1) and the weapon content
-            // lands in the wrong position, so we remove the overlay and re-show the idle overlay instead.
+            // Both approach and return runs use the weapon-idle-overlay for the weapon display.
+            // The weapon-run-overlay caused position desync on approach (weapon appeared too far
+            // forward in the canvas frame). Using the idle overlay for both directions keeps the
+            // weapon consistently positioned. The character body still uses _weaponRunFrames
+            // (weapon-holding pose) — the idle overlay just provides the weapon image on top.
             const _idleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
             const _idleOvHidden = !_idleOv || _idleOv.style.display === 'none';
-            // If unarmed, ensure the idle overlay stays hidden regardless of any prior animation state
+            // Remove any stale weapon-run-overlay from either direction
+            fighterEl.querySelector('.weapon-run-overlay')?.remove();
+            // If unarmed, keep idle overlay hidden
             if (!_armedWepId && _idleOv && !_idleOvHidden) {
                 _idleOv.style.display = 'none';
                 _idleOv._hiddenByAnimation = false;
             }
-            if (reverse) {
-                // Return run: remove any weapon-run-overlay left from the approach
-                fighterEl.querySelector('.weapon-run-overlay')?.remove();
-                // Re-show weapon-idle-overlay if it was hidden (attack run) — it always aligns correctly
-                if (_idleOvHidden && _armedWepId && _idleOv) {
-                    const _pf = _weaponIdlePoseCache[_armedWepId];
-                    if (_pf && _pf.length > 0) {
-                        _idleOv._suppressEquipFlash = true;
-                        _idleOv.src = _pf[0];
-                        _idleOv.style.display = 'block';
-                    }
+            // For both approach and return: show weapon-idle-overlay if armed
+            if (_armedWepId && _idleOv) {
+                const _pf = _weaponIdlePoseCache[_armedWepId];
+                if (_pf && _pf.length > 0) {
+                    _idleOv._suppressEquipFlash = true;
+                    _idleOv.src = _pf[0];
+                    _idleOv.style.display = 'block';
+                    _idleOv._hiddenByAnimation = false;
                 }
             }
             const hasWeaponRun = _armedWepId && img._weaponRunFrames && img._weaponRunFrames.length > 0;
-            // Weapon overlay frames — only used on forward runs; remove idle overlay first so it doesn't double
-            const weaponFrames = (hasWeaponRun && !reverse) ? (_weaponRunFramesCache[_armedWepId] || []) : [];
-            if (hasWeaponRun && !reverse && _idleOv && !_idleOvHidden) {
-                // Hide idle overlay for forward weapon run (run overlay takes over)
-                _idleOv.style.display = 'none';
-                _idleOv._hiddenByAnimation = true;
-            }
+            // Never create weapon-run-overlay — idle overlay handles weapon display for both directions
+            const weaponFrames = [];
 
             // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn):
             //   speed  62 (AGI~15)  → ~293ms frames / ~214ms steps  (slow, lumbering)
