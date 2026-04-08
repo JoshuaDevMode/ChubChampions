@@ -12057,6 +12057,8 @@
             revokeBlobURLs(check(img._hurtFrames));
             revokeBlobURLs(check(img._dodgeFrames));
             revokeBlobURLs(check(img._blockFrames));
+            revokeBlobURLs(check(img._shieldBlockFrames));
+            revokeBlobURLs(check(img._shieldDefenseFrames));
             revokeBlobURLs(check(img._idleBlinkFrames));
             revokeBlobURLs(check(img._loserFrames));
             if (img.dataset.win && !origSet.has(img.dataset.win)) revokeBlobURLs(img.dataset.win);
@@ -26989,6 +26991,7 @@
                         dodge: [...img._dodgeFrames],
                         block: [...img._blockFrames],
                         shieldBlock: img._shieldBlockFrames ? [...img._shieldBlockFrames] : [],
+                        shieldDefense: img._shieldDefenseFrames ? [...img._shieldDefenseFrames] : [],
                         armedIdle: img._armedIdleFrames ? [...img._armedIdleFrames] : [],
                         idleBlink: [...img._idleBlinkFrames],
                         loser: [...img._loserFrames],
@@ -28457,6 +28460,12 @@
                         }
                     }
                 }
+
+                // Revoke _imgBlobCache blob URLs — only needed as extractFrames input
+                for (const url of Object.values(window._imgBlobCache || {})) {
+                    if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+                }
+                window._imgBlobCache = {};
 
                 _lloProgress(100, 'READY!');
                 _lobbySpritesLoaded = true;
