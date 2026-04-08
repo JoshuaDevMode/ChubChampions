@@ -17924,14 +17924,21 @@
 
             cfDefEl.style.transition = 'none';
             await new Promise(res => {
-                const t0   = performance.now();
-                const DUR  = 580;
-                const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                const t0     = performance.now();
+                const DUR    = 580;
+                const ease   = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                // sin(π*t*0.85) peaks at t≈0.588 — rotate from 90° to 180° by peak,
+                // then hold 180° (upside-down) for the entire descent.
+                const PEAK_T   = 0.588;
+                const startRot = 90  * cfSpinDir;
+                const endRot   = 180 * cfSpinDir;
                 const step = now => {
-                    const t   = Math.min((now - t0) / DUR, 1);
-                    const tx  = cfDeltaX * ease(t);
-                    const ty  = -110 * Math.sin(Math.PI * t * 0.85);
-                    const rot = 360 * cfSpinDir * ease(t);
+                    const t  = Math.min((now - t0) / DUR, 1);
+                    const tx = cfDeltaX * ease(t);
+                    const ty = -110 * Math.sin(Math.PI * t * 0.85);
+                    const rot = t < PEAK_T
+                        ? startRot + (endRot - startRot) * (t / PEAK_T)
+                        : endRot;
                     cfDefEl.style.transform = `translate(${tx}px, ${ty}px)`;
                     if (cfDefImg) cfDefImg.style.transform = `${cfDefBaseXf}rotate(${rot}deg)`;
                     if (t < 1) { battleRAF(step, res); return; }
