@@ -1084,7 +1084,7 @@
         /* Weapon Inventory Bar - just below HUD, clear of right-side buttons */
         .weapon-bar {
             position: absolute;
-            top: 140px;
+            top: 178px;
             left: 0;
             right: 0;
             display: flex;
@@ -1136,15 +1136,15 @@
             box-shadow: none;
         }
 
-        /* Consumable slots in arena - bottom, above weapon bar */
+        /* Consumable slots — same row as weapons, on the inner side of each HUD panel */
         .consumable-bar {
             position: absolute;
-            bottom: 10px;
+            top: 178px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 0 10px;
+            padding: 0 375px 0 280px;
             z-index: 9;
             pointer-events: none;
         }
@@ -1153,7 +1153,7 @@
         .consumable-slots {
             display: flex;
             gap: 5px;
-            padding: 0 10px;
+            padding: 0 4px;
         }
 
         .consumable-slot {
