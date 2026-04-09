@@ -18797,11 +18797,12 @@
                             haImg.src = haImg._runFrames?.[8] || haImg.src;
                         }
                     } else {
-                        // Clear armed-idle size before using run frame — otherwise the run frame
-                        // renders at 275px (armed-idle canvas size) instead of normal 200px.
+                        // Show the mid-attack frame during the arc so the character looks like
+                        // it's attacking in the air, not running.
                         haImg.style.width  = '';
                         haImg.style.height = '';
-                        haImg.src = haImg._runFrames?.[8] || haImg.src;
+                        const _haAtkFrames = haImg[`_${attackType}Frames`] || haImg._punchFrames || [];
+                        haImg.src = _haAtkFrames[2] ?? _haAtkFrames[0] ?? haImg._runFrames?.[8] ?? haImg.src;
                     }
                 }
                 // Hide weapon-idle-overlay during the hop — the hop bypasses animateRun so
