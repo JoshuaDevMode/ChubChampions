@@ -391,7 +391,7 @@
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
-            z-index: 1;
+            z-index: 3;
             filter: drop-shadow(0 0 4px rgba(168,85,247,0.6));
         }
 
@@ -404,7 +404,7 @@
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
-            z-index: 0;
+            z-index: 1;
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
@@ -417,8 +417,13 @@
             transform: translate(-50%, -50%);
             object-fit: contain;
             pointer-events: none;
-            z-index: 0;
+            z-index: 1;
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Off-hand shield sits in front of the character body (z:1) but behind the weapon sprite (z:3) */
+        .offhand-shield-overlay {
+            z-index: 2;
         }
 
         #cpu .heavy-attack-char-overlay {
