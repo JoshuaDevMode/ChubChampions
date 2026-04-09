@@ -23780,6 +23780,9 @@
                 overlay._hiddenByAnimation = true;
                 overlay.style.display = 'none';
             }
+            // Also hide the off-hand shield overlay — it floats over run/attack animations otherwise
+            const ohOverlay = el.querySelector('.fighter-body .offhand-shield-overlay');
+            if (ohOverlay) ohOverlay.style.display = 'none';
         }
 
         function showComboHit(count) {
