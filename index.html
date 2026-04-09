@@ -31172,7 +31172,12 @@
 
         // ===== NOTICE MODAL (replaces alert) =====
         function showNotice(message) {
-            document.getElementById('notice-message').textContent = message;
+            const el = document.getElementById('notice-message');
+            if (message.includes('<img')) {
+                el.innerHTML = message;
+            } else {
+                el.textContent = message;
+            }
             document.getElementById('notice-modal').classList.add('active');
         }
 
