@@ -1084,7 +1084,7 @@
         /* Weapon Inventory Bar - just below HUD, clear of right-side buttons */
         .weapon-bar {
             position: absolute;
-            top: 165px;
+            top: 155px;
             left: 0;
             right: 0;
             display: flex;
@@ -1136,10 +1136,10 @@
             box-shadow: none;
         }
 
-        /* Consumable slots — same row as weapons, opposite outer edges */
+        /* Consumable slots — second row, opposite edges from weapons */
         .consumable-bar {
             position: absolute;
-            top: 165px;
+            top: 210px;
             left: 0;
             right: 0;
             display: flex;
@@ -18583,10 +18583,12 @@
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
 
-            // Hide attacker's weapon overlay (replaced by weapon-run/attack overlays during animation).
-            // Defender's overlay stays visible during approach — it's hidden per-reaction:
-            // showHitEffect → hideWeaponIdleOverlay on hit, knockdown handler on knockdown.
-            hideWeaponIdleOverlay(attacker);
+            // Jump/hop/combo attacks replace the idle overlay immediately with their own overlays,
+            // so hide early for those. Normal approach runs keep the overlay visible while running;
+            // it gets hidden just as the attacker arrives (see normal-run branch below).
+            if (event.jumpAttack || event.hopAttack || isComboFollow) {
+                hideWeaponIdleOverlay(attacker);
+            }
 
             // Midpoint position: ~44% from the attacker's side
             const midPos = '44%';
@@ -18634,6 +18636,7 @@
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(190);
+                hideWeaponIdleOverlay(attacker);
                 stopRunAnimation(attackerEl);
                 playFootstep();
             } else if (event.jumpAttack) {
@@ -18917,6 +18920,7 @@
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
+                hideWeaponIdleOverlay(attacker);
                 stopRunAnimation(attackerEl);
                 playFootstep();
             }
