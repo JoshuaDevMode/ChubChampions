@@ -18123,6 +18123,21 @@
                         break;
                     }
 
+                    case 'shield_damage': {
+                        const _sdWs = weaponState[event.fighter];
+                        if (_sdWs) {
+                            if (event.offHand) {
+                                _sdWs.offHandShieldHP    = event.shieldHp;
+                                _sdWs.offHandShieldMaxHP = event.shieldMaxHp;
+                            } else {
+                                _sdWs.shieldHP    = event.shieldHp;
+                                _sdWs.shieldMaxHP = event.shieldMaxHp;
+                            }
+                            updateWeaponDisplay(event.fighter);
+                        }
+                        break;
+                    }
+
                     case 'fury_update': {
                         if (!event.changed) break; // only handle activation / deactivation
                         const ff = event.fighter;
