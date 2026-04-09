@@ -12389,6 +12389,7 @@
                 defenderImg.style.height = '';
                 defenderImg._hurtActive  = true;
                 hideWeaponIdleOverlay(defender);
+                hideOffHandOverlay(defender);
                 defenderImg.src = randomHurt;
                 setTimeout(() => {
                     defenderImg._hurtActive = false;
@@ -18780,6 +18781,7 @@
                             const _haFacingFlipped = attackerEl.classList.contains('facing-flipped');
                             haBody.querySelectorAll('.weapon-attack-overlay,.heavy-attack-char-overlay,.weapon-attack-char-overlay').forEach(e => e.remove());
                             haImg.style.visibility = 'hidden';
+                            hideOffHandOverlay(attacker);
                             haCo = document.createElement('img');
                             haCo.className = isHopHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
                             if (_haFacingFlipped) haCo.classList.add('sprite-reversed');
@@ -18871,6 +18873,7 @@
                 // Hide weapon idle overlay: avoids it floating at armed-idle size (275px)
                 // over the dodge frame (200px). For jump dodge the weapon-run-overlay takes over.
                 hideWeaponIdleOverlay(defender);
+                hideOffHandOverlay(defender);
                 const _jdEquipped = jumpDodge ? weaponState[defender]?.equippedWeapon : null;
                 const _jdWRunF    = _jdEquipped ? _weaponRunFramesCache[_jdEquipped] : null;
                 if (jumpDodge && _jdEquipped && defImg._weaponRunFrames?.length > 0 && _jdWRunF?.length > 0) {
@@ -18918,11 +18921,7 @@
                     // Hide weapon idle overlay during block: avoids double-shield (overlay + shield-block-overlay)
                     // and avoids the overlay floating at armed-idle size while body is at 200px
                     hideWeaponIdleOverlay(defender);
-                    // Also hide off-hand shield overlay during block — shield-block-overlay takes over
-                    if (isShieldBlock) {
-                        const _ohOv = game[defender]?.element?.querySelector('.fighter-body .offhand-shield-overlay');
-                        if (_ohOv) _ohOv.style.display = 'none';
-                    }
+                    hideOffHandOverlay(defender);
                     const blockFrames = isShieldBlock ? defImg._shieldBlockFrames : defImg._blockFrames;
                     if (blockFrames && blockFrames.length > 0) {
                         let fi = 0;
@@ -18970,6 +18969,7 @@
                     ], { duration: _total, easing: 'ease-in-out', fill: 'forwards' });
                     fighterBody._jumpLandMs = _hold + _fall;
                 }
+                hideOffHandOverlay(attacker);
                 animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
                 await sleep(Math.round((isComboFollow ? 130 : 300) * atkMult));
             }
@@ -19017,6 +19017,7 @@
                         kdImg.style.height = '';
                         kdImg._hurtActive  = true;
                         hideWeaponIdleOverlay(defender);
+                        hideOffHandOverlay(defender);
                         kdImg.src = kdImg._hurtFrames[0];
                         const _kdFighter = defender;
                         setTimeout(() => { kdImg._hurtActive = false; if (kdImg._preKdSrc) { kdImg.src = kdImg._preKdSrc; syncArmedIdle(_kdFighter); } }, 600);
@@ -23780,7 +23781,11 @@
                 overlay._hiddenByAnimation = true;
                 overlay.style.display = 'none';
             }
-            // Also hide the off-hand shield overlay — it floats over run/attack animations otherwise
+        }
+
+        function hideOffHandOverlay(fighter) {
+            const el = game[fighter]?.element;
+            if (!el) return;
             const ohOverlay = el.querySelector('.fighter-body .offhand-shield-overlay');
             if (ohOverlay) ohOverlay.style.display = 'none';
         }
