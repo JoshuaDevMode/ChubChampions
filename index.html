@@ -4551,8 +4551,8 @@
         }
 
         .shop-item {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.35);
+            border: 2px solid rgba(255,255,255,0.18);
             border-radius: 10px;
             padding: 12px;
             display: flex;
@@ -4610,30 +4610,34 @@
         }
 
         .shop-item.cant-afford:hover {
-            border-color: rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.35);
             transform: none;
         }
 
         .shop-item-fragment {
             grid-column: 1 / -1;
-            border-color: rgba(232, 123, 32, 0.35);
-            background: rgba(232, 123, 32, 0.06);
+            border-color: rgba(251, 191, 36, 0.6);
+            background: linear-gradient(135deg, rgba(120, 60, 0, 0.55), rgba(80, 35, 0, 0.65));
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255,220,80,0.12);
             flex-direction: row;
             justify-content: space-between;
             padding: 14px 18px;
         }
         .shop-item-fragment:hover {
-            border-color: #e87b20;
-            background: rgba(232, 123, 32, 0.18);
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, rgba(160, 80, 0, 0.65), rgba(100, 45, 0, 0.75));
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255,220,80,0.18);
             transform: translateY(-2px);
         }
         .shop-item-fragment .shop-item-name {
-            color: #fbbf24;
+            color: #fde68a;
+            text-shadow: 0 0 8px rgba(251,191,36,0.5);
         }
         .shop-item-fragment.cant-afford:hover {
-            border-color: rgba(232, 123, 32, 0.35);
-            background: rgba(232, 123, 32, 0.06);
+            border-color: rgba(251, 191, 36, 0.6);
+            background: linear-gradient(135deg, rgba(120, 60, 0, 0.55), rgba(80, 35, 0, 0.65));
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255,220,80,0.12);
             transform: none;
         }
         .shop-item-fragment .shop-item-info {
@@ -11187,7 +11191,6 @@
         <div class="shop-tokens" id="shop-tokens">🪙 0</div>
         <div class="shop-tabs">
             <div class="shop-tab active" id="shop-tab-potions" data-tab="potions">POTIONS</div>
-            <div class="shop-tab" id="shop-tab-wellness" data-tab="wellness">FOOD & MEDICAL</div>
         </div>
         <div class="shop-grid" id="shop-grid"></div>
     </div>
@@ -27969,7 +27972,6 @@
 
             // Update tab styles
             document.getElementById('shop-tab-potions').classList.toggle('active', shopActiveTab === 'potions');
-            document.getElementById('shop-tab-wellness').classList.toggle('active', shopActiveTab === 'wellness');
 
             // Fragment item (always shown, independent of tabs)
             const today = new Date().toDateString();
@@ -28046,29 +28048,6 @@
                         priceOrCooldown;
                     if (canAfford && character) {
                         item.addEventListener('click', () => buyConsumable(id));
-                    }
-                    grid.appendChild(item);
-                });
-            } else if (shopActiveTab === 'wellness') {
-                // Wellness items (food & medical) — activities moved to CARE panel
-                Object.keys(WELLNESS_ITEMS).forEach(id => {
-                    const wItem = WELLNESS_ITEMS[id];
-                    const price = wItem.price;
-                    const cooldown = getItemCooldownRemaining(id);
-                    const onCooldown = cooldown > 0;
-                    const atDailyLimit = getItemPurchasesRemaining(id) <= 0;
-                    const canAfford = globalTokens >= price && !onCooldown && !atDailyLimit;
-                    const item = document.createElement('div');
-                    item.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
-                    const priceOrCooldown = (onCooldown || atDailyLimit)
-                        ? '<div class="shop-item-cooldown">SOLD OUT</div>'
-                        : '<div class="shop-item-price">🪙 ' + price + '</div>';
-                    item.innerHTML = '<div class="shop-item-icon">' + wItem.icon + '</div>' +
-                        '<div class="shop-item-name">' + wItem.name + '</div>' +
-                        '<div class="shop-item-heal">+' + wItem.wellnessRestore + ' Wellness | +' + wItem.xpGrant + ' XP</div>' +
-                        priceOrCooldown;
-                    if (canAfford && character) {
-                        item.addEventListener('click', () => buyWellnessItem(id));
                     }
                     grid.appendChild(item);
                 });
