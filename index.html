@@ -31660,6 +31660,23 @@
                 }
             }
 
+            // Build off-hand shield buttons once (shields only)
+            const offHandBtnsEl = document.getElementById('dbg-offhand-btns');
+            if (!offHandBtnsEl.children.length) {
+                for (const tier of Object.values(WEAPON_TIERS)) {
+                    for (const w of tier) {
+                        if (!w.img || !w.isShield) continue;
+                        const btn = document.createElement('button');
+                        btn.className = 'anim-debug-btn';
+                        btn.style.cssText = 'padding:4px;font-size:0.35em;display:flex;flex-direction:column;align-items:center;gap:2px;';
+                        btn.dataset.weaponId = w.id;
+                        btn.innerHTML = '<img src="' + w.img + '" style="width:28px;height:28px;object-fit:contain;"><span>' + w.name + '</span>';
+                        btn.onclick = function() { dbgSelectOffHand(w.id, this); };
+                        offHandBtnsEl.appendChild(btn);
+                    }
+                }
+            }
+
             document.getElementById('anim-debug-screen').style.display = 'flex';
         }
 
@@ -31707,8 +31724,52 @@
             if (shieldRow) shieldRow.style.display = weapon.isShield ? '' : 'none';
         }
 
+        async function dbgSelectOffHand(weaponId, btn) {
+            const dbgEl  = document.getElementById('anim-debug-fighter');
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (!dbgEl || !dbgImg) return;
+
+            document.getElementById('dbg-offhand-none').classList.remove('active');
+            document.querySelectorAll('#dbg-offhand-btns .anim-debug-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            else document.getElementById('dbg-offhand-none').classList.add('active');
+
+            dbgImg._debugOffHandId = weaponId || null;
+
+            const ohOverlay = dbgEl.querySelector('.offhand-shield-overlay');
+            if (!ohOverlay) return;
+
+            if (!weaponId) {
+                ohOverlay.style.display = 'none';
+                ohOverlay.src = '';
+                return;
+            }
+
+            // Load idle pose frame for the shield
+            const shieldId = weaponId;
+            if (!_weaponIdlePoseCache[shieldId]) {
+                const weapon = getWeaponById(shieldId);
+                if (weapon?.img && WEAPON_POSE_MAP[shieldId]) {
+                    try { _weaponIdlePoseCache[shieldId] = await extractFrames(WEAPON_POSE_MAP[shieldId], 1, 1); }
+                    catch(e) { _weaponIdlePoseCache[shieldId] = []; }
+                }
+            }
+            const poseFrames = _weaponIdlePoseCache[shieldId];
+            if (poseFrames?.length) {
+                ohOverlay.src = poseFrames[0];
+                ohOverlay.style.display = '';
+            }
+        }
+
         function closeAnimDebug() {
             _dbgStop();
+            // Reset off-hand selection
+            const dbgImg = document.getElementById('anim-debug-img');
+            if (dbgImg) dbgImg._debugOffHandId = null;
+            document.getElementById('dbg-offhand-none')?.classList.add('active');
+            document.querySelectorAll('#dbg-offhand-btns .anim-debug-btn').forEach(b => b.classList.remove('active'));
+            const dbgOhOv = document.querySelector('#anim-debug-fighter .offhand-shield-overlay');
+            if (dbgOhOv) { dbgOhOv.style.display = 'none'; dbgOhOv.src = ''; }
             document.getElementById('anim-debug-screen').style.display = 'none';
         }
 
@@ -31727,6 +31788,8 @@
             if (dbgImg._shieldOverlayAnim) { clearInterval(dbgImg._shieldOverlayAnim); dbgImg._shieldOverlayAnim = null; }
             const dbgShieldOverlay = dbgEl.querySelector('.shield-block-overlay');
             if (dbgShieldOverlay) dbgShieldOverlay.style.display = 'none';
+            // Keep offhand-shield-overlay visible if an off-hand is selected (it's part of the idle pose)
+            // It gets hidden/shown by dbgSelectOffHand
             dbgImg.classList.remove('sprite-reversed');
             dbgImg.style.transform = '';
             dbgImg.style.transition = '';
@@ -32213,6 +32276,11 @@
                 <span style="color:#6b7280;font-size:0.4em;margin-right:4px;">WEAPON:</span>
                 <button class="anim-debug-btn active" id="dbg-weapon-none" onclick="dbgSelectWeapon(null,this)" style="font-size:0.4em;padding:5px 8px;">NONE</button>
                 <div id="dbg-weapon-btns" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;"></div>
+            </div>
+            <div class="anim-debug-row" style="align-items:center;gap:4px;">
+                <span style="color:#6b7280;font-size:0.4em;margin-right:4px;">OFF-HAND:</span>
+                <button class="anim-debug-btn active" id="dbg-offhand-none" onclick="dbgSelectOffHand(null,this)" style="font-size:0.4em;padding:5px 8px;">NONE</button>
+                <div id="dbg-offhand-btns" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;"></div>
             </div>
             <div class="anim-debug-row">
                 <button class="anim-debug-btn" onclick="dbgAnim('idle',this)">IDLE</button>
