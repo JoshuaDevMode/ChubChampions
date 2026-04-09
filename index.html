@@ -18885,7 +18885,9 @@
             } else if (defense === 'block') {
                 const defWeaponState = weaponState[defender];
                 const defWeaponData  = defWeaponState?.equippedWeapon ? WEAPONS[defWeaponState.equippedWeapon] : null;
-                const isShieldBlock  = !!(defWeaponData?.isShield && defImg?._shieldBlockFrames?.length > 0);
+                // Check both main-hand shield and off-hand shield (dual-wield)
+                const hasShield      = !!(defWeaponData?.isShield) || !!(defWeaponState?.offHandShield);
+                const isShieldBlock  = !!(hasShield && defImg?._shieldBlockFrames?.length > 0);
                 const shieldOverlay  = fighterBody.querySelector('.shield-block-overlay');
                 if (defImg) {
                     defImg._preDefenseSrc = defImg.src;
@@ -18895,6 +18897,11 @@
                     // Hide weapon idle overlay during block: avoids double-shield (overlay + shield-block-overlay)
                     // and avoids the overlay floating at armed-idle size while body is at 200px
                     hideWeaponIdleOverlay(defender);
+                    // Also hide off-hand shield overlay during block — shield-block-overlay takes over
+                    if (isShieldBlock) {
+                        const _ohOv = game[defender]?.element?.querySelector('.fighter-body .offhand-shield-overlay');
+                        if (_ohOv) _ohOv.style.display = 'none';
+                    }
                     const blockFrames = isShieldBlock ? defImg._shieldBlockFrames : defImg._blockFrames;
                     if (blockFrames && blockFrames.length > 0) {
                         let fi = 0;
