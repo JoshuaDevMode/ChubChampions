@@ -11920,6 +11920,7 @@
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
+                    <img class="offhand-shield-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                 </div>
             </div>
@@ -11928,6 +11929,7 @@
                 <div class="fighter-body">
                     <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
+                    <img class="offhand-shield-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                 </div>
             </div>
@@ -12696,12 +12698,16 @@
             parent:null,             exclusiveWith:null,
             desc:'Increases base damage reduction on all incoming hits.',
             values:[0,0.05,0.10,0.17,0.26,0.38], unit:'% dmg reduction' },
-          // L1 — both available
-          { tree:'defense', id:'fortify',        name:'Fortify',        depth:1, x:590, y:190,
+          // L1 — three available
+          { tree:'defense', id:'fortify',        name:'Fortify',        depth:1, x:510, y:190,
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Flat damage reduction — reduces all incoming damage by %.',
             values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% flat reduce' },
-          { tree:'defense', id:'resilience',     name:'Resilience',     depth:1, x:820, y:190,
+          { tree:'defense', id:'shield_mastery', name:'Shield Mastery', depth:1, x:705, y:190,
+            parent:'iron_hide',      exclusiveWith:null,
+            desc:'Unlocks dual-wielding: equip a shield in your off hand alongside a one-handed weapon. Higher ranks also reduce block stamina cost.',
+            values:[0,1,1,1,1,1], unit:'off-hand unlock' },
+          { tree:'defense', id:'resilience',     name:'Resilience',     depth:1, x:900, y:190,
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Increases maximum HP and passively regenerates stamina each turn.',
             values:[0,0.06,0.12,0.20,0.30,0.44], unit:'% max HP',
@@ -12809,6 +12815,7 @@
           'attack_rupture':       '⚡',
           'attack_lifetap':       '💚',
           'defense_iron_hide':    '🛡️',
+          'defense_shield_mastery':'⚔️🛡️',
           'defense_fortify':      '🏰',
           'defense_resilience':   '❤️',
           'defense_bulwark':      '⬛',
@@ -13192,18 +13199,18 @@
         // Weapon tiers organized by chest level (13 tiers)
         // Each tier contains one weapon, unlocked randomly from that tier
         const WEAPON_TIERS = {
-            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi' }],
-            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi' }],
-            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true },
+            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi', isOneHanded: true }],
+            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi', isOneHanded: true }],
+            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true, isOneHanded: true },
                   { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
-            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true }],
+            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true, isOneHanded: true }],
             25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true }],
-            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06 }],
-            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true }],
-            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
+            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06, isOneHanded: true }],
+            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true, isOneHanded: true }],
+            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi', isOneHanded: true }],
             60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06, attackOverlay: true, heavyAttack: true }],
-            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true }],
-            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, attackOverlay: true, heavyAttack: true }],
+            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true, isOneHanded: true }],
+            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, attackOverlay: true, heavyAttack: true, isOneHanded: true }],
             100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
         };
 
@@ -18134,16 +18141,23 @@
 
                     case 'weapon_equip':
                         if (weaponState[event.fighter]) {
-                            weaponState[event.fighter].equippedWeapon = event.weaponId;
-                            weaponState[event.fighter].turnsRemaining = event.turns;
-                            // If server equipped a weapon not in local inventory, add it so HUD matches
-                            if (!weaponState[event.fighter].inventory.includes(event.weaponId)) {
-                                weaponState[event.fighter].inventory.push(event.weaponId);
+                            if (event.offHand) {
+                                // Off-hand shield (dual-wield)
+                                weaponState[event.fighter].offHandShield = event.weaponId;
+                                weaponState[event.fighter].offHandShieldHP = event.shieldHp || 0;
+                                weaponState[event.fighter].offHandShieldMaxHP = event.shieldHp || 0;
+                            } else {
+                                weaponState[event.fighter].equippedWeapon = event.weaponId;
+                                weaponState[event.fighter].turnsRemaining = event.turns;
+                                // If server equipped a weapon not in local inventory, add it so HUD matches
+                                if (!weaponState[event.fighter].inventory.includes(event.weaponId)) {
+                                    weaponState[event.fighter].inventory.push(event.weaponId);
+                                }
                             }
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
                             // Ensure attack overlay frames are cached — retry if null (prev load failed)
-                            if (!_weaponAttackFramesCache[event.weaponId]) {
+                            if (!event.offHand && !_weaponAttackFramesCache[event.weaponId]) {
                                 const wData = getWeaponById(event.weaponId);
                                 if (wData?.attackOverlay && wData?.img) {
                                     extractFrames(wData.img.replace('.png', ' Attack.png'), 4, 1)
@@ -18183,19 +18197,29 @@
                     }
 
                     case 'weapon_drop': {
-                        // Weapon tossed aside to free hands for fury power — no damage
+                        // Weapon tossed aside (fury power, drop_shield, or turns expired)
                         if (weaponState[event.fighter]) {
                             weaponState[event.fighter].usedWeapons.push(event.weaponId);
-                            weaponState[event.fighter].equippedWeapon = null;
+                            if (event.offHand) {
+                                weaponState[event.fighter].offHandShield = null;
+                                weaponState[event.fighter].offHandShieldHP = 0;
+                                weaponState[event.fighter].offHandShieldMaxHP = 0;
+                            } else {
+                                weaponState[event.fighter].equippedWeapon = null;
+                            }
                             updateWeaponDisplay(event.fighter);
                             syncArmedIdle(event.fighter);
-                            // Belt-and-suspenders: force-clear any weapon overlays.
                             const _dropEl = game[event.fighter]?.element;
                             if (_dropEl) {
-                                _dropEl.querySelector('.weapon-run-overlay')?.remove();
-                                const _dropIdleOv = _dropEl.querySelector('.fighter-body .weapon-idle-overlay');
-                                if (_dropIdleOv) { _dropIdleOv.style.display = 'none'; _dropIdleOv._hiddenByAnimation = false; }
-                                // Weapon-drop visual effect
+                                if (!event.offHand) {
+                                    _dropEl.querySelector('.weapon-run-overlay')?.remove();
+                                    const _dropIdleOv = _dropEl.querySelector('.fighter-body .weapon-idle-overlay');
+                                    if (_dropIdleOv) { _dropIdleOv.style.display = 'none'; _dropIdleOv._hiddenByAnimation = false; }
+                                } else {
+                                    // Hide off-hand shield overlay
+                                    const _offHandOv = _dropEl.querySelector('.fighter-body .offhand-shield-overlay');
+                                    if (_offHandOv) { _offHandOv.style.display = 'none'; }
+                                }
                                 spawnWeaponDropEffect(_dropEl, event.weaponId);
                             }
                         }
@@ -20610,6 +20634,9 @@
             weaponState.player.turnsRemaining = 0;
             weaponState.player.shieldHP = 0;
             weaponState.player.shieldMaxHP = 0;
+            weaponState.player.offHandShield = null;
+            weaponState.player.offHandShieldHP = 0;
+            weaponState.player.offHandShieldMaxHP = 0;
 
             // CPU gets ONE random weapon based on player's tier (only if level >= 5)
             const playerLevel = character ? character.level : 1;
@@ -20628,6 +20655,9 @@
             weaponState.cpu.turnsRemaining = 0;
             weaponState.cpu.shieldHP = 0;
             weaponState.cpu.shieldMaxHP = 0;
+            weaponState.cpu.offHandShield = null;
+            weaponState.cpu.offHandShieldHP = 0;
+            weaponState.cpu.offHandShieldMaxHP = 0;
 
             updateWeaponDisplay('player');
             updateWeaponDisplay('cpu');
@@ -20662,7 +20692,22 @@
                 if (state.usedWeapons.includes(weaponType)) {
                     slot.classList.add('used');
                 }
-                // Check if weapon is currently equipped
+                // Check if weapon is off-hand shield
+                else if (state.offHandShield === weaponType) {
+                    slot.classList.add('active');
+                    const hpPercent = state.offHandShieldMaxHP > 0 ? Math.round((state.offHandShieldHP / state.offHandShieldMaxHP) * 100) : 0;
+                    const shieldBar = document.createElement('div');
+                    shieldBar.className = 'shield-hp-bar';
+                    shieldBar.innerHTML = '<div class="shield-hp-fill" style="width:' + hpPercent + '%"></div>';
+                    slot.appendChild(shieldBar);
+                    // Off-hand indicator
+                    const ohLabel = document.createElement('span');
+                    ohLabel.className = 'turns-left';
+                    ohLabel.textContent = 'OH';
+                    ohLabel.title = 'Off-hand';
+                    slot.appendChild(ohLabel);
+                }
+                // Check if weapon is currently equipped (main hand)
                 else if (state.equippedWeapon === weaponType) {
                     slot.classList.add('active');
                     const activeWeapon = WEAPONS[weaponType];
@@ -23665,6 +23710,35 @@
                 overlay.style.display = 'none';
                 overlay.src = '';
             }
+
+            // Off-hand shield overlay — shown independently of main weapon
+            const offHandId = weaponState[fighter]?.offHandShield;
+            const offHandOv = el.querySelector('.fighter-body .offhand-shield-overlay');
+            if (offHandOv) {
+                offHandOv.style.width  = newW || '200px';
+                offHandOv.style.height = newW || '200px';
+                offHandOv.style.transform = overlay.style.transform; // match facing
+                if (offHandId) {
+                    const shieldPoseFrames = _weaponIdlePoseCache[offHandId];
+                    if (shieldPoseFrames && shieldPoseFrames.length > 0) {
+                        offHandOv.src = shieldPoseFrames[0];
+                        offHandOv.style.display = 'block';
+                    } else if (shieldPoseFrames == null && WEAPON_POSE_MAP[offHandId]) {
+                        extractFrames(WEAPON_POSE_MAP[offHandId], 1, 1)
+                            .then(f => {
+                                _weaponIdlePoseCache[offHandId] = f;
+                                if (weaponState[fighter]?.offHandShield === offHandId) syncArmedIdle(fighter);
+                            })
+                            .catch(() => { _weaponIdlePoseCache[offHandId] = null; });
+                        offHandOv.style.display = 'none';
+                    } else {
+                        offHandOv.style.display = 'none';
+                    }
+                } else {
+                    offHandOv.style.display = 'none';
+                    offHandOv.src = '';
+                }
+            }
         }
 
         // Hides the weapon idle overlay during animations (re-shown by startIdleBlink / syncArmedIdle).
@@ -24548,12 +24622,15 @@
             _staminaTarget.player  = 100; _staminaDisplay.player  = 100;
             _staminaTarget.cpu     = 100; _staminaDisplay.cpu     = 100;
             for (const side of ['player', 'cpu']) {
-                weaponState[side].inventory      = [];
-                weaponState[side].usedWeapons    = [];
-                weaponState[side].equippedWeapon = null;
-                weaponState[side].turnsRemaining = 0;
-                weaponState[side].shieldHP       = 0;
-                weaponState[side].shieldMaxHP    = 0;
+                weaponState[side].inventory         = [];
+                weaponState[side].usedWeapons       = [];
+                weaponState[side].equippedWeapon    = null;
+                weaponState[side].turnsRemaining    = 0;
+                weaponState[side].shieldHP          = 0;
+                weaponState[side].shieldMaxHP       = 0;
+                weaponState[side].offHandShield     = null;
+                weaponState[side].offHandShieldHP   = 0;
+                weaponState[side].offHandShieldMaxHP= 0;
             }
             const _sc = battleState.playerCharacter;
             battleState.consumables.player = ((_sc && _sc.equippedConsumables) || []).filter(id => CONSUMABLES[id]).map(id => ({ id, used: false }));
@@ -24631,12 +24708,15 @@
 
             // Reset weapon state — weapons are populated by weapon_equip events as replay plays
             for (const side of ['player', 'cpu']) {
-                weaponState[side].inventory      = [];
-                weaponState[side].usedWeapons    = [];
-                weaponState[side].equippedWeapon = null;
-                weaponState[side].turnsRemaining = 0;
-                weaponState[side].shieldHP       = 0;
-                weaponState[side].shieldMaxHP    = 0;
+                weaponState[side].inventory         = [];
+                weaponState[side].usedWeapons       = [];
+                weaponState[side].equippedWeapon    = null;
+                weaponState[side].turnsRemaining    = 0;
+                weaponState[side].shieldHP          = 0;
+                weaponState[side].shieldMaxHP       = 0;
+                weaponState[side].offHandShield     = null;
+                weaponState[side].offHandShieldHP   = 0;
+                weaponState[side].offHandShieldMaxHP= 0;
             }
             updateWeaponDisplay('player');
             updateWeaponDisplay('cpu');
@@ -24756,6 +24836,8 @@
                 el.querySelectorAll('.weapon-attack-overlay, .weapon-attack-char-overlay, .heavy-attack-char-overlay').forEach(o => o.remove());
                 const idlePoseOverlay = el.querySelector('.weapon-idle-overlay');
                 if (idlePoseOverlay) { idlePoseOverlay.style.display = 'none'; idlePoseOverlay.src = ''; }
+                const offHandOverlay = el.querySelector('.offhand-shield-overlay');
+                if (offHandOverlay) { offHandOverlay.style.display = 'none'; offHandOverlay.src = ''; }
             });
 
             // Reset fighter body classes
