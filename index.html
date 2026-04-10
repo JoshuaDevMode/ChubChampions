@@ -3877,8 +3877,31 @@
             font-family: 'Fredoka', sans-serif;
             font-size: 0.52em;
             color: #93c5fd;
-            margin-bottom: 6px;
             letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: 0 2px 6px;
+            transition: color 0.15s;
+        }
+        .care-bag-title:hover { color: #bfdbfe; }
+        .care-bag-arrow {
+            font-size: 0.85em;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+        .care-bag-section.collapsed .care-bag-arrow { transform: rotate(-90deg); }
+        .care-bag-body {
+            overflow: hidden;
+            max-height: 200px;
+            transition: max-height 0.25s ease, opacity 0.2s ease;
+            opacity: 1;
+        }
+        .care-bag-section.collapsed .care-bag-body {
+            max-height: 0;
+            opacity: 0;
         }
         .care-bag-grid {
             display: grid;
@@ -11323,10 +11346,15 @@
             </div>
 
             <!-- Bag — 2×5 inventory grid -->
-            <div class="care-bag-section">
-                <div class="care-bag-title">🎒 BAG</div>
-                <div class="care-bag-grid" id="care-bag-grid"></div>
-                <div id="care-drag-hint">⬅ Drag item to fighter to use</div>
+            <div class="care-bag-section" id="care-bag-section">
+                <div class="care-bag-title" id="care-bag-toggle">
+                    <span>Bag</span>
+                    <span class="care-bag-arrow">▼</span>
+                </div>
+                <div class="care-bag-body">
+                    <div class="care-bag-grid" id="care-bag-grid"></div>
+                    <div id="care-drag-hint">⬅ Drag item to fighter to use</div>
+                </div>
             </div>
 
             <!-- Shared content area — renders wellness items or activities depending on selection -->
@@ -31109,6 +31137,9 @@
         });
         document.getElementById('care-panel-close').addEventListener('click', () => {
             closeCarePanel();
+        });
+        document.getElementById('care-bag-toggle').addEventListener('click', () => {
+            document.getElementById('care-bag-section').classList.toggle('collapsed');
         });
         // Care stat-box section switching (wellness / morale)
         document.getElementById('care-wellness-col').addEventListener('click', () => {
