@@ -1089,7 +1089,7 @@
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 0 85px 0 10px;
+            padding: 0 10px;
             z-index: 9;
             pointer-events: none;
         }
@@ -1136,16 +1136,15 @@
             box-shadow: none;
         }
 
-        /* Consumable slots — second row, opposite edges from weapons */
+        /* Consumable slots — second row, same edges as weapons */
         .consumable-bar {
             position: absolute;
             top: 210px;
             left: 0;
             right: 0;
             display: flex;
-            flex-direction: row-reverse;
             justify-content: space-between;
-            padding: 0 85px 0 10px;
+            padding: 0 10px;
             z-index: 9;
             pointer-events: none;
         }
@@ -17811,6 +17810,21 @@
             const _mvScale  = _mvArenaW / 1600;
             if (event.from !== event.to) {
                 const movEl      = game[event.fighter].element;
+                // If dodge already slid the fighter simultaneously, skip the run animation
+                // and just snap to the exact server position (corrects any scaling rounding).
+                if (movEl._dodgeSlid) {
+                    delete movEl._dodgeSlid;
+                    const _dsArenaW = document.getElementById('arena').offsetWidth;
+                    const _dsScale  = _dsArenaW / 1600;
+                    const _dsDestX  = event.fighter === 'player' ? event.playerX : event.cpuX;
+                    movEl.style.left  = (_visualPos(_dsDestX) * _dsScale) + 'px';
+                    movEl.style.right = 'auto';
+                    game.player._homeX = event.playerX;
+                    game.cpu._homeX    = event.cpuX;
+                    _syncFacingDirection();
+                    await sleep(20);
+                    return;
+                }
                 const movingLeft = event.to < event.from;
                 const distServer = Math.abs(event.to - event.from);
                 // _visualPos: reflects positions outside [0,1380] back inside so fighters
@@ -18613,7 +18627,7 @@
             // Heavy weapons have a larger overlay that extends beyond the sprite, so they
             // stop further back — _ATCK_GAP = 180 (≈40px overlap) vs 100 (≈120px overlap).
             const _isHeavyWepAnim = !!getWeaponById(attackType)?.heavyAttack;
-            const _ATCK_GAP = _isHeavyWepAnim ? 180 : 100;
+            const _ATCK_GAP = _isHeavyWepAnim ? 180 : (isWeaponAnim ? 150 : 100);
             // After a crossover player._homeX > cpu._homeX, so the approach side flips.
             // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
             const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
@@ -18635,7 +18649,6 @@
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(190);
-                hideWeaponIdleOverlay(attacker);
                 stopRunAnimation(attackerEl);
                 playFootstep();
             } else if (event.jumpAttack) {
@@ -18877,6 +18890,9 @@
                 attackerEl.style.setProperty('transition', 'none', 'important');
                 void attackerEl.offsetWidth;
 
+                // Resolve the arc promise at t=0.75 (mid-descent) so attack + damage fire
+                // while the character is still airborne. The remaining landing arc continues
+                // in a background RAF so the character visually touches down after the hit.
                 await new Promise(res => {
                     const t0  = performance.now();
                     const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
@@ -18885,7 +18901,38 @@
                         const tx = haDeltaX * ease(t);
                         const ty = -haPeakH * Math.sin(Math.PI * t);
                         attackerEl.style.transform = `translate(${tx}px,${ty}px)`;
+                        if (t >= 0.75) {
+                            // Fire attack animation now (character still in air)
+                            const _haAnimType = isWeaponAnim ? 'punch' : attackType;
+                            hideWeaponIdleOverlay(attacker);
+                            hideOffHandOverlay(attacker);
+                            if (haCo) { haCo.remove(); haCo = null; }
+                            if (haWo) { haWo.remove(); haWo = null; }
+                            animateAttack(attackerEl, _haAnimType, Math.round(375 * atkMult), isWeaponAnim ? attackType : undefined);
+                            // Finish the remaining arc in background — landing happens after impact
+                            const _finishLanding = nowF => {
+                                const tF = Math.min((nowF - t0) / haArcMs, 1);
+                                attackerEl.style.transform = `translate(${haDeltaX * ease(tF)}px,${-haPeakH * Math.sin(Math.PI * tF)}px)`;
+                                if (tF < 1) { requestAnimationFrame(_finishLanding); return; }
+                                attackerEl.style.transform = '';
+                                attackerEl.style.left  = haLandLeft + 'px';
+                                attackerEl.style.right = 'auto';
+                                if (haImg) {
+                                    haImg.style.transition = 'transform 0.06s ease-out';
+                                    haImg.style.transform  = haBaseXform.trim() || '';
+                                    setTimeout(() => { haImg.style.transition = ''; }, 80);
+                                }
+                                stopRunAnimation(attackerEl);
+                                playFootstep();
+                                attackerEl._jumpReturn = { img: haImg, isCpu: isCpuHop };
+                            };
+                            requestAnimationFrame(_finishLanding);
+                            attackerEl._hopAttackFired = true;
+                            untrackAnim(res); res();
+                            return;
+                        }
                         if (t < 1) { battleRAF(step, res); return; }
+                        // Fallback: arc completed without hitting t>=0.75 threshold (shouldn't happen)
                         attackerEl.style.transform = '';
                         attackerEl.style.left  = haLandLeft + 'px';
                         attackerEl.style.right = 'auto';
@@ -18894,32 +18941,26 @@
                     battleRAF(step, res);
                 });
 
-                // Switch to last attack frame on landing, then animateAttack takes over
-                if (haCo) {
-                    const haCF = isHopHeavy
-                        ? (haImg._heavyAttackFrames || [])
-                        : (haImg._weaponAttackFrames || []);
-                    const haWF = _weaponAttackFramesCache[attackType] || [];
-                    haCo.src = haCF[haCF.length - 1] || haCF[2] || haCo.src;
-                    if (haWo) haWo.src = haWF[haWF.length - 1] || haWF[2] || haWo.src;
+                // If arc resolved early (t=0.75): landing is in background, no pose reset here.
+                // If fallback (full arc): set up landing state now.
+                if (!attackerEl._hopAttackFired) {
+                    if (haCo) { haCo.remove(); haCo = null; }
+                    if (haWo) { haWo.remove(); haWo = null; }
+                    if (haImg) {
+                        haImg.style.transition = 'transform 0.06s ease-out';
+                        haImg.style.transform  = haBaseXform.trim() || '';
+                        setTimeout(() => { haImg.style.transition = ''; }, 80);
+                    }
+                    stopRunAnimation(attackerEl);
+                    playFootstep();
+                    attackerEl._jumpReturn = { img: haImg, isCpu: isCpuHop };
                 }
-
-                // Reset pose on landing
-                if (haImg) {
-                    haImg.style.transition = 'transform 0.06s ease-out';
-                    haImg.style.transform  = haBaseXform.trim() || '';
-                    setTimeout(() => { haImg.style.transition = ''; }, 80);
-                }
-                stopRunAnimation(attackerEl);
-                playFootstep();
-                attackerEl._jumpReturn = { img: haImg, isCpu: isCpuHop };
             } else {
                 // Normal first hit: run from starting corner to opponent
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
-                hideWeaponIdleOverlay(attacker);
                 stopRunAnimation(attackerEl);
                 playFootstep();
             }
@@ -18967,8 +19008,24 @@
                         _dodgeWOv.src = _dodgePoseF[0];
                         fighterBody.appendChild(_dodgeWOv);
                     }
+                    // Slide defender back simultaneously with dodge frames (130px scaled to arena)
+                    const _dArenaW   = document.getElementById('arena').offsetWidth;
+                    const _dScale    = _dArenaW / 1600;
+                    const _dRetPx    = Math.round(130 * _dScale);
+                    const _dCurrLeft = parseFloat(defenderEl.style.left) || 0;
+                    // Defender retreats away from attacker — toward their own wall
+                    const _dIsOnLeft = (defender === 'player') === _playerIsOnLeft();
+                    const _dRetLeft  = _dIsOnLeft
+                        ? Math.max(0, _dCurrLeft - _dRetPx)
+                        : _dCurrLeft + _dRetPx;
+                    defenderEl.style.transition = 'left 130ms ease-out';
+                    void defenderEl.offsetWidth;
+                    defenderEl.style.left = _dRetLeft + 'px';
+                    defenderEl.style.right = 'auto';
+                    defenderEl._dodgeSlid = true;
                 }
                 await sleep(150);
+                if (!jumpDodge) defenderEl.style.transition = '';
             } else if (defense === 'block') {
                 const defWeaponState = weaponState[defender];
                 const defWeaponData  = defWeaponState?.equippedWeapon ? WEAPONS[defWeaponState.equippedWeapon] : null;
@@ -19011,7 +19068,10 @@
             }
 
             // Attack animation — skipped for jump attack (landing IS the hit)
+            // For hop attacks the attack was fired early (at 80% of arc); just wait for impact.
             const animType = isWeaponAnim ? 'punch' : attackType;
+            const _hopFired = !!attackerEl._hopAttackFired;
+            if (attackerEl._hopAttackFired) delete attackerEl._hopAttackFired;
             if (!event.jumpAttack) {
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
@@ -19032,9 +19092,14 @@
                     ], { duration: _total, easing: 'ease-in-out', fill: 'forwards' });
                     fighterBody._jumpLandMs = _hold + _fall;
                 }
-                hideOffHandOverlay(attacker);
-                animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
-                await sleep(Math.round((isComboFollow ? 130 : 300) * atkMult));
+                if (!_hopFired) {
+                    hideWeaponIdleOverlay(attacker);
+                    hideOffHandOverlay(attacker);
+                    animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
+                }
+                // Hop: attack fired mid-air — damage connects immediately (character still descending)
+                const _atkSleep = _hopFired ? 0 : Math.round((isComboFollow ? 130 : 300) * atkMult);
+                await sleep(_atkSleep);
             }
 
             // Apply result
