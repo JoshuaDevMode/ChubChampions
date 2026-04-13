@@ -376,7 +376,6 @@
             object-fit: contain;
             pointer-events: none;
             z-index: 1;
-            filter: drop-shadow(0 0 4px rgba(168,85,247,0.6));
         }
         .weapon-run-overlay.behind {
             z-index: -1;
@@ -392,7 +391,6 @@
             object-fit: contain;
             pointer-events: none;
             z-index: 3;
-            filter: drop-shadow(0 0 4px rgba(168,85,247,0.6));
         }
 
         .weapon-attack-char-overlay {
@@ -17898,11 +17896,15 @@
                     // Use _prevOnLeft (pre-move) so that during a crossover the sprite faces
                     // the direction of travel, not the post-crossover idle direction.
                     const isBack = ((event.fighter === 'player') === _prevOnLeft) ? movingLeft : !movingLeft;
-                    // Physics: time = distance / speed.
-                    // event.speed = px/turn sent by backend (= moveSpeed(agi) or half for cautious steps).
-                    // Fallback 180 ≈ AGI-54 average for retreat events that omit speed.
-                    const pxPerTurn = event.speed || 180;
-                    const moveDur   = Math.max(120, Math.min(600, Math.round(distServer / pxPerTurn * 300)));
+                    // Physics: duration scales inversely with AGI speed.
+                    // event.speed = moveSpeed(agi) — base px/turn (NOT half for cautious steps after this fix).
+                    // event.speed = moveSpeed(agi): inversely scales duration.
+                    // AGI 15 (47px) → ~568ms  |  AGI 68 (89px) → 300ms  |  AGI 300 (275px) → 120ms floor.
+                    // Without speed (jump / reposition events): fixed reference 180px/300ms.
+                    const pxPerTurn = event.speed;
+                    const moveDur   = pxPerTurn
+                        ? Math.max(120, Math.min(600, Math.round(26700 * distServer / (pxPerTurn * pxPerTurn))))
+                        : Math.max(120, Math.min(600, Math.round(distServer * 300 / 180)));
                     movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                     void movEl.offsetWidth;
                     movEl.style.left  = _movTargetX + 'px';
@@ -18660,9 +18662,16 @@
             // After a crossover player._homeX > cpu._homeX, so the approach side flips.
             // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
             const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
+            // When defense is a normal (non-jump) dodge the defender will slide 130px back.
+            // Extend the attacker's run target by the same amount so the combat gap stays
+            // at _ATCK_GAP regardless of whether the defender dodges.
+            const _dDefIsLeft   = (defender === 'player') === _playerIsOnLeft();
+            const _isDodgeRet   = defense === 'dodge' && !jumpDodge;
+            const _dRetCompPx   = _isDodgeRet ? Math.round(130 * _scale) : 0;
+            const _dRetCompSign = _dDefIsLeft ? -1 : 1;
             const _atkLeftPx = attacker === 'player'
-                ? (game.cpu._homeX    + _atkGapSign * _ATCK_GAP) * _scale
-                : (game.player._homeX - _atkGapSign * _ATCK_GAP) * _scale;
+                ? (game.cpu._homeX    + _atkGapSign * _ATCK_GAP) * _scale + _dRetCompSign * _dRetCompPx
+                : (game.player._homeX - _atkGapSign * _ATCK_GAP) * _scale + _dRetCompSign * _dRetCompPx;
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
@@ -19043,7 +19052,8 @@
                     const _dRetPx    = Math.round(130 * _dScale);
                     const _dCurrLeft = parseFloat(defenderEl.style.left) || 0;
                     // Defender retreats away from attacker — toward their own wall
-                    const _dIsOnLeft = (defender === 'player') === _playerIsOnLeft();
+                    // _dDefIsLeft is precomputed above alongside _atkLeftPx so both use the same value.
+                    const _dIsOnLeft = _dDefIsLeft;
                     const _dRetLeft  = _dIsOnLeft
                         ? Math.max(0, _dCurrLeft - _dRetPx)
                         : _dCurrLeft + _dRetPx;
@@ -23474,13 +23484,17 @@
             // Never create weapon-run-overlay — idle overlay handles weapon display for both directions
             const weaponFrames = [];
 
-            // Scale frame cycling and footstep rate with AGI-derived move speed (px/turn):
-            //   speed  62 (AGI~15)  → ~293ms frames / ~214ms steps  (slow, lumbering)
-            //   speed 265 (AGI~200) → ~215ms frames / ~158ms steps  (medium)
-            //   speed 655 (AGI~800) →  65ms frames /   50ms steps   (snappy sprint, floor)
+            // Frame and footstep rate: 7120/speed — ~3.8 frames per step at any AGI.
+            // Same gait rhythm, different absolute speed — slow chars trudge, fast ones blur.
+            //   speed  47 (AGI  15) → 151ms/frame  6.6fps  (heavy trudge)
+            //   speed  89 (AGI  68) →  80ms/frame 12.5fps  (baseline)
+            //   speed  89 (AGI  68) → 132ms/frame  8fps    (sluggish walk)
+            //   speed 147 (AGI 140) →  80ms/frame 13fps    (slow jog)
+            //   speed 275 (AGI 300) →  43ms/frame 23fps    (nimble sprint)
+            //   speed 452 (AGI 700) →  30ms/frame 33fps    (blurring dash, floor)
             // Without speed (attack run-ups): fixed 250ms / 150ms defaults.
-            const _frameMs = speed != null ? Math.max(65, Math.round(317 - speed * 0.385)) : 250;
-            const _footMs  = speed != null ? Math.max(50, Math.round(231 - speed * 0.277)) : 150;
+            const _frameMs = speed != null ? Math.max(30, Math.min(250, Math.round(11750 / speed))) : 250;
+            const _footMs  = speed != null ? Math.max(50, Math.round(_frameMs * 0.75)) : 150;
 
             if (hasWeaponRun) {
                 // Weapon run: character in weapon-holding pose + weapon overlay
