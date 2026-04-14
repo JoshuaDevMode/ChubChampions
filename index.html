@@ -18454,8 +18454,8 @@
         // transparent sprite padding, but the visible body spans [0, 1380]).
         // _visualPos() reflects out-of-bounds positions back inside so fighters
         // never go off-screen: e.g. worldX=-35 → displayX=35, worldX=1415 → displayX=1345.
-        const _VWALL_L = 0;
-        const _VWALL_R = 1380; // ARENA_WIDTH(1600) - FIGHTER_WIDTH(220)
+        const _VWALL_L = 10;   // WALL_LEFT  = FIGHTER_BODY_OFFSET(10)
+        const _VWALL_R = 1370; // WALL_RIGHT = ARENA_WIDTH(1600) - FIGHTER_WIDTH(220) - FIGHTER_BODY_OFFSET(10)
         function _visualPos(worldX) {
             if (worldX < _VWALL_L) return -worldX;                    // reflect left  (2*0 - x)
             if (worldX > _VWALL_R) return 2 * _VWALL_R - worldX;      // reflect right
