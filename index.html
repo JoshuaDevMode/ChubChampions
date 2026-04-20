@@ -23892,6 +23892,8 @@
                             if (isReachWeapon && sequence.length >= 3) {
                                 reversing = true;
                                 reverseIdx = sequence.length - 2;
+                                // Return shield to idle position as character starts pulling back
+                                if (_shieldOv) { _shieldOv.style.left = _shieldOvPrevLeft || '50%'; _shieldOv.style.top = '50%'; }
                             } else {
                                 clearInterval(img._currentAnim);
                                 img._currentAnim = null;
@@ -32568,6 +32570,8 @@
                             if (isReach && charFrames.length >= 3) {
                                 reversing = true;
                                 reverseIdx = charFrames.length - 2;
+                                // Return shield to idle position as character starts pulling back
+                                if (_dbgShieldOv) { _dbgShieldOv.style.left = _dbgShieldPrevLeft || '50%'; _dbgShieldOv.style.top = '50%'; }
                             } else {
                                 clearInterval(anim);
                                 dbgImg._currentAnim = null;
