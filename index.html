@@ -13359,6 +13359,8 @@
         const _weaponAttackFramesCache = {};
         // Weapon idle pose overlay frames cache: { weaponId: frames[] }
         const _weaponIdlePoseCache = {};
+        // Shield off-hand attack animation frames (plays on offhand-shield-overlay during weapon attacks)
+        let _shieldOffhandAttackFrames = null;
         const WEAPON_POSE_MAP = {
             tier_bat:           'Assets/Weapons/Poses/Bat Pose.png',
             tier_knife:         'Assets/Weapons/Poses/Knife Pose.png',
@@ -13408,7 +13410,7 @@
             15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true },
                   { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
             20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true, isOneHanded: true }],
-            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true, attackOverlay: true, reachAttack: true }],
+            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true, isOneHanded: true, attackOverlay: true, reachAttack: true }],
             30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06, isOneHanded: true }],
             40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true }],
             50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
@@ -23865,6 +23867,11 @@
                     body.appendChild(weaponOverlay);
                 }
 
+                // Animate off-hand shield in sync if equipped and frames available
+                const _fighterId = fighterEl.id === 'player' ? 'player' : 'cpu';
+                const _hasOffhandShield = !!(weaponState[_fighterId]?.offHandShield) && _shieldOffhandAttackFrames?.length > 0;
+                const _shieldOv = _hasOffhandShield ? body.querySelector('.offhand-shield-overlay') : null;
+
                 let reversing = false;
                 let reverseIdx = sequence.length - 2; // start at frame 2, stop at frame 1
                 img._currentAnim = setInterval(function() {
@@ -23873,6 +23880,7 @@
                         if (idx < sequence.length) {
                             charOverlay.src = sequence[idx];
                             if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
+                            if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[idx % _shieldOffhandAttackFrames.length];
                         } else if (idx === sequence.length || idx === sequence.length + 1) {
                             // Hold last frame for 3 ticks
                         } else {
@@ -23886,6 +23894,7 @@
                                 img._attackDone = true;
                                 charOverlay.remove();
                                 if (weaponOverlay) weaponOverlay.remove();
+                                if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[0];
                                 img.style.visibility = '';
                                 img.style.width  = img._armedIdleW || '';
                                 img.style.height = img._armedIdleW || '';
@@ -23901,6 +23910,7 @@
                         // Reverse playback: frame (length-2) down to frame 1
                         charOverlay.src = sequence[reverseIdx];
                         if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[reverseIdx % weaponSequence.length];
+                        if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[reverseIdx % _shieldOffhandAttackFrames.length];
                         reverseIdx--;
                         if (reverseIdx < 1) {
                             clearInterval(img._currentAnim);
@@ -23908,6 +23918,7 @@
                             img._attackDone = true;
                             charOverlay.remove();
                             if (weaponOverlay) weaponOverlay.remove();
+                            if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[0];
                             img.style.visibility = '';
                             img.style.width  = img._armedIdleW || '';
                             img.style.height = img._armedIdleW || '';
@@ -28991,6 +29002,12 @@
                 }
                 window._imgBlobCache = {};
 
+                // Load shield off-hand attack frames
+                if (!_shieldOffhandAttackFrames) {
+                    try { _shieldOffhandAttackFrames = await extractFrames('Assets/Weapons/Shield Offhand Attack.png', 4, 1); }
+                    catch(e) { _shieldOffhandAttackFrames = []; }
+                }
+
                 _lloProgress(100, 'READY!');
                 _lobbySpritesLoaded = true;
             } catch(e) {
@@ -32519,6 +32536,10 @@
                     weaponOverlay.src = weaponFrames[0];
                     body.appendChild(weaponOverlay);
                 }
+                // Off-hand shield overlay
+                const _dbgShieldOv = (dbgImg._debugOffHandId && _shieldOffhandAttackFrames?.length)
+                    ? body.querySelector('.offhand-shield-overlay') : null;
+
                 let idx = 0;
                 let reversing = false;
                 let reverseIdx = charFrames.length - 2;
@@ -32529,6 +32550,7 @@
                         if (idx < charFrames.length) {
                             charOverlay.src = charFrames[idx];
                             if (weaponOverlay) weaponOverlay.src = weaponFrames[idx % weaponFrames.length];
+                            if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[idx % _shieldOffhandAttackFrames.length];
                         } else if (idx === charFrames.length || idx === charFrames.length + 1) {
                             // hold last frame 3 ticks
                         } else {
@@ -32540,6 +32562,7 @@
                                 dbgImg._currentAnim = null;
                                 charOverlay.remove();
                                 if (weaponOverlay) weaponOverlay.remove();
+                                if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[0];
                                 dbgImg.style.visibility = '';
                                 dbgImg.src = dbgImg._idleSrc;
                                 res();
@@ -32548,12 +32571,14 @@
                     } else {
                         charOverlay.src = charFrames[reverseIdx];
                         if (weaponOverlay) weaponOverlay.src = weaponFrames[reverseIdx % weaponFrames.length];
+                        if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[reverseIdx % _shieldOffhandAttackFrames.length];
                         reverseIdx--;
                         if (reverseIdx < 1) {
                             clearInterval(anim);
                             dbgImg._currentAnim = null;
                             charOverlay.remove();
                             if (weaponOverlay) weaponOverlay.remove();
+                            if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[0];
                             dbgImg.style.visibility = '';
                             dbgImg.src = dbgImg._idleSrc;
                             res();
