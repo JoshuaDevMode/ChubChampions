@@ -23872,6 +23872,8 @@
                 const _fighterId = fighterEl.id === 'player' ? 'player' : 'cpu';
                 const _hasOffhandShield = !!(weaponState[_fighterId]?.offHandShield) && _shieldOffhandAttackFrames?.length > 0;
                 const _shieldOv = _hasOffhandShield ? body.querySelector('.offhand-shield-overlay') : null;
+                const _shieldOvPrevSize = _shieldOv ? _shieldOv.style.width : null;
+                if (_shieldOv) { _shieldOv.style.width = '345px'; _shieldOv.style.height = '345px'; }
 
                 let reversing = false;
                 let reverseIdx = sequence.length - 2; // start at frame 2, stop at frame 1
@@ -23895,7 +23897,7 @@
                                 img._attackDone = true;
                                 charOverlay.remove();
                                 if (weaponOverlay) weaponOverlay.remove();
-                                if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[0];
+                                if (_shieldOv) { _shieldOv.src = _shieldOffhandAttackFrames[0]; _shieldOv.style.width = _shieldOvPrevSize || ''; _shieldOv.style.height = _shieldOvPrevSize || ''; }
                                 img.style.visibility = '';
                                 img.style.width  = img._armedIdleW || '';
                                 img.style.height = img._armedIdleW || '';
@@ -32540,6 +32542,8 @@
                 // Off-hand shield overlay
                 const _dbgShieldOv = (dbgImg._debugOffHandId && _shieldOffhandAttackFrames?.length)
                     ? body.querySelector('.offhand-shield-overlay') : null;
+                const _dbgShieldPrevSize = _dbgShieldOv ? _dbgShieldOv.style.width : null;
+                if (_dbgShieldOv) { _dbgShieldOv.style.width = '345px'; _dbgShieldOv.style.height = '345px'; }
 
                 let idx = 0;
                 let reversing = false;
@@ -32563,7 +32567,7 @@
                                 dbgImg._currentAnim = null;
                                 charOverlay.remove();
                                 if (weaponOverlay) weaponOverlay.remove();
-                                if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[0];
+                                if (_dbgShieldOv) { _dbgShieldOv.src = _shieldOffhandAttackFrames[0]; _dbgShieldOv.style.width = _dbgShieldPrevSize || ''; _dbgShieldOv.style.height = _dbgShieldPrevSize || ''; }
                                 dbgImg.style.visibility = '';
                                 dbgImg.src = dbgImg._idleSrc;
                                 res();
