@@ -23841,7 +23841,7 @@
                 img.style.visibility = 'hidden';
                 img.style.width  = '';
                 img.style.height = '';
-                const speed = Math.max(20, Math.floor(duration / allFrames.length));
+                const speed = Math.max(20, Math.floor((duration / allFrames.length) * (isReachWeapon ? 0.77 : 1)));
                 const sequence = allFrames.slice();
                 const weaponSequence = weaponFrames ? weaponFrames.slice() : null;
                 let idx = 0;
@@ -32443,7 +32443,7 @@
                     : dbgImg._weaponAttackFrames;
             if (!charFrames?.length) return;
             const cssClass   = isHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
-            const msPerFrame = isHeavy ? 160 : 120;
+            const msPerFrame = isHeavy ? 160 : (_dbgWeapon?.reachAttack ? Math.round(120 * 0.77) : 120);
 
             const stageEl  = document.querySelector('.anim-debug-stage');
             const stageW   = stageEl.offsetWidth;
