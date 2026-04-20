@@ -23841,7 +23841,7 @@
                 img.style.visibility = 'hidden';
                 img.style.width  = '';
                 img.style.height = '';
-                const speed = Math.max(20, Math.floor((duration / allFrames.length) * (isReachWeapon ? 0.77 : 1)));
+                const speed = Math.max(20, Math.floor((duration / allFrames.length) * (isReachWeapon ? 0.70 : 1)));
                 const sequence = allFrames.slice();
                 const weaponSequence = weaponFrames ? weaponFrames.slice() : null;
                 let idx = 0;
@@ -23865,31 +23865,59 @@
                     body.appendChild(weaponOverlay);
                 }
 
+                let reversing = false;
+                let reverseIdx = sequence.length - 2; // start at frame 2, stop at frame 1
                 img._currentAnim = setInterval(function() {
-                    idx++;
-                    if (idx < sequence.length) {
-                        charOverlay.src = sequence[idx];
-                        if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
-                    } else if (idx === sequence.length) {
-                        // Hold last frame for 2x speed (extra tick)
-                    } else {
-                        clearInterval(img._currentAnim);
-                        img._currentAnim = null;
-                        img._attackDone = true;
-                        charOverlay.remove();
-                        if (weaponOverlay) weaponOverlay.remove();
-                        img.style.visibility = '';
-                        // Restore armed-idle display size (was cleared at attack start)
-                        img.style.width  = img._armedIdleW || '';
-                        img.style.height = img._armedIdleW || '';
-                        // Restore weapon idle overlay immediately so it doesn't vanish
-                        // during the post-hit pause before the return run starts.
-                        const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
-                        if (_postAtkIdleOv) {
-                            _postAtkIdleOv._hiddenByAnimation = false;
-                            _postAtkIdleOv._suppressEquipFlash = true;
+                    if (!reversing) {
+                        idx++;
+                        if (idx < sequence.length) {
+                            charOverlay.src = sequence[idx];
+                            if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
+                        } else if (idx === sequence.length || idx === sequence.length + 1) {
+                            // Hold last frame for 3 ticks
+                        } else {
+                            // Begin reverse playback (only for reach attacks)
+                            if (isReachWeapon && sequence.length >= 3) {
+                                reversing = true;
+                                reverseIdx = sequence.length - 2;
+                            } else {
+                                clearInterval(img._currentAnim);
+                                img._currentAnim = null;
+                                img._attackDone = true;
+                                charOverlay.remove();
+                                if (weaponOverlay) weaponOverlay.remove();
+                                img.style.visibility = '';
+                                img.style.width  = img._armedIdleW || '';
+                                img.style.height = img._armedIdleW || '';
+                                const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+                                if (_postAtkIdleOv) {
+                                    _postAtkIdleOv._hiddenByAnimation = false;
+                                    _postAtkIdleOv._suppressEquipFlash = true;
+                                }
+                                if (fighterEl.id) syncArmedIdle(fighterEl.id);
+                            }
                         }
-                        if (fighterEl.id) syncArmedIdle(fighterEl.id);
+                    } else {
+                        // Reverse playback: frame (length-2) down to frame 1
+                        charOverlay.src = sequence[reverseIdx];
+                        if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[reverseIdx % weaponSequence.length];
+                        reverseIdx--;
+                        if (reverseIdx < 1) {
+                            clearInterval(img._currentAnim);
+                            img._currentAnim = null;
+                            img._attackDone = true;
+                            charOverlay.remove();
+                            if (weaponOverlay) weaponOverlay.remove();
+                            img.style.visibility = '';
+                            img.style.width  = img._armedIdleW || '';
+                            img.style.height = img._armedIdleW || '';
+                            const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+                            if (_postAtkIdleOv) {
+                                _postAtkIdleOv._hiddenByAnimation = false;
+                                _postAtkIdleOv._suppressEquipFlash = true;
+                            }
+                            if (fighterEl.id) syncArmedIdle(fighterEl.id);
+                        }
                     }
                 }, speed);
             } else {
@@ -32443,7 +32471,7 @@
                     : dbgImg._weaponAttackFrames;
             if (!charFrames?.length) return;
             const cssClass   = isHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
-            const msPerFrame = isHeavy ? 160 : (_dbgWeapon?.reachAttack ? Math.round(120 * 0.77) : 120);
+            const msPerFrame = isHeavy ? 160 : (_dbgWeapon?.reachAttack ? Math.round(120 * 0.70) : 120);
 
             const stageEl  = document.querySelector('.anim-debug-stage');
             const stageW   = stageEl.offsetWidth;
@@ -32492,21 +32520,44 @@
                     body.appendChild(weaponOverlay);
                 }
                 let idx = 0;
+                let reversing = false;
+                let reverseIdx = charFrames.length - 2;
+                const isReach = !!_dbgWeapon?.reachAttack;
                 const anim = setInterval(() => {
-                    idx++;
-                    if (idx < charFrames.length) {
-                        charOverlay.src = charFrames[idx];
-                        if (weaponOverlay) weaponOverlay.src = weaponFrames[idx % weaponFrames.length];
-                    } else if (idx === charFrames.length) {
-                        // hold last frame one tick
+                    if (!reversing) {
+                        idx++;
+                        if (idx < charFrames.length) {
+                            charOverlay.src = charFrames[idx];
+                            if (weaponOverlay) weaponOverlay.src = weaponFrames[idx % weaponFrames.length];
+                        } else if (idx === charFrames.length || idx === charFrames.length + 1) {
+                            // hold last frame 3 ticks
+                        } else {
+                            if (isReach && charFrames.length >= 3) {
+                                reversing = true;
+                                reverseIdx = charFrames.length - 2;
+                            } else {
+                                clearInterval(anim);
+                                dbgImg._currentAnim = null;
+                                charOverlay.remove();
+                                if (weaponOverlay) weaponOverlay.remove();
+                                dbgImg.style.visibility = '';
+                                dbgImg.src = dbgImg._idleSrc;
+                                res();
+                            }
+                        }
                     } else {
-                        clearInterval(anim);
-                        dbgImg._currentAnim = null;
-                        charOverlay.remove();
-                        if (weaponOverlay) weaponOverlay.remove();
-                        dbgImg.style.visibility = '';
-                        dbgImg.src = dbgImg._idleSrc;
-                        res();
+                        charOverlay.src = charFrames[reverseIdx];
+                        if (weaponOverlay) weaponOverlay.src = weaponFrames[reverseIdx % weaponFrames.length];
+                        reverseIdx--;
+                        if (reverseIdx < 1) {
+                            clearInterval(anim);
+                            dbgImg._currentAnim = null;
+                            charOverlay.remove();
+                            if (weaponOverlay) weaponOverlay.remove();
+                            dbgImg.style.visibility = '';
+                            dbgImg.src = dbgImg._idleSrc;
+                            res();
+                        }
                     }
                 }, msPerFrame);
                 dbgImg._currentAnim = anim;
