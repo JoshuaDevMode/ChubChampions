@@ -23922,7 +23922,7 @@
                             img._attackDone = true;
                             charOverlay.remove();
                             if (weaponOverlay) weaponOverlay.remove();
-                            if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[0];
+                            if (_shieldOv) { _shieldOv.src = _shieldOffhandAttackFrames[0]; _shieldOv.style.width = _shieldOvPrevSize || ''; _shieldOv.style.height = _shieldOvPrevSize || ''; _shieldOv.style.left = _shieldOvPrevLeft || '50%'; }
                             img.style.visibility = '';
                             img.style.width  = img._armedIdleW || '';
                             img.style.height = img._armedIdleW || '';
@@ -32589,7 +32589,7 @@
                             dbgImg._currentAnim = null;
                             charOverlay.remove();
                             if (weaponOverlay) weaponOverlay.remove();
-                            if (_dbgShieldOv) _dbgShieldOv.src = _shieldOffhandAttackFrames[0];
+                            if (_dbgShieldOv) { _dbgShieldOv.src = _shieldOffhandAttackFrames[0]; _dbgShieldOv.style.width = _dbgShieldPrevSize || ''; _dbgShieldOv.style.height = _dbgShieldPrevSize || ''; _dbgShieldOv.style.left = _dbgShieldPrevLeft || '50%'; }
                             dbgImg.style.visibility = '';
                             dbgImg.src = dbgImg._idleSrc;
                             res();
