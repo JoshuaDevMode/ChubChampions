@@ -32551,12 +32551,12 @@
                 const _dbgShieldPrevSize = _dbgShieldOv ? _dbgShieldOv.style.width : null;
                 const _dbgShieldPrevLeft = _dbgShieldOv ? _dbgShieldOv.style.left : null;
                 const _dbgShieldPrevTop  = _dbgShieldOv ? _dbgShieldOv.style.top  : null;
+                const isReach = !!_dbgWeapon?.reachAttack;
                 if (_dbgShieldOv) { _dbgShieldOv.style.width = '345px'; _dbgShieldOv.style.height = '345px'; _dbgShieldOv.style.left = '74%'; if (isReach) _dbgShieldOv.style.top = 'calc(50% - 40px)'; }
 
                 let idx = 0;
                 let reversing = false;
                 let reverseIdx = charFrames.length - 2;
-                const isReach = !!_dbgWeapon?.reachAttack;
                 const anim = setInterval(() => {
                     if (!reversing) {
                         idx++;
