@@ -635,6 +635,119 @@
             animation: hot-pulse 1s ease-in-out infinite;
         }
 
+        /* Fire passive aura — overlay on fire fighter, flame body effect per turn */
+        @keyframes firePassiveAura {
+            0%   { opacity: 0;   transform: scaleX(1)    scaleY(1);
+                   box-shadow: 0 0 0px 0px rgba(255,69,0,0), 0 0 0px 0px rgba(255,200,50,0); }
+            15%  { opacity: 1;   transform: scaleX(1.03) scaleY(1.04);
+                   box-shadow: 0 -6px 18px 6px rgba(255,80,0,0.8), 0 -2px 10px 3px rgba(255,210,60,0.5),
+                               0  2px 10px 4px rgba(200,40,0,0.4); }
+            50%  { opacity: 0.9; transform: scaleX(1.02) scaleY(1.07);
+                   box-shadow: 0 -10px 28px 10px rgba(255,110,0,0.6), 0 -4px 16px 5px rgba(255,230,80,0.4),
+                               0   3px 12px 5px rgba(180,30,0,0.35); }
+            80%  { opacity: 0.5; transform: scaleX(1.01) scaleY(1.03);
+                   box-shadow: 0 -6px 14px 4px rgba(255,80,0,0.3), 0 0 6px 2px rgba(255,180,50,0.2); }
+            100% { opacity: 0;   transform: scaleX(1)    scaleY(1);
+                   box-shadow: 0 0 0px 0px rgba(255,69,0,0); }
+        }
+        .fire-passive-aura-overlay {
+            position: absolute;
+            inset: -3px;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 18;
+            border: 1.5px solid rgba(255,140,30,0.65);
+            transform-origin: center bottom;
+            animation: firePassiveAura 1s ease-out forwards;
+        }
+
+        /* Wind passive sphere — gyroscope ring effect, pulses once per turn */
+        .wind-sphere-overlay {
+            position: absolute;
+            inset: -12px;
+            pointer-events: none;
+            animation: windSphereLifetime 2s ease-out forwards;
+        }
+        .wind-sphere-front { z-index: 20; }  /* in front of fighter */
+        .wind-sphere-back  { z-index: 1;  }  /* behind fighter-body */
+        /* Each ring half clipped at 50% of its own height */
+        .wind-sphere-front .wind-ring { clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%); }
+        .wind-sphere-back  .wind-ring { clip-path: polygon(0% 50%, 100% 50%, 100% 100%, 0% 100%); }
+        @keyframes windSphereLifetime {
+            0%   { opacity: 0; }
+            12%  { opacity: 1; }
+            75%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .wind-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            border-radius: 50%;
+            border-style: solid;
+        }
+        /* Equatorial ring — wide flat oval, morphs scaleX to fake Y-axis rotation */
+        .wind-ring-eq {
+            width: 100%; height: 28%;
+            margin-top: -14%; margin-left: -50%;
+            border-width: 1.5px;
+            border-color: rgba(210,195,160,0.7);
+            box-shadow: 0 0 5px rgba(255,255,255,0.15);
+            animation: windEqSpin 1.6s ease-in-out forwards;
+        }
+        @keyframes windEqSpin {
+            0%   { transform: scaleX(0.08); }
+            25%  { transform: scaleX(1.0); }
+            50%  { transform: scaleX(0.08); }
+            75%  { transform: scaleX(1.0); }
+            100% { transform: scaleX(0.08); }
+        }
+        /* Polar ring — tall narrow oval, morphs scaleY to fake X-axis rotation */
+        .wind-ring-po {
+            width: 28%; height: 100%;
+            margin-top: -50%; margin-left: -14%;
+            border-width: 1.5px;
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 0 5px rgba(255,255,255,0.15);
+            animation: windPoSpin 2s ease-in-out forwards;
+        }
+        @keyframes windPoSpin {
+            0%   { transform: scaleY(1.0); }
+            33%  { transform: scaleY(0.08); }
+            66%  { transform: scaleY(1.0); }
+            100% { transform: scaleY(0.08); }
+        }
+        /* Diagonal ring — tilted 45°, morphs for oblique rotation */
+        .wind-ring-di {
+            width: 80%; height: 80%;
+            margin-top: -40%; margin-left: -40%;
+            border-width: 1px;
+            border-color: rgba(225,210,180,0.45);
+            animation: windDiSpin 1.8s ease-in-out forwards;
+        }
+        @keyframes windDiSpin {
+            0%   { transform: rotate(45deg) scaleX(0.22) scaleY(1.0); }
+            40%  { transform: rotate(45deg) scaleX(0.22) scaleY(0.08); }
+            80%  { transform: rotate(45deg) scaleX(0.22) scaleY(1.0); }
+            100% { transform: rotate(45deg) scaleX(0.22) scaleY(0.08); }
+        }
+
+        /* Water regen aura — overlay on fighter container, pulses once per regen tick */
+        @keyframes waterRegenAura {
+            0%   { opacity: 0;   box-shadow: 0 0 0px 0px rgba(79,195,247,0),  inset 0 0 0px 0px rgba(79,195,247,0); }
+            15%  { opacity: 1;   box-shadow: 0 0 12px 4px rgba(79,195,247,0.7), inset 0 0 8px 2px rgba(179,229,252,0.4); }
+            50%  { opacity: 0.8; box-shadow: 0 0 20px 8px rgba(0,229,255,0.5),  inset 0 0 14px 4px rgba(255,255,255,0.2); }
+            100% { opacity: 0;   box-shadow: 0 0 0px 0px rgba(79,195,247,0),  inset 0 0 0px 0px rgba(79,195,247,0); }
+        }
+        .water-regen-aura-overlay {
+            position: absolute;
+            inset: -3px;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 18;
+            border: 1.5px solid rgba(179,229,252,0.6);
+            animation: waterRegenAura 1s ease-out forwards;
+        }
+
         .consumable-pop {
             position: absolute;
             font-size: 2.5em;
@@ -11573,8 +11686,8 @@
                         <div class="elem-guide-card" data-element="fire" style="--ec:#ff6b35;--ec-glow:rgba(255,107,53,0.4);">
                             <div class="elem-guide-icon">🔥</div>
                             <div class="elem-guide-name">FIRE</div>
-                            <div class="elem-guide-passive">+4% DMG dealt</div>
-                            <div class="elem-guide-fury">+12% in Fury</div>
+                            <div class="elem-guide-passive">+4% DMG · Passive burn</div>
+                            <div class="elem-guide-fury">+12% DMG · Burn intensifies</div>
                             <div class="elem-guide-stats">✦ ATK &amp; STR</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Wind</div>
@@ -11585,8 +11698,8 @@
                         <div class="elem-guide-card" data-element="water" style="--ec:#4fc3f7;--ec-glow:rgba(79,195,247,0.4);">
                             <div class="elem-guide-icon">💧</div>
                             <div class="elem-guide-name">WATER</div>
-                            <div class="elem-guide-passive">+0.2% HP Regen/turn</div>
-                            <div class="elem-guide-fury">Fury scales with ENE</div>
+                            <div class="elem-guide-passive">+0.5% HP Regen/turn</div>
+                            <div class="elem-guide-fury">+2.5% Regen in Fury</div>
                             <div class="elem-guide-stats">✦ ENE &amp; HP</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Fire</div>
@@ -11598,7 +11711,7 @@
                             <div class="elem-guide-icon">⚡</div>
                             <div class="elem-guide-name">LIGHTNING</div>
                             <div class="elem-guide-passive">+5% Crit Chance</div>
-                            <div class="elem-guide-fury">+14% Crit in Fury</div>
+                            <div class="elem-guide-fury">+14% Crit · Orb reflects 15% / discharges 5%</div>
                             <div class="elem-guide-stats">✦ AGI &amp; ATK</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Water</div>
@@ -11621,8 +11734,8 @@
                         <div class="elem-guide-card" data-element="wind" style="--ec:#b0bec5;--ec-glow:rgba(176,190,197,0.4);">
                             <div class="elem-guide-icon">🌪️</div>
                             <div class="elem-guide-name">WIND</div>
-                            <div class="elem-guide-passive">+4% Dodge Chance</div>
-                            <div class="elem-guide-fury">Fury scales with ENE</div>
+                            <div class="elem-guide-passive">−4% Dodge Cost · +3% Combo · Wind cut</div>
+                            <div class="elem-guide-fury">Free Dodges in Fury</div>
                             <div class="elem-guide-stats">✦ AGI &amp; ENE</div>
                             <div class="elem-guide-divider"></div>
                             <div class="elem-guide-beats">⚔ Beats Earth</div>
@@ -12008,7 +12121,7 @@
             <div id="arena-world">
             <div class="fighter" id="player">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-weapon-attack-reach="Assets/Player/Attacks/Attack Reach.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="Player">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="offhand-shield-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -12017,7 +12130,7 @@
 
             <div class="fighter" id="cpu">
                 <div class="fighter-body">
-                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
+                    <img data-idle="Assets/Player/Movement/Character.png" data-armed-idle="Assets/Player/Movement/Idle Weapon Pose.png" data-dodge="Assets/Player/Movement/Dodge.png" data-block="Assets/Player/Movement/Block.png" data-shield-block="Assets/Player/Movement/Shield Action.png" data-shield-defense="Assets/Player/Attacks/Shield Defense.png" data-idle-blink="Assets/Player/Movement/Idle Blink.png" data-hurt="Assets/Player/Movement/Hurt.png" data-run="Assets/Player/Movement/Running.png" data-weapon-run="Assets/Player/Movement/RunningWeapon.png" data-weapon-attack="Assets/Player/Attacks/Attack.png" data-weapon-attack-reach="Assets/Player/Attacks/Attack Reach.png" data-heavy-attack="Assets/Player/Attacks/Heavy Attack.png" data-lose="Assets/Player/Movement/Loser.png" data-loser="Assets/Player/Movement/Loser.png" data-win="Assets/Player/Movement/Winner.png" data-punch="Assets/Player/Attacks/Punch.png" data-uppercut="Assets/Player/Attacks/Uppercut.png" data-kick="Assets/Player/Attacks/Kick.png" data-headbutt="Assets/Player/Attacks/Headbutt.png" src="/ChubChampions/assets/Character-DcCKbpWK.png" class="character-png" alt="CPU">
                     <img class="weapon-idle-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="offhand-shield-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
                     <img class="shield-block-overlay" src="" alt="" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;object-fit:contain;pointer-events:none;">
@@ -13039,11 +13152,11 @@
             lightning: { icon: '⚡', label: 'Lightning', color: '#ffd740', glow: 'rgba(255,215,64,0.5)'  },
         };
         const ELEMENT_BONUSES = {
-            fire:      { base: '+4% damage',             fury: '+12% in Fury',        strong: 'Wind',      weak: 'Water'     },
-            water:     { base: '+1.5% HP regen/turn',    fury: 'scales with ENE',     strong: 'Fire',      weak: 'Lightning' },
-            lightning: { base: '+5% crit chance',        fury: '+14% in Fury',        strong: 'Water',     weak: 'Earth'     },
-            earth:     { base: '-4% enemy defense',      fury: '+12% in Fury',        strong: 'Lightning', weak: 'Wind'      },
-            wind:      { base: '+4% dodge chance',       fury: 'scales with ENE',     strong: 'Earth',     weak: 'Fire'      },
+            fire:      { base: '+4% damage / Passive burn', fury: '+12% damage / Burn intensifies', strong: 'Wind',      weak: 'Water'     },
+            water:     { base: '+0.5% HP regen/turn',         fury: '+2.5% regen in Fury', strong: 'Fire',      weak: 'Lightning' },
+            lightning: { base: '+5% crit chance',        fury: '+14% crit · Orb: reflects 15% / discharges 5%', strong: 'Water',     weak: 'Earth'     },
+            earth:     { base: '-4% damage received',      fury: '-12% in Fury',        strong: 'Lightning', weak: 'Wind'      },
+            wind:      { base: '-4% dodge cost / +3% combo · Wind cut', fury: 'Free dodges in Fury', strong: 'Earth', weak: 'Fire' },
         };
 
         // Fury active power definitions (mirrors backend FURY_POWERS constant)
@@ -13292,18 +13405,18 @@
         // Each tier contains one weapon, unlocked randomly from that tier
         const WEAPON_TIERS = {
             5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi', isOneHanded: true }],
-            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi', isOneHanded: true }],
+            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi', isOneHanded: true, attackOverlay: true, reachAttack: true }],
             15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true },
                   { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
             20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true, isOneHanded: true }],
-            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true }],
+            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true, attackOverlay: true, reachAttack: true }],
             30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06, isOneHanded: true }],
             40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true }],
             50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi' }],
             60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06, attackOverlay: true, heavyAttack: true }],
             70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true, isOneHanded: true }],
             80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, attackOverlay: true, heavyAttack: true }],
-            100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true }]
+            100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true, attackOverlay: true, reachAttack: true }]
         };
 
         // Pre-populate WEAPONS from all WEAPON_TIERS so CPU weapons (which can be
@@ -18202,6 +18315,47 @@
                         } else if (event.value < 0) {
                             showDamage(event.fighter, Math.abs(event.value), false);
                         }
+                        // Water regen aura flash
+                        if (event.effect === 'hot') {
+                            const _wrFighter = game[event.fighter]?.element;
+                            if (_wrFighter) {
+                                const _wrOverlay = document.createElement('div');
+                                _wrOverlay.className = 'water-regen-aura-overlay';
+                                _wrFighter.appendChild(_wrOverlay);
+                                setTimeout(() => _wrOverlay.remove(), 1000);
+                            }
+                        }
+                        // Fire passive aura flash
+                        if (event.effect === 'fire_passive') {
+                            const _frFighter = game[event.fighter]?.element;
+                            if (_frFighter) {
+                                const _frOverlay = document.createElement('div');
+                                _frOverlay.className = 'fire-passive-aura-overlay';
+                                _frFighter.appendChild(_frOverlay);
+                                setTimeout(() => _frOverlay.remove(), 950);
+                            }
+                        }
+                        // Wind passive sphere — gyroscope rings (split front/back for depth)
+                        if (event.effect === 'wind_passive') {
+                            const _wndFighter = game[event.fighter]?.element;
+                            if (_wndFighter) {
+                                const _rings =
+                                    '<div class="wind-ring wind-ring-eq"></div>' +
+                                    '<div class="wind-ring wind-ring-po"></div>' +
+                                    '<div class="wind-ring wind-ring-di"></div>';
+                                // Back half — prepended so it sits behind fighter-body
+                                const _wndBack = document.createElement('div');
+                                _wndBack.className = 'wind-sphere-overlay wind-sphere-back';
+                                _wndBack.innerHTML = _rings;
+                                _wndFighter.prepend(_wndBack);
+                                // Front half — appended so it sits in front of fighter-body
+                                const _wndFront = document.createElement('div');
+                                _wndFront.className = 'wind-sphere-overlay wind-sphere-front';
+                                _wndFront.innerHTML = _rings;
+                                _wndFighter.appendChild(_wndFront);
+                                setTimeout(() => { _wndBack.remove(); _wndFront.remove(); }, 2000);
+                            }
+                        }
                         await sleep(180);
                         break;
                     }
@@ -18427,7 +18581,7 @@
                         game.gameOver   = true;
                         if (battleState.precomputedStats) { battleState.matchStats.player = battleState.precomputedStats.player; battleState.matchStats.cpu = battleState.precomputedStats.cpu; battleState.precomputedStats = null; }
                         const loser = event.winner === 'player' ? 'cpu' : 'player';
-                        showGameOver(event.winner, loser);
+                        showGameOver(event.winner, loser, true);
                         return;
                     }
 
@@ -23016,7 +23170,7 @@
                     updateHealth(opponent);
                     showDamage(opponent, orbDamage, false);
                     trimAndPlay(FURY_HIT_SOUND, 0.15);
-                    if (game[opponent].health <= 0) showGameOver(fighter, opponent);
+                    if (game[opponent].health <= 0) showGameOver(fighter, opponent, true);
                 }, 250);
             } else {
                 // ── Other elements: particle aura ─────────────────────────────────────
@@ -23386,7 +23540,11 @@
             // Clean up weapon attack overlays that may have been left behind by an interrupted animation
             fighterEl.querySelectorAll('.weapon-attack-char-overlay, .heavy-attack-char-overlay, .weapon-attack-overlay').forEach(el => el.remove());
             img.style.visibility = '';
-            if (img._idleSrc) {
+            // Don't overwrite the lose/death animation if it's already running.
+            // A deferred stopSpriteAnimation call (from the killing-blow attack cleanup)
+            // would otherwise restore the armed-idle src at 275px, leaving the lose frame
+            // zoomed in after _loserAnim overwrites the src back.
+            if (img._idleSrc && !img._loserAnim) {
                 img.src = img._idleSrc;
                 // Restore armed-idle display size now that we're back to idle
                 img.style.width  = img._armedIdleW || '';
@@ -23654,10 +23812,13 @@
 
             // Determine if we should use weapon attack frames
             const isHeavyWeapon = weaponId && !!getWeaponById(weaponId)?.heavyAttack;
+            const isReachWeapon = weaponId && !!getWeaponById(weaponId)?.reachAttack;
             // Fallback: if heavy attack frames aren't loaded yet, use regular weapon attack frames
             const charFrames = isHeavyWeapon
                 ? (img._heavyAttackFrames?.length > 0 ? img._heavyAttackFrames : img._weaponAttackFrames)
-                : img._weaponAttackFrames;
+                : isReachWeapon
+                    ? (img._weaponReachAttackFrames?.length > 0 ? img._weaponReachAttackFrames : img._weaponAttackFrames)
+                    : img._weaponAttackFrames;
             // useWeaponAttack: character has weapon attack frames loaded (always use them when armed)
             const useWeaponAttack = !!(weaponId && charFrames && charFrames.length > 0);
             if (weaponId && !useWeaponAttack) {
@@ -24342,7 +24503,7 @@
 
         let lastExpGained = 0; // Track last exp gained for results display
 
-        function showGameOver(winner, loser) {
+        function showGameOver(winner, loser, isKO = false) {
             if (game.gameOverHandled) return; // Prevent double calls (timer + death race)
             game.gameOverHandled = true;
             game.gameOver = true;
@@ -24602,23 +24763,57 @@
                 img._idleBlinkStopped = true;
             });
 
-            if (winnerEl && winnerEl.dataset.win) { winnerEl.style.width = ''; winnerEl.style.height = ''; winnerEl.src = winnerEl.dataset.win; }
-            // Animate loser sprite sheet
-            if (loserEl && loserEl._loserFrames && loserEl._loserFrames.length > 1) {
-                let frame = 0;
-                loserEl.style.width = ''; loserEl.style.height = '';
-                loserEl.src = loserEl._loserFrames[0];
-                let loserDir = 1;
-                // Store interval for cleanup
-                loserEl._loserAnim = setInterval(() => {
-                    frame += loserDir;
-                    if (frame >= loserEl._loserFrames.length - 1) { frame = loserEl._loserFrames.length - 1; loserDir = -1; }
-                    else if (frame <= 0) { frame = 0; loserDir = 1; }
-                    loserEl.src = loserEl._loserFrames[frame];
-                }, 350);
-            } else if (loserEl && loserEl.dataset.lose) {
-                loserEl.src = loserEl.dataset.lose;
+            if (winnerEl && winnerEl.dataset.win) {
+                winnerEl.style.width = ''; winnerEl.style.height = '';
+                winnerEl.src = winnerEl.dataset.win;
+                // Hide weapon overlay so the victory frame shows without the weapon on top
+                const _winBodyEl = game[winner].element.querySelector('.fighter-body');
+                const _winIdleOv = _winBodyEl?.querySelector('.weapon-idle-overlay');
+                if (_winIdleOv) { _winIdleOv.style.display = 'none'; _winIdleOv._hiddenByAnimation = false; }
+                _winBodyEl?.querySelector('.weapon-run-overlay')?.remove();
             }
+            // Loser sprite: KO → floor/death animation. Time-up → unarmed idle (fighter stays standing).
+            if (isKO) {
+                if (loserEl && loserEl._loserFrames && loserEl._loserFrames.length > 1) {
+                    let frame = 0;
+                    loserEl.style.width = ''; loserEl.style.height = '';
+                    loserEl.src = loserEl._loserFrames[0];
+                    let loserDir = 1;
+                    loserEl._loserAnim = setInterval(() => {
+                        frame += loserDir;
+                        if (frame >= loserEl._loserFrames.length - 1) { frame = loserEl._loserFrames.length - 1; loserDir = -1; }
+                        else if (frame <= 0) { frame = 0; loserDir = 1; }
+                        loserEl.src = loserEl._loserFrames[frame];
+                    }, 350);
+                } else if (loserEl && loserEl.dataset.lose) {
+                    loserEl.style.width = ''; loserEl.style.height = '';
+                    loserEl.src = loserEl.dataset.lose;
+                }
+            } else {
+                // Time-up loss: show unarmed idle (character stays standing, no floor animation)
+                if (loserEl) {
+                    loserEl.style.width = ''; loserEl.style.height = '';
+                    const unarmedIdle = loserEl._unarmedIdleSrc || loserEl._originalFrames?.idle || loserEl.dataset.idle || loserEl._idleSrc;
+                    if (unarmedIdle) loserEl.src = unarmedIdle;
+                }
+            }
+
+            // If the loser still has a weapon equipped at death, drop it.
+            // The normal weapon_drop event only fires mid-battle; if the fighter dies
+            // while armed the idle-overlay stays frozen on screen. Hide it and spawn
+            // the falling-weapon visual so the weapon lands on the ground.
+            {
+                const loserWeaponId = weaponState[loser]?.equippedWeapon;
+                if (loserWeaponId) {
+                    const loserBodyEl = game[loser].element.querySelector('.fighter-body');
+                    const loserIdleOv  = loserBodyEl?.querySelector('.weapon-idle-overlay');
+                    if (loserIdleOv) { loserIdleOv.style.display = 'none'; loserIdleOv._hiddenByAnimation = false; }
+                    loserBodyEl?.querySelector('.weapon-run-overlay')?.remove();
+                    spawnWeaponDropEffect(game[loser].element, loserWeaponId);
+                    weaponState[loser].equippedWeapon = null;
+                }
+            }
+
             game[winner].element.style.animation = 'victoryBounce 0.4s ease-in-out infinite';
 
             const winText = document.createElement('div');
@@ -27148,16 +27343,20 @@
                         const _pExf = (src, c, r) => _pLayers.length > 0
                             ? extractFramesWithLayers(src, _pLayers, c, r)
                             : extractFrames(src, c, r);
-                        const [_rAtk, _rHvy] = await Promise.all([
+                        const [_rAtk, _rReach, _rHvy] = await Promise.all([
                             (img.dataset.weaponAttack && !img._weaponAttackFrames?.length)
                                 ? _pExf(img.dataset.weaponAttack, 4, 1).catch(() => null)
                                 : Promise.resolve(img._weaponAttackFrames),
+                            (img.dataset.weaponAttackReach && !img._weaponReachAttackFrames?.length)
+                                ? _pExf(img.dataset.weaponAttackReach, 4, 1).catch(() => null)
+                                : Promise.resolve(img._weaponReachAttackFrames),
                             (img.dataset.heavyAttack && !img._heavyAttackFrames?.length)
                                 ? _pExf(img.dataset.heavyAttack, 4, 1).catch(() => null)
                                 : Promise.resolve(img._heavyAttackFrames),
                         ]);
-                        img._weaponAttackFrames = _rAtk;
-                        img._heavyAttackFrames  = _rHvy;
+                        img._weaponAttackFrames      = _rAtk;
+                        img._weaponReachAttackFrames = _rReach;
+                        img._heavyAttackFrames       = _rHvy;
                     }
                     if (isCpu && img._originalFrames) {
                         // Pick new random color (unless keepCpuHue is true, e.g. battle resume)
@@ -27180,6 +27379,7 @@
                             img._runFrames = [...img._originalFrames.run];
                             if (img._originalFrames.weaponRun) img._weaponRunFrames = [...img._originalFrames.weaponRun];
                             if (img._originalFrames.weaponAttack) img._weaponAttackFrames = [...img._originalFrames.weaponAttack];
+                            if (img._originalFrames.weaponReachAttack) img._weaponReachAttackFrames = [...img._originalFrames.weaponReachAttack];
                             img._hurtFrames = [...img._originalFrames.hurt];
                             img._dodgeFrames = [...img._originalFrames.dodge];
                             img._blockFrames = [...img._originalFrames.block];
@@ -27220,15 +27420,17 @@
 
                 // Load weapon-related character frames in parallel — null on failure (retryable)
                 // vs [] which means intentionally empty (no asset for this slot).
-                const [_wRun, _wAtk, _wHvy] = await Promise.all([
-                    img.dataset.weaponRun    ? exf(img.dataset.weaponRun,    'run',   5, 2).catch(() => null) : Promise.resolve(null),
-                    img.dataset.weaponAttack ? exf(img.dataset.weaponAttack, 'punch', 4, 1).catch(() => null) : Promise.resolve(null),
-                    img.dataset.heavyAttack  ? exf(img.dataset.heavyAttack,  'punch', 4, 1).catch(() => null) : Promise.resolve(null),
+                const [_wRun, _wAtk, _wReach, _wHvy] = await Promise.all([
+                    img.dataset.weaponRun         ? exf(img.dataset.weaponRun,         'run',   5, 2).catch(() => null) : Promise.resolve(null),
+                    img.dataset.weaponAttack      ? exf(img.dataset.weaponAttack,      'punch', 4, 1).catch(() => null) : Promise.resolve(null),
+                    img.dataset.weaponAttackReach ? exf(img.dataset.weaponAttackReach, 'punch', 4, 1).catch(() => null) : Promise.resolve(null),
+                    img.dataset.heavyAttack       ? exf(img.dataset.heavyAttack,       'punch', 4, 1).catch(() => null) : Promise.resolve(null),
                 ]);
                 if (_wRun)  img._weaponRunFrames    = _wRun;
                 // null = failed (retryable). undefined = asset not configured (skip).
-                img._weaponAttackFrames = _wAtk;
-                img._heavyAttackFrames  = _wHvy;
+                img._weaponAttackFrames      = _wAtk;
+                img._weaponReachAttackFrames = _wReach;
+                img._heavyAttackFrames       = _wHvy;
                 console.log('[processAllFighterImages]', isCpu ? 'CPU' : 'Player',
                     'weaponAttackFrames:', img._weaponAttackFrames?.length ?? 'null/undef',
                     'heavyAttackFrames:', img._heavyAttackFrames?.length ?? 'null/undef');
@@ -27285,6 +27487,7 @@
                         run: [...img._runFrames],
                         weaponRun: img._weaponRunFrames ? [...img._weaponRunFrames] : [],
                         weaponAttack: img._weaponAttackFrames ? [...img._weaponAttackFrames] : [],
+                        weaponReachAttack: img._weaponReachAttackFrames ? [...img._weaponReachAttackFrames] : [],
                         heavyAttack: img._heavyAttackFrames ? [...img._heavyAttackFrames] : [],
                         hurt: [...img._hurtFrames],
                         dodge: [...img._dodgeFrames],
@@ -27352,6 +27555,9 @@
             }
             if (img._originalFrames.weaponAttack && img._originalFrames.weaponAttack.length > 0) {
                 img._weaponAttackFrames = await applyHueShiftToFrames(img._originalFrames.weaponAttack, hue, img._weaponAttackFrames);
+            }
+            if (img._originalFrames.weaponReachAttack && img._originalFrames.weaponReachAttack.length > 0) {
+                img._weaponReachAttackFrames = await applyHueShiftToFrames(img._originalFrames.weaponReachAttack, hue, img._weaponReachAttackFrames);
             }
             if (img._originalFrames.heavyAttack && img._originalFrames.heavyAttack.length > 0) {
                 img._heavyAttackFrames = await applyHueShiftToFrames(img._originalFrames.heavyAttack, hue, img._heavyAttackFrames);
@@ -27802,13 +28008,20 @@
                 // Flush battle event loop on tab return so HP catches up.
                 // While hidden, setTimeout gets throttled — pending sleeps stall
                 // the loop and HP bars freeze. Flushing resolves them immediately.
-                if (game && !game.gameOver && (_sleepPending.size > 0 || _animPending.size > 0)) {
-                    const pendingSleeps = [..._sleepPending];
-                    _sleepPending.clear();
-                    for (const res of pendingSleeps) { clearTimeout(res._tid); res(); }
-                    const pendingAnims = [..._animPending];
-                    _animPending.clear();
-                    for (const res of pendingAnims) res();
+                if (game && !game.gameOver) {
+                    // Always sync HP bars immediately so the player sees correct values
+                    // even while mid-animation catch-up is in progress.
+                    updateBothFighters();
+                    // Resolve any sleep() calls or tracked animation promises that
+                    // stalled while the tab was hidden.
+                    if (_sleepPending.size > 0 || _animPending.size > 0) {
+                        const pendingSleeps = [..._sleepPending];
+                        _sleepPending.clear();
+                        for (const res of pendingSleeps) { clearTimeout(res._tid); res(); }
+                        const pendingAnims = [..._animPending];
+                        _animPending.clear();
+                        for (const res of pendingAnims) res();
+                    }
                 }
             }
         });
@@ -27897,6 +28110,15 @@
             }
 
             updateDisplay();
+
+            // If the tab is hidden when the timer is first started (e.g. server result arrived
+            // while user was on another tab), don't run the interval — mark as paused so the
+            // visibilitychange handler starts it when the user returns.
+            if (document.hidden) {
+                _timerWasPaused = true;
+                return;
+            }
+
             matchTimerInterval = setInterval(() => {
                 remaining--;
                 matchTimerRemaining = remaining;
@@ -31856,7 +32078,7 @@
 
             // Copy all frame arrays from the player fighter
             ['punch','kick','uppercut','headbutt','run','weaponRun','weaponAttack',
-             'heavyAttack','hurt','dodge','block','armedIdle','idleBlink','loser',
+             'weaponReachAttack','heavyAttack','hurt','dodge','block','armedIdle','idleBlink','loser',
              'shieldBlock','shieldDefense'].forEach(k => {
                 const src = playerImg['_' + k + 'Frames'];
                 if (src) dbgImg['_' + k + 'Frames'] = [...src];
@@ -32214,7 +32436,12 @@
         }
 
         async function dbgWeaponAttack(dbgEl, dbgImg, weaponId, isHeavy) {
-            const charFrames = isHeavy ? dbgImg._heavyAttackFrames : dbgImg._weaponAttackFrames;
+            const _dbgWeapon = getWeaponById(weaponId);
+            const charFrames = isHeavy
+                ? dbgImg._heavyAttackFrames
+                : (_dbgWeapon?.reachAttack && dbgImg._weaponReachAttackFrames?.length)
+                    ? dbgImg._weaponReachAttackFrames
+                    : dbgImg._weaponAttackFrames;
             if (!charFrames?.length) return;
             const cssClass   = isHeavy ? 'heavy-attack-char-overlay' : 'weapon-attack-char-overlay';
             const msPerFrame = isHeavy ? 160 : 120;
