@@ -32132,7 +32132,7 @@
                 if (src) dbgImg['_' + k + 'Frames'] = [...src];
             });
             dbgImg._idleSrc = playerImg._idleSrc || playerImg.src;
-            dbgImg._armedIdleW = playerImg._armedIdleW || '275px';
+            dbgImg._dbgShieldSize = playerImg._armedIdleW || '275px';
             dbgImg.dataset.win = playerImg.dataset.win || '';
             dbgImg.src = dbgImg._idleSrc;
             dbgImg.style.visibility = '';
@@ -32258,7 +32258,7 @@
             }
             const poseFrames = _weaponIdlePoseCache[shieldId];
             if (poseFrames?.length) {
-                const _dbgSz = dbgImg._armedIdleW || '275px';
+                const _dbgSz = dbgImg._dbgShieldSize || '275px';
                 ohOverlay.style.width  = _dbgSz;
                 ohOverlay.style.height = _dbgSz;
                 ohOverlay.src = poseFrames[0];
