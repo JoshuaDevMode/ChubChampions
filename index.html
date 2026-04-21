@@ -18822,10 +18822,11 @@
             const defenderEl  = game[defender].element;
 
             // Jump/hop/combo attacks replace the idle overlay immediately with their own overlays,
-            // so hide early for those. Normal approach runs keep the overlay visible while running;
-            // it gets hidden just as the attacker arrives (see normal-run branch below).
-            if (event.jumpAttack || event.hopAttack || isComboFollow) {
+            // so hide early for those. Non-weapon attacks (punch/kick while armed) also hide early
+            // so the character doesn't run toward the opponent visually holding a weapon.
+            if (event.jumpAttack || event.hopAttack || isComboFollow || !isWeaponAnim) {
                 hideWeaponIdleOverlay(attacker);
+                if (!isWeaponAnim) hideOffHandOverlay(attacker);
             }
 
             // Midpoint position: ~44% from the attacker's side
