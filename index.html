@@ -732,21 +732,6 @@
         }
 
         /* Water regen aura — overlay on fighter container, pulses once per regen tick */
-        @keyframes waterRegenAura {
-            0%   { opacity: 0;   box-shadow: 0 0 0px 0px rgba(79,195,247,0),  inset 0 0 0px 0px rgba(79,195,247,0); }
-            15%  { opacity: 1;   box-shadow: 0 0 12px 4px rgba(79,195,247,0.7), inset 0 0 8px 2px rgba(179,229,252,0.4); }
-            50%  { opacity: 0.8; box-shadow: 0 0 20px 8px rgba(0,229,255,0.5),  inset 0 0 14px 4px rgba(255,255,255,0.2); }
-            100% { opacity: 0;   box-shadow: 0 0 0px 0px rgba(79,195,247,0),  inset 0 0 0px 0px rgba(79,195,247,0); }
-        }
-        .water-regen-aura-overlay {
-            position: absolute;
-            inset: -3px;
-            border-radius: 3px;
-            pointer-events: none;
-            z-index: 18;
-            border: 1.5px solid rgba(179,229,252,0.6);
-            animation: waterRegenAura 1s ease-out forwards;
-        }
 
         .consumable-pop {
             position: absolute;
@@ -18391,12 +18376,13 @@
                         }
                         // Water regen aura flash
                         if (event.effect === 'hot') {
-                            const _wrFighter = game[event.fighter]?.element;
-                            if (_wrFighter) {
-                                const _wrOverlay = document.createElement('div');
-                                _wrOverlay.className = 'water-regen-aura-overlay';
-                                _wrFighter.appendChild(_wrOverlay);
-                                setTimeout(() => _wrOverlay.remove(), 1000);
+                            const _wrBody = game[event.fighter]?.element?.querySelector('.fighter-body');
+                            if (_wrBody) {
+                                _wrBody.animate([
+                                    { filter: 'brightness(1.15) drop-shadow(0 0 12px rgba(79,195,247,1)) drop-shadow(0 0 26px rgba(0,191,255,0.7))' },
+                                    { filter: 'brightness(1.08) drop-shadow(0 0 7px rgba(79,195,247,0.5)) drop-shadow(0 0 16px rgba(0,191,255,0.3))' },
+                                    { filter: 'brightness(1)    drop-shadow(0 0 0px transparent)' }
+                                ], { duration: 1000, easing: 'ease-out', fill: 'none' });
                             }
                         }
                         // Fire passive aura flash
