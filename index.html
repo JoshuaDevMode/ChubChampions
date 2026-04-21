@@ -12375,6 +12375,22 @@
             'Assets/Sound Effects/Miss.ogg'
         ];
         const BLOCK_SOUND = 'Assets/Sound Effects/Block.ogg';
+        const SHIELD_HEAVY_IMPACT_SOUND = 'Assets/Sound Effects/Shield Impact.ogg';
+        const SHIELD_LIGHT_IMPACT_SOUND = 'Assets/Sound Effects/Shield Impact Light.ogg';
+        const HEAVY_WEAPON_HIT_SOUND    = 'Assets/Sound Effects/Heavy Weapon Hit.ogg';
+        const HEAVY_WEAPON_WHOOSH_SOUND = 'Assets/Sound Effects/Heavy Weapon Whoosh.ogg';
+        const HEAVY_WEAPON_MISS_SOUND   = 'Assets/Sound Effects/Heavy Weapon Miss.ogg';
+        const KNIFE_ATTACK_SOUND        = 'Assets/Sound Effects/Knife Attack.ogg';
+        const BAT_HIT_SOUND             = 'Assets/Sound Effects/Bat Hit.ogg';
+        const SWORD_HIT_SOUND           = 'Assets/Sound Effects/Sword Hit.ogg';
+        const GUN_HIT_SOUND             = 'Assets/Sound Effects/Gun Hit.ogg';
+        const WEAPON_SWORD_HIT_IDS      = new Set(['tier_sword','tier_spear','tier_labrys','tier_shield']);
+        const WEAPON_BLOOD_SPLASH_SOUND = 'Assets/Sound Effects/Weapon Blood Splash.ogg';
+        const WEAPON_BLOOD_SPLASH_IDS   = new Set(['tier_knife','tier_mace','tier_shield','tier_sword','tier_spear','tier_axe','tier_morning_star','tier_katana','tier_sledgehammer','tier_labrys','tier_imperial_mace']);
+        const WEAPON_HEAVY_MISS_IDS  = new Set(['tier_mace','tier_axe','tier_morning_star','tier_sledgehammer','tier_imperial_mace']);
+        const LIGHT_WEAPON_WHOOSH_SOUND = 'Assets/Sound Effects/Light Weapon Whoosh.ogg';
+        const WEAPON_LIGHT_WHOOSH_IDS   = new Set(['tier_sword','tier_spear','tier_labrys','tier_shield','tier_bat','tier_gun']);
+        const WEAPON_HEAVY_SOUND_IDS = new Set(['tier_mace','tier_axe','tier_morning_star','tier_sledgehammer','tier_imperial_mace','tier_katana']);
         const FURY_SOUND = 'Assets/Sound Effects/Fury.ogg';
         const FURY_HIT_SOUND = 'Assets/Sound Effects/Electric Impact.ogg';
         let _audioCtx = null;
@@ -12423,130 +12439,38 @@
             s.start();
         }
 
-        // Maps weapon IDs to their sound category for synthesized hit sounds
-        const WEAPON_SOUND_CATEGORY = {
-            tier_bat:           'blunt_light',
-            tier_knife:         'slash',
-            tier_mace:          'blunt_heavy',
-            tier_shield:        'shield',
-            tier_sword:         'slash',
-            tier_spear:         'pierce',
-            tier_axe:           'chop',
-            tier_morning_star:  'blunt_heavy',
-            tier_katana:        'slash',
-            tier_sledgehammer:  'blunt_heavy',
-            tier_labrys:        'chop',
-            tier_imperial_mace: 'blunt_heavy',
-            tier_gun:           'staff',
-        };
-
-        function _synthWeaponHit(category, vol) {
-            _ensureAudioCtx();
-            const ac  = _audioCtx;
-            const now = ac.currentTime;
-            const v   = (vol || 0.5) * _globalVolume;
-
-            if (category === 'slash') {
-                // High-freq noise whoosh + metallic ring
-                const bufLen = Math.floor(ac.sampleRate * 0.18);
-                const noiseBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
-                const nd = noiseBuf.getChannelData(0);
-                for (let i = 0; i < bufLen; i++) nd[i] = (Math.random() * 2 - 1);
-                const ns = ac.createBufferSource(); ns.buffer = noiseBuf;
-                const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3800; bp.Q.value = 1.2;
-                const ng = ac.createGain(); ng.gain.setValueAtTime(v * 0.55, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-                ns.connect(bp).connect(ng).connect(ac.destination); ns.start(now);
-                // Metallic ring
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.value = 1400 + Math.random() * 300;
-                const rg  = ac.createGain(); rg.gain.setValueAtTime(v * 0.35, now); rg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-                osc.connect(rg).connect(ac.destination); osc.start(now); osc.stop(now + 0.22);
-
-            } else if (category === 'chop') {
-                // Blade whoosh + low thud
-                const bufLen = Math.floor(ac.sampleRate * 0.14);
-                const noiseBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
-                const nd = noiseBuf.getChannelData(0);
-                for (let i = 0; i < bufLen; i++) nd[i] = (Math.random() * 2 - 1);
-                const ns = ac.createBufferSource(); ns.buffer = noiseBuf;
-                const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2200; bp.Q.value = 0.9;
-                const ng = ac.createGain(); ng.gain.setValueAtTime(v * 0.5, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
-                ns.connect(bp).connect(ng).connect(ac.destination); ns.start(now);
-                // Low thud
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(120, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.18);
-                const tg  = ac.createGain(); tg.gain.setValueAtTime(v * 0.65, now); tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-                osc.connect(tg).connect(ac.destination); osc.start(now); osc.stop(now + 0.22);
-
-            } else if (category === 'blunt_heavy') {
-                // Low-freq thud with noise burst
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(90, now); osc.frequency.exponentialRampToValueAtTime(35, now + 0.28);
-                const tg  = ac.createGain(); tg.gain.setValueAtTime(v * 0.8, now); tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-                osc.connect(tg).connect(ac.destination); osc.start(now); osc.stop(now + 0.28);
-                // Texture
-                const bufLen = Math.floor(ac.sampleRate * 0.08);
-                const noiseBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
-                const nd = noiseBuf.getChannelData(0);
-                for (let i = 0; i < bufLen; i++) nd[i] = (Math.random() * 2 - 1);
-                const ns = ac.createBufferSource(); ns.buffer = noiseBuf;
-                const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
-                const ng = ac.createGain(); ng.gain.setValueAtTime(v * 0.5, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-                ns.connect(lp).connect(ng).connect(ac.destination); ns.start(now);
-
-            } else if (category === 'blunt_light') {
-                // Mid-freq crack (wooden bat)
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(260, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.16);
-                const tg  = ac.createGain(); tg.gain.setValueAtTime(v * 0.7, now); tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-                osc.connect(tg).connect(ac.destination); osc.start(now); osc.stop(now + 0.18);
-                const bufLen = Math.floor(ac.sampleRate * 0.06);
-                const noiseBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
-                const nd = noiseBuf.getChannelData(0);
-                for (let i = 0; i < bufLen; i++) nd[i] = (Math.random() * 2 - 1);
-                const ns = ac.createBufferSource(); ns.buffer = noiseBuf;
-                const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.5;
-                const ng = ac.createGain(); ng.gain.setValueAtTime(v * 0.55, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-                ns.connect(bp).connect(ng).connect(ac.destination); ns.start(now);
-
-            } else if (category === 'pierce') {
-                // Quick high-freq whoosh + short punch through
-                const bufLen = Math.floor(ac.sampleRate * 0.12);
-                const noiseBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
-                const nd = noiseBuf.getChannelData(0);
-                for (let i = 0; i < bufLen; i++) nd[i] = (Math.random() * 2 - 1);
-                const ns = ac.createBufferSource(); ns.buffer = noiseBuf;
-                const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4000;
-                const ng = ac.createGain(); ng.gain.setValueAtTime(v * 0.45, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-                ns.connect(hp).connect(ng).connect(ac.destination); ns.start(now);
-                const osc = ac.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
-                const pg  = ac.createGain(); pg.gain.setValueAtTime(v * 0.4, now); pg.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-                osc.connect(pg).connect(ac.destination); osc.start(now); osc.stop(now + 0.1);
-
-            } else if (category === 'staff') {
-                // Wooden crack — mid-freq resonant thud
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(340, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-                const tg  = ac.createGain(); tg.gain.setValueAtTime(v * 0.75, now); tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-                osc.connect(tg).connect(ac.destination); osc.start(now); osc.stop(now + 0.18);
-                const osc2 = ac.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.value = 680;
-                const tg2  = ac.createGain(); tg2.gain.setValueAtTime(v * 0.2, now); tg2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-                osc2.connect(tg2).connect(ac.destination); osc2.start(now); osc2.stop(now + 0.06);
-
-            } else if (category === 'shield') {
-                // Metallic clang
-                const osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.value = 900 + Math.random() * 200;
-                const tg  = ac.createGain(); tg.gain.setValueAtTime(v * 0.6, now); tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-                osc.connect(tg).connect(ac.destination); osc.start(now); osc.stop(now + 0.35);
-                const osc2 = ac.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 1600 + Math.random() * 300;
-                const tg2  = ac.createGain(); tg2.gain.setValueAtTime(v * 0.4, now); tg2.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-                osc2.connect(tg2).connect(ac.destination); osc2.start(now); osc2.stop(now + 0.25);
-            }
-        }
-
         function playHitSound(attackType, isCrit, weaponId) {
             if (isCrit) {
                 trimAndPlay(CRITICAL_SOUND, 0.5);
                 return;
             }
-            if (weaponId) {
-                const cat = WEAPON_SOUND_CATEGORY[weaponId];
-                if (cat) { _synthWeaponHit(cat, 0.5); return; }
+            if (weaponId && WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
+                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.55);
+                trimAndPlay(CRITICAL_SOUND, 0.2);
+                if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.4);
+                return;
+            }
+            if (weaponId === 'tier_knife') {
+                trimAndPlay(KNIFE_ATTACK_SOUND, 0.5);
+                trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.4);
+                return;
+            }
+            if (weaponId === 'tier_gun') {
+                trimAndPlay(GUN_HIT_SOUND, 0.55);
+                return;
+            }
+            if (weaponId === 'tier_bat') {
+                trimAndPlayHighpass(BAT_HIT_SOUND, 0.55, 3000, 0.2);
+                return;
+            }
+            if (weaponId && WEAPON_SWORD_HIT_IDS.has(weaponId)) {
+                trimAndPlay(SWORD_HIT_SOUND, 0.5);
+                trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.4);
+                return;
+            }
+            if (weaponId && WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) {
+                trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.4);
+                return;
             }
             const sounds = (attackType === 'kick' || attackType === 'headbutt') ? KICK_SOUNDS : PUNCH_SOUNDS;
             trimAndPlay(sounds[Math.floor(Math.random() * sounds.length)], 0.5);
@@ -12590,6 +12514,32 @@
                 for (let ch = 0; ch < buf.numberOfChannels; ch++) trimmed.copyToChannel(buf.getChannelData(ch).slice(start, end + 1), ch);
                 _trimmedCache[src] = trimmed;
                 playBuf(trimmed);
+            });
+        }
+
+        function trimAndPlayHighpass(src, volume, hpFreq, wetRatio) {
+            _ensureAudioCtx();
+            const finalVol = volume * _globalVolume;
+            const dryVol   = finalVol * (1 - wetRatio);
+            const wetVol   = finalVol * wetRatio;
+            const play = buf => {
+                const s1 = _audioCtx.createBufferSource(); s1.buffer = buf;
+                const g1 = _audioCtx.createGain(); g1.gain.value = dryVol;
+                s1.connect(g1).connect(_audioCtx.destination); s1.start();
+                const s2 = _audioCtx.createBufferSource(); s2.buffer = buf;
+                const hp = _audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = hpFreq;
+                const g2 = _audioCtx.createGain(); g2.gain.value = wetVol;
+                s2.connect(hp).connect(g2).connect(_audioCtx.destination); s2.start();
+            };
+            if (_trimmedCache[src]) { play(_trimmedCache[src]); return; }
+            fetch(src).then(r => r.arrayBuffer()).then(arr => _audioCtx.decodeAudioData(arr)).then(buf => {
+                const data = buf.getChannelData(0);
+                let start = 0; for (let i = 0; i < data.length; i++) { if (Math.abs(data[i]) > 0.01) { start = i; break; } }
+                let end = data.length - 1; for (let i = data.length - 1; i >= 0; i--) { if (Math.abs(data[i]) > 0.01) { end = i; break; } }
+                const trimmed = _audioCtx.createBuffer(buf.numberOfChannels, end - start + 1, buf.sampleRate);
+                for (let ch = 0; ch < buf.numberOfChannels; ch++) trimmed.copyToChannel(buf.getChannelData(ch).slice(start, end + 1), ch);
+                _trimmedCache[src] = trimmed;
+                play(trimmed);
             });
         }
 
@@ -19411,6 +19361,8 @@
                 if (!_hopFired) {
                     hideWeaponIdleOverlay(attacker);
                     hideOffHandOverlay(attacker);
+                    if (isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                    else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                     animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
                 }
                 // Hop: attack fired mid-air — damage connects immediately (character still descending)
@@ -19497,7 +19449,10 @@
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
                 battleState.matchStats[defender].dodges = (battleState.matchStats[defender].dodges || 0) + 1;
-                playDodgeSound();
+                if (isWeaponAnim && WEAPON_HEAVY_MISS_IDS.has(attackType)) trimAndPlay(HEAVY_WEAPON_MISS_SOUND, 0.5);
+                else if (attackType === 'tier_knife') trimAndPlay(KNIFE_ATTACK_SOUND, 0.5);
+                else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                else playDodgeSound();
                 await sleep(jumpDodge ? (fighterBody._jumpLandMs || 300) : 200);
                 fighterBody.classList.remove('dodging');
                 if (fighterBody._jumpAnim) { fighterBody._jumpAnim.cancel(); fighterBody._jumpAnim = null; }
@@ -19517,7 +19472,13 @@
                 syncArmedIdle(defender);
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
-                playBlockSound();
+                const _blkDefWS     = weaponState[defender];
+                const _blkDefWD     = _blkDefWS?.equippedWeapon ? WEAPONS[_blkDefWS.equippedWeapon] : null;
+                const _blkHasShield = !!(_blkDefWD?.isShield) || !!(_blkDefWS?.offHandShield);
+                const _blkIsHeavy   = isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType);
+                if (_blkHasShield && _blkIsHeavy) trimAndPlay(SHIELD_HEAVY_IMPACT_SOUND, 0.6);
+                else if (_blkHasShield && isWeaponAnim) trimAndPlay(SHIELD_LIGHT_IMPACT_SOUND, 0.55);
+                else playBlockSound();
                 _setPushDir(defender);
                 fighterBody.classList.add('blocking'); // pushback on impact
                 // Block fills fury for both fighters
@@ -32543,12 +32504,20 @@
                     animateAttack(dbgEl, 'headbutt', 800, null);
                     break;
                 case 'weapon-attack':
-                    if (weaponId) dbgWeaponAttack(dbgEl, dbgImg, weaponId, false);
-                    else _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
+                    if (weaponId) {
+                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                        else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                        setTimeout(() => playHitSound('punch', false, weaponId), 300);
+                        dbgWeaponAttack(dbgEl, dbgImg, weaponId, false);
+                    } else _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
                     break;
                 case 'heavy-attack':
-                    if (weaponId) dbgWeaponAttack(dbgEl, dbgImg, weaponId, true);
-                    else _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 160);
+                    if (weaponId) {
+                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                        else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                        setTimeout(() => playHitSound('punch', false, weaponId), 300);
+                        dbgWeaponAttack(dbgEl, dbgImg, weaponId, true);
+                    } else _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 160);
                     break;
                 case 'win':
                     if (dbgImg.dataset.win) dbgImg.src = dbgImg.dataset.win;
@@ -32985,16 +32954,7 @@
             <div class="anim-debug-row" id="dbg-shield-row" style="display:none;">
                 <button class="anim-debug-btn" onclick="dbgAnim('shield-block',this)">🛡️ SHIELD BLOCK</button>
             </div>
-            <div class="anim-debug-row" style="border-top:1px solid #1f2937;padding-top:6px;margin-top:2px;">
-                <span style="color:#6b7280;font-size:0.4em;margin-right:4px;white-space:nowrap;">🔊 WEAPON SFX:</span>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('slash',0.5)">SLASH</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('chop',0.5)">CHOP</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('blunt_heavy',0.5)">BLUNT HEAVY</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('blunt_light',0.5)">BLUNT LIGHT</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('pierce',0.5)">PIERCE</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('staff',0.5)">STAFF</button>
-                <button class="anim-debug-btn" style="font-size:0.4em;padding:5px 8px;" onclick="_synthWeaponHit('shield',0.5)">SHIELD</button>
-            </div>
+
         </div>
     </div>
 
