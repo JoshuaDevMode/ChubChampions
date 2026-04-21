@@ -12439,15 +12439,17 @@
             s.start();
         }
 
-        function playHitSound(attackType, isCrit, weaponId) {
+        function playHitSound(attackType, isCrit, weaponId, heavyPreFired) {
             if (isCrit) {
                 trimAndPlay(CRITICAL_SOUND, 0.5);
                 return;
             }
             if (weaponId && WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
-                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
+                if (!heavyPreFired) {
+                    trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
+                    if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
+                }
                 trimAndPlay(CRITICAL_SOUND, 0.4);
-                if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
                 return;
             }
             if (weaponId === 'tier_knife') {
@@ -19338,6 +19340,7 @@
             const animType = isWeaponAnim ? 'punch' : attackType;
             const _hopFired = !!attackerEl._hopAttackFired;
             if (attackerEl._hopAttackFired) delete attackerEl._hopAttackFired;
+            let _heavyImpactPreScheduled = false;
             if (!event.jumpAttack) {
                 // Start jump at the same moment the attack fires so the defender is
                 // rising / at peak when the hit visually connects (~300ms into the anim)
@@ -19364,6 +19367,13 @@
                     if (isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType)) {
                         trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
                         setTimeout(() => trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        if (defense === 'none' || (defense === 'dodge' && damage > 0)) {
+                            _heavyImpactPreScheduled = true;
+                            setTimeout(() => {
+                                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
+                                trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
+                            }, 240);
+                        }
                     } else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) {
                         trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                         setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
@@ -19392,7 +19402,7 @@
                 showHitEffect(defender, animType);
                 showBloodEffect(defender, isCrit);
                 if (hasFury) showFurySparks(defender, attacker);
-                playHitSound(animType, isCrit, isWeaponAnim ? attackType : null);
+                playHitSound(animType, isCrit, isWeaponAnim ? attackType : null, _heavyImpactPreScheduled);
                 // Jump attack landing shockwave
                 if (event.jumpAttack) {
                     const defRect   = defenderEl.getBoundingClientRect();
