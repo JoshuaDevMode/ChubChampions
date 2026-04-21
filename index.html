@@ -19373,6 +19373,8 @@
                                 trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
                                 trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
                             }, 240);
+                        } else if (defense === 'dodge' && WEAPON_HEAVY_MISS_IDS.has(attackType)) {
+                            setTimeout(() => trimAndPlay(HEAVY_WEAPON_MISS_SOUND, 0.5), 240);
                         }
                     } else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) {
                         trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
@@ -19464,7 +19466,7 @@
                 fighterBody.classList.remove('taking-damage');
             } else if (defense === 'dodge') {
                 battleState.matchStats[defender].dodges = (battleState.matchStats[defender].dodges || 0) + 1;
-                if (isWeaponAnim && WEAPON_HEAVY_MISS_IDS.has(attackType)) trimAndPlay(HEAVY_WEAPON_MISS_SOUND, 0.5);
+                if (isWeaponAnim && WEAPON_HEAVY_MISS_IDS.has(attackType)) { /* pre-scheduled at 240ms */ }
                 else if (attackType === 'tier_knife') trimAndPlay(KNIFE_ATTACK_SOUND, 0.5);
                 else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                 else playDodgeSound();
