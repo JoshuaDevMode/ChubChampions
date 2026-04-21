@@ -12444,9 +12444,9 @@
                 return;
             }
             if (weaponId && WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
-                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.55);
-                trimAndPlay(CRITICAL_SOUND, 0.2);
-                if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.4);
+                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
+                trimAndPlay(CRITICAL_SOUND, 0.4);
+                if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
                 return;
             }
             if (weaponId === 'tier_knife') {
@@ -19360,8 +19360,13 @@
                 if (!_hopFired) {
                     hideWeaponIdleOverlay(attacker);
                     hideOffHandOverlay(attacker);
-                    if (isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
-                    else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                    if (isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType)) {
+                        trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                        setTimeout(() => trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                    } else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) {
+                        trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                        setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                    }
                     animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
                 }
                 // Hop: attack fired mid-air — damage connects immediately (character still descending)
@@ -32504,16 +32509,26 @@
                     break;
                 case 'weapon-attack':
                     if (weaponId) {
-                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
-                        else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
+                            trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                            setTimeout(() => trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        } else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) {
+                            trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                            setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        }
                         setTimeout(() => playHitSound('punch', false, weaponId), 300);
                         dbgWeaponAttack(dbgEl, dbgImg, weaponId, false);
                     } else _dbgPlayFrames(dbgImg._weaponAttackFrames, 'weapon-attack-char-overlay', 120);
                     break;
                 case 'heavy-attack':
                     if (weaponId) {
-                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
-                        else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                        if (WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
+                            trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
+                            setTimeout(() => trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        } else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) {
+                            trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                            setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        }
                         setTimeout(() => playHitSound('punch', false, weaponId), 300);
                         dbgWeaponAttack(dbgEl, dbgImg, weaponId, true);
                     } else _dbgPlayFrames(dbgImg._heavyAttackFrames, 'heavy-attack-char-overlay', 160);
