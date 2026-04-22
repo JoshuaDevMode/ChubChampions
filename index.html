@@ -22038,57 +22038,49 @@
                         const maxRangePx = 700 * arenaScale;
                         const groundY    = arena.offsetHeight * 0.82; // approx ground level
 
-                        const fbCount = isMiss ? 1 : 3;
-                        for (let fi = 0; fi < fbCount; fi++) {
-                            setTimeout(() => {
-                                const fb = document.createElement('img');
-                                fb.src   = 'Assets/Player/Effects/Fireball.png';
-                                fb.className = 'fp-fireball';
-                                const fbStartX = cp.x - fbImgW;
-                                const fbStartY = cp.y - fbImgH;
-                                fb.style.left = fbStartX + 'px';
-                                fb.style.top  = fbStartY + 'px';
-                                fb.style.setProperty('--flip', fbFlip);
-                                fb.style.animation = 'fp-fireball-wobble 0.32s ease-in-out infinite';
-                                arena.appendChild(fb);
+                        const fb = document.createElement('img');
+                        fb.src   = 'Assets/Player/Effects/Fireball.png';
+                        fb.className = 'fp-fireball';
+                        const fbStartX = cp.x - fbImgW;
+                        const fbStartY = cp.y - fbImgH;
+                        fb.style.left = fbStartX + 'px';
+                        fb.style.top  = fbStartY + 'px';
+                        fb.style.setProperty('--flip', fbFlip);
+                        fb.style.animation = 'fp-fireball-wobble 0.32s ease-in-out infinite';
+                        arena.appendChild(fb);
 
-                                // Miss: travel to max-range point and drop to ground
-                                // Normal: travel to target with parabolic arc
-                                const fbEndX    = isMiss
-                                    ? fbStartX + (fbFromLeft ? maxRangePx : -maxRangePx)
-                                    : tp.x - fbImgW;
-                                const fbEndY    = isMiss ? groundY - fbImgH : tp.y - fbImgH;
-                                // Arc height proportional to horizontal distance (rises then returns)
-                                const arcHeight = Math.abs(fbEndX - fbStartX) * (isMiss ? 0.07 : 0.12);
-                                const fbTStart  = performance.now();
+                        const fbEndX    = isMiss
+                            ? fbStartX + (fbFromLeft ? maxRangePx : -maxRangePx)
+                            : tp.x - fbImgW;
+                        const fbEndY    = isMiss ? groundY - fbImgH : tp.y - fbImgH;
+                        const arcHeight = Math.abs(fbEndX - fbStartX) * (isMiss ? 0.07 : 0.12);
+                        const fbTStart  = performance.now();
 
-                                const animFb = (now) => {
-                                    const t   = Math.min((now - fbTStart) / FB_TRAVEL, 1);
-                                    const arc = -arcHeight * 4 * t * (1 - t); // parabola: negative = upward
-                                    fb.style.left = (fbStartX + (fbEndX - fbStartX) * t) + 'px';
-                                    fb.style.top  = (fbStartY + (fbEndY - fbStartY) * t + arc) + 'px';
-                                    if (t < 1) { requestAnimationFrame(animFb); return; }
-                                    fb.style.animation = `fb-dissolve-${fbFromLeft ? 'right' : 'left'} 0.32s ease-in forwards`;
-                                    fb.addEventListener('animationend', () => fb.remove(), { once: true });
-                                };
-                                requestAnimationFrame(animFb);
+                        const animFb = (now) => {
+                            const t   = Math.min((now - fbTStart) / FB_TRAVEL, 1);
+                            const arc = -arcHeight * 4 * t * (1 - t);
+                            fb.style.left = (fbStartX + (fbEndX - fbStartX) * t) + 'px';
+                            fb.style.top  = (fbStartY + (fbEndY - fbStartY) * t + arc) + 'px';
+                            if (t < 1) { requestAnimationFrame(animFb); return; }
+                            fb.style.animation = `fb-dissolve-${fbFromLeft ? 'right' : 'left'} 0.32s ease-in forwards`;
+                            fb.addEventListener('animationend', () => fb.remove(), { once: true });
+                        };
+                        requestAnimationFrame(animFb);
 
-                                // Impact effects
-                                setTimeout(() => {
-                                    if (isMiss) {
-                                        // Dust/ember puff on ground at max range — no hit on target
-                                        const missHitX = fbFromLeft ? cp.x + maxRangePx : cp.x - maxRangePx;
-                                        spawnParticles(missHitX, groundY, 8, '#bb6600', 30);
-                                        spawnRing(missHitX, groundY, 30, '#884400', 0);
-                                    } else {
-                                        spawnImpact(tp.x, tp.y, 65, '#ff5500', 0);
-                                        spawnParticles(tp.x, tp.y, fi === 0 ? 14 : 8, '#ff4400', 55);
-                                        spawnRing(tp.x, tp.y, 50, '#ff6600', 0);
-                                        if (fi === 0) showHitEffect(target, 'normal');
-                                    }
-                                }, FB_TRAVEL);
-                            }, fi * FB_INTERVAL);
-                        }
+                        setTimeout(() => {
+                            if (isMiss) {
+                                const missHitX = fbFromLeft ? cp.x + maxRangePx : cp.x - maxRangePx;
+                                spawnParticles(missHitX, groundY, 8, '#bb6600', 30);
+                                spawnRing(missHitX, groundY, 30, '#884400', 0);
+                            } else {
+                                spawnImpact(tp.x, tp.y, 100, '#ff5500', 0);
+                                spawnImpact(tp.x, tp.y, 60, '#ffaa00', 0.06);
+                                spawnParticles(tp.x, tp.y, 20, '#ff4400', 80);
+                                spawnRing(tp.x, tp.y, 75, '#ff6600', 0);
+                                spawnRing(tp.x, tp.y, 45, '#ffcc00', 0.1);
+                                showHitEffect(target, 'normal');
+                            }
+                        }, FB_TRAVEL);
                     } else if (power.includes('flamethrower')) {
                         const fromLeft = caster === 'player';
                         const flameW   = Math.round(arena.offsetWidth * 0.50);
