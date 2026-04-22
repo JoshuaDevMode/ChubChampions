@@ -18820,6 +18820,8 @@
             const attackerEl  = game[attacker].element;
             const defenderEl  = game[defender].element;
 
+            const isWeaponAnim = !!WEAPONS[attackType];
+
             // Jump/hop/combo attacks replace the idle overlay immediately with their own overlays,
             // so hide early for those. Non-weapon attacks (punch/kick while armed) also hide early
             // so the character doesn't run toward the opponent visually holding a weapon.
@@ -18840,7 +18842,6 @@
             void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
-            const isWeaponAnim = !!WEAPONS[attackType];
 
             // Compute attack and mid positions in px (always left-based so CSS transitions work on both fighters).
             // right:X% + left:auto can't transition because CSS can't animate from/to 'auto'.
