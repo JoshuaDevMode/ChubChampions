@@ -12349,7 +12349,8 @@
         const WEAPON_BLOOD_SPLASH_IDS   = new Set(['tier_knife','tier_mace','tier_shield','tier_sword','tier_spear','tier_axe','tier_morning_star','tier_katana','tier_sledgehammer','tier_labrys','tier_imperial_mace']);
         const WEAPON_HEAVY_MISS_IDS  = new Set(['tier_mace','tier_axe','tier_morning_star','tier_sledgehammer','tier_imperial_mace']);
         const LIGHT_WEAPON_WHOOSH_SOUND = 'Assets/Sound Effects/Light Weapon Whoosh.ogg';
-        const WEAPON_LIGHT_WHOOSH_IDS   = new Set(['tier_sword','tier_spear','tier_labrys','tier_shield','tier_bat','tier_gun']);
+        const WEAPON_LIGHT_WHOOSH_IDS   = new Set(['tier_sword','tier_labrys','tier_shield','tier_bat']);
+        const WEAPON_SINGLE_WHOOSH_IDS  = new Set(['tier_spear']); // thrust weapons: one late whoosh near impact
         const WEAPON_HEAVY_SOUND_IDS = new Set(['tier_mace','tier_axe','tier_morning_star','tier_sledgehammer','tier_imperial_mace','tier_katana']);
         const FURY_SOUND = 'Assets/Sound Effects/Fury.ogg';
         const FURY_HIT_SOUND = 'Assets/Sound Effects/Electric Impact.ogg';
@@ -19345,6 +19346,8 @@
                     } else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) {
                         trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                         setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                    } else if (isWeaponAnim && WEAPON_SINGLE_WHOOSH_IDS.has(attackType)) {
+                        setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45), 200);
                     }
                     animateAttack(attackerEl, animType, Math.round((isComboFollow ? 190 : 375) * atkMult), isWeaponAnim ? attackType : undefined);
                 }
@@ -19435,6 +19438,7 @@
                 if (isWeaponAnim && WEAPON_HEAVY_MISS_IDS.has(attackType)) { /* pre-scheduled at 240ms */ }
                 else if (attackType === 'tier_knife') trimAndPlay(KNIFE_ATTACK_SOUND, 0.5);
                 else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
+                else if (isWeaponAnim && WEAPON_SINGLE_WHOOSH_IDS.has(attackType)) trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35);
                 else playDodgeSound();
                 await sleep(jumpDodge ? (fighterBody._jumpLandMs || 300) : 200);
                 fighterBody.classList.remove('dodging');
@@ -32494,6 +32498,8 @@
                         } else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) {
                             trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                             setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        } else if (WEAPON_SINGLE_WHOOSH_IDS.has(weaponId)) {
+                            setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45), 200);
                         }
                         setTimeout(() => playHitSound('punch', false, weaponId), 300);
                         dbgWeaponAttack(dbgEl, dbgImg, weaponId, false);
@@ -32507,6 +32513,8 @@
                         } else if (WEAPON_LIGHT_WHOOSH_IDS.has(weaponId)) {
                             trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45);
                             setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.35), 160);
+                        } else if (WEAPON_SINGLE_WHOOSH_IDS.has(weaponId)) {
+                            setTimeout(() => trimAndPlay(LIGHT_WEAPON_WHOOSH_SOUND, 0.45), 200);
                         }
                         setTimeout(() => playHitSound('punch', false, weaponId), 300);
                         dbgWeaponAttack(dbgEl, dbgImg, weaponId, true);
