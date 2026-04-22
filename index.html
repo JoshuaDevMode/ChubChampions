@@ -22609,7 +22609,7 @@
                     if (power.includes('tsunami')) {
                         const fromLeft  = caster === 'player';
                         // Ground level in arena-world coordinate space (same system as left/top on spawned elements)
-                        const feetY     = _fighterGroundY[target] ?? getCharacterFeetY(target);
+                        const feetY     = (_fighterGroundY[target] ?? getCharacterFeetY(target)) - 50;
                         const waveH     = Math.round(arena.offsetHeight * 0.55);
                         const waveW     = Math.round(waveH * 1.45);
                         // WAVE_DRAWN: fraction of canvas height where the wave visually meets the ground.
