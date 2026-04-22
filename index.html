@@ -32346,89 +32346,75 @@
 
         let _furyPreviewCleanupTimer = null;
 
-        function dbgFuryPower(element, suffix) {
-            // Remove any running preview first
-            document.getElementById('fury-preview-overlay')?.remove();
+        function dbgFuryClose() {
             clearTimeout(_furyPreviewCleanupTimer);
-            _furyDebugContainer = null;
+            document.getElementById('fury-debug-bar')?.remove();
+            const gc = document.getElementById('game-container');
+            const lw = document.getElementById('lobby-wrapper');
+            const hd = document.querySelector('#game-container .hud');
+            if (gc._dbgPrevDisplay !== undefined) { gc.style.display = gc._dbgPrevDisplay; delete gc._dbgPrevDisplay; }
+            if (lw && lw._dbgPrevDisplay !== undefined) { lw.style.display = lw._dbgPrevDisplay; delete lw._dbgPrevDisplay; }
+            if (hd && hd._dbgPrevDisplay !== undefined) { hd.style.display = hd._dbgPrevDisplay; delete hd._dbgPrevDisplay; }
+            document.getElementById('anim-debug-screen').style.display = 'flex';
+        }
+
+        function dbgFuryPower(element, suffix) {
+            clearTimeout(_furyPreviewCleanupTimer);
+            document.getElementById('fury-debug-bar')?.remove();
 
             const color    = (ELEMENT_DATA[element] || {}).color || '#ffd700';
             const powerStr = element + '_' + suffix;
 
-            // ── Full-size preview overlay ─────────────────────────────────────────
-            const overlay = document.createElement('div');
-            overlay.id = 'fury-preview-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Press Start 2P",monospace;';
+            // Close debug panel, reveal real arena
+            document.getElementById('anim-debug-screen').style.display = 'none';
 
-            const lbl = document.createElement('div');
-            lbl.style.cssText = 'color:#a78bfa;font-size:0.55em;margin-bottom:10px;letter-spacing:2px;';
-            lbl.textContent = powerStr.toUpperCase().replace(/_/g, ' ');
-            overlay.appendChild(lbl);
+            const gc = document.getElementById('game-container');
+            const lw = document.getElementById('lobby-wrapper');
+            const hd = document.querySelector('#game-container .hud');
+            gc._dbgPrevDisplay  = gc.style.display;
+            if (lw) lw._dbgPrevDisplay = lw.style.display;
+            if (hd) hd._dbgPrevDisplay = hd.style.display;
 
-            // Arena — proportional to real battle. left% = _homeX/1600 so coordinate system matches exactly.
-            const previewArena = document.createElement('div');
-            previewArena.style.cssText = 'position:relative;width:min(92vw,1400px);height:min(52vh,560px);overflow:hidden;background:#090915;border:2px solid #4c1d95;border-radius:10px;';
+            gc.style.display  = '';
+            if (lw) lw.style.display = 'none';
+            if (hd) hd.style.display = 'none';  // hide HUD bars, keep only arena
 
-            const gnd = document.createElement('div');
-            gnd.style.cssText = 'position:absolute;bottom:40px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4c1d95 20%,#4c1d95 80%,transparent);opacity:0.5;pointer-events:none;';
-            previewArena.appendChild(gnd);
+            // Reset fighters to default start positions
+            game.player._homeX = 128;
+            game.cpu._homeX    = 1252;
+            game.player.element.classList.remove('facing-flipped');
+            game.cpu.element.classList.remove('facing-flipped');
+            game.player.element.style.transition = 'none';
+            game.cpu.element.style.transition    = 'none';
+            game.player.element.style.left  = '8%';
+            game.player.element.style.right = '';
+            game.cpu.element.style.right    = '8%';
+            game.cpu.element.style.left     = '';
+            void game.player.element.offsetWidth;
+            game.player.element.style.transition = '';
+            game.cpu.element.style.transition    = '';
 
-            function makeFighterEl(isPlayer) {
-                const div = document.createElement('div');
-                div.className = 'fighter';
-                // left% = _homeX/1600 * 100 → player=8%, cpu=78.25% — matches getCenter() formula exactly
-                div.style.cssText = `position:absolute;bottom:40px;left:${isPlayer ? 8 : 78.25}%;`;
-                const body = document.createElement('div');
-                body.className = 'fighter-body';
-                body.style.cssText = 'width:220px;height:220px;position:relative;display:flex;align-items:center;justify-content:center;';
-                const img = document.createElement('img');
-                img.className = 'character-png';
-                img.src = 'Assets/Player/Movement/Character.png';
-                img.style.cssText = `width:275px;height:275px;object-fit:contain;position:absolute;${isPlayer ? '' : 'transform:scaleX(-1);filter:hue-rotate(200deg) brightness(0.8);'}`;
-                // Copy hurtFrames so showHitEffect works
-                const realImg = (isPlayer ? game.player : game.cpu).element?.querySelector('img.character-png');
-                if (realImg?._hurtFrames?.length) img._hurtFrames = realImg._hurtFrames;
-                body.appendChild(img);
-                div.appendChild(body);
-                return div;
-            }
+            // Floating bar: power name + back button
+            const bar = document.createElement('div');
+            bar.id = 'fury-debug-bar';
+            bar.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,8,20,0.92);border:1px solid #4c1d95;border-radius:8px;padding:8px 18px;display:flex;align-items:center;gap:14px;font-family:"Press Start 2P",monospace;font-size:0.45em;white-space:nowrap;';
+            bar.innerHTML = `<span style="color:${color};">${powerStr.toUpperCase().replace(/_/g,' ')}</span>`;
+            const backBtn = document.createElement('button');
+            backBtn.className = 'anim-debug-btn';
+            backBtn.style.cssText = 'font-size:1em;padding:4px 10px;';
+            backBtn.textContent = '◀ DEBUG';
+            backBtn.onclick = dbgFuryClose;
+            bar.appendChild(backBtn);
+            document.body.appendChild(bar);
 
-            const playerDiv = makeFighterEl(true);
-            const cpuDiv    = makeFighterEl(false);
-            previewArena.appendChild(playerDiv);
-            previewArena.appendChild(cpuDiv);
-            overlay.appendChild(previewArena);
+            // Wait one frame for arena layout to be ready, then measure ground positions and play
+            requestAnimationFrame(() => {
+                _fighterGroundY.player = getCharacterFeetY('player');
+                _fighterGroundY.cpu    = getCharacterFeetY('cpu');
+                playFuryPowerAnimation('player', 'cpu', powerStr, color);
+            });
 
-            // Save & override game element refs
-            const _savedPlayerEl = game.player.element;
-            const _savedCpuEl    = game.cpu.element;
-            const _savedPlayerX  = game.player._homeX;
-            const _savedCpuX     = game.cpu._homeX;
-
-            function _restoreGame() {
-                _furyDebugContainer = null;
-                game.player.element = _savedPlayerEl;
-                game.cpu.element    = _savedCpuEl;
-                game.player._homeX  = _savedPlayerX;
-                game.cpu._homeX     = _savedCpuX;
-            }
-
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'anim-debug-btn';
-            closeBtn.textContent = '✕ CLOSE';
-            closeBtn.style.cssText = 'margin-top:10px;font-size:0.4em;';
-            closeBtn.onclick = () => { overlay.remove(); clearTimeout(_furyPreviewCleanupTimer); _restoreGame(); };
-            overlay.appendChild(closeBtn);
-            document.body.appendChild(overlay);
-
-            game.player.element = playerDiv;
-            game.cpu.element    = cpuDiv;
-            game.player._homeX  = 128;
-            game.cpu._homeX     = 1252;
-            _furyDebugContainer = previewArena;
-            playFuryPowerAnimation('player', 'cpu', powerStr, color);
-
-            _furyPreviewCleanupTimer = setTimeout(() => { _restoreGame(); }, 6000);
+            _furyPreviewCleanupTimer = setTimeout(dbgFuryClose, 8000);
         }
 
         function closeAnimDebug() {
