@@ -22956,12 +22956,15 @@
 
         function updateHealth(fighter) {
             const f = game[fighter];
+            if (!f) return;
             const percentage = (f.health / f.maxHealth) * 100;
             const bar = hudEl[fighter + 'Health'];
+            if (!bar) return;
             bar.style.width = percentage + '%';
             const color = getHealthColor(percentage);
             bar.style.background = `linear-gradient(to bottom, ${color.top} 0%, ${color.bot} 100%)`;
-            hudEl[fighter + 'HealthText'].textContent = `${f.health} / ${f.maxHealth}`;
+            const txt = hudEl[fighter + 'HealthText'];
+            if (txt) txt.textContent = `${f.health} / ${f.maxHealth}`;
         }
 
         function updateBothFighters() { updateHealth('player'); updateHealth('cpu'); }
