@@ -21735,6 +21735,7 @@
         // Returns the Y position (unscaled arena coords) of the lowest drawn pixel
         // in the character sprite — i.e. where the feet actually touch the ground.
         function getCharacterFeetY(fighterKey) {
+            if (_furyDebugContainer) return _furyDebugContainer.offsetHeight - 40;
             const arena = document.getElementById('arena');
             const el    = game[fighterKey] && game[fighterKey].element;
             if (!arena || !el) return arena ? arena.offsetHeight - 35 : 0;
@@ -21928,11 +21929,13 @@
             }, FIRE_AT);
         }
 
+        let _furyDebugContainer = null; // set by dbgFuryPower; routes effects into debug stage
+
         function playFuryPowerAnimation(caster, target, power, color) {
-            const arenaEl = document.getElementById('arena');
+            const arenaEl = _furyDebugContainer || document.getElementById('arena');
             // Fury effects go into the camera world layer so they zoom with fighters
-            const arena   = document.getElementById('arena-world') || arenaEl;
-            if (!arenaEl || !game[caster] || !game[target]) return;
+            const arena   = _furyDebugContainer || document.getElementById('arena-world') || arenaEl;
+            if (!arenaEl || (!_furyDebugContainer && (!game[caster] || !game[target]))) return;
 
             // World-space position of fighter center (arena-world coordinate space).
             // Uses _homeX * scale so it's always correct even before battle animation runs
@@ -22013,6 +22016,7 @@
             }
 
             function arenaShake() {
+                if (_furyDebugContainer) return;
                 const a = document.getElementById('arena');
                 a.classList.remove('fp-arena-shake');
                 void a.offsetWidth; // reflow to restart animation
@@ -22379,7 +22383,7 @@
                                 const rotDirGR  = caster === 'player' ? -90 : 90;
 
                                 // Knockback: slide target to server-computed new position
-                                const _grArenaW = document.getElementById('arena').offsetWidth;
+                                const _grArenaW = (_furyDebugContainer || document.getElementById('arena')).offsetWidth;
                                 const _grScale  = _grArenaW / 1600;
                                 const _grNewX   = (target === 'player' ? event.playerX : event.cpuX) ?? null;
                                 if (_grNewX !== null && _grNewX !== undefined) {
@@ -32340,6 +32344,45 @@
             }
         }
 
+        // Power suffix → raw string sent to playFuryPowerAnimation
+        const _DBG_FURY_POWERS = {
+            fire:      { p1: 'fireball',       p2: 'flamethrower',  passive: 'burn_aura' },
+            lightning: { p1: 'lightning_bolt', p2: 'sky_discharge', passive: 'orb_active' },
+            earth:     { p1: 'giant_rock',     p2: 'earth_spike' },
+            water:     { p1: 'tsunami' },
+            wind:      { p1: 'tornado',        p2: 'air_columns' },
+        };
+
+        function dbgFuryPower(element, suffix) {
+            const dbgStage = document.querySelector('.anim-debug-stage');
+            if (!dbgStage) return;
+
+            const lbl = document.getElementById('anim-debug-label');
+            if (lbl) lbl.textContent = (element + '_' + suffix).toUpperCase();
+
+            // Stub game.player / game.cpu if battle is not active
+            const _savedPlayer = game.player;
+            const _savedCpu    = game.cpu;
+            const _elemStub = {
+                style: {}, querySelector: () => null,
+                classList: { toggle: () => {}, remove: () => {}, add: () => {} },
+                _spikeTimeouts: [], _spikeAirborne: false, _spikeCatchHeight: 0, _spikeCasterStr: 35,
+                offsetWidth: 0,
+            };
+            if (!game.player) game.player = { _homeX: 128,  element: _elemStub };
+            if (!game.cpu)    game.cpu    = { _homeX: 1252, element: _elemStub };
+
+            const color = (ELEMENT_DATA[element] || {}).color || '#ffd700';
+            _furyDebugContainer = dbgStage;
+            playFuryPowerAnimation('player', 'cpu', element + '_' + suffix, color);
+            // Restore synchronously — async callbacks reference game via closure (stubs safe for 6s)
+            setTimeout(() => {
+                game.player = _savedPlayer;
+                game.cpu    = _savedCpu;
+                _furyDebugContainer = null;
+            }, 6000);
+        }
+
         function closeAnimDebug() {
             _dbgStop();
             // Reset off-hand selection
@@ -32958,6 +33001,24 @@
             </div>
             <div class="anim-debug-row" id="dbg-shield-row" style="display:none;">
                 <button class="anim-debug-btn" onclick="dbgAnim('shield-block',this)">🛡️ SHIELD BLOCK</button>
+            </div>
+            <div class="anim-debug-row" style="align-items:center;gap:4px;border-top:1px solid #2d1b69;padding-top:8px;margin-top:4px;">
+                <span style="color:#6b7280;font-size:0.4em;margin-right:4px;">FURY:</span>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','fireball')" style="font-size:0.38em;">🔥 METEOR</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','fireball_miss')" style="font-size:0.38em;">🔥 MISS</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','flamethrower')" style="font-size:0.38em;">🔥 FLAME</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','burn_aura')" style="font-size:0.38em;">🔥 AURA</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','lightning_bolt')" style="font-size:0.38em;">⚡ BOLT</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','sky_discharge')" style="font-size:0.38em;">⚡ DISCHARGE</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','orb_active')" style="font-size:0.38em;">⚡ ORB</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','giant_rock')" style="font-size:0.38em;">🌍 ROCK</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','earth_spike')" style="font-size:0.38em;">🌍 SPIKE</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','spike_miss')" style="font-size:0.38em;">🌍 MISS</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','stone_skin')" style="font-size:0.38em;">🌍 STONE</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','stone_skin_break')" style="font-size:0.38em;">🌍 SHATTER</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('water','tsunami')" style="font-size:0.38em;">💧 TSUNAMI</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('wind','tornado')" style="font-size:0.38em;">🌬️ TORNADO</button>
+                <button class="anim-debug-btn" onclick="dbgFuryPower('wind','air_columns')" style="font-size:0.38em;">🌬️ COLUMNS</button>
             </div>
 
         </div>
