@@ -32344,10 +32344,7 @@
             }
         }
 
-        let _furyPreviewCleanupTimer = null;
-
         function dbgFuryClose() {
-            clearTimeout(_furyPreviewCleanupTimer);
             document.getElementById('fury-debug-bar')?.remove();
             const gc = document.getElementById('game-container');
             const lw = document.getElementById('lobby-wrapper');
@@ -32359,62 +32356,98 @@
         }
 
         function dbgFuryPower(element, suffix) {
-            clearTimeout(_furyPreviewCleanupTimer);
-            document.getElementById('fury-debug-bar')?.remove();
-
             const color    = (ELEMENT_DATA[element] || {}).color || '#ffd700';
             const powerStr = element + '_' + suffix;
 
-            // Close debug panel, reveal real arena
-            document.getElementById('anim-debug-screen').style.display = 'none';
+            // First call: reveal the real arena and build the floating control bar
+            if (!document.getElementById('fury-debug-bar')) {
+                document.getElementById('anim-debug-screen').style.display = 'none';
 
-            const gc = document.getElementById('game-container');
-            const lw = document.getElementById('lobby-wrapper');
-            const hd = document.querySelector('#game-container .hud');
-            gc._dbgPrevDisplay  = gc.style.display;
-            if (lw) lw._dbgPrevDisplay = lw.style.display;
-            if (hd) hd._dbgPrevDisplay = hd.style.display;
+                const gc = document.getElementById('game-container');
+                const lw = document.getElementById('lobby-wrapper');
+                const hd = document.querySelector('#game-container .hud');
+                gc._dbgPrevDisplay = gc.style.display;
+                if (lw) lw._dbgPrevDisplay = lw.style.display;
+                if (hd) hd._dbgPrevDisplay = hd.style.display;
+                gc.style.display = '';
+                if (lw) lw.style.display = 'none';
+                if (hd) hd.style.display = 'none';
 
-            gc.style.display  = '';
-            if (lw) lw.style.display = 'none';
-            if (hd) hd.style.display = 'none';  // hide HUD bars, keep only arena
+                // Reset fighters to default positions
+                game.player._homeX = 128;
+                game.cpu._homeX    = 1252;
+                game.player.element.classList.remove('facing-flipped');
+                game.cpu.element.classList.remove('facing-flipped');
+                game.player.element.style.transition = 'none';
+                game.cpu.element.style.transition    = 'none';
+                game.player.element.style.left  = '8%';
+                game.player.element.style.right = '';
+                game.cpu.element.style.right    = '8%';
+                game.cpu.element.style.left     = '';
+                void game.player.element.offsetWidth;
+                game.player.element.style.transition = '';
+                game.cpu.element.style.transition    = '';
 
-            // Reset fighters to default start positions
-            game.player._homeX = 128;
-            game.cpu._homeX    = 1252;
-            game.player.element.classList.remove('facing-flipped');
-            game.cpu.element.classList.remove('facing-flipped');
-            game.player.element.style.transition = 'none';
-            game.cpu.element.style.transition    = 'none';
-            game.player.element.style.left  = '8%';
-            game.player.element.style.right = '';
-            game.cpu.element.style.right    = '8%';
-            game.cpu.element.style.left     = '';
-            void game.player.element.offsetWidth;
-            game.player.element.style.transition = '';
-            game.cpu.element.style.transition    = '';
+                requestAnimationFrame(() => {
+                    _fighterGroundY.player = getCharacterFeetY('player');
+                    _fighterGroundY.cpu    = getCharacterFeetY('cpu');
+                });
 
-            // Floating bar: power name + back button
-            const bar = document.createElement('div');
-            bar.id = 'fury-debug-bar';
-            bar.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,8,20,0.92);border:1px solid #4c1d95;border-radius:8px;padding:8px 18px;display:flex;align-items:center;gap:14px;font-family:"Press Start 2P",monospace;font-size:0.45em;white-space:nowrap;';
-            bar.innerHTML = `<span style="color:${color};">${powerStr.toUpperCase().replace(/_/g,' ')}</span>`;
-            const backBtn = document.createElement('button');
-            backBtn.className = 'anim-debug-btn';
-            backBtn.style.cssText = 'font-size:1em;padding:4px 10px;';
-            backBtn.textContent = '◀ DEBUG';
-            backBtn.onclick = dbgFuryClose;
-            bar.appendChild(backBtn);
-            document.body.appendChild(bar);
+                // Build floating bar with all fury buttons + back
+                const bar = document.createElement('div');
+                bar.id = 'fury-debug-bar';
+                bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,8,20,0.95);border-top:1px solid #4c1d95;padding:8px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:"Press Start 2P",monospace;';
 
-            // Wait one frame for arena layout to be ready, then measure ground positions and play
-            requestAnimationFrame(() => {
-                _fighterGroundY.player = getCharacterFeetY('player');
-                _fighterGroundY.cpu    = getCharacterFeetY('cpu');
-                playFuryPowerAnimation('player', 'cpu', powerStr, color);
-            });
+                const mkBtn = (label, el, sfx, col) => {
+                    const b = document.createElement('button');
+                    b.className = 'anim-debug-btn';
+                    b.style.cssText = `font-size:0.35em;padding:5px 8px;color:${col};border-color:${col}44;`;
+                    b.textContent = label;
+                    b.onclick = () => dbgFuryPower(el, sfx);
+                    return b;
+                };
 
-            _furyPreviewCleanupTimer = setTimeout(dbgFuryClose, 8000);
+                [
+                    ['🔥 METEOR',     'fire',      'fireball',       '#ff6b35'],
+                    ['🔥 MISS',       'fire',      'fireball_miss',  '#ff6b35'],
+                    ['🔥 FLAME',      'fire',      'flamethrower',   '#ff6b35'],
+                    ['🔥 AURA',       'fire',      'burn_aura',      '#ff6b35'],
+                    ['⚡ BOLT',       'lightning', 'lightning_bolt',  '#ffd740'],
+                    ['⚡ DISCHARGE',  'lightning', 'sky_discharge',   '#ffd740'],
+                    ['⚡ ORB',        'lightning', 'orb_active',      '#ffd740'],
+                    ['🌍 ROCK',       'earth',     'giant_rock',      '#8bc34a'],
+                    ['🌍 SPIKE',      'earth',     'earth_spike',     '#8bc34a'],
+                    ['🌍 SPIKE MISS', 'earth',     'spike_miss',      '#8bc34a'],
+                    ['🌍 STONE',      'earth',     'stone_skin',      '#8bc34a'],
+                    ['🌍 SHATTER',    'earth',     'stone_skin_break','#8bc34a'],
+                    ['💧 TSUNAMI',    'water',     'tsunami',         '#4fc3f7'],
+                    ['🌬️ TORNADO',   'wind',      'tornado',         '#b0bec5'],
+                    ['🌬️ COLUMNS',   'wind',      'air_columns',     '#b0bec5'],
+                ].forEach(([lbl, el, sfx, col]) => bar.appendChild(mkBtn(lbl, el, sfx, col)));
+
+                const backBtn = document.createElement('button');
+                backBtn.className = 'anim-debug-btn';
+                backBtn.style.cssText = 'font-size:0.35em;padding:5px 10px;margin-left:auto;';
+                backBtn.textContent = '◀ DEBUG';
+                backBtn.onclick = dbgFuryClose;
+                bar.appendChild(backBtn);
+                document.body.appendChild(bar);
+            }
+
+            // Active power label in bar
+            const bar = document.getElementById('fury-debug-bar');
+            let activeLbl = bar.querySelector('.fury-active-lbl');
+            if (!activeLbl) {
+                activeLbl = document.createElement('span');
+                activeLbl.className = 'fury-active-lbl';
+                activeLbl.style.cssText = 'font-size:0.35em;min-width:160px;';
+                bar.insertBefore(activeLbl, bar.firstChild);
+            }
+            activeLbl.style.color = color;
+            activeLbl.textContent = powerStr.toUpperCase().replace(/_/g, ' ');
+
+            // Play in real arena (ground Y already measured on first call)
+            playFuryPowerAnimation('player', 'cpu', powerStr, color);
         }
 
         function closeAnimDebug() {
@@ -33036,23 +33069,8 @@
             <div class="anim-debug-row" id="dbg-shield-row" style="display:none;">
                 <button class="anim-debug-btn" onclick="dbgAnim('shield-block',this)">🛡️ SHIELD BLOCK</button>
             </div>
-            <div class="anim-debug-row" style="align-items:center;gap:4px;border-top:1px solid #2d1b69;padding-top:8px;margin-top:4px;">
-                <span style="color:#6b7280;font-size:0.4em;margin-right:4px;">FURY:</span>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','fireball')" style="font-size:0.38em;">🔥 METEOR</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','fireball_miss')" style="font-size:0.38em;">🔥 MISS</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','flamethrower')" style="font-size:0.38em;">🔥 FLAME</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','burn_aura')" style="font-size:0.38em;">🔥 AURA</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','lightning_bolt')" style="font-size:0.38em;">⚡ BOLT</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','sky_discharge')" style="font-size:0.38em;">⚡ DISCHARGE</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('lightning','orb_active')" style="font-size:0.38em;">⚡ ORB</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','giant_rock')" style="font-size:0.38em;">🌍 ROCK</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','earth_spike')" style="font-size:0.38em;">🌍 SPIKE</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','spike_miss')" style="font-size:0.38em;">🌍 MISS</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','stone_skin')" style="font-size:0.38em;">🌍 STONE</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('earth','stone_skin_break')" style="font-size:0.38em;">🌍 SHATTER</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('water','tsunami')" style="font-size:0.38em;">💧 TSUNAMI</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('wind','tornado')" style="font-size:0.38em;">🌬️ TORNADO</button>
-                <button class="anim-debug-btn" onclick="dbgFuryPower('wind','air_columns')" style="font-size:0.38em;">🌬️ COLUMNS</button>
+            <div class="anim-debug-row" style="border-top:1px solid #2d1b69;padding-top:8px;margin-top:4px;">
+                <button class="anim-debug-btn" onclick="dbgFuryPower('fire','fireball')" style="background:#ff6b3522;border-color:#ff6b3566;">⚡ FURY POWERS (ARENA MODE)</button>
             </div>
 
         </div>
