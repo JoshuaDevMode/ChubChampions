@@ -32373,6 +32373,9 @@
                 if (lw) lw.style.display = 'none';
                 if (hd) hd.style.display = 'none';
 
+                // Stop camera (clears any leftover transform on #arena-world)
+                stopArenaCamera();
+
                 // Reset fighters to default positions
                 game.player._homeX = 128;
                 game.cpu._homeX    = 1252;
@@ -32387,11 +32390,6 @@
                 void game.player.element.offsetWidth;
                 game.player.element.style.transition = '';
                 game.cpu.element.style.transition    = '';
-
-                requestAnimationFrame(() => {
-                    _fighterGroundY.player = getCharacterFeetY('player');
-                    _fighterGroundY.cpu    = getCharacterFeetY('cpu');
-                });
 
                 // Build floating bar with all fury buttons + back
                 const bar = document.createElement('div');
@@ -32446,8 +32444,12 @@
             activeLbl.style.color = color;
             activeLbl.textContent = powerStr.toUpperCase().replace(/_/g, ' ');
 
-            // Play in real arena (ground Y already measured on first call)
-            playFuryPowerAnimation('player', 'cpu', powerStr, color);
+            // Double rAF: let the browser lay out the arena, then measure fresh ground Y and play
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                _fighterGroundY.player = getCharacterFeetY('player');
+                _fighterGroundY.cpu    = getCharacterFeetY('cpu');
+                playFuryPowerAnimation('player', 'cpu', powerStr, color);
+            }));
         }
 
         function closeAnimDebug() {
