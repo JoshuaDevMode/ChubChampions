@@ -13228,7 +13228,7 @@
             fire:      { p1: { name: 'Flamethrower',  desc: 'Continuous burn DoT (4 ticks)' },      p2: { name: 'Fireball',      desc: 'Massive impact + 1-turn stun' } },
             lightning: { p1: { name: 'Sky Discharge', desc: '3 sequential lightning strikes' },      p2: { name: 'Lightning Bolt',desc: 'High damage + electrocution' } },
             earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },              p2: { name: 'Earth Spike',   desc: 'Damage + 2-turn stun' } },
-            water:     { p1: { name: 'Glacial Storm', desc: '3 ice shard hits' },                   p2: { name: 'Tsunami',       desc: 'Massive wave + enemy skips turn' } },
+            water:     { p1: { name: 'Hydro Barrage', desc: '3 pressurized water hits' },            p2: { name: 'Tsunami',       desc: 'Massive wave + enemy skips turn' } },
             wind:      { p1: { name: 'Air Columns',   desc: '3-hit air juggle' },                   p2: { name: 'Tornado',       desc: 'Huge damage + skip turn' } },
         };
 
@@ -17983,7 +17983,7 @@
             const fpSleepMs = isPassive                               ? 450
                             : event.power.includes('sky_discharge')   ? 3800
                             : event.power.includes('tsunami')         ? 1500
-                            : event.power.includes('water_bullets')   ? 3300
+                            : event.power.includes('hydro_barrage')   ? 3300
                             : event.power.includes('fireball')        ? 2900
                             : event.power.includes('giant_rock')      ? 3700
                             : event.power.includes('earth_spike')     ? 3400
@@ -22846,7 +22846,7 @@
                         }
 
                         waveAnimId = requestAnimationFrame(animTsunami);
-                    } else if (power.includes('glacial_storm') || power.includes('water_bullets')) {
+                    } else if (power.includes('hydro_barrage')) {
                         const fromLeft = caster === 'player';
                         const N = 20, dW = 22, dH = 28;
                         const arenaW = arena.offsetWidth;
