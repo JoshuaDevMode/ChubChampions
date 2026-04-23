@@ -8619,11 +8619,10 @@
             font-family: 'DynaPuff', sans-serif;
             font-weight: 700;
             font-size: 15px;
-            color: #fff;
+            color: #1a1008;
             letter-spacing: 0.01em;
             line-height: 1.2;
             margin-bottom: 6px;
-            text-shadow: 0 1px 3px #000, 1px 1px 0 rgba(0,0,0,0.9);
         }
         .sdrop-addr-row {
             display: flex;
@@ -8634,25 +8633,24 @@
         .sdrop-addr {
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            color: rgba(255,235,195,0.9);
+            color: #5a3010;
             letter-spacing: 0.04em;
-            text-shadow: 0 1px 2px #000;
         }
         .sdrop-copy-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
             border-radius: 4px;
-            color: rgba(255,235,195,0.9);
+            color: #3a1f00;
             cursor: pointer;
             padding: 3px 5px;
             transition: background 0.15s, color 0.15s;
             flex-shrink: 0;
         }
-        .sdrop-copy-btn:hover { background: rgba(0,0,0,0.45); color: #fff; }
-        .sdrop-copy-btn.copied { background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.5); color: #4ade80; }
+        .sdrop-copy-btn:hover { background: rgba(0,0,0,0.2); color: #1a1008; }
+        .sdrop-copy-btn.copied { background: rgba(20,100,50,0.15); border-color: rgba(20,140,70,0.4); color: #166534; }
         .sdrop-balances {
             display: flex;
             gap: 6px;
@@ -8662,34 +8660,33 @@
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
             font-weight: 700;
-            background: rgba(0,0,0,0.35);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.18);
             border-radius: 4px;
             padding: 3px 8px;
-            color: #fff;
-            text-shadow: 0 1px 2px #000;
+            color: #2c1400;
         }
-        .sdrop-bal-chip.mon { border-color: rgba(167,139,250,0.45); color: #e9d5ff; }
-        .sdrop-bal-chip.sol { border-color: rgba(20,241,149,0.35); color: #6ee7b7; }
+        .sdrop-bal-chip.mon { border-color: rgba(109,40,217,0.35); color: #5b21b6; }
+        .sdrop-bal-chip.sol { border-color: rgba(5,150,105,0.35); color: #065f46; }
         .sdrop-divider {
             height: 1px;
-            background: rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.15);
             margin: 0 0 6px;
         }
         .session-rename-input {
             width: 100%;
             box-sizing: border-box;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.35);
+            border: 1px solid rgba(0,0,0,0.25);
             border-radius: 5px;
-            color: #fff;
+            color: #1a1008;
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
             padding: 6px 8px;
             outline: none;
         }
-        .session-rename-input:focus { border-color: rgba(255,255,255,0.55); }
-        .session-rename-input::placeholder { color: rgba(255,255,255,0.35); }
+        .session-rename-input:focus { border-color: rgba(0,0,0,0.45); }
+        .session-rename-input::placeholder { color: rgba(60,30,0,0.4); }
         .session-disconnect-btn {
             display: flex;
             align-items: center;
@@ -8697,7 +8694,7 @@
             width: 100%;
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
-            color: #fff;
+            color: #2c1400;
             background: transparent;
             border: none;
             padding: 9px 11px;
@@ -8706,9 +8703,8 @@
             text-align: left;
             white-space: nowrap;
             transition: background 0.15s;
-            text-shadow: 0 1px 2px #000;
         }
-        .session-disconnect-btn:hover { background: rgba(0,0,0,0.25); }
+        .session-disconnect-btn:hover { background: rgba(0,0,0,0.1); }
         .session-login-btn {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.62em;
@@ -11059,7 +11055,7 @@
                         <input id="session-rename-input" class="session-rename-input" type="text" maxlength="24" placeholder="Enter name…" />
                         <button class="session-disconnect-btn" style="color:#4ade80;border-color:#4ade80;" onclick="savePlayerName()">✓ SAVE</button>
                     </div>
-                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;color:#f87171;">⏻ DISCONNECT</button>
+                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;color:#991b1b;">⏻ DISCONNECT</button>
                 </div>
                 <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('chubchampions:showlogin'))">🎮 LOGIN</button>
             </div>
