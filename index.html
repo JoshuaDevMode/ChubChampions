@@ -8619,11 +8619,11 @@
             font-family: 'DynaPuff', sans-serif;
             font-weight: 700;
             font-size: 15px;
-            color: #ffcc88;
+            color: #fff;
             letter-spacing: 0.01em;
             line-height: 1.2;
             margin-bottom: 6px;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+            text-shadow: 0 1px 3px #000, 1px 1px 0 rgba(0,0,0,0.9);
         }
         .sdrop-addr-row {
             display: flex;
@@ -8634,24 +8634,25 @@
         .sdrop-addr {
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            color: rgba(200,160,80,0.85);
+            color: rgba(255,235,195,0.9);
             letter-spacing: 0.04em;
+            text-shadow: 0 1px 2px #000;
         }
         .sdrop-copy-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(120,80,20,0.25);
-            border: 1px solid rgba(180,130,40,0.4);
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.25);
             border-radius: 4px;
-            color: rgba(200,160,80,0.85);
+            color: rgba(255,235,195,0.9);
             cursor: pointer;
             padding: 3px 5px;
             transition: background 0.15s, color 0.15s;
             flex-shrink: 0;
         }
-        .sdrop-copy-btn:hover { background: rgba(160,100,20,0.35); color: #ffcc88; }
-        .sdrop-copy-btn.copied { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+        .sdrop-copy-btn:hover { background: rgba(0,0,0,0.45); color: #fff; }
+        .sdrop-copy-btn.copied { background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.5); color: #4ade80; }
         .sdrop-balances {
             display: flex;
             gap: 6px;
@@ -8661,33 +8662,34 @@
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
             font-weight: 700;
-            background: rgba(60,35,8,0.45);
-            border: 1px solid rgba(180,130,40,0.3);
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 4px;
             padding: 3px 8px;
-            color: #d4a060;
+            color: #fff;
+            text-shadow: 0 1px 2px #000;
         }
-        .sdrop-bal-chip.mon { border-color: rgba(180,130,40,0.5); color: #c8a050; }
-        .sdrop-bal-chip.sol { border-color: rgba(20,241,149,0.3); color: #5eead4; }
+        .sdrop-bal-chip.mon { border-color: rgba(167,139,250,0.45); color: #e9d5ff; }
+        .sdrop-bal-chip.sol { border-color: rgba(20,241,149,0.35); color: #6ee7b7; }
         .sdrop-divider {
             height: 1px;
-            background: rgba(180,130,40,0.22);
+            background: rgba(255,255,255,0.18);
             margin: 0 0 6px;
         }
         .session-rename-input {
             width: 100%;
             box-sizing: border-box;
-            background: rgba(30,18,4,0.55);
-            border: 1px solid rgba(180,130,40,0.4);
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.25);
             border-radius: 5px;
-            color: #ffcc88;
+            color: #fff;
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
             padding: 6px 8px;
             outline: none;
         }
-        .session-rename-input:focus { border-color: rgba(255,180,60,0.75); }
-        .session-rename-input::placeholder { color: rgba(180,130,60,0.55); }
+        .session-rename-input:focus { border-color: rgba(255,255,255,0.55); }
+        .session-rename-input::placeholder { color: rgba(255,255,255,0.35); }
         .session-disconnect-btn {
             display: flex;
             align-items: center;
@@ -8695,7 +8697,7 @@
             width: 100%;
             font-family: 'DynaPuff', sans-serif;
             font-size: 11px;
-            color: #ffcc88;
+            color: #fff;
             background: transparent;
             border: none;
             padding: 9px 11px;
@@ -8704,9 +8706,9 @@
             text-align: left;
             white-space: nowrap;
             transition: background 0.15s;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+            text-shadow: 0 1px 2px #000;
         }
-        .session-disconnect-btn:hover { background: rgba(180,120,20,0.22); }
+        .session-disconnect-btn:hover { background: rgba(0,0,0,0.25); }
         .session-login-btn {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.62em;
