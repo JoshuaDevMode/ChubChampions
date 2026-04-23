@@ -8598,80 +8598,104 @@
         .session-dropdown {
             display: none;
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 10px);
             right: 0;
-            background: linear-gradient(160deg, #1c1624 0%, #0e0b16 100%);
-            border: 1px solid rgba(167,139,250,0.22);
-            border-top: 2px solid rgba(167,139,250,0.4);
-            border-radius: 9px;
-            padding: 5px;
-            min-width: 140px;
+            background: none;
+            border: 28px solid transparent;
+            border-image-source: url('/ChubChampions/assets/window-frame-oxBsLhjF.png');
+            border-image-slice: 15% fill;
+            border-image-width: 28px;
+            border-image-repeat: stretch;
+            padding: 2px 8px 4px;
+            min-width: 210px;
             z-index: 99999;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.85);
         }
         .session-widget.sw-open .session-dropdown { display: block; }
         .sdrop-header {
-            padding: 4px 2px 6px;
+            padding: 4px 4px 10px;
         }
         .sdrop-name {
-            font-family: 'Fredoka', sans-serif;
-            font-weight: 900;
-            font-size: 12px;
-            color: #fff;
-            letter-spacing: 0.02em;
+            font-family: 'DynaPuff', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffcc88;
+            letter-spacing: 0.01em;
             line-height: 1.2;
-            margin-bottom: 3px;
+            margin-bottom: 6px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+        }
+        .sdrop-addr-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         .sdrop-addr {
             font-family: 'Courier New', monospace;
-            font-size: 7px;
-            color: rgba(167,139,250,0.65);
+            font-size: 11px;
+            color: rgba(200,160,80,0.85);
             letter-spacing: 0.04em;
-            margin-bottom: 5px;
         }
+        .sdrop-copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(120,80,20,0.25);
+            border: 1px solid rgba(180,130,40,0.4);
+            border-radius: 4px;
+            color: rgba(200,160,80,0.85);
+            cursor: pointer;
+            padding: 3px 5px;
+            transition: background 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+        .sdrop-copy-btn:hover { background: rgba(160,100,20,0.35); color: #ffcc88; }
+        .sdrop-copy-btn.copied { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #4ade80; }
         .sdrop-balances {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
         .sdrop-bal-chip {
-            font-family: 'Fredoka', sans-serif;
-            font-size: 8px;
-            font-weight: 600;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(167,139,250,0.2);
+            font-family: 'DynaPuff', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(60,35,8,0.45);
+            border: 1px solid rgba(180,130,40,0.3);
             border-radius: 4px;
-            padding: 2px 6px;
-            color: #c4b5fd;
+            padding: 3px 8px;
+            color: #d4a060;
         }
-        .sdrop-bal-chip.mon { border-color: rgba(139,92,246,0.4); color: #a78bfa; }
+        .sdrop-bal-chip.mon { border-color: rgba(180,130,40,0.5); color: #c8a050; }
         .sdrop-bal-chip.sol { border-color: rgba(20,241,149,0.3); color: #5eead4; }
         .sdrop-divider {
             height: 1px;
-            background: rgba(167,139,250,0.15);
-            margin: 0 0 4px;
+            background: rgba(180,130,40,0.22);
+            margin: 0 0 6px;
         }
         .session-rename-input {
             width: 100%;
             box-sizing: border-box;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(167,139,250,0.35);
+            background: rgba(30,18,4,0.55);
+            border: 1px solid rgba(180,130,40,0.4);
             border-radius: 5px;
-            color: #e9d5ff;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
-            padding: 5px 7px;
+            color: #ffcc88;
+            font-family: 'DynaPuff', sans-serif;
+            font-size: 11px;
+            padding: 6px 8px;
             outline: none;
         }
-        .session-rename-input:focus { border-color: rgba(167,139,250,0.7); }
+        .session-rename-input:focus { border-color: rgba(255,180,60,0.75); }
+        .session-rename-input::placeholder { color: rgba(180,130,60,0.55); }
         .session-disconnect-btn {
             display: flex;
             align-items: center;
             gap: 7px;
             width: 100%;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 7px;
-            color: #f87171;
+            font-family: 'DynaPuff', sans-serif;
+            font-size: 11px;
+            color: #ffcc88;
             background: transparent;
             border: none;
             padding: 9px 11px;
@@ -8680,8 +8704,9 @@
             text-align: left;
             white-space: nowrap;
             transition: background 0.15s;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
         }
-        .session-disconnect-btn:hover { background: rgba(248,113,113,0.1); }
+        .session-disconnect-btn:hover { background: rgba(180,120,20,0.22); }
         .session-login-btn {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.62em;
@@ -11014,7 +11039,15 @@
                     <!-- Player info header -->
                     <div class="sdrop-header">
                         <div class="sdrop-name" id="sdrop-name"></div>
-                        <div class="sdrop-addr" id="sdrop-addr"></div>
+                        <div class="sdrop-addr-row" id="sdrop-addr-row" style="display:none;">
+                            <span class="sdrop-addr" id="sdrop-addr"></span>
+                            <button class="sdrop-copy-btn" id="sdrop-copy-btn" onclick="copyWalletAddr()" title="Copy address">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
                         <div class="sdrop-balances" id="sdrop-balances"></div>
                     </div>
                     <div class="sdrop-divider"></div>
@@ -11025,7 +11058,7 @@
                         <input id="session-rename-input" class="session-rename-input" type="text" maxlength="24" placeholder="Enter name…" />
                         <button class="session-disconnect-btn" style="color:#4ade80;border-color:#4ade80;" onclick="savePlayerName()">✓ SAVE</button>
                     </div>
-                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;">⏻ DISCONNECT</button>
+                    <button class="session-disconnect-btn" onclick="logoutPlayerSession()" style="margin-top:4px;color:#f87171;">⏻ DISCONNECT</button>
                 </div>
                 <button class="session-login-btn" id="session-login-btn" onclick="window.dispatchEvent(new CustomEvent('chubchampions:showlogin'))">🎮 LOGIN</button>
             </div>
@@ -13195,11 +13228,11 @@
 
         // Fury active power definitions (mirrors backend FURY_POWERS constant)
         const FURY_POWERS_FRONTEND = {
-            fire:      { p1: { name: 'Meteor',        desc: 'Massive impact + 1-turn stun' },       p2: { name: 'Flamethrower',  desc: 'Continuous burn DoT (4 ticks)' } },
-            lightning: { p1: { name: 'Lightning Bolt',desc: 'High damage, ignores DEF' },           p2: { name: 'Sky Discharge', desc: '3 sequential lightning strikes' } },
-            earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },             p2: { name: 'Earth Spike',  desc: 'Damage + 2-turn stun' } },
-            water:     { p1: { name: 'Tsunami',       desc: 'Damage + enemy skips turn' },          p2: { name: 'Glacial Storm', desc: '3 ice shard hits' } },
-            wind:      { p1: { name: 'Tornado',       desc: 'Damage + wind blades + skip turn' },   p2: { name: 'Air Columns',   desc: '3-hit air juggle' } },
+            fire:      { p1: { name: 'Flamethrower',  desc: 'Continuous burn DoT (4 ticks)' },      p2: { name: 'Fireball',      desc: 'Massive impact + 1-turn stun' } },
+            lightning: { p1: { name: 'Sky Discharge', desc: '3 sequential lightning strikes' },      p2: { name: 'Lightning Bolt',desc: 'High damage + electrocution' } },
+            earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },              p2: { name: 'Earth Spike',   desc: 'Damage + 2-turn stun' } },
+            water:     { p1: { name: 'Glacial Storm', desc: '3 ice shard hits' },                   p2: { name: 'Tsunami',       desc: 'Massive wave + enemy skips turn' } },
+            wind:      { p1: { name: 'Air Columns',   desc: '3-hit air juggle' },                   p2: { name: 'Tornado',       desc: 'Huge damage + skip turn' } },
         };
 
         // Per-character fury power selection (keyed by character id, persists in session)
@@ -13218,6 +13251,9 @@
             if (choice === 'p1' && level < FURY_P1_UNLOCK_LEVEL) return;
             if (choice === 'p2' && level < FURY_P2_UNLOCK_LEVEL) return;
             _furyPowerChoices[char.id] = choice;
+            char.furyPowerChoice = choice;
+            saveCharacters();
+            syncCharacterToBackend(char).catch(() => {});
             updateFuryPowerSelector(char);
         }
 
@@ -13248,6 +13284,10 @@
             const level      = character.level || 1;
             const p1Unlocked = level >= FURY_P1_UNLOCK_LEVEL;
             const p2Unlocked = level >= FURY_P2_UNLOCK_LEVEL;
+            // Seed local state from DB value on first load (don't overwrite a user's in-session choice)
+            if (_furyPowerChoices[character.id] === undefined && character.furyPowerChoice) {
+                _furyPowerChoices[character.id] = character.furyPowerChoice;
+            }
             const choice     = getFuryPowerChoice(character); // respects level gating
 
             row.style.display = 'none'; // always hidden — pips in left column are the UI
@@ -15787,6 +15827,8 @@
                     sdropAddr.textContent = w.startsWith('0x')
                         ? w.slice(0, 6) + '…' + w.slice(-4)
                         : w.slice(0, 4) + '…' + w.slice(-4);
+                    const addrRow = document.getElementById('sdrop-addr-row');
+                    if (addrRow) addrRow.style.display = '';
                 }
                 if (avatarEl && playerSession.avatar) {
                     avatarEl.onerror = function() { this.style.display = 'none'; };
@@ -15809,6 +15851,25 @@
                 const balEl = document.getElementById('wallet-balance');
                 if (balEl) balEl.style.display = 'none';
             }
+        }
+
+        function copyWalletAddr() {
+            const wallet = playerSession?.wallet;
+            if (!wallet) return;
+            navigator.clipboard.writeText(wallet).then(() => {
+                const btn = document.getElementById('sdrop-copy-btn');
+                if (!btn) return;
+                btn.classList.add('copied');
+                const svg = btn.querySelector('svg');
+                if (svg) svg.style.display = 'none';
+                btn.insertAdjacentHTML('beforeend', '<span id="sdrop-copied-txt" style="font-family:Fredoka,sans-serif;font-size:11px;font-weight:700;">✓</span>');
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    const txt = document.getElementById('sdrop-copied-txt');
+                    if (txt) txt.remove();
+                    if (svg) svg.style.display = '';
+                }, 1500);
+            }).catch(() => {});
         }
 
         // Opens Privy's secure export-wallet popup.
@@ -17361,8 +17422,9 @@
                         unlocked:             character.unlockedWeapons   || [],
                         fragmentChestsOpened: character.fragmentChestsOpened || 0,
                     },
-                    element:      character.element      ?? null,
-                    adaptability: character.adaptability ?? 0,
+                    element:           character.element           ?? null,
+                    fury_power_choice: character.furyPowerChoice   ?? null,
+                    adaptability:      character.adaptability       ?? 0,
                     exp:          character.exp          ?? 0,
                     consumables:  character.consumables  || [],
                     wellnessItems: character.wellnessItems || [],
@@ -18053,7 +18115,7 @@
                     // Without speed (jump / reposition events): fixed reference 180px/300ms.
                     const pxPerTurn = event.speed;
                     const moveDur   = pxPerTurn
-                        ? Math.max(120, Math.min(600, Math.round(26700 * distServer / (pxPerTurn * pxPerTurn))))
+                        ? Math.max(70, Math.min(600, Math.round(26700 * distServer / (pxPerTurn * pxPerTurn))))
                         : Math.max(120, Math.min(600, Math.round(distServer * 300 / 180)));
                     movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                     void movEl.offsetWidth;
@@ -18839,7 +18901,7 @@
             stopIdleBlink(defenderEl);
             attackerEl.classList.add('dashing');
             // Override .dashing !important transition globally for all movement branches in this attack
-            const _movMs = Math.round(400 * atkMult);
+            const _movMs = Math.round(300 * atkMult);
             attackerEl.style.setProperty('transition', `left ${_movMs}ms ease-out, right ${_movMs}ms ease-out`, 'important');
             void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
@@ -18866,9 +18928,10 @@
             const _isDodgeRet   = defense === 'dodge' && !jumpDodge;
             const _dRetCompPx   = _isDodgeRet ? Math.round(130 * _scale) : 0;
             const _dRetCompSign = _dDefIsLeft ? -1 : 1;
-            const _atkLeftPx = attacker === 'player'
+            const _atkLeftPxRaw = attacker === 'player'
                 ? (game.cpu._homeX    + _atkGapSign * _ATCK_GAP) * _scale + _dRetCompSign * _dRetCompPx
                 : (game.player._homeX - _atkGapSign * _ATCK_GAP) * _scale + _dRetCompSign * _dRetCompPx;
+            const _atkLeftPx = Math.max(Math.round(10 * _scale), Math.min(Math.round(1370 * _scale), _atkLeftPxRaw));
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
@@ -19252,8 +19315,8 @@
                     // _dDefIsLeft is precomputed above alongside _atkLeftPx so both use the same value.
                     const _dIsOnLeft = _dDefIsLeft;
                     const _dRetLeft  = _dIsOnLeft
-                        ? Math.max(0, _dCurrLeft - _dRetPx)
-                        : _dCurrLeft + _dRetPx;
+                        ? Math.max(Math.round(10 * _dScale), _dCurrLeft - _dRetPx)
+                        : Math.min(Math.round(1370 * _dScale), _dCurrLeft + _dRetPx);
                     defenderEl.style.transition = 'left 130ms ease-out';
                     void defenderEl.offsetWidth;
                     defenderEl.style.left = _dRetLeft + 'px';
@@ -19369,7 +19432,7 @@
                 fighterBody.classList.add('taking-damage');
                 game.player.health = event.playerHp;
                 game.cpu.health    = event.cpuHp;
-                updateHealth(defender);
+                updateBothFighters();
                 showDamage(defender, damage, isCrit);
                 showHitEffect(defender, animType);
                 showBloodEffect(defender, isCrit);
@@ -19481,7 +19544,7 @@
                 if (damage > 0) {
                     game.player.health = event.playerHp;
                     game.cpu.health    = event.cpuHp;
-                    updateHealth(defender);
+                    updateBothFighters();
                     showDamage(defender, damage, false);
                 }
                 await sleep(200);
@@ -19530,7 +19593,7 @@
                 void attackerEl.offsetWidth;
                 // Return to current home position (server coords scaled to real arena width)
                 const _retScale = _arenaW / 1600;
-                const _retHomeX = (game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
+                const _retHomeX = _visualPos(game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
                 attackerEl.style.left  = _retHomeX + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(_retMs);
@@ -22377,10 +22440,10 @@
                                 // Knockback: slide target to server-computed new position
                                 const _grArenaW = (_furyDebugContainer || document.getElementById('arena')).offsetWidth;
                                 const _grScale  = _grArenaW / 1600;
-                                const _grNewX   = (target === 'player' ? event.playerX : event.cpuX) ?? null;
+                                const _grNewX   = (target === 'player' ? event?.playerX : event?.cpuX) ?? null;
                                 if (_grNewX !== null && _grNewX !== undefined) {
-                                    game.player._homeX = event.playerX;
-                                    game.cpu._homeX    = event.cpuX;
+                                    game.player._homeX = event?.playerX ?? game.player._homeX;
+                                    game.cpu._homeX    = event?.cpuX    ?? game.cpu._homeX;
                                     _syncFacingDirection();
                                 }
                                 // Animate target sliding to new server position
@@ -22619,8 +22682,8 @@
                         const WAVE_DRAWN  = 0.89;
                         const MAX_SCALE   = 0.80;
                         const cbOffset    = Math.round((1 - WAVE_DRAWN) * waveH * MAX_SCALE);
-                        // Wave 1: slight raise at caster side, descends to feetY by impact (t=0.78)
-                        const RAISE_START  = 20;
+                        // Wave starts 40px above impact level, descends to feetY by t=0.78
+                        const RAISE_START  = 40;
                         const cbStart = feetY - RAISE_START + cbOffset;
                         const cbEnd   = feetY               + cbOffset;
 
@@ -22786,7 +22849,7 @@
                         }
 
                         waveAnimId = requestAnimationFrame(animTsunami);
-                    } else if (power.includes('water_bullets')) {
+                    } else if (power.includes('glacial_storm') || power.includes('water_bullets')) {
                         const fromLeft = caster === 'player';
                         const N = 20, dW = 22, dH = 28;
                         const arenaW = arena.offsetWidth;
@@ -23651,8 +23714,8 @@
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
-            // If no explicit weapon id passed, check if fighter is armed and use that weapon
-            const _armedWepId = weaponIdForRun ?? (fighterEl.id ? (weaponState[fighterEl.id]?.equippedWeapon ?? null) : null);
+            // null = caller explicitly wants unarmed run; undefined = auto-detect from weaponState
+            const _armedWepId = weaponIdForRun !== undefined ? weaponIdForRun : (fighterEl.id ? (weaponState[fighterEl.id]?.equippedWeapon ?? null) : null);
 
             img._idleSrc = img._idleSrc || img.src;
             if (img._currentAnim) { clearInterval(img._currentAnim); img._currentAnim = null; }
