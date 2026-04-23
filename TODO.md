@@ -135,18 +135,14 @@
 ## 🔧 Backend / Infrastructure
 
 ### Supabase
-- [ ] Run supabase/schema.sql — tables: characters, battle_results, skin_templates, skin_mints
-- [ ] Run backend/supabase/matchmaking_schema.sql — matches table + find_or_create_match RPC
-- [ ] Run migration: `ALTER TABLE battle_results ADD CONSTRAINT battle_results_player_seed_unique UNIQUE (player_id, seed);`
-- [ ] **Run migration: per-character win_streak, xp_boost_data, shop_data** (required for per-character XP boost/streak/shop limits refactor)
-  ```sql
-  ALTER TABLE characters
-    ADD COLUMN IF NOT EXISTS win_streak INTEGER DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS xp_boost_data JSONB DEFAULT '{}',
-    ADD COLUMN IF NOT EXISTS shop_data JSONB DEFAULT '{}';
-  ```
-  `xp_boost_data` structure: `{ pending: [{mult, battles}], active: {mult, battlesLeft} | null }`
-  `shop_data` structure: `{ itemDailyPurchases: {}, itemPurchaseDate: '', minigameDailyPurchases: 0, minigamePurchaseDate: '' }`
+- [x] supabase/schema.sql — archivo completo (characters, battle_results, skin_templates, skin_mints, vault_deposits, aon_matches). **Ejecutar en Supabase SQL Editor si no se ha corrido aún.**
+- [x] backend/supabase/matchmaking_schema.sql — tabla matches + find_or_create_match RPC. **Ejecutar si no se ha corrido.**
+- [x] `battle_results_player_seed_unique` — incluido en schema.sql
+- [x] `win_streak`, `xp_boost_data` — incluidos en schema.sql characters table
+- [x] `shop_data` en characters — aplicado
+- [x] `total_free_rerolls_used`, `total_paid_rerolls` en players — aplicado
+- [x] `rewards_applied_for`, columnas defender/mode en aon_matches — aplicado
+- [x] `aon_rank_data` en characters — aplicado
 - [ ] Verify Vercel env vars:
       NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SYNC_SECRET
       NEXT_PUBLIC_PRIVY_APP_ID, PRIVY_APP_SECRET (get from Privy dashboard → Settings → API Keys)
@@ -305,24 +301,6 @@
 
 ---
 
-## 🗜️ Optimización Q-Table (pendiente)
-
-- [ ] **Redondear Q-values a 3 decimales**
-      Los Q-values son rankings relativos — precisión de 0.001 es suficiente.
-      Aplicar `Math.round(q * 1000) / 1000` al guardar en DB. Ahorra ~30-40% de tamaño.
-
-- [ ] **Serializar Q-table como array en vez de objeto**
-      En vez de `{"punch":0.123,"kick":-0.045,...}` guardar `[0.123,-0.045,...]`.
-      Los índices corresponden a acciones en orden fijo (QL_BASIC_ACTIONS + QL_DEF_ACTIONS
-      + QL_MOVE_ACTIONS). Ahorra ~50% adicional eliminando los nombres de keys.
-      Combinado con redondeo: de ~1.6 MB a ~640 KB por personaje a 2000 batallas.
-
-- [ ] **Cap de tamaño de Q-table**
-      Limitar a ~5,000 entradas máximas por personaje descartando los estados
-      menos visitados. Evita crecimiento indefinido en cuentas muy activas.
-
----
-
 ## 🗜️ Optimización Q-Table — ✅ Implementado
 
 - [x] Redondear Q-values a 3 decimales en `pruneQTable`
@@ -477,15 +455,12 @@ CORNER_COMBO_BONUS_MAX = 0.06   // +6% máximo de comboChance en el borde exacto
 COMBO_CHANCE_CAP       = 0.38   // cap total de comboChance (actualmente no hay cap explícito)
 ```
 
-### Cambios necesarios (backend)
-- `engine.ts` — detectar wall clamp en el knockback del combo finisher, emitir segundo
-  `MoveEvent` de rebote, sumar corner factor a `comboChance` antes de `isCombo`
-- `constants.ts` — agregar las 4 constantes arriba
+### ✅ Implementado (backend)
+- [x] `engine.ts` — detecta wall clamp en knockback del combo finisher, emite `MoveEvent` de rebote, suma corner factor a `comboChance`
+- [x] `constants.ts` — `WALL_BOUNCE_PX`, `CORNER_PRESSURE_RANGE`, `CORNER_COMBO_BONUS_MAX`, `COMBO_CHANCE_CAP`
 
-### Cambios necesarios (frontend)
-- Animación de rebote: slide corto con ease-out rebotando desde la pared
-- Efecto visual de impacto (polvo/destello en el borde) — opcional pero recomendado
-- Indicador "CORNERED!" cuando `distPressure > 0.7` — opcional
+### ✅ Implementado (frontend)
+- [x] Animación de rebote: slide ease-out con hurt frame, `bounceDamage` con `showDamage` — índice ~18011
 
 ---
 
