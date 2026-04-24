@@ -11296,7 +11296,7 @@
 
         /* ── EQUIPMENT + CONSUMABLES combined card ── */
         .main-menu .menu-equipment-panel {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 12px 14px 14px !important;
@@ -11375,7 +11375,7 @@
 
         /* BATTLE CHESTS card */
         .main-menu .victory-chest-container {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 12px 14px !important;
@@ -11524,7 +11524,7 @@
 
         /* XP BOOST card */
         .main-menu .xp-boost-container {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 10px 14px !important;
@@ -11583,7 +11583,7 @@
            REDESIGN — Phase 3: Bottom stats panel (cream card)
            ═══════════════════════════════════════════════════════════ */
         .main-menu .menu-stats-panel {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-image: none !important;
             border-radius: 20px !important;
@@ -11939,6 +11939,8 @@
             letter-spacing: 0.04em;
             position: relative;
             padding-bottom: 6px;
+            text-align: center !important;
+            width: 100% !important;
         }
         .main-menu .menu-character-name::after {
             content: "⭐";
@@ -12019,15 +12021,13 @@
             position: relative;
         }
         .main-menu #winrate-side-ext {
-            position: absolute !important;
-            top: 10px !important;
-            right: 16px !important;
+            position: static !important;
             width: auto !important;
-            z-index: 2;
             display: flex !important;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            justify-content: center;
+            gap: 3px;
             background: transparent !important;
             border: none !important;
             padding: 0 !important;
@@ -12036,7 +12036,7 @@
             min-width: 0 !important;
             width: 100% !important;
             max-width: none !important;
-            padding: 10px 18px 12px !important;
+            padding: 6px 14px 8px !important;
             box-sizing: border-box !important;
             display: block !important;
             position: relative !important;
@@ -12160,15 +12160,15 @@
         }
         .main-menu .menu-character-stats {
             gap: 0 !important;
-            padding: 8px 14px !important;
-            justify-content: space-between !important;
+            padding: 5px 12px !important;
+            justify-content: center !important;
             background: rgba(255,255,255,0.55) !important;
             border: 2px solid rgba(43,26,14,0.25) !important;
             border-radius: 14px !important;
             box-shadow:
                 inset 0 2px 0 rgba(255,255,255,0.7),
                 0 2px 4px rgba(0,0,0,0.1) !important;
-            margin-right: 0 !important;
+            margin: 0 auto !important;
         }
         .main-menu .menu-character-stat + .menu-character-stat {
             padding-left: 10px !important;
@@ -12260,14 +12260,13 @@
             gap: 6px;
         }
 
-        /* Stats panel: tighter vertical compact */
+        /* Stats panel: compact, short */
         .main-menu .menu-stats-panel {
-            padding: 12px 22px 14px !important;
+            padding: 8px 16px 10px !important;
         }
         .main-menu .menu-exp-skills-row {
-            gap: 12px !important;
-            padding-right: 150px !important;
-            margin-bottom: 4px !important;
+            gap: 10px !important;
+            margin-bottom: 0 !important;
         }
         .main-menu .menu-char-lv-circle {
             width: 52px !important;
@@ -12275,41 +12274,51 @@
             font-size: 1.3em !important;
         }
         .main-menu .menu-char-exp-track {
-            height: 26px !important;
+            height: 22px !important;
         }
         .main-menu .menu-stats-with-skill {
-            padding: 8px 140px 4px 0 !important;
-            border-top: 1px solid rgba(74,44,18,0.28) !important;
+            padding: 6px 0 2px !important;
+            border-top: none !important;
             border-bottom: none;
-            margin-top: 2px;
+            margin-top: 0;
         }
 
-        /* Top row of stats card: LEVEL + XP bar + SKILLS + spacer-for-winrate */
-        .main-menu .menu-exp-skills-row {
-            padding-right: 140px;  /* leave room for absolute-positioned winrate */
-        }
-        .main-menu .menu-stats-with-skill {
-            padding-right: 140px;
-        }
-        /* Win rate: part of the main stats card, separated by a vertical divider.
-           Only spans the upper rows (XP + stats chips) — stops before the bars. */
-        .main-menu #winrate-side-ext {
-            top: 10px !important;
-            bottom: auto !important;
-            height: 96px !important;
-            right: 14px !important;
+        /* ── 3-column top row: LEVEL+ELEMENT | EXP+STATS | WIN RATE ── */
+        .main-menu .stats-top-row {
             display: flex !important;
+            align-items: stretch;
+            gap: 0;
+            width: 100%;
+        }
+        .main-menu .stats-top-left,
+        .main-menu .stats-top-right {
+            flex: 0 0 130px;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px !important;
-            background: transparent !important;
-            border: none !important;
-            border-left: 2px solid rgba(43,26,14,0.18) !important;
-            border-radius: 0 !important;
-            padding: 6px 12px 6px 20px !important;
-            box-shadow: none !important;
-            min-width: 110px;
+            padding: 4px 8px;
+        }
+        .main-menu .stats-top-left {
+            border-right: 1px solid rgba(74,44,18,0.28);
+        }
+        .main-menu .stats-top-right {
+            border-left: 1px solid rgba(74,44,18,0.28);
+        }
+        .main-menu .stats-top-center {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            padding: 2px 12px;
+        }
+        .main-menu .stats-top-center .menu-character-stats {
+            justify-content: center !important;
+        }
+        .main-menu .stats-top-left .menu-char-lv-wrap {
+            gap: 6px !important;
         }
         .main-menu #winrate-side-ext > span:first-child {
             font-size: 10px !important;
@@ -12354,14 +12363,19 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 2px 6px;
+            gap: 4px;
+            padding: 3px 9px;
             border: 1.5px solid;
             border-radius: 999px;
             background: rgba(0,0,0,0.35);
-            font-size: 11px;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
             line-height: 1;
         }
         .main-menu .lv-elem-chip .lv-elem-icon { font-size: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
+        .main-menu .lv-elem-chip .lv-elem-label { white-space: nowrap; }
 
         /* ═══════════════════════════════════════════════════════════
            REDESIGN — Phase 7: Warmer cream/tan palette (less white)
@@ -12375,7 +12389,7 @@
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
             box-shadow:
                 inset 0 3px 0 rgba(255,240,210,0.7),
                 inset 0 -4px 0 rgba(120,75,25,0.22),
@@ -12421,7 +12435,7 @@
 
         /* Session dropdown — keep aligned with new light-brown palette */
         .session-dropdown {
-            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
+            background: linear-gradient(180deg, #f5e3c2 0%, #e2c89a 100%) !important;
         }
         .sdrop-bal-chip {
             background: rgba(255,232,195,0.55) !important;
@@ -12596,9 +12610,10 @@
         /* WELLNESS + MORALE on one row with CARE button at the end */
         .main-menu .menu-bars-with-care {
             flex-direction: row !important;
-            gap: 14px !important;
-            margin-top: 8px !important;
-            padding: 8px 2px 10px !important;
+            gap: 12px !important;
+            margin-top: 4px !important;
+            margin-bottom: 0 !important;
+            padding: 6px 2px 6px !important;
             align-items: center !important;
             border-top: 1px solid rgba(74,44,18,0.28) !important;
             border-bottom: none !important;
@@ -12619,18 +12634,18 @@
             display: flex !important;
             flex-direction: column;
             margin: 0 !important;
-            padding: 8px 2px 4px !important;
+            padding: 5px 2px 2px !important;
             border-top: 1px solid rgba(74,44,18,0.28) !important;
-            gap: 4px !important;
+            gap: 2px !important;
         }
         .main-menu .instinct-section-title {
             display: block !important;
             font-family: 'Fredoka', sans-serif !important;
-            font-size: 0.6em !important;
+            font-size: 0.55em !important;
             font-weight: 700 !important;
             color: #4a2c12 !important;
             letter-spacing: 0.08em;
-            margin-bottom: 2px;
+            margin-bottom: 0;
         }
         .main-menu .instinct-bar-label::before { content: none !important; }
 
@@ -12645,8 +12660,8 @@
         /* BP hint aligned right under the instinct bar */
         .main-menu .instinct-hint {
             text-align: right !important;
-            margin-top: 4px !important;
-            font-size: 0.55em !important;
+            margin-top: 2px !important;
+            font-size: 0.5em !important;
         }
         .main-menu .instinct-hint::after { content: " ⓘ"; opacity: 0.5; margin-left: 6px; }
 
@@ -22271,7 +22286,7 @@
                 const elemData = ELEMENT_DATA[character.element];
                 if (lvElemEl) {
                     lvElemEl.innerHTML = elemData
-                        ? `<span class="lv-elem-chip" style="border-color:${elemData.color};color:${elemData.color};"><span class="lv-elem-icon">${elemData.icon}</span></span>`
+                        ? `<span class="lv-elem-chip" style="border-color:${elemData.color};color:${elemData.color};"><span class="lv-elem-icon">${elemData.icon}</span><span class="lv-elem-label">${elemData.label}</span></span>`
                         : '';
                 }
 
@@ -29795,6 +29810,37 @@
             if (menuContent && statsInfo && statsInfo.parentElement !== menuContent) {
                 menuContent.appendChild(statsInfo);
             }
+        })();
+
+        // ── Redesign: 3-column top row inside stats panel ──
+        (function buildStatsTopRow(){
+            const panel   = document.querySelector('.main-menu .menu-stats-panel');
+            if (!panel || panel.querySelector('.stats-top-row')) return;
+            const expRow   = panel.querySelector('.menu-exp-skills-row');
+            const statsRow = panel.querySelector('.menu-stats-with-skill');
+            const lvWrap   = panel.querySelector('.menu-char-lv-wrap');
+            const winrate  = document.getElementById('winrate-side-ext');
+            const bars     = panel.querySelector('.menu-bars-with-care');
+            if (!expRow || !statsRow || !lvWrap || !winrate || !bars) return;
+
+            const topRow    = document.createElement('div');
+            topRow.className = 'stats-top-row';
+            const leftCol   = document.createElement('div');
+            leftCol.className = 'stats-top-left';
+            const centerCol = document.createElement('div');
+            centerCol.className = 'stats-top-center';
+            const rightCol  = document.createElement('div');
+            rightCol.className = 'stats-top-right';
+
+            leftCol.appendChild(lvWrap);
+            centerCol.appendChild(expRow);
+            centerCol.appendChild(statsRow);
+            rightCol.appendChild(winrate);
+
+            topRow.appendChild(leftCol);
+            topRow.appendChild(centerCol);
+            topRow.appendChild(rightCol);
+            panel.insertBefore(topRow, bars);
         })();
 
 
