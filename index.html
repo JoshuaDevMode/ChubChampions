@@ -10949,6 +10949,889 @@
             cursor: pointer;
         }
         .anim-debug-close:hover { background: #374151; color: #fff; }
+
+        /* ═══════════════════════════════════════════════════════════
+           REDESIGN — Phase 1: Topbar (pill-style, cream + dark)
+           ═══════════════════════════════════════════════════════════ */
+        .main-menu .lobby-currency-bar {
+            width: auto;
+            left: 14px;
+            right: 14px;
+            top: 12px;
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 0;
+            background: none !important;
+            border: none !important;
+            border-image: none !important;
+            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.35));
+            z-index: 55;
+        }
+        /* Left capsule: menu buttons */
+        .main-menu .top-nav-group {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            flex: 0 0 auto;
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%);
+            border: 3px solid #2b1a0e;
+            border-radius: 999px;
+            padding: 5px 7px;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.8),
+                inset 0 -3px 0 rgba(120,80,30,0.18),
+                0 4px 0 #2b1a0e,
+                0 8px 18px rgba(0,0,0,0.45);
+        }
+        .main-menu .top-nav-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.6em;
+            font-weight: 700;
+            color: #3d2410;
+            background: transparent !important;
+            -webkit-mask: none !important;
+            mask: none !important;
+            border: none;
+            border-radius: 999px;
+            padding: 9px 14px;
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            text-shadow: none;
+            flex: 0 0 auto;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+        .main-menu .top-nav-btn::before {
+            content: "";
+            width: 22px;
+            height: 22px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            flex-shrink: 0;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+        }
+        .main-menu #menu-history-btn::before    { content: "📜"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-shop-btn::before       { content: "🏪"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-vault-btn::before      { content: "🗃️"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu .top-nav-btn:hover {
+            background: rgba(59,130,246,0.1) !important;
+            color: #1d4ed8;
+            transform: none;
+            filter: none;
+        }
+        .main-menu .top-nav-btn.tnb-active {
+            color: #2563eb;
+            background: rgba(59,130,246,0.14) !important;
+        }
+        .main-menu .top-nav-btn:disabled,
+        .main-menu .top-nav-btn[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Right side cluster: currencies + profile */
+        .main-menu .lobby-topright-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 0 0 auto;
+        }
+
+        /* Currency dark pill */
+        .main-menu .top-currency-group {
+            display: flex;
+            gap: 0;
+            align-items: center;
+            background: linear-gradient(180deg, #2a1c10 0%, #1a0e06 100%);
+            border: 3px solid #2b1a0e;
+            border-radius: 999px;
+            padding: 4px 6px;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.08),
+                inset 0 -3px 0 rgba(0,0,0,0.5),
+                0 4px 0 #2b1a0e,
+                0 8px 18px rgba(0,0,0,0.45);
+        }
+        .main-menu .currency-item {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.7em;
+            color: #ffe9a6;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0;
+            padding: 6px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            white-space: nowrap;
+        }
+        .main-menu .currency-item + .currency-item {
+            border-left: 1px solid rgba(255,255,255,0.12) !important;
+        }
+        .main-menu #currency-crystals {
+            color: #a9e7ff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+        }
+        .main-menu .currency-plus-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #fff8e6 0%, #e8d7ad 100%);
+            border: 2px solid #2b1a0e;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-left: 4px;
+            box-shadow: 0 2px 0 #2b1a0e;
+            transition: transform 0.1s, filter 0.15s;
+            flex-shrink: 0;
+        }
+        .main-menu .currency-plus-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .main-menu .currency-plus-btn:active { transform: translateY(1px); box-shadow: 0 0 0 #2b1a0e; }
+
+        /* Profile capsule — bell + avatar + name/level + gear */
+        .main-menu .profile-capsule {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%);
+            border: 3px solid #2b1a0e;
+            border-radius: 999px;
+            padding: 4px 10px 4px 6px;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.8),
+                inset 0 -3px 0 rgba(120,80,30,0.18),
+                0 4px 0 #2b1a0e,
+                0 8px 18px rgba(0,0,0,0.45);
+        }
+        .main-menu .profile-capsule .notif-wrap { margin-left: 0; }
+        .main-menu .profile-capsule .notif-bell {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            color: #4a2f10;
+            border-radius: 50%;
+        }
+        .main-menu .profile-capsule .notif-bell:hover {
+            background: rgba(0,0,0,0.08);
+            border: none;
+            color: #1a0e00;
+        }
+        .main-menu .profile-capsule .session-widget {
+            margin-left: 0;
+            padding-left: 0;
+            border-left: none;
+            gap: 7px;
+        }
+        .main-menu .profile-capsule .session-profile {
+            padding: 2px 4px;
+            gap: 7px;
+            flex-direction: row;
+            align-items: center;
+        }
+        .main-menu .profile-capsule .session-avatar {
+            display: block !important;
+            width: 32px;
+            height: 32px;
+            border: 2px solid #2b1a0e;
+            background: #fff;
+        }
+        .main-menu .profile-capsule .session-name {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.68em;
+            color: #2b1a0e;
+            max-width: 100px;
+            line-height: 1.1;
+        }
+        .main-menu .profile-capsule .session-level {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.52em;
+            color: #6b4820;
+            letter-spacing: 0.04em;
+            display: block;
+            margin-top: 1px;
+        }
+        .main-menu .profile-capsule .session-name-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1;
+        }
+        .main-menu .profile-capsule .session-chevron { display: none; }
+        .main-menu .profile-capsule .lobby-settings-btn {
+            width: 26px;
+            height: 26px;
+            opacity: 0.85;
+            padding: 2px;
+            background: rgba(0,0,0,0.06);
+            border-radius: 50%;
+        }
+        .main-menu .profile-capsule .lobby-settings-btn:hover {
+            background: rgba(0,0,0,0.14);
+            opacity: 1;
+            transform: rotate(30deg);
+        }
+        .main-menu .profile-capsule .lobby-settings-btn img { width: 16px; height: 16px; }
+
+        /* When lobby-empty: keep topbar visible on new design too */
+        .main-menu.lobby-empty .lobby-currency-bar { display: flex !important; }
+
+        /* Push the menu-content down so the floating topbar doesn't overlap */
+        .main-menu .menu-content {
+            padding-top: 72px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           REDESIGN — Phase 2: Side columns (cream cards, dark outline)
+           ═══════════════════════════════════════════════════════════ */
+
+        /* Shared card look */
+        .main-menu .menu-buttons-left,
+        .main-menu .menu-buttons-bottom {
+            gap: 14px;
+        }
+        .main-menu .menu-buttons-left { padding-left: 6px; }
+        .main-menu .menu-buttons-bottom { padding-right: 6px; }
+
+        /* ── FORGE card ── */
+        .main-menu .forge-group {
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%);
+            border: 3px solid #2b1a0e;
+            border-radius: 18px;
+            padding: 14px 16px;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.85),
+                inset 0 -4px 0 rgba(120,80,30,0.18),
+                0 5px 0 #2b1a0e,
+                0 10px 20px rgba(0,0,0,0.35);
+            width: 260px;
+            box-sizing: border-box;
+        }
+        .main-menu .forge-daily-container { width: 100%; padding: 0; background: none; border: none; }
+        .main-menu .fragment-chest-widget {
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .main-menu .fragment-chest-widget::before,
+        .main-menu .fragment-chest-widget::after { display: none !important; }
+        .main-menu .fragment-chest-icon-big {
+            width: 56px !important;
+            height: 56px !important;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+            flex-shrink: 0;
+        }
+        .main-menu .fragment-chest-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .main-menu .fragment-chest-label {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.82em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .main-menu .fragment-bar-outer {
+            background: #2b1a0e !important;
+            border: 2px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            height: 14px !important;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .main-menu .fragment-bar-inner {
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%) !important;
+            border-radius: 999px !important;
+            height: 100% !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .main-menu .fragment-bar-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+        }
+
+        /* ── EQUIPMENT + CONSUMABLES combined card ── */
+        .main-menu .menu-equipment-panel {
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 18px !important;
+            padding: 12px 14px 14px !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.85),
+                inset 0 -4px 0 rgba(120,80,30,0.18),
+                0 5px 0 #2b1a0e,
+                0 10px 20px rgba(0,0,0,0.35) !important;
+            width: 260px;
+            box-sizing: border-box;
+        }
+        .main-menu .menu-equipment-panel::before,
+        .main-menu .menu-equipment-panel::after { display: none !important; }
+        .main-menu .menu-equipment-title,
+        .main-menu .menu-equip-section-title {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.75em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin-bottom: 8px !important;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+        .main-menu .menu-equip-section-title { margin-top: 12px !important; }
+        .main-menu .menu-equipment-slots,
+        .main-menu .menu-equip-consumable-slots {
+            display: grid !important;
+            grid-template-columns: repeat(5, 1fr) !important;
+            gap: 5px !important;
+        }
+        .main-menu .menu-equipment-slots > *,
+        .main-menu .menu-equip-consumable-slots > * {
+            aspect-ratio: 1;
+            background: #f8ecd0 !important;
+            border: 2px solid #2b1a0e !important;
+            border-radius: 9px !important;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.12) !important;
+            padding: 0 !important;
+            position: relative;
+        }
+
+        /* ── RIGHT column ── */
+        /* DAILY REWARD pill (yellow) */
+        .main-menu .daily-claim-lobby-btn {
+            background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #3d2410 !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.75em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+            padding: 12px 18px !important;
+            width: 260px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.6),
+                inset 0 -4px 0 rgba(120,60,0,0.35),
+                0 5px 0 #2b1a0e,
+                0 10px 18px rgba(0,0,0,0.4) !important;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .main-menu .daily-claim-lobby-btn::after {
+            content: "🎁";
+            font-size: 1.1em;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+        }
+        .main-menu .daily-claim-lobby-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .main-menu .daily-claim-lobby-btn:active { transform: translateY(2px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(120,60,0,0.35), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
+
+        /* BATTLE CHESTS card */
+        .main-menu .victory-chest-container {
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 18px !important;
+            padding: 12px 14px !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.85),
+                inset 0 -4px 0 rgba(120,80,30,0.18),
+                0 5px 0 #2b1a0e,
+                0 10px 20px rgba(0,0,0,0.35) !important;
+            width: 260px;
+            box-sizing: border-box;
+        }
+        .main-menu .victory-chest-label {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.72em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin-bottom: 8px !important;
+        }
+        .main-menu .victory-chest-slots {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 6px !important;
+        }
+        .main-menu .victory-chest-slots > * {
+            aspect-ratio: 1;
+            background: #f8ecd0 !important;
+            border: 2px solid #2b1a0e !important;
+            border-radius: 9px !important;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.12) !important;
+        }
+        .main-menu .daily-battle-counter {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.6em !important;
+            color: #6b4820 !important;
+            text-align: center;
+            letter-spacing: 0.04em;
+            margin-top: 6px !important;
+            width: 260px;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+        .main-menu .daily-battle-counter::before { content: "⭐ "; }
+
+        /* BATTLE big red button */
+        .main-menu .menu-btn-battle {
+            background: linear-gradient(180deg, #fca5a5 0%, #ef4444 40%, #b91c1c 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #fff !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 1.5em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 10px rgba(255,150,150,0.5) !important;
+            padding: 16px 20px !important;
+            width: 260px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.4),
+                inset 0 -5px 0 rgba(100,0,0,0.4),
+                0 6px 0 #2b1a0e,
+                0 12px 22px rgba(0,0,0,0.45) !important;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .main-menu .menu-btn-battle::before {
+            content: "⚔️";
+            font-size: 0.85em;
+            filter: drop-shadow(0 2px 1px rgba(0,0,0,0.4));
+        }
+        .main-menu .menu-btn-battle::after { content: none !important; }
+        .main-menu .menu-btn-battle:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-2px); }
+        .main-menu .menu-btn-battle:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(100,0,0,0.4), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
+        .main-menu .menu-btn-battle:disabled { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.25); }
+
+        /* ALL OR NOTHING blue button */
+        .main-menu .menu-btn-aon {
+            background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 45%, #1d4ed8 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #fff !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 1em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 10px rgba(150,200,255,0.4) !important;
+            padding: 14px 18px !important;
+            width: 260px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.4),
+                inset 0 -5px 0 rgba(10,40,120,0.4),
+                0 6px 0 #2b1a0e,
+                0 12px 22px rgba(0,0,0,0.45) !important;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            line-height: 1.1;
+        }
+        .main-menu .menu-btn-aon::before {
+            content: "🎲";
+            font-size: 0.95em;
+            filter: drop-shadow(0 2px 1px rgba(0,0,0,0.4));
+        }
+        .main-menu .menu-btn-aon::after { content: none !important; }
+        .main-menu .menu-btn-aon:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .main-menu .menu-btn-aon:active { transform: translateY(3px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(10,40,120,0.4), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
+
+        /* XP BOOST card */
+        .main-menu .xp-boost-container {
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 18px !important;
+            padding: 10px 14px !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.85),
+                inset 0 -4px 0 rgba(120,80,30,0.18),
+                0 5px 0 #2b1a0e,
+                0 10px 20px rgba(0,0,0,0.35) !important;
+            width: 260px;
+            box-sizing: border-box;
+        }
+        .main-menu .xp-boost-widget-title {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.7em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin-bottom: 6px !important;
+        }
+        .main-menu .xp-boost-status-row {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .main-menu .xp-boost-status-text {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.6em !important;
+            color: #6b4820 !important;
+            flex: 1;
+        }
+        .main-menu .xp-boost-manage-btn {
+            background: linear-gradient(180deg, #86efac 0%, #22c55e 50%, #15803d 100%) !important;
+            border: 2px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #fff !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.58em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.3) !important;
+            padding: 5px 12px !important;
+            cursor: pointer;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.4),
+                inset 0 -2px 0 rgba(0,60,20,0.3),
+                0 2px 0 #2b1a0e !important;
+            transition: transform 0.1s, filter 0.15s;
+        }
+        .main-menu .xp-boost-manage-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .main-menu .xp-boost-manage-btn:active { transform: translateY(1px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 0 0 #2b1a0e !important; }
+
+        /* ═══════════════════════════════════════════════════════════
+           REDESIGN — Phase 3: Bottom stats panel (cream card)
+           ═══════════════════════════════════════════════════════════ */
+        .main-menu .menu-stats-panel {
+            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-image: none !important;
+            border-radius: 20px !important;
+            padding: 14px 18px 12px !important;
+            filter: none !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.85),
+                inset 0 -4px 0 rgba(120,80,30,0.18),
+                0 5px 0 #2b1a0e,
+                0 10px 24px rgba(0,0,0,0.4) !important;
+            min-width: 560px !important;
+        }
+
+        /* Top row: Level badge + XP bar + SKILLS + Win Rate (moved via order) */
+        .main-menu .menu-exp-skills-row {
+            display: flex !important;
+            align-items: center;
+            gap: 10px !important;
+            margin-bottom: 10px;
+        }
+        .main-menu .menu-character-exp {
+            flex: 1;
+            gap: 10px !important;
+            display: flex;
+            align-items: center;
+        }
+        .main-menu .menu-char-lv-circle {
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 39,24 60,24 43,37 49,58 32,46 15,58 21,37 4,24 25,24' fill='%23fbbf24' stroke='%232b1a0e' stroke-width='3' stroke-linejoin='round'/></svg>") center/contain no-repeat !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #2b1a0e !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 1.2em !important;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+            width: 48px !important;
+            height: 48px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            line-height: 1;
+            padding-bottom: 4px;
+        }
+        .main-menu .menu-char-lv-circle::before {
+            content: "LEVEL";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 7px;
+            letter-spacing: 0.08em;
+            color: #6b4820;
+            background: none;
+            text-shadow: none;
+        }
+        .main-menu .menu-char-exp-track {
+            background: #2b1a0e !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            height: 22px !important;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5) !important;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-menu .menu-character-exp-bar {
+            background: linear-gradient(180deg, #bbf7d0 0%, #86efac 45%, #22c55e 100%) !important;
+            border-radius: 999px !important;
+            height: 100% !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5) !important;
+        }
+        .main-menu .menu-char-xp-label {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            letter-spacing: 0.08em;
+            z-index: 2;
+        }
+        .main-menu .menu-char-exp-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        .main-menu .skills-icon-btn {
+            background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #2b1a0e !important;
+            font-size: 0.7em !important;
+            font-weight: 700 !important;
+            padding: 8px 16px !important;
+            letter-spacing: 0.08em;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.3),
+                0 3px 0 #2b1a0e !important;
+        }
+
+        /* Stats row with WIN RATE on the right */
+        .main-menu .menu-stats-with-skill {
+            gap: 10px !important;
+            margin-top: 4px;
+        }
+        .main-menu .menu-character-stats {
+            display: flex !important;
+            gap: 6px !important;
+            justify-content: flex-start !important;
+            flex-wrap: nowrap;
+        }
+        .main-menu .menu-character-stat {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 2px 6px !important;
+            min-width: 48px !important;
+            flex-direction: row !important;
+            align-items: center;
+            gap: 4px !important;
+        }
+        .main-menu .menu-character-stat + .menu-character-stat {
+            border-left: 1px solid rgba(43,26,14,0.18) !important;
+        }
+        .main-menu .menu-character-stat-label {
+            font-family: 'Fredoka', sans-serif !important;
+            color: #6b4820 !important;
+            font-size: 0.62em !important;
+            font-weight: 700 !important;
+            text-shadow: none !important;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .main-menu .menu-character-stat-value {
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            font-size: 0.95em !important;
+            font-weight: 700 !important;
+        }
+        .main-menu .menu-character-stat:nth-child(n) { border-bottom: none !important; }
+        .main-menu .menu-character-stat:nth-child(n) .menu-character-stat-label { color: #6b4820 !important; }
+        .main-menu .menu-character-stat:nth-child(n) .menu-character-stat-value { color: #2b1a0e !important; text-shadow: none !important; }
+
+        /* Win rate (rendered in right side-ext) */
+        .main-menu .stats-side-ext {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+        .main-menu .menu-winrate-stat {
+            background: transparent !important;
+            border: none !important;
+            padding: 2px 8px !important;
+            min-width: 70px !important;
+        }
+        .main-menu .winrate-games {
+            font-family: 'Fredoka', sans-serif !important;
+            color: #6b4820 !important;
+            text-shadow: none !important;
+            font-size: 0.58em !important;
+        }
+        .main-menu .winrate-arc {
+            filter: drop-shadow(0 0 2px rgba(34,197,94,0.4)) !important;
+        }
+
+        /* Wellness / Morale / Battle Instinct — horizontal bars stacked */
+        .main-menu .menu-bars-with-care {
+            gap: 12px !important;
+            margin-top: 10px;
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .main-menu .menu-bars-col { gap: 8px !important; }
+        .main-menu .menu-bars-with-care .care-icon-btn {
+            align-self: flex-end;
+            margin-top: 0;
+            background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            color: #2b1a0e !important;
+            font-size: 0.7em !important;
+            padding: 8px 16px !important;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.3),
+                0 3px 0 #2b1a0e !important;
+        }
+
+        .main-menu .wellness-bar-container,
+        .main-menu .morale-bar-container,
+        .main-menu .instinct-bar-container {
+            display: flex !important;
+            flex-direction: column;
+            gap: 3px;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: none !important;
+            border: none !important;
+        }
+        .main-menu .wellness-bar-label,
+        .main-menu .morale-bar-label,
+        .main-menu .instinct-bar-label {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.58em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+            text-shadow: none !important;
+            letter-spacing: 0.06em;
+            display: flex !important;
+            justify-content: space-between;
+            margin-bottom: 0 !important;
+        }
+        .main-menu .wellness-bar-label::before { content: "WELLNESS: "; color: #dc2626; margin-right: 4px; }
+        .main-menu .morale-bar-label::before   { content: "MORALE: ";   color: #f97316; margin-right: 4px; }
+        .main-menu .wellness-status-text,
+        .main-menu .morale-status-text,
+        .main-menu .instinct-status-text {
+            flex: 1;
+            color: inherit !important;
+            text-transform: uppercase;
+        }
+        .main-menu .wellness-bar-track,
+        .main-menu .morale-bar-track,
+        .main-menu .instinct-bar-track {
+            height: 12px !important;
+            background: #2b1a0e !important;
+            border: 2px solid #2b1a0e !important;
+            border-radius: 999px !important;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.5) !important;
+            overflow: hidden;
+        }
+        .main-menu .wellness-bar-fill,
+        .main-menu .morale-bar-fill,
+        .main-menu .instinct-bar-fill {
+            height: 100% !important;
+            border-radius: 999px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4) !important;
+        }
+        .main-menu .instinct-bar-fill {
+            background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #7c3aed 100%) !important;
+        }
+        .main-menu .instinct-section-title { display: none !important; }
+        .main-menu .instinct-bar-label::before { content: "BATTLE INSTINCT: "; color: #7c3aed; margin-right: 4px; }
+        .main-menu .instinct-hint {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.5em !important;
+            color: #6b4820 !important;
+            text-align: center;
+            margin-top: 4px !important;
+            letter-spacing: 0.04em;
+        }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
@@ -10995,20 +11878,22 @@
         <!-- Top Bar: full-width, outside menu-content -->
         <div class="lobby-currency-bar" id="lobby-currency-bar">
             <div class="top-nav-group">
-                <button class="top-nav-btn btn-shine" id="menu-history-btn">HISTORY</button>
-                <button class="top-nav-btn btn-shine" onclick="openAnimDebug()" title="Animation Debug" style="color:#a78bfa">🎬</button>
-                <button class="top-nav-btn btn-shine" id="menu-shop-btn">SHOP</button>
-                <button class="top-nav-btn btn-shine" id="menu-inventory-btn">INVENTORY</button>
-                <button class="top-nav-btn btn-shine" id="menu-wardrobe-btn" style="display:none">👘 WARDROBE</button>
-                <button class="top-nav-btn btn-shine" id="menu-leaderboard-btn">🏆 RANKING</button>
-                <button class="top-nav-btn btn-shine" id="menu-vault-btn" style="color:#60a5fa">🏦 VAULT</button>
+                <button class="top-nav-btn" id="menu-history-btn">HISTORY</button>
+                <button class="top-nav-btn" id="menu-shop-btn">SHOP</button>
+                <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
+                <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
+                <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
+                <button class="top-nav-btn" id="menu-vault-btn">VAULT</button>
+                <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
             </div>
+            <div class="lobby-topright-cluster">
             <div class="top-currency-group">
-                <span class="currency-item" id="currency-tokens">🪙 0</span>
-                <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> 0 / 10</span>
-                <span class="currency-item" id="currency-crystals" title="Crystals — used for rare skins">💎 0</span>
+                <span class="currency-item" id="currency-tokens">🪙 <span id="currency-tokens-val">0</span><button class="currency-plus-btn" onclick="(document.getElementById('menu-shop-btn')||{}).click?.()" title="Get more">+</button></span>
+                <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> <span id="currency-fragments-val">0 / 10</span><button class="currency-plus-btn" onclick="(document.getElementById('fragment-chest-button')||{}).click?.()" title="Forge">+</button></span>
+                <span class="currency-item" id="currency-crystals" title="Crystals — used for rare skins">💎 <span id="currency-crystals-val">0</span><button class="currency-plus-btn" onclick="(document.getElementById('menu-shop-btn')||{}).click?.()" title="Get more">+</button></span>
                 <span class="currency-item chain-balance" id="wallet-balance" style="display:none;" onclick="refreshWalletBalance()" title="Wallet balance — click to refresh"></span>
             </div>
+            <div class="profile-capsule">
             <!-- Notification Bell -->
             <div class="notif-wrap" id="notif-wrap">
                 <button class="notif-bell" id="notif-bell" onclick="toggleNotifPanel()" title="Notifications">
@@ -11029,7 +11914,10 @@
             <div class="session-widget" id="session-widget">
                 <div class="session-profile" id="session-profile" onclick="toggleSessionMenu()" style="display:none;">
                     <img class="session-avatar" id="session-player-avatar" src="" alt="avatar">
-                    <span class="session-name" id="session-player-name"></span>
+                    <span class="session-name-block">
+                        <span class="session-name" id="session-player-name"></span>
+                        <span class="session-level" id="session-player-level"></span>
+                    </span>
                     <span class="session-chevron">▾</span>
                 </div>
                 <div class="session-dropdown" id="session-dropdown">
@@ -11061,6 +11949,8 @@
             </div>
             <!-- Settings gear -->
             <button class="lobby-settings-btn" id="settings-btn-lobby" title="Settings"><img src="Assets/UI/Settings-Icon.png" alt="⚙"></button>
+            </div><!-- /profile-capsule -->
+            </div><!-- /lobby-topright-cluster -->
         </div>
 
         <div class="menu-content">
@@ -13945,17 +14835,17 @@
                 if (_now - shopItemCooldowns[id] >= SHOP_COOLDOWN) delete shopItemCooldowns[id];
             }
 
-            const tokensEl = document.getElementById('currency-tokens');
-            const fragmentsEl = document.getElementById('currency-fragments');
-            const crystalsEl = document.getElementById('currency-crystals');
+            const tokensEl = document.getElementById('currency-tokens-val');
+            const fragmentsEl = document.getElementById('currency-fragments-val');
+            const crystalsEl = document.getElementById('currency-crystals-val');
             const fragBtn = document.getElementById('fragment-chest-button');
             const fragBar = document.getElementById('fragment-bar');
             const fragBarText = document.getElementById('fragment-bar-text');
             const fragLabel = document.getElementById('fragment-chest-label');
-            if (tokensEl) tokensEl.textContent = '🪙 ' + globalTokens;
-            if (crystalsEl) crystalsEl.textContent = '💎 ' + globalCrystals;
+            if (tokensEl) tokensEl.textContent = globalTokens;
+            if (crystalsEl) crystalsEl.textContent = globalCrystals;
             const cost = getFragmentChestCost();
-            if (fragmentsEl) fragmentsEl.innerHTML = '<img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> ' + globalFragments + ' / ' + cost;
+            if (fragmentsEl) fragmentsEl.textContent = globalFragments + ' / ' + cost;
             // Update fragment chest widget
             const pct = Math.min(100, (globalFragments / cost) * 100);
             if (fragBar) fragBar.style.width = pct + '%';
@@ -15818,6 +16708,14 @@
 
             if (playerSession) {
                 if (nameEl)    nameEl.textContent = playerSession.name;
+                const lvlEl = document.getElementById('session-player-level');
+                if (lvlEl) {
+                    try {
+                        const activeChar = (typeof characters !== 'undefined' && typeof currentCharIndex !== 'undefined')
+                            ? characters[currentCharIndex] : null;
+                        lvlEl.textContent = activeChar ? ('Lv. ' + (activeChar.level || 1)) : '';
+                    } catch (_) { lvlEl.textContent = ''; }
+                }
                 if (sdropName) sdropName.textContent = playerSession.name;
                 if (sdropAddr && playerSession.wallet) {
                     const w = playerSession.wallet;
@@ -20792,6 +21690,14 @@
                     character.skillPoints = (character.skillPoints || 0) + 1;
                     // Track stat model history locally (server already saved it; keep local in sync)
                     if (savedOption?.key) character.statModel = (character.statModel || '') + savedOption.key;
+                    // Show notifications for any action unlocks crossed by this level-up
+                    // (progressive action unlocks gated by level + archetype)
+                    if (Array.isArray(data.newlyUnlocked) && data.newlyUnlocked.length > 0) {
+                        for (const event of data.newlyUnlocked) {
+                            const actionsText = Array.isArray(event.actions) ? event.actions.join(', ') : '';
+                            addNotification('✨', (character.name || 'Fighter') + ' learned ' + event.label + (actionsText ? ': ' + actionsText : ''), 'unlock');
+                        }
+                    }
                     // If accumulated EXP already qualifies for another level-up, the server
                     // set pending_levelup back to true.  Bump local level for display and
                     // fetch the next set of options so the player can chain level-ups.
