@@ -11932,15 +11932,29 @@
         /* Hide element-powers side column (PASSIVE / Hydro Barrage floating chips) */
         .main-menu #elem-powers-col { display: none !important; }
 
-        /* BOTTOM STATS PANEL — full-width absolute positioned at bottom of lobby */
+        /* BOTTOM STATS PANEL — full-width grid row at bottom, below everything */
+        .main-menu .menu-content {
+            grid-template-columns: 300px 1fr 300px !important;
+            grid-template-rows: 1fr auto !important;
+            grid-template-areas:
+                "nav character battle"
+                "stats stats stats" !important;
+            padding: 80px 18px 18px !important;
+            row-gap: 14px;
+        }
+        .main-menu .menu-buttons-left   { grid-area: nav; }
+        .main-menu .menu-character-section { grid-area: character; }
+        .main-menu .menu-buttons-bottom { grid-area: battle; }
         .main-menu .menu-character-info {
-            position: absolute !important;
-            left: 320px !important;
-            right: 320px !important;
-            bottom: 16px !important;
-            width: auto !important;
-            z-index: 30 !important;
+            grid-area: stats !important;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: 100% !important;
+            z-index: 5 !important;
             display: block !important;
+            margin-top: 0;
         }
         .main-menu .stats-panel-outer {
             display: block !important;
@@ -11970,16 +11984,13 @@
             position: relative !important;
         }
 
-        /* Compact the character section so it doesn't overlap the stats panel */
+        /* Let character-section breathe now that stats panel is in its own grid row */
         .main-menu .menu-character-section {
-            margin-top: 30px !important;
-        }
-        .main-menu .menu-character-container {
-            transform: scale(0.82);
-            transform-origin: center top;
+            margin-top: 0 !important;
+            align-self: center !important;
         }
         .main-menu .menu-character-name {
-            margin-bottom: 0 !important;
+            margin-bottom: 8px !important;
         }
 
         /* Tighten row spacings inside stats panel to fit in ~210px height */
@@ -29137,6 +29148,15 @@
             const barsRow  = document.querySelector('.main-menu .menu-bars-with-care .menu-bars-col');
             if (instinct && barsRow && instinct.parentElement !== barsRow) {
                 barsRow.appendChild(instinct);
+            }
+        })();
+
+        // ── Redesign Phase 5: lift stats panel out of character-section into its own grid row ──
+        (function relocateStatsPanel(){
+            const menuContent = document.querySelector('.main-menu .menu-content');
+            const statsInfo   = document.getElementById('menu-character-info');
+            if (menuContent && statsInfo && statsInfo.parentElement !== menuContent) {
+                menuContent.appendChild(statsInfo);
             }
         })();
 
