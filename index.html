@@ -16828,9 +16828,8 @@
                 avatar:            data.avatar  || '',
                 token:             data.token   || '',
             };
-            // Don't persist avatar — CDN URLs (e.g. Twitter) expire and cause 404s on reload
-            const { avatar: _av1, ...sessionToSave1 } = playerSession;
-            localStorage.setItem('chubchampions_session', JSON.stringify(sessionToSave1));
+            // Persist avatar too — if the CDN URL expires, img.onerror will hide it gracefully
+            localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
             updatePlayerSessionUI();
             syncStateFromServer();
             initGameWithSession();
@@ -16899,16 +16898,15 @@
                     avatar:            params.get('avatar')  || '',
                     token:             params.get('token')   || '',
                 };
-                // Don't persist avatar — CDN URLs expire and cause 404s on reload
-                const { avatar: _av2, ...sessionToSave2 } = playerSession;
-                localStorage.setItem('chubchampions_session', JSON.stringify(sessionToSave2));
+                // Persist avatar too — img.onerror handles expired CDN URLs gracefully
+                localStorage.setItem('chubchampions_session', JSON.stringify(playerSession));
                 window.history.replaceState({}, '', window.location.pathname);
             } else {
                 try {
                     const saved = localStorage.getItem('chubchampions_session');
                     if (saved) {
                         playerSession = JSON.parse(saved);
-                        playerSession.avatar = ''; // never use cached avatar — CDN URLs expire
+                        // Keep cached avatar — img.onerror will hide it if the CDN URL expired
                     }
                 } catch(e) {}
             }
@@ -17285,9 +17283,12 @@
                     const addrRow = document.getElementById('sdrop-addr-row');
                     if (addrRow) addrRow.style.display = '';
                 }
-                if (avatarEl && playerSession.avatar) {
-                    avatarEl.onerror = function() { this.style.display = 'none'; };
-                    avatarEl.src = playerSession.avatar;
+                if (avatarEl) {
+                    const DEFAULT_AVATAR = 'Assets/Player/Movement/Character.png';
+                    avatarEl.onerror = function() {
+                        if (this.src.indexOf(DEFAULT_AVATAR) === -1) this.src = DEFAULT_AVATAR;
+                    };
+                    avatarEl.src = playerSession.avatar || DEFAULT_AVATAR;
                     avatarEl.style.display = '';
                 }
                 if (profileEl) profileEl.style.display = '';
