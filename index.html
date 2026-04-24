@@ -2985,9 +2985,6 @@
             filter: drop-shadow(0 -6px 10px rgba(0,0,0,0.7));
         }
 
-        .menu-equipment-panel::before {
-            display: none;
-        }
 
         .menu-equipment-title {
             font-family: 'Fredoka', sans-serif;
@@ -11308,8 +11305,6 @@
             width: 260px;
             box-sizing: border-box;
         }
-        .main-menu .menu-equipment-panel::before,
-        .main-menu .menu-equipment-panel::after { display: none !important; }
         .main-menu .menu-equipment-title,
         .main-menu .menu-equip-section-title {
             font-family: 'Fredoka', sans-serif !important;
@@ -12479,7 +12474,7 @@
                 0 7px 14px rgba(150,115,65,0.22) !important;
         }
 
-        /* Rocky cracked edge overlay on large panels */
+        /* Rocky cracked edge overlay on large panels — visible fissures near the rim */
         .main-menu .forge-group::before,
         .main-menu .menu-equipment-panel::before,
         .main-menu .victory-chest-container::before,
@@ -12487,16 +12482,36 @@
         .main-menu .menu-stats-panel::before {
             content: "";
             position: absolute;
-            inset: -1px;
+            inset: 0;
             border-radius: inherit;
             pointer-events: none;
-            background:
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' seed='3'/><feColorMatrix values='0 0 0 0 0.48  0 0 0 0 0.34  0 0 0 0 0.16  0 0 0 0.85 0'/><feComposite in2='SourceGraphic' operator='in'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
-            background-size: cover;
-            opacity: 0.35;
-            -webkit-mask: radial-gradient(farthest-side at center, transparent 70%, black 100%);
-                    mask: radial-gradient(farthest-side at center, transparent 70%, black 100%);
+            background-image:
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><g fill='none' stroke='%23785224' stroke-width='1.1' stroke-linecap='round' opacity='0.7'><path d='M18 24 Q32 28 48 25 L62 32 M45 27 L50 38'/><path d='M24 12 L34 20 M30 15 L36 11'/><path d='M430 18 Q448 22 465 19 L485 28 M460 22 L468 32'/><path d='M470 12 L478 22'/><path d='M22 272 L38 268 L54 274 Q68 278 82 272 M58 274 L62 284'/><path d='M12 260 L22 266'/><path d='M395 280 L412 275 L428 279 L448 272 M418 278 L424 286'/><path d='M460 264 L470 272'/><path d='M8 140 L20 148 L10 156 M14 144 L22 138'/><path d='M488 130 L478 138 L488 148 M482 142 L474 135'/><path d='M240 10 L248 18 L240 20'/><path d='M258 290 L250 282 L260 278'/></g></svg>"),
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.025' numOctaves='3' seed='5'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.15  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            background-size: 100% 100%, 400px 400px;
+            background-repeat: no-repeat, repeat;
+            opacity: 0.85;
+            -webkit-mask: radial-gradient(ellipse 85% 75% at center, transparent 45%, black 90%);
+                    mask: radial-gradient(ellipse 85% 75% at center, transparent 45%, black 90%);
             mix-blend-mode: multiply;
+            z-index: 0;
+        }
+
+        /* A few highlight chips on the crack edges so they catch light */
+        .main-menu .forge-group::after,
+        .main-menu .menu-equipment-panel::after,
+        .main-menu .victory-chest-container::after,
+        .main-menu .xp-boost-container::after,
+        .main-menu .menu-stats-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><g fill='none' stroke='%23fff8e0' stroke-width='0.6' stroke-linecap='round' opacity='0.55'><path d='M19 25 Q33 29 49 26'/><path d='M431 19 Q449 23 466 20'/><path d='M23 273 L39 269 L55 275'/><path d='M396 281 L413 276 L429 280'/></g></svg>");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            mix-blend-mode: screen;
             z-index: 0;
         }
         .main-menu .forge-group,
