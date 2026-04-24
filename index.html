@@ -11935,7 +11935,7 @@
         /* BOTTOM STATS PANEL — full-width grid row at bottom, below everything */
         .main-menu .menu-content {
             grid-template-columns: 300px 1fr 300px !important;
-            grid-template-rows: 1fr 210px !important;
+            grid-template-rows: 1fr 230px !important;
             grid-template-areas:
                 "nav character battle"
                 "stats stats stats" !important;
@@ -11985,15 +11985,27 @@
             position: relative !important;
         }
 
-        /* Character-section: centered in its grid cell, sprite sized to fit */
+        /* Character is pulled OUT of the grid and floats over the background.
+           This way it never pushes the side columns or stats panel around. */
         .main-menu .menu-character-section {
-            margin-top: 0 !important;
-            align-self: center !important;
-            justify-self: center !important;
-            align-items: center !important;
-            width: 100%;
-            max-height: 100%;
-            overflow: visible;
+            position: absolute !important;
+            left: 50% !important;
+            top: 85px !important;
+            transform: translateX(-50%) !important;
+            margin: 0 !important;
+            grid-area: unset !important;
+            z-index: 10 !important;
+            pointer-events: none;  /* let clicks pass through to background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: auto;
+        }
+        /* Re-enable clicks on the interactive bits inside the floating section */
+        .main-menu .menu-character-section .menu-character-container,
+        .main-menu .menu-character-section .menu-create-btn-plus,
+        .main-menu .menu-character-section .menu-character-name {
+            pointer-events: auto;
         }
         .main-menu .menu-character-name {
             margin-bottom: 4px !important;
@@ -12001,13 +12013,9 @@
         .main-menu .menu-character-wrapper {
             justify-content: center !important;
             align-items: center !important;
-            width: 100%;
-        }
-        .main-menu .menu-character-container {
-            max-height: 320px;
         }
         .main-menu .menu-character-img {
-            max-height: 300px !important;
+            max-height: 320px !important;
             height: auto !important;
             width: auto !important;
             object-fit: contain;
