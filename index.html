@@ -12011,6 +12011,138 @@
         /* Hide stats panel 'LEVEL' pseudo-label (was floating above star awkwardly) */
         .main-menu .menu-char-lv-circle::before { display: none !important; }
 
+        /* Stat icons in stats row */
+        .main-menu .menu-character-stat .stat-icon {
+            font-size: 1.1em;
+            margin-right: 1px;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+        }
+        .main-menu .menu-character-stat {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            min-width: 58px !important;
+            gap: 2px !important;
+        }
+        .main-menu .menu-character-stat-label {
+            display: flex !important;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.58em !important;
+            color: #6b4820 !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em;
+        }
+        .main-menu .menu-character-stat-value {
+            font-size: 1.05em !important;
+            font-weight: 700 !important;
+            color: #2b1a0e !important;
+        }
+        .main-menu .menu-character-stats {
+            gap: 0 !important;
+            padding: 4px 2px !important;
+            justify-content: space-between !important;
+        }
+        .main-menu .menu-character-stat + .menu-character-stat {
+            padding-left: 10px !important;
+            margin-left: 4px;
+            border-left: 2px solid rgba(43,26,14,0.12) !important;
+        }
+
+        /* Green + button (create new character) — bigger, round, positioned next to sprite */
+        .main-menu .menu-create-btn-plus {
+            width: 54px !important;
+            height: 54px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(180deg, #86efac 0%, #22c55e 50%, #15803d 100%) !important;
+            border: 3px solid #2b1a0e !important;
+            color: #fff !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            padding: 0 !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.4),
+                inset 0 -3px 0 rgba(0,60,20,0.3),
+                0 4px 0 #2b1a0e,
+                0 8px 14px rgba(0,0,0,0.3) !important;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.4) !important;
+        }
+
+        /* Hide arrow navigation (not in reference); + button only */
+        .main-menu #menu-arrow-left,
+        .main-menu #menu-arrow-right { display: none !important; }
+
+        /* Subtle "LEVEL" label below the star */
+        .main-menu .menu-char-lv-circle {
+            position: relative;
+        }
+        .main-menu .menu-character-exp::before {
+            content: "LEVEL";
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            color: #6b4820;
+            letter-spacing: 0.08em;
+            position: absolute;
+            margin-left: 10px;
+            margin-top: -14px;
+        }
+
+        /* BP hint: centered with an info icon */
+        .main-menu .instinct-hint {
+            text-align: center !important;
+            font-size: 0.55em !important;
+            color: #6b4820 !important;
+            letter-spacing: 0.04em;
+            margin-top: 8px !important;
+            position: relative;
+            padding-right: 18px;
+        }
+        .main-menu .instinct-hint::after {
+            content: "ⓘ";
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.3em;
+            color: #6b4820;
+            opacity: 0.55;
+            cursor: help;
+        }
+
+        /* Bars labels: show the label prefix clearly, status text shifted */
+        .main-menu .wellness-bar-label,
+        .main-menu .morale-bar-label,
+        .main-menu .instinct-bar-label {
+            font-size: 0.55em !important;
+            gap: 6px;
+        }
+
+        /* Stats panel: tighter vertical compact */
+        .main-menu .menu-stats-panel {
+            padding: 12px 22px 14px !important;
+        }
+        .main-menu .menu-exp-skills-row {
+            gap: 12px !important;
+            padding-right: 150px !important;
+            margin-bottom: 4px !important;
+        }
+        .main-menu .menu-char-lv-circle {
+            width: 52px !important;
+            height: 52px !important;
+            font-size: 1.3em !important;
+        }
+        .main-menu .menu-char-exp-track {
+            height: 26px !important;
+        }
+        .main-menu .menu-stats-with-skill {
+            padding-right: 150px !important;
+            padding: 6px 0 4px !important;
+            border-top: 1px solid rgba(43,26,14,0.1);
+            border-bottom: 1px solid rgba(43,26,14,0.1);
+        }
+
         /* Top row of stats card: LEVEL + XP bar + SKILLS + spacer-for-winrate */
         .main-menu .menu-exp-skills-row {
             padding-right: 140px;  /* leave room for absolute-positioned winrate */
@@ -21634,15 +21766,15 @@
 
                 // ── Stats grid (6 stats — element + win rate are in side extensions) ─
                 statsEl.innerHTML = [
-                    ['HP',  maxHp],
-                    ['ATK', character.stats.attack],
-                    ['STR', character.stats.strength || 0],
-                    ['AGI', character.stats.agility  || 0],
-                    ['DEF', character.stats.defense],
-                    ['ENE', character.stats.energy   || 0],
-                ].map(([label, val]) =>
+                    ['❤️', 'HP',  maxHp],
+                    ['⚔️', 'ATK', character.stats.attack],
+                    ['💪', 'STR', character.stats.strength || 0],
+                    ['🍃', 'AGI', character.stats.agility  || 0],
+                    ['🛡️', 'DEF', character.stats.defense],
+                    ['⚡', 'ENE', character.stats.energy   || 0],
+                ].map(([icon, label, val]) =>
                     `<div class="menu-character-stat">
-                        <span class="menu-character-stat-label">${label}</span>
+                        <span class="menu-character-stat-label"><span class="stat-icon">${icon}</span> ${label}</span>
                         <span class="menu-character-stat-value">${val}</span>
                     </div>`
                 ).join('');
