@@ -12276,15 +12276,42 @@
             padding-right: 140px;
         }
         .main-menu #winrate-side-ext {
-            top: 12px !important;
-            right: 18px !important;
+            top: 10px !important;
+            right: 14px !important;
             display: flex !important;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
+            gap: 4px !important;
+            background: rgba(255,255,255,0.55) !important;
+            border: 2px solid rgba(43,26,14,0.25) !important;
+            border-radius: 14px !important;
+            padding: 6px 12px 8px !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.7),
+                0 2px 4px rgba(0,0,0,0.12) !important;
+            min-width: 110px;
+        }
+        .main-menu #winrate-side-ext > span:first-child {
+            font-size: 10px !important;
+            color: #6b4820 !important;
+            letter-spacing: 0.1em !important;
+            padding-bottom: 3px !important;
+            border-bottom: 1px solid rgba(43,26,14,0.18);
+            width: 100%;
+            text-align: center;
+        }
+        .main-menu #winrate-side-ext svg {
+            margin: 2px 0;
+        }
+        .main-menu #winrate-side-ext > span:last-child {
+            font-size: 9px !important;
+            padding-top: 2px;
+            border-top: 1px solid rgba(43,26,14,0.18);
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
         }
 
         /* 3 bars side-by-side (WELLNESS | MORALE | BATTLE INSTINCT) */
@@ -21918,7 +21945,10 @@
                             <text x="22" y="26" text-anchor="middle" fill="#2b1a0e" font-size="11"
                                 font-family="Fredoka, sans-serif" font-weight="700">${winRate}%</text>
                         </svg>
-                        <span style="font-family:'Fredoka',sans-serif;font-size:10px;font-weight:700;color:#6b4820;">${played} played <span style="color:#22c55e;">${won} won</span></span>`;
+                        <span>
+                            <span style="font-family:'Fredoka',sans-serif;font-size:10px;font-weight:700;color:#6b4820;">${played}<br><span style="font-weight:500;color:#8a6b3e;">played</span></span>
+                            <span style="font-family:'Fredoka',sans-serif;font-size:10px;font-weight:700;color:#16a34a;">${won}<br><span style="font-weight:500;color:#4ade80;">won</span></span>
+                        </span>`;
                 }
 
                 if (character.level < MAX_LEVEL) {
