@@ -12324,6 +12324,136 @@
             border-radius: 0 999px 999px 0;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           REDESIGN — Phase 7: Warmer cream/tan palette (less white)
+           ═══════════════════════════════════════════════════════════ */
+
+        /* All large cream cards → warmer cream→tan gradient */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            background: linear-gradient(180deg, #f8e3bc 0%, #e5c892 100%) !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,240,210,0.7),
+                inset 0 -4px 0 rgba(120,75,25,0.22),
+                0 5px 0 #4a2c12,
+                0 10px 20px rgba(60,30,0,0.35) !important;
+            border-color: #4a2c12 !important;
+        }
+
+        /* Topbar + profile pills: slightly less lifted (smaller drop) */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule {
+            box-shadow:
+                inset 0 2px 0 rgba(255,240,210,0.75),
+                inset 0 -3px 0 rgba(120,75,25,0.2),
+                0 4px 0 #4a2c12,
+                0 8px 18px rgba(60,30,0,0.35) !important;
+        }
+
+        /* Equipment / consumable slots — warmer beige */
+        .main-menu .menu-equipment-slots > *,
+        .main-menu .menu-equip-consumable-slots > *,
+        .main-menu .victory-chest-slots > * {
+            background: #ecd2a4 !important;
+            border-color: #4a2c12 !important;
+            box-shadow: inset 0 2px 3px rgba(80,40,10,0.2) !important;
+        }
+
+        /* Inline mini-cards (stats chips row, win rate section) — warm translucent */
+        .main-menu .menu-character-stats {
+            background: rgba(248, 227, 188, 0.7) !important;
+            border-color: rgba(74,44,18,0.3) !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,240,210,0.8),
+                0 2px 4px rgba(60,30,0,0.1) !important;
+        }
+
+        /* Chest counter card (49/49 EXP battles) */
+        .main-menu .daily-battle-counter {
+            background: rgba(248, 227, 188, 0.92) !important;
+            color: #5a3a15 !important;
+            border: 2px solid rgba(74,44,18,0.2);
+        }
+
+        /* Borders everywhere → warmer brown */
+        .main-menu .daily-claim-lobby-btn,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel,
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .top-currency-group,
+        .main-menu .profile-capsule .session-avatar,
+        .main-menu .skills-icon-btn,
+        .main-menu #menu-care-btn-header,
+        .main-menu .currency-plus-btn,
+        .main-menu .menu-create-btn-plus,
+        .main-menu .xp-boost-manage-btn,
+        .main-menu .menu-btn-battle,
+        .main-menu .menu-btn-aon {
+            border-color: #4a2c12 !important;
+        }
+        .main-menu .daily-claim-lobby-btn,
+        .main-menu .skills-icon-btn,
+        .main-menu #menu-care-btn-header {
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.3),
+                0 3px 0 #4a2c12 !important;
+        }
+        .main-menu .menu-btn-battle,
+        .main-menu .menu-btn-aon {
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.4),
+                inset 0 -5px 0 rgba(80,0,0,0.4),
+                0 6px 0 #4a2c12,
+                0 12px 22px rgba(60,30,0,0.45) !important;
+        }
+
+        /* Labels in warm-brown text rather than near-black */
+        .main-menu .fragment-chest-label,
+        .main-menu .menu-equipment-title,
+        .main-menu .menu-equip-section-title,
+        .main-menu .victory-chest-label,
+        .main-menu .xp-boost-widget-title,
+        .main-menu .menu-character-stat-value,
+        .main-menu .top-nav-btn {
+            color: #4a2c12 !important;
+        }
+        .main-menu .menu-character-stat-label,
+        .main-menu .wellness-bar-label,
+        .main-menu .morale-bar-label,
+        .main-menu .instinct-bar-label,
+        .main-menu .xp-boost-status-text,
+        .main-menu .instinct-hint,
+        .main-menu .daily-battle-counter,
+        .main-menu .profile-capsule .session-level {
+            color: #7a5224 !important;
+        }
+
+        /* Tracks (XP bar, fragment bar, wellness/morale/instinct) — warmer brown */
+        .main-menu .menu-char-exp-track,
+        .main-menu .fragment-bar-outer,
+        .main-menu .wellness-bar-track,
+        .main-menu .morale-bar-track,
+        .main-menu .instinct-bar-track {
+            background: #3a2410 !important;
+            border-color: #3a2410 !important;
+        }
+
+        /* Star level badge — warmer amber */
+        .main-menu .menu-char-lv-circle {
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 39,24 60,24 43,37 49,58 32,46 15,58 21,37 4,24 25,24' fill='%23f4a623' stroke='%234a2c12' stroke-width='3' stroke-linejoin='round'/></svg>") center/contain no-repeat !important;
+            color: #4a2c12 !important;
+        }
+
         /* 3 bars side-by-side (WELLNESS | MORALE | BATTLE INSTINCT) */
         .main-menu .menu-bars-with-care {
             flex-direction: row !important;
