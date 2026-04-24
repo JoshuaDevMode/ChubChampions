@@ -12474,7 +12474,33 @@
                 0 7px 14px rgba(150,115,65,0.22) !important;
         }
 
-        /* Rocky cracked edge overlay on large panels — visible fissures near the rim */
+        /* Chipped/broken edges: mask cuts irregular chunks out of the panel border */
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='28,-3 46,-2 40,9 32,7 24,12 18,3' fill='black'/><polygon points='82,-2 92,0 88,7 80,5' fill='black'/><polygon points='190,-2 206,0 202,10 194,8 188,3' fill='black'/><polygon points='320,-3 334,-1 330,9 322,7 316,2' fill='black'/><polygon points='440,-2 458,0 454,11 446,8 438,4' fill='black'/><polygon points='-3,60 6,58 10,68 4,76 -4,72' fill='black'/><polygon points='-4,170 5,167 10,177 3,186 -4,181' fill='black'/><polygon points='504,92 495,90 490,100 498,108 504,104' fill='black'/><polygon points='504,218 493,215 489,226 497,233 504,229' fill='black'/><polygon points='40,303 58,302 52,292 44,294 36,290' fill='black'/><polygon points='145,303 157,302 153,293 147,295' fill='black'/><polygon points='260,304 278,302 272,292 264,294 256,291' fill='black'/><polygon points='390,303 406,302 400,292 392,294' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='28,-3 46,-2 40,9 32,7 24,12 18,3' fill='black'/><polygon points='82,-2 92,0 88,7 80,5' fill='black'/><polygon points='190,-2 206,0 202,10 194,8 188,3' fill='black'/><polygon points='320,-3 334,-1 330,9 322,7 316,2' fill='black'/><polygon points='440,-2 458,0 454,11 446,8 438,4' fill='black'/><polygon points='-3,60 6,58 10,68 4,76 -4,72' fill='black'/><polygon points='-4,170 5,167 10,177 3,186 -4,181' fill='black'/><polygon points='504,92 495,90 490,100 498,108 504,104' fill='black'/><polygon points='504,218 493,215 489,226 497,233 504,229' fill='black'/><polygon points='40,303 58,302 52,292 44,294 36,290' fill='black'/><polygon points='145,303 157,302 153,293 147,295' fill='black'/><polygon points='260,304 278,302 272,292 264,294 256,291' fill='black'/><polygon points='390,303 406,302 400,292 392,294' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+            -webkit-mask-size: 100% 100%;
+                    mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+            filter: drop-shadow(0 3px 0 rgba(228,208,175,0.6)) drop-shadow(0 6px 10px rgba(150,115,65,0.25));
+        }
+
+        /* Since mask also clips outer box-shadow, move the drop to filter: drop-shadow */
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            box-shadow:
+                inset 0 2px 0 rgba(255,252,240,0.85),
+                inset 0 -2px 2px rgba(215,190,150,0.25) !important;
+        }
+
+        /* Subtle rock grain on inside only (no line-drawn cracks) */
         .main-menu .forge-group::before,
         .main-menu .menu-equipment-panel::before,
         .main-menu .victory-chest-container::before,
@@ -12485,33 +12511,10 @@
             inset: 0;
             border-radius: inherit;
             pointer-events: none;
-            background-image:
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><g fill='none' stroke='%23785224' stroke-width='1.1' stroke-linecap='round' opacity='0.7'><path d='M18 24 Q32 28 48 25 L62 32 M45 27 L50 38'/><path d='M24 12 L34 20 M30 15 L36 11'/><path d='M430 18 Q448 22 465 19 L485 28 M460 22 L468 32'/><path d='M470 12 L478 22'/><path d='M22 272 L38 268 L54 274 Q68 278 82 272 M58 274 L62 284'/><path d='M12 260 L22 266'/><path d='M395 280 L412 275 L428 279 L448 272 M418 278 L424 286'/><path d='M460 264 L470 272'/><path d='M8 140 L20 148 L10 156 M14 144 L22 138'/><path d='M488 130 L478 138 L488 148 M482 142 L474 135'/><path d='M240 10 L248 18 L240 20'/><path d='M258 290 L250 282 L260 278'/></g></svg>"),
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.025' numOctaves='3' seed='5'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.15  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
-            background-size: 100% 100%, 400px 400px;
-            background-repeat: no-repeat, repeat;
-            opacity: 0.85;
-            -webkit-mask: radial-gradient(ellipse 85% 75% at center, transparent 45%, black 90%);
-                    mask: radial-gradient(ellipse 85% 75% at center, transparent 45%, black 90%);
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' seed='5'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.15  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            background-size: 400px 400px;
+            opacity: 0.5;
             mix-blend-mode: multiply;
-            z-index: 0;
-        }
-
-        /* A few highlight chips on the crack edges so they catch light */
-        .main-menu .forge-group::after,
-        .main-menu .menu-equipment-panel::after,
-        .main-menu .victory-chest-container::after,
-        .main-menu .xp-boost-container::after,
-        .main-menu .menu-stats-panel::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><g fill='none' stroke='%23fff8e0' stroke-width='0.6' stroke-linecap='round' opacity='0.55'><path d='M19 25 Q33 29 49 26'/><path d='M431 19 Q449 23 466 20'/><path d='M23 273 L39 269 L55 275'/><path d='M396 281 L413 276 L429 280'/></g></svg>");
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            mix-blend-mode: screen;
             z-index: 0;
         }
         .main-menu .forge-group,
