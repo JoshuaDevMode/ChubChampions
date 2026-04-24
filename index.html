@@ -16849,6 +16849,68 @@
             } catch(e) {}
         };
 
+        // ═══════════════════════════════════════════════════════════════
+        // Token-refresh iframe bridge
+        // ═══════════════════════════════════════════════════════════════
+        // Embeds https://chub-champions-backend.vercel.app/token-refresh as a
+        // hidden iframe. That page uses Privy to silently refresh the access
+        // token AND fetch the latest Twitter profile (avatar URL — which has
+        // a short CDN TTL). We poll every ~10 minutes so the cached avatar in
+        // localStorage stays fresh before it expires.
+        const TOKEN_IFRAME_ORIGIN = 'https://chub-champions-backend.vercel.app';
+        let _tokenIframeReady = false;
+        function _injectTokenIframe() {
+            if (document.getElementById('privy-token-iframe')) return;
+            const iframe = document.createElement('iframe');
+            iframe.id = 'privy-token-iframe';
+            iframe.src = TOKEN_IFRAME_ORIGIN + '/token-refresh';
+            iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+            document.body.appendChild(iframe);
+        }
+        function _requestTokenRefresh() {
+            const iframe = document.getElementById('privy-token-iframe');
+            if (!iframe || !iframe.contentWindow || !_tokenIframeReady) return;
+            iframe.contentWindow.postMessage({ type: 'get_token' }, TOKEN_IFRAME_ORIGIN);
+        }
+        function _applyRefreshedProfile(data) {
+            if (!playerSession) return;
+            let changed = false;
+            if (typeof data.token === 'string' && data.token && data.token !== playerSession.token) {
+                playerSession.token = data.token;
+                changed = true;
+            }
+            if (typeof data.avatar === 'string' && data.avatar && data.avatar !== playerSession.avatar) {
+                playerSession.avatar = data.avatar;
+                changed = true;
+            }
+            if (typeof data.name === 'string' && data.name && data.name !== playerSession.name) {
+                playerSession.name = data.name;
+                changed = true;
+            }
+            if (changed) {
+                try { localStorage.setItem('chubchampions_session', JSON.stringify(playerSession)); } catch(e) {}
+                try { updatePlayerSessionUI(); } catch(e) {}
+            }
+        }
+        window.addEventListener('message', (e) => {
+            if (e.origin !== TOKEN_IFRAME_ORIGIN) return;
+            const d = e.data;
+            if (!d || typeof d !== 'object') return;
+            if (d.type === 'token_ready') {
+                _tokenIframeReady = true;
+                if (d.authenticated) _requestTokenRefresh();
+            } else if (d.type === 'token_response') {
+                _applyRefreshedProfile(d);
+            }
+        });
+        // Inject iframe on load, and refresh every 10 min
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _injectTokenIframe);
+        } else {
+            _injectTokenIframe();
+        }
+        setInterval(_requestTokenRefresh, 10 * 60 * 1000);
+
         const BACKEND_URL = 'https://chub-champions-backend.vercel.app';
         const NATIVE_SYMBOL = 'MON'; // 'SOL' for Solana frontend
 
