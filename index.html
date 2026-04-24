@@ -12281,11 +12281,13 @@
         .main-menu .menu-stats-with-skill {
             padding-right: 140px;
         }
-        /* Win rate: part of the main stats card, separated by a vertical divider */
+        /* Win rate: part of the main stats card, separated by a vertical divider.
+           Only spans the upper rows (XP + stats chips) — stops before the bars. */
         .main-menu #winrate-side-ext {
-            top: 12px !important;
-            bottom: 12px !important;
-            right: 12px !important;
+            top: 10px !important;
+            bottom: auto !important;
+            height: 96px !important;
+            right: 14px !important;
             display: flex !important;
             flex-direction: column;
             align-items: center;
