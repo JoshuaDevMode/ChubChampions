@@ -12447,7 +12447,7 @@
            REDESIGN — Phase 7: Warmer cream/tan palette (less white)
            ═══════════════════════════════════════════════════════════ */
 
-        /* Stone-panel backgrounds: cream body + corner shines + rock noise */
+        /* Stone-panel backgrounds: shines extend through both rim and inner */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
         .main-menu .forge-group,
@@ -12455,21 +12455,26 @@
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            background:
-                /* bright corner highlights */
+            background-image:
+                /* corner highlights — sit on top, span entire border-box */
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
                 radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,240,210,0.25) 0%, transparent 80%),
-                /* rock grain texture */
+                /* rock grain — across border-box */
                 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                /* base gradient */
-                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%) !important;
-            border: 5px solid #ecdab2 !important;
+                /* inner panel face — only in padding-box */
+                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%),
+                /* darker rim — fills border-box edge */
+                linear-gradient(180deg, #ecdab2 0%, #d8c096 100%) !important;
+            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
+            background-origin: border-box !important;
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
+            border: 5px solid transparent !important;
             border-radius: 26px !important;
             position: relative;
             box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.85),
-                inset 0 -2px 2px rgba(215,190,150,0.25),
+                inset 0 2px 0 rgba(255,252,240,0.6),
+                inset 0 -2px 2px rgba(215,190,150,0.2),
                 0 3px 0 rgba(228,208,175,0.75),
                 0 7px 14px rgba(150,115,65,0.22) !important;
         }
@@ -12609,7 +12614,8 @@
                 0 3px 0 #4a2c12 !important;
         }
 
-        /* Panels: soft stone rim, only ~15% darker than panel hue */
+        /* Panels: rim is painted via background-clip border-box, border stays transparent
+           so the corner shines extend through the rim. */
         .main-menu .forge-group,
         .main-menu .menu-equipment-panel,
         .main-menu .victory-chest-container,
@@ -12617,7 +12623,7 @@
         .main-menu .menu-stats-panel,
         .main-menu .top-nav-group,
         .main-menu .profile-capsule {
-            border: 5px solid #ecdab2 !important;
+            border: 5px solid transparent !important;
         }
 
         /* Labels in warm-brown text rather than near-black */
@@ -12842,7 +12848,7 @@
                     mask-repeat: no-repeat;
         }
 
-        /* IRON-FRAME panels → cool gray stone */
+        /* IRON-FRAME panels → cool gray stone (shines extend across rim) */
         .stats-side-ext,
         .char-options-box,
         .input-modal-box,
@@ -12861,18 +12867,23 @@
         .daily-claim-panel,
         .reward-reveal,
         .results-panel {
-            background:
+            background-image:
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
                 radial-gradient(ellipse 50% 25% at 85% 95%, rgba(240,240,245,0.25) 0%, transparent 80%),
                 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.45  0 0 0 0 0.48  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #ececec 0%, #c8c8cc 100%) !important;
-            border: 5px solid #b3b3b8 !important;
+                linear-gradient(180deg, #ececec 0%, #c8c8cc 100%),
+                linear-gradient(180deg, #c8c8cc 0%, #b3b3b8 100%) !important;
+            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
+            background-origin: border-box !important;
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
+            background-color: transparent !important;
+            border: 5px solid transparent !important;
             border-image: none !important;
             border-radius: 24px !important;
             box-shadow:
-                inset 0 2px 0 rgba(255,255,255,0.7),
-                inset 0 -2px 2px rgba(80,80,90,0.22) !important;
+                inset 0 2px 0 rgba(255,255,255,0.55),
+                inset 0 -2px 2px rgba(80,80,90,0.18) !important;
             -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
                     mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
@@ -12882,25 +12893,30 @@
             filter: drop-shadow(0 3px 0 rgba(190,190,200,0.6)) drop-shadow(0 6px 12px rgba(40,40,50,0.3));
         }
 
-        /* WINDOW-FRAME panels → soft wood brown */
+        /* WINDOW-FRAME panels → soft wood brown (shines extend across rim) */
         .shop-panel,
         .vault-panel,
         .inventory-panel,
         .history-container,
         .lobby-currency-bar,
         .session-dropdown {
-            background:
-                radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,235,200,0.45) 0%, transparent 75%),
-                radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,225,180,0.25) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,210,160,0.2) 0%, transparent 80%),
+            background-image:
+                radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,235,200,0.5) 0%, transparent 75%),
+                radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,225,180,0.28) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,210,160,0.22) 0%, transparent 80%),
                 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.30  0 0 0 0 0.16  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #d4a373 0%, #b27a48 100%) !important;
-            border: 5px solid #9a6738 !important;
+                linear-gradient(180deg, #d4a373 0%, #b27a48 100%),
+                linear-gradient(180deg, #b27a48 0%, #9a6738 100%) !important;
+            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
+            background-origin: border-box !important;
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
+            background-color: transparent !important;
+            border: 5px solid transparent !important;
             border-image: none !important;
             border-radius: 24px !important;
             box-shadow:
-                inset 0 2px 0 rgba(255,225,180,0.55),
-                inset 0 -2px 2px rgba(70,40,15,0.28) !important;
+                inset 0 2px 0 rgba(255,225,180,0.45),
+                inset 0 -2px 2px rgba(70,40,15,0.22) !important;
             -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
                     mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
@@ -12910,25 +12926,30 @@
             filter: drop-shadow(0 3px 0 rgba(154,103,56,0.55)) drop-shadow(0 6px 12px rgba(60,30,10,0.35));
         }
 
-        /* STONE-FRAME panels → cream tan stone (matches lobby panels) */
+        /* STONE-FRAME panels → cream tan stone (shines extend across rim) */
         .aon-container,
         .skills-panel,
         .wardrobe-panel,
         .forge-daily-container,
         .forge-panel,
         .boost-modal {
-            background:
+            background-image:
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
                 radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,240,210,0.25) 0%, transparent 80%),
                 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%) !important;
-            border: 5px solid #ecdab2 !important;
+                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%),
+                linear-gradient(180deg, #ecdab2 0%, #d8c096 100%) !important;
+            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
+            background-origin: border-box !important;
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
+            background-color: transparent !important;
+            border: 5px solid transparent !important;
             border-image: none !important;
             border-radius: 24px !important;
             box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.85),
-                inset 0 -2px 2px rgba(215,190,150,0.25) !important;
+                inset 0 2px 0 rgba(255,252,240,0.6),
+                inset 0 -2px 2px rgba(215,190,150,0.2) !important;
             -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
                     mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
