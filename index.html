@@ -12230,13 +12230,15 @@
             gap: 0 !important;
             padding: 3px 4px !important;
             justify-content: stretch !important;
-            background: rgba(240, 220, 178, 0.85) !important;
-            border: 3px solid rgba(216,192,150,0.9) !important;
+            background:
+                radial-gradient(ellipse 45% 70% at 15% 30%, rgba(255,255,255,0.55) 0%, transparent 75%),
+                rgba(240, 220, 178, 0.9) !important;
+            border: 3px solid rgba(236,218,178,0.95) !important;
             border-radius: 14px !important;
             box-shadow:
                 inset 0 2px 0 rgba(255,252,240,0.65),
-                inset 0 -2px 3px rgba(180,140,85,0.18),
-                0 2px 3px rgba(90,55,20,0.1) !important;
+                inset 0 -2px 2px rgba(210,180,135,0.2),
+                0 2px 3px rgba(150,115,65,0.1) !important;
             margin: 0 !important;
             width: 100% !important;
             box-sizing: border-box !important;
@@ -12450,7 +12452,7 @@
            REDESIGN — Phase 7: Warmer cream/tan palette (less white)
            ═══════════════════════════════════════════════════════════ */
 
-        /* All large cream cards → soft stone-rim look, same-hue tones */
+        /* Stone-panel backgrounds: cream body + corner shines + rock noise */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
         .main-menu .forge-group,
@@ -12458,49 +12460,97 @@
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            background: linear-gradient(180deg, #f7edd5 0%, #e9d7b0 100%) !important;
-            border: 5px solid #d8c096 !important;
+            background:
+                /* bright corner highlights */
+                radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
+                radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,240,210,0.25) 0%, transparent 80%),
+                /* rock grain texture */
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
+                /* base gradient */
+                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%) !important;
+            border: 5px solid #ecdab2 !important;
             border-radius: 26px !important;
+            position: relative;
             box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.8),
-                inset 0 -2px 3px rgba(180,140,85,0.22),
-                0 3px 0 rgba(195,160,105,0.55),
-                0 8px 16px rgba(90,55,20,0.28),
-                0 14px 24px rgba(60,35,10,0.15) !important;
+                inset 0 2px 0 rgba(255,252,240,0.85),
+                inset 0 -2px 2px rgba(215,190,150,0.25),
+                0 3px 0 rgba(228,208,175,0.75),
+                0 7px 14px rgba(150,115,65,0.22) !important;
         }
 
-        /* Topbar + profile pills: slightly less lifted (smaller drop) */
+        /* Rocky cracked edge overlay on large panels */
+        .main-menu .forge-group::before,
+        .main-menu .menu-equipment-panel::before,
+        .main-menu .victory-chest-container::before,
+        .main-menu .xp-boost-container::before,
+        .main-menu .menu-stats-panel::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            pointer-events: none;
+            background:
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' seed='3'/><feColorMatrix values='0 0 0 0 0.48  0 0 0 0 0.34  0 0 0 0 0.16  0 0 0 0.85 0'/><feComposite in2='SourceGraphic' operator='in'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+            background-size: cover;
+            opacity: 0.35;
+            -webkit-mask: radial-gradient(farthest-side at center, transparent 70%, black 100%);
+                    mask: radial-gradient(farthest-side at center, transparent 70%, black 100%);
+            mix-blend-mode: multiply;
+            z-index: 0;
+        }
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            isolation: isolate;
+        }
+        .main-menu .forge-group > *,
+        .main-menu .menu-equipment-panel > *,
+        .main-menu .victory-chest-container > *,
+        .main-menu .xp-boost-container > *,
+        .main-menu .menu-stats-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Topbar + profile pills: pill shape, still lit & lifted */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule {
             border-radius: 999px !important;
             box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.8),
-                inset 0 -2px 3px rgba(180,140,85,0.2),
-                0 2px 0 rgba(195,160,105,0.5),
-                0 6px 12px rgba(90,55,20,0.22) !important;
+                inset 0 2px 0 rgba(255,252,240,0.85),
+                inset 0 -2px 2px rgba(215,190,150,0.22),
+                0 2px 0 rgba(228,208,175,0.65),
+                0 5px 10px rgba(150,115,65,0.2) !important;
         }
 
-        /* Equipment / consumable slots — stone-rim cream tiles */
+        /* Equipment / consumable slots — soft cream tiles */
         .main-menu .menu-equipment-slots > *,
         .main-menu .menu-equip-consumable-slots > *,
         .main-menu .victory-chest-slots > * {
-            background: #f0dcb2 !important;
-            border: 3px solid #dcc398 !important;
+            background:
+                radial-gradient(ellipse 65% 50% at 20% 12%, rgba(255,255,255,0.55) 0%, transparent 75%),
+                linear-gradient(180deg, #f3e0b8 0%, #e7d2a4 100%) !important;
+            border: 3px solid #e5d2a6 !important;
             border-radius: 14px !important;
             box-shadow:
                 inset 0 2px 0 rgba(255,252,240,0.7),
-                inset 0 -2px 3px rgba(180,140,85,0.22),
-                0 2px 3px rgba(90,55,20,0.12) !important;
+                inset 0 -2px 2px rgba(210,180,135,0.22),
+                0 2px 3px rgba(150,115,65,0.12) !important;
         }
 
-        /* Inline mini-cards (stats chips row) — soft stone-rim cream */
+        /* Inline mini-cards (stats chips row) — soft cream with subtle shine */
         .main-menu .menu-character-stats {
-            background: rgba(240, 220, 178, 0.85) !important;
-            border: 3px solid rgba(216,192,150,0.9) !important;
+            background:
+                radial-gradient(ellipse 45% 70% at 15% 30%, rgba(255,255,255,0.55) 0%, transparent 75%),
+                rgba(240, 220, 178, 0.9) !important;
+            border: 3px solid rgba(236,218,178,0.95) !important;
             box-shadow:
                 inset 0 2px 0 rgba(255,252,240,0.65),
-                inset 0 -2px 3px rgba(180,140,85,0.18),
-                0 2px 3px rgba(90,55,20,0.1) !important;
+                inset 0 -2px 2px rgba(210,180,135,0.2),
+                0 2px 3px rgba(150,115,65,0.1) !important;
         }
 
         /* Chest counter card (49/49 EXP battles) */
@@ -12536,7 +12586,7 @@
                 0 3px 0 #4a2c12 !important;
         }
 
-        /* Panels: stone rim in same hue */
+        /* Panels: soft stone rim, only ~15% darker than panel hue */
         .main-menu .forge-group,
         .main-menu .menu-equipment-panel,
         .main-menu .victory-chest-container,
@@ -12544,7 +12594,7 @@
         .main-menu .menu-stats-panel,
         .main-menu .top-nav-group,
         .main-menu .profile-capsule {
-            border: 5px solid #d8c096 !important;
+            border: 5px solid #ecdab2 !important;
         }
 
         /* Labels in warm-brown text rather than near-black */
