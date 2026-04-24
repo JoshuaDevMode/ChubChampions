@@ -12151,8 +12151,15 @@
         }
         .main-menu .menu-character-stats {
             gap: 0 !important;
-            padding: 4px 2px !important;
+            padding: 8px 14px !important;
             justify-content: space-between !important;
+            background: rgba(255,255,255,0.55) !important;
+            border: 2px solid rgba(43,26,14,0.25) !important;
+            border-radius: 14px !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.7),
+                0 2px 4px rgba(0,0,0,0.1) !important;
+            margin-right: 130px;  /* leave space for the winrate on the right */
         }
         .main-menu .menu-character-stat + .menu-character-stat {
             padding-left: 10px !important;
@@ -12262,10 +12269,9 @@
             height: 26px !important;
         }
         .main-menu .menu-stats-with-skill {
-            padding-right: 150px !important;
             padding: 6px 0 4px !important;
-            border-top: 1px solid rgba(43,26,14,0.1);
-            border-bottom: 1px solid rgba(43,26,14,0.1);
+            border-top: none;
+            border-bottom: none;
         }
 
         /* Top row of stats card: LEVEL + XP bar + SKILLS + spacer-for-winrate */
