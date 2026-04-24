@@ -12474,30 +12474,35 @@
                 0 7px 14px rgba(150,115,65,0.22) !important;
         }
 
-        /* Chipped/broken edges: mask cuts irregular chunks out of the panel border */
+        /* Chipped/broken edges: mask cuts small triangular chunks out of the rim */
         .main-menu .forge-group,
         .main-menu .menu-equipment-panel,
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='110,-3 122,9 134,-3' fill='black'/><polygon points='-3,170 10,184 -3,196' fill='black'/><polygon points='360,303 375,289 392,303' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='110,-3 122,9 134,-3' fill='black'/><polygon points='-3,170 10,184 -3,196' fill='black'/><polygon points='360,303 375,289 392,303' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
                     mask-size: 100% 100%;
             -webkit-mask-repeat: no-repeat;
                     mask-repeat: no-repeat;
             filter: drop-shadow(0 3px 0 rgba(228,208,175,0.6)) drop-shadow(0 6px 10px rgba(150,115,65,0.25));
-        }
-
-        /* Since mask also clips outer box-shadow, move the drop to filter: drop-shadow */
-        .main-menu .forge-group,
-        .main-menu .menu-equipment-panel,
-        .main-menu .victory-chest-container,
-        .main-menu .xp-boost-container,
-        .main-menu .menu-stats-panel {
             box-shadow:
                 inset 0 2px 0 rgba(255,252,240,0.85),
                 inset 0 -2px 2px rgba(215,190,150,0.25) !important;
+        }
+
+        /* Pill panels (topbar + profile): same chip detail, pill-shaped mask */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .daily-claim-lobby-btn {
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' rx='40' ry='40' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
+                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' rx='40' ry='40' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
+            -webkit-mask-size: 100% 100%;
+                    mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+            filter: drop-shadow(0 2px 0 rgba(228,208,175,0.55)) drop-shadow(0 4px 8px rgba(150,115,65,0.22));
         }
 
         /* Subtle rock grain on inside only (no line-drawn cracks) */
