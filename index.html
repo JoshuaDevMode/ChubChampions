@@ -11296,7 +11296,7 @@
 
         /* ── EQUIPMENT + CONSUMABLES combined card ── */
         .main-menu .menu-equipment-panel {
-            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 12px 14px 14px !important;
@@ -11370,17 +11370,12 @@
             justify-content: center;
             gap: 8px;
         }
-        .main-menu .daily-claim-lobby-btn::after {
-            content: "🎁";
-            font-size: 1.1em;
-            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
-        }
         .main-menu .daily-claim-lobby-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
         .main-menu .daily-claim-lobby-btn:active { transform: translateY(2px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(120,60,0,0.35), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
 
         /* BATTLE CHESTS card */
         .main-menu .victory-chest-container {
-            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 12px 14px !important;
@@ -11428,9 +11423,11 @@
         }
         .main-menu .daily-battle-counter::before { content: "⭐ "; }
 
-        /* BATTLE big red button */
+        /* BATTLE big red button — crystalline glossy */
         .main-menu .menu-btn-battle {
-            background: linear-gradient(180deg, #fca5a5 0%, #ef4444 40%, #b91c1c 100%) !important;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.12) 100%),
+                linear-gradient(180deg, #fecaca 0%, #f87171 30%, #dc2626 65%, #7f1d1d 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 999px !important;
             color: #fff !important;
@@ -11438,16 +11435,19 @@
             font-size: 1.5em !important;
             font-weight: 700 !important;
             letter-spacing: 0.1em;
-            text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 10px rgba(255,150,150,0.5) !important;
+            text-shadow: 0 2px 0 rgba(80,0,0,0.6), 0 0 12px rgba(255,180,180,0.55) !important;
             padding: 16px 20px !important;
             width: 260px;
             box-sizing: border-box;
             text-align: center;
+            position: relative;
+            overflow: hidden;
             box-shadow:
-                inset 0 3px 0 rgba(255,255,255,0.4),
-                inset 0 -5px 0 rgba(100,0,0,0.4),
+                inset 0 4px 0 rgba(255,255,255,0.55),
+                inset 0 -6px 10px rgba(80,0,0,0.45),
+                inset 0 0 0 1px rgba(255,255,255,0.25),
                 0 6px 0 #2b1a0e,
-                0 12px 22px rgba(0,0,0,0.45) !important;
+                0 14px 26px rgba(0,0,0,0.5) !important;
             cursor: pointer;
             transition: transform 0.1s, filter 0.15s;
             display: flex;
@@ -11462,12 +11462,29 @@
         }
         .main-menu .menu-btn-battle::after { content: none !important; }
         .main-menu .menu-btn-battle:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-2px); }
-        .main-menu .menu-btn-battle:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(100,0,0,0.4), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
-        .main-menu .menu-btn-battle:disabled { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.25); }
+        .main-menu .menu-btn-battle:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.45), inset 0 -2px 0 rgba(100,0,0,0.4), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
+        .main-menu .menu-btn-battle:disabled {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 45%, rgba(0,0,0,0.15) 100%),
+                linear-gradient(180deg, #d1d5db 0%, #9ca3af 40%, #6b7280 100%) !important;
+            color: #e5e7eb !important;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.4) !important;
+            cursor: not-allowed;
+            opacity: 1 !important;
+            filter: none !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,255,255,0.35),
+                inset 0 -5px 0 rgba(50,50,50,0.35),
+                0 6px 0 #2b1a0e,
+                0 10px 18px rgba(0,0,0,0.35) !important;
+        }
+        .main-menu .menu-btn-battle:disabled::before { filter: grayscale(1) opacity(0.7); }
 
-        /* ALL OR NOTHING blue button */
+        /* ALL OR NOTHING blue button — crystalline glossy */
         .main-menu .menu-btn-aon {
-            background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 45%, #1d4ed8 100%) !important;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.12) 100%),
+                linear-gradient(180deg, #bfdbfe 0%, #60a5fa 30%, #2563eb 65%, #1e3a8a 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 999px !important;
             color: #fff !important;
@@ -11475,16 +11492,19 @@
             font-size: 1em !important;
             font-weight: 700 !important;
             letter-spacing: 0.1em;
-            text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 10px rgba(150,200,255,0.4) !important;
+            text-shadow: 0 2px 0 rgba(10,30,80,0.6), 0 0 12px rgba(180,210,255,0.5) !important;
             padding: 14px 18px !important;
             width: 260px;
             box-sizing: border-box;
             text-align: center;
+            position: relative;
+            overflow: hidden;
             box-shadow:
-                inset 0 3px 0 rgba(255,255,255,0.4),
-                inset 0 -5px 0 rgba(10,40,120,0.4),
+                inset 0 4px 0 rgba(255,255,255,0.55),
+                inset 0 -6px 10px rgba(10,30,80,0.45),
+                inset 0 0 0 1px rgba(255,255,255,0.25),
                 0 6px 0 #2b1a0e,
-                0 12px 22px rgba(0,0,0,0.45) !important;
+                0 14px 26px rgba(0,0,0,0.5) !important;
             cursor: pointer;
             transition: transform 0.1s, filter 0.15s;
             display: flex;
@@ -11504,7 +11524,7 @@
 
         /* XP BOOST card */
         .main-menu .xp-boost-container {
-            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 18px !important;
             padding: 10px 14px !important;
@@ -11563,7 +11583,7 @@
            REDESIGN — Phase 3: Bottom stats panel (cream card)
            ═══════════════════════════════════════════════════════════ */
         .main-menu .menu-stats-panel {
-            background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-image: none !important;
             border-radius: 20px !important;
@@ -12026,27 +12046,11 @@
             max-width: none !important;
         }
 
-        /* CARE button moved next to SKILLS (to free the bar row for 3 full-width bars) */
+        /* CARE button lives inline at the end of the wellness/morale row */
         .main-menu .menu-bars-with-care .care-icon-btn {
-            display: none !important;
+            display: inline-flex !important;
         }
-        .main-menu #menu-care-btn-header {
-            background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%);
-            border: 3px solid #2b1a0e;
-            border-radius: 999px;
-            color: #2b1a0e;
-            font-family: 'Fredoka', sans-serif;
-            font-weight: 700;
-            font-size: 0.7em;
-            letter-spacing: 0.08em;
-            padding: 8px 16px;
-            cursor: pointer;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-            box-shadow:
-                inset 0 2px 0 rgba(255,255,255,0.5),
-                inset 0 -2px 0 rgba(120,60,0,0.3),
-                0 3px 0 #2b1a0e;
-        }
+        .main-menu #menu-care-btn-header { display: none !important; }
 
         /* Bars row: 3 bars spanning full width of stats card */
         .main-menu .menu-bars-with-care {
@@ -12164,7 +12168,7 @@
             box-shadow:
                 inset 0 2px 0 rgba(255,255,255,0.7),
                 0 2px 4px rgba(0,0,0,0.1) !important;
-            margin-right: 130px;  /* leave space for the winrate on the right */
+            margin-right: 0 !important;
         }
         .main-menu .menu-character-stat + .menu-character-stat {
             padding-left: 10px !important;
@@ -12274,9 +12278,10 @@
             height: 26px !important;
         }
         .main-menu .menu-stats-with-skill {
-            padding: 6px 0 4px !important;
-            border-top: none;
+            padding: 8px 140px 4px 0 !important;
+            border-top: 1px solid rgba(74,44,18,0.28) !important;
             border-bottom: none;
+            margin-top: 2px;
         }
 
         /* Top row of stats card: LEVEL + XP bar + SKILLS + spacer-for-winrate */
@@ -12329,6 +12334,35 @@
             border-radius: 0 999px 999px 0;
         }
 
+        .main-menu #menu-character-level { display: none !important; }
+
+        /* Level star + element mini-badge stacked */
+        .main-menu .menu-char-lv-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        .main-menu .menu-char-lv-element {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .main-menu .lv-elem-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 6px;
+            border: 1.5px solid;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.35);
+            font-size: 11px;
+            line-height: 1;
+        }
+        .main-menu .lv-elem-chip .lv-elem-icon { font-size: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
+
         /* ═══════════════════════════════════════════════════════════
            REDESIGN — Phase 7: Warmer cream/tan palette (less white)
            ═══════════════════════════════════════════════════════════ */
@@ -12341,7 +12375,7 @@
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            background: linear-gradient(180deg, #ebd0a3 0%, #d4b57e 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
             box-shadow:
                 inset 0 3px 0 rgba(255,240,210,0.7),
                 inset 0 -4px 0 rgba(120,75,25,0.22),
@@ -12387,7 +12421,7 @@
 
         /* Session dropdown — keep aligned with new light-brown palette */
         .session-dropdown {
-            background: linear-gradient(180deg, #ebd0a3 0%, #d4b57e 100%) !important;
+            background: linear-gradient(180deg, #e0c294 0%, #c29962 100%) !important;
         }
         .sdrop-bal-chip {
             background: rgba(255,232,195,0.55) !important;
@@ -12559,15 +12593,18 @@
             background: rgba(239,68,68,0.12) !important;
         }
 
-        /* 3 bars side-by-side (WELLNESS | MORALE | BATTLE INSTINCT) */
+        /* WELLNESS + MORALE on one row with CARE button at the end */
         .main-menu .menu-bars-with-care {
             flex-direction: row !important;
-            gap: 16px !important;
-            margin-top: 10px !important;
-            align-items: stretch !important;
+            gap: 14px !important;
+            margin-top: 8px !important;
+            padding: 8px 2px 10px !important;
+            align-items: center !important;
+            border-top: 1px solid rgba(74,44,18,0.28) !important;
+            border-bottom: none !important;
         }
         .main-menu .menu-bars-col {
-            flex: 2 !important;
+            flex: 1 1 auto !important;
             flex-direction: row !important;
             gap: 16px !important;
         }
@@ -12576,22 +12613,26 @@
             flex: 1 !important;
             min-width: 0;
         }
+
+        /* Battle Instinct sits on its OWN row below the divider */
         .main-menu .instinct-bar-container {
-            flex: 1 !important;
-            margin: 0 !important;
-        }
-        .main-menu .instinct-bar-container {
-            /* Pull it out of natural doc flow into the bar row via flex sibling */
-            order: 3;
-        }
-        /* Move the instinct bar INTO the bar row via grid reassignment */
-        .main-menu .menu-stats-panel {
-            display: flex;
+            display: flex !important;
             flex-direction: column;
+            margin: 0 !important;
+            padding: 8px 2px 4px !important;
+            border-top: 1px solid rgba(74,44,18,0.28) !important;
+            gap: 4px !important;
         }
-        .main-menu .menu-stats-panel .instinct-bar-container {
-            /* Will be relocated via JS below the morale bar; fall-back styling */
+        .main-menu .instinct-section-title {
+            display: block !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.6em !important;
+            font-weight: 700 !important;
+            color: #4a2c12 !important;
+            letter-spacing: 0.08em;
+            margin-bottom: 2px;
         }
+        .main-menu .instinct-bar-label::before { content: none !important; }
 
         /* CARE button: compact, aligned right next to the bar row */
         .main-menu .menu-bars-with-care .care-icon-btn {
@@ -12601,10 +12642,10 @@
             font-size: 0.75em !important;
         }
 
-        /* BP hint aligned left under bars */
+        /* BP hint aligned right under the instinct bar */
         .main-menu .instinct-hint {
             text-align: right !important;
-            margin-top: 8px !important;
+            margin-top: 4px !important;
             font-size: 0.55em !important;
         }
         .main-menu .instinct-hint::after { content: " ⓘ"; opacity: 0.5; margin-left: 6px; }
@@ -12798,7 +12839,10 @@
                         <div class="menu-stats-panel" id="menu-stats-panel" style="display:none;">
                         <div class="menu-exp-skills-row">
                             <div class="menu-character-exp" id="menu-character-exp-container">
-                                <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
+                                <div class="menu-char-lv-wrap">
+                                    <div class="menu-char-lv-circle" id="menu-char-lv-badge">1</div>
+                                    <div class="menu-char-lv-element" id="menu-char-lv-element"></div>
+                                </div>
                                 <div class="menu-char-exp-track">
                                     <div class="menu-character-exp-bar" id="menu-character-exp-bar"></div>
                                     <span class="menu-char-xp-label">XP</span>
@@ -22220,8 +22264,15 @@
                 // Level circle next to XP bar
                 if (lvBadge) lvBadge.textContent = character.level >= MAX_LEVEL ? '★' : String(character.level);
 
-                // Win rate + games row (legacy label cleared — ring appears in stats block)
+                // Element mini-badge under the level star
                 levelEl.textContent = '';
+                const lvElemEl = document.getElementById('menu-char-lv-element');
+                const elemData = ELEMENT_DATA[character.element];
+                if (lvElemEl) {
+                    lvElemEl.innerHTML = elemData
+                        ? `<span class="lv-elem-chip" style="border-color:${elemData.color};color:${elemData.color};"><span class="lv-elem-icon">${elemData.icon}</span></span>`
+                        : '';
+                }
 
                 // ── Stats grid (6 stats — element + win rate are in side extensions) ─
                 statsEl.innerHTML = [
@@ -29736,15 +29787,6 @@
         window.addEventListener('load', scaleGame);
         scaleGame();
 
-        // ── Redesign Phase 4: relocate instinct-bar into the horizontal bars row ──
-        (function relocateInstinctBar(){
-            const instinct = document.getElementById('instinct-bar-container');
-            const barsRow  = document.querySelector('.main-menu .menu-bars-with-care .menu-bars-col');
-            if (instinct && barsRow && instinct.parentElement !== barsRow) {
-                barsRow.appendChild(instinct);
-            }
-        })();
-
         // ── Redesign Phase 5: lift stats panel out of character-section into its own grid row ──
         (function relocateStatsPanel(){
             const menuContent = document.querySelector('.main-menu .menu-content');
@@ -29752,19 +29794,6 @@
             if (menuContent && statsInfo && statsInfo.parentElement !== menuContent) {
                 menuContent.appendChild(statsInfo);
             }
-        })();
-
-        // ── Redesign Phase 6: clone CARE button into the exp-skills row so the ──
-        //    bars row below can use the full width for 3 bars.
-        (function addCareHeaderBtn(){
-            const expRow  = document.querySelector('.main-menu .menu-exp-skills-row');
-            const origCare = document.getElementById('menu-care-btn');
-            if (!expRow || !origCare || document.getElementById('menu-care-btn-header')) return;
-            const clone = document.createElement('button');
-            clone.id = 'menu-care-btn-header';
-            clone.textContent = 'CARE';
-            clone.onclick = () => origCare.click();
-            expRow.appendChild(clone);
         })();
 
 
