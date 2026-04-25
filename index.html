@@ -12445,116 +12445,9 @@
 
         /* ═══════════════════════════════════════════════════════════
            REDESIGN — Phase 7: Warmer cream/tan palette (less white)
+           Lobby panel skin moved to the unified panel system below
+           (search "UNIFIED PANEL THEME").
            ═══════════════════════════════════════════════════════════ */
-
-        /* Stone-panel backgrounds: shines extend through both rim and inner */
-        .main-menu .top-nav-group,
-        .main-menu .profile-capsule,
-        .main-menu .forge-group,
-        .main-menu .menu-equipment-panel,
-        .main-menu .victory-chest-container,
-        .main-menu .xp-boost-container,
-        .main-menu .menu-stats-panel {
-            background-image:
-                /* RIM-LEVEL shines — large bright washes pinned to corners so they
-                   read clearly on the outer rim, not just the inner padding area */
-                radial-gradient(circle 90px at 0% 0%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 30%, transparent 70%),
-                radial-gradient(circle 110px at 100% 0%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 35%, transparent 75%),
-                radial-gradient(ellipse 60% 30% at 90% 100%, rgba(255,240,210,0.3) 0%, transparent 80%),
-                /* rock grain — across border-box */
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                /* inner panel face — only in padding-box (slightly darker bottom for depth) */
-                linear-gradient(180deg, #f7edd5 0%, #ecd6a8 70%, #d4b878 100%),
-                /* darker rim — fills border-box edge, more saturated bottom */
-                linear-gradient(180deg, #ecdab2 0%, #d8c096 60%, #b89860 100%) !important;
-            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
-            background-origin: border-box !important;
-            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
-            border-top: 3px solid transparent !important;
-            border-left: 3px solid transparent !important;
-            border-right: 3px solid transparent !important;
-            border-bottom: 7px solid transparent !important;
-            border-radius: 24px !important;
-            position: relative;
-            box-shadow:
-                inset 0 3px 0 rgba(255,255,255,0.75),
-                0 6px 12px rgba(150,115,65,0.28) !important;
-        }
-
-        /* Chipped edges: mask is a sharp rect with chip cuts; CSS border-radius
-           handles the corner shape so non-uniform stretching never distorts the rim. */
-        .main-menu .forge-group,
-        .main-menu .menu-equipment-panel,
-        .main-menu .victory-chest-container,
-        .main-menu .xp-boost-container,
-        .main-menu .menu-stats-panel {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%;
-                    mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-            filter: drop-shadow(0 3px 0 rgba(228,208,175,0.6)) drop-shadow(0 6px 10px rgba(150,115,65,0.25));
-            box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.85),
-                inset 0 -2px 2px rgba(215,190,150,0.25) !important;
-        }
-
-        /* Pill panels: same idea — sharp-rect mask with chips, real pill via border-radius */
-        .main-menu .top-nav-group,
-        .main-menu .profile-capsule,
-        .main-menu .daily-claim-lobby-btn {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%;
-                    mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-            filter: drop-shadow(0 2px 0 rgba(228,208,175,0.55)) drop-shadow(0 4px 8px rgba(150,115,65,0.22));
-        }
-
-        /* Subtle rock grain on inside only (no line-drawn cracks) */
-        .main-menu .forge-group::before,
-        .main-menu .menu-equipment-panel::before,
-        .main-menu .victory-chest-container::before,
-        .main-menu .xp-boost-container::before,
-        .main-menu .menu-stats-panel::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' seed='5'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.15  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
-            background-size: 400px 400px;
-            opacity: 0.5;
-            mix-blend-mode: multiply;
-            z-index: 0;
-        }
-        .main-menu .forge-group,
-        .main-menu .menu-equipment-panel,
-        .main-menu .victory-chest-container,
-        .main-menu .xp-boost-container,
-        .main-menu .menu-stats-panel {
-            isolation: isolate;
-        }
-        .main-menu .forge-group > *,
-        .main-menu .menu-equipment-panel > *,
-        .main-menu .victory-chest-container > *,
-        .main-menu .xp-boost-container > *,
-        .main-menu .menu-stats-panel > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Topbar + profile pills: pill shape, lit & lifted (depth comes from
-           the thicker bottom rim in the previous rule) */
-        .main-menu .top-nav-group,
-        .main-menu .profile-capsule {
-            border-radius: 999px !important;
-            box-shadow:
-                inset 0 2px 0 rgba(255,252,240,0.85),
-                0 5px 10px rgba(150,115,65,0.22) !important;
-        }
 
         /* Equipment / consumable slots — soft cream tiles */
         .main-menu .menu-equipment-slots > *,
@@ -12616,17 +12509,7 @@
                 0 3px 0 #4a2c12 !important;
         }
 
-        /* Panels: rim is painted via background-clip border-box, border stays transparent
-           so the corner shines extend through the rim. */
-        .main-menu .forge-group,
-        .main-menu .menu-equipment-panel,
-        .main-menu .victory-chest-container,
-        .main-menu .xp-boost-container,
-        .main-menu .menu-stats-panel,
-        .main-menu .top-nav-group,
-        .main-menu .profile-capsule {
-            border: 5px solid transparent !important;
-        }
+        /* (lobby panel border is set in the unified panel system below) */
 
         /* Labels in warm-brown text rather than near-black */
         .main-menu .fragment-chest-label,
@@ -12835,47 +12718,60 @@
         }
 
         /* ═══════════════════════════════════════════════════════════
-           UNIFIED PANEL THEME — replaces iron/wood/stone PNG frames
+           UNIFIED PANEL THEME — single base rule + per-palette variables.
+
+           Replaces 4 near-duplicate blocks (lobby cream / iron / wood /
+           stone) by parameterizing them through CSS custom properties.
+
+           Each panel gets:
+             1) the 6-layer paint via the shared base rule below
+                (3 corner shines + grain + face + rim)
+             2) its colors from one of the palette blocks
+                (--panel-shines / --panel-grain / --panel-face / etc.)
+             3) a chipped-edge mask — rect for panels, pill for the top bar.
+
+           background-clip alternates between border-box and padding-box so
+           the inner face never paints over the rim. The visible "border"
+           is just transparent space reserved for the rim layer.
            ═══════════════════════════════════════════════════════════ */
 
-        /* Shared mask & filter for chipped panel edges */
-        .panel-skin-iron,
-        .panel-skin-wood,
-        .panel-skin-stone {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%;
-                    mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
+        /* Shared textures + masks. Cached by the browser per data-URI, so
+           we keep them in :root and reference them via var() everywhere. */
+        :root {
+            /* Procedural rock grain — one feTurbulence SVG per tonal family */
+            --grain-cream:      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            --grain-iron:       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.45  0 0 0 0 0.48  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            --grain-wood:       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.30  0 0 0 0 0.16  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            --grain-cream-deep: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' seed='5'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.15  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+            /* Edge masks — chip cuts only; border-radius shapes the silhouette. */
+            --panel-mask-rect:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+            --panel-mask-pill:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
         }
 
-        /* IRON-FRAME panels → cool gray stone (shines extend across rim) */
+        /* BASE — 6-layer paint (shines × 3, grain, face, rim) using palette vars. */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel,
         .stats-side-ext,
-        .char-options-box,
-        .input-modal-box,
-        .notice-box,
-        .confirm-box,
-        .matchmaking-box,
-        .weapon-action-box,
-        .care-panel,
-        .leaderboard-container,
-        .char-profile-sprite-frame,
-        .char-profile-stats-frame,
-        .char-profile-history-frame,
-        .character-create-container,
-        .levelup-container,
-        .chest-confirm-box,
-        .daily-claim-panel,
-        .reward-reveal,
-        .results-panel {
+        .char-options-box, .input-modal-box, .notice-box, .confirm-box,
+        .matchmaking-box, .weapon-action-box, .care-panel,
+        .leaderboard-container, .char-profile-sprite-frame,
+        .char-profile-stats-frame, .char-profile-history-frame,
+        .character-create-container, .levelup-container,
+        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
+        .shop-panel, .vault-panel, .inventory-panel, .history-container,
+        .lobby-currency-bar, .session-dropdown,
+        .aon-container, .skills-panel, .wardrobe-panel,
+        .forge-daily-container, .forge-panel, .boost-modal {
             background-image:
-                radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
-                radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(240,240,245,0.25) 0%, transparent 80%),
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.45  0 0 0 0 0.48  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #ececec 0%, #c8c8cc 100%),
-                linear-gradient(180deg, #c8c8cc 0%, #b3b3b8 100%) !important;
+                var(--panel-shines),
+                var(--panel-grain),
+                var(--panel-face),
+                var(--panel-rim) !important;
             background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
             background-origin: border-box !important;
             background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
@@ -12883,82 +12779,158 @@
             border: 5px solid transparent !important;
             border-image: none !important;
             border-radius: 24px !important;
-            box-shadow:
-                inset 0 2px 0 rgba(255,255,255,0.55),
-                inset 0 -2px 2px rgba(80,80,90,0.18) !important;
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+            position: relative;
+            box-shadow: var(--panel-inset-shadow) !important;
+            -webkit-mask-image: var(--panel-mask-rect);
+                    mask-image: var(--panel-mask-rect);
             -webkit-mask-size: 100% 100%;
                     mask-size: 100% 100%;
             -webkit-mask-repeat: no-repeat;
                     mask-repeat: no-repeat;
-            filter: drop-shadow(0 3px 0 rgba(190,190,200,0.6)) drop-shadow(0 6px 12px rgba(40,40,50,0.3));
+            filter: var(--panel-drop);
         }
 
-        /* WINDOW-FRAME panels → soft wood brown (shines extend across rim) */
-        .shop-panel,
-        .vault-panel,
-        .inventory-panel,
-        .history-container,
-        .lobby-currency-bar,
-        .session-dropdown {
-            background-image:
+        /* PILL VARIANT — top nav, profile capsule, daily-reward button. */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .daily-claim-lobby-btn {
+            -webkit-mask-image: var(--panel-mask-pill);
+                    mask-image: var(--panel-mask-pill);
+        }
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule {
+            border-radius: 999px !important;
+        }
+
+        /* ── PALETTE: lobby cream (warm tan, brighter rim shines) ── */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            --panel-shines:
+                radial-gradient(circle 90px at 0% 0%,
+                    rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 30%, transparent 70%),
+                radial-gradient(circle 110px at 100% 0%,
+                    rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 35%, transparent 75%),
+                radial-gradient(ellipse 60% 30% at 90% 100%,
+                    rgba(255,240,210,0.3) 0%, transparent 80%);
+            --panel-grain: var(--grain-cream);
+            --panel-face: linear-gradient(180deg, #f7edd5 0%, #ecd6a8 70%, #d4b878 100%);
+            --panel-rim:  linear-gradient(180deg, #ecdab2 0%, #d8c096 60%, #b89860 100%);
+            --panel-inset-shadow:
+                inset 0 2px 0 rgba(255,252,240,0.85),
+                inset 0 -2px 2px rgba(215,190,150,0.25);
+            --panel-drop:
+                drop-shadow(0 3px 0 rgba(228,208,175,0.6))
+                drop-shadow(0 6px 10px rgba(150,115,65,0.25));
+        }
+
+        /* Lobby pills look "lifted" rather than recessed (no inner-bottom shadow). */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule {
+            --panel-inset-shadow:
+                inset 0 2px 0 rgba(255,252,240,0.85),
+                0 5px 10px rgba(150,115,65,0.22);
+            --panel-drop:
+                drop-shadow(0 2px 0 rgba(228,208,175,0.55))
+                drop-shadow(0 4px 8px rgba(150,115,65,0.22));
+        }
+
+        /* ── PALETTE: iron (cool gray) ── */
+        .stats-side-ext,
+        .char-options-box, .input-modal-box, .notice-box, .confirm-box,
+        .matchmaking-box, .weapon-action-box, .care-panel,
+        .leaderboard-container, .char-profile-sprite-frame,
+        .char-profile-stats-frame, .char-profile-history-frame,
+        .character-create-container, .levelup-container,
+        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel {
+            --panel-shines:
+                radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
+                radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(240,240,245,0.25) 0%, transparent 80%);
+            --panel-grain: var(--grain-iron);
+            --panel-face: linear-gradient(180deg, #ececec 0%, #c8c8cc 100%);
+            --panel-rim:  linear-gradient(180deg, #c8c8cc 0%, #b3b3b8 100%);
+            --panel-inset-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.55),
+                inset 0 -2px 2px rgba(80,80,90,0.18);
+            --panel-drop:
+                drop-shadow(0 3px 0 rgba(190,190,200,0.6))
+                drop-shadow(0 6px 12px rgba(40,40,50,0.3));
+        }
+
+        /* ── PALETTE: wood (warm brown) ── */
+        .shop-panel, .vault-panel, .inventory-panel, .history-container,
+        .lobby-currency-bar, .session-dropdown {
+            --panel-shines:
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,235,200,0.5) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,225,180,0.28) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,210,160,0.22) 0%, transparent 80%),
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.30  0 0 0 0 0.16  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #d4a373 0%, #b27a48 100%),
-                linear-gradient(180deg, #b27a48 0%, #9a6738 100%) !important;
-            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
-            background-origin: border-box !important;
-            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
-            background-color: transparent !important;
-            border: 5px solid transparent !important;
-            border-image: none !important;
-            border-radius: 24px !important;
-            box-shadow:
+                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,210,160,0.22) 0%, transparent 80%);
+            --panel-grain: var(--grain-wood);
+            --panel-face: linear-gradient(180deg, #d4a373 0%, #b27a48 100%);
+            --panel-rim:  linear-gradient(180deg, #b27a48 0%, #9a6738 100%);
+            --panel-inset-shadow:
                 inset 0 2px 0 rgba(255,225,180,0.45),
-                inset 0 -2px 2px rgba(70,40,15,0.22) !important;
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%;
-                    mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-            filter: drop-shadow(0 3px 0 rgba(154,103,56,0.55)) drop-shadow(0 6px 12px rgba(60,30,10,0.35));
+                inset 0 -2px 2px rgba(70,40,15,0.22);
+            --panel-drop:
+                drop-shadow(0 3px 0 rgba(154,103,56,0.55))
+                drop-shadow(0 6px 12px rgba(60,30,10,0.35));
         }
 
-        /* STONE-FRAME panels → cream tan stone (shines extend across rim) */
-        .aon-container,
-        .skills-panel,
-        .wardrobe-panel,
-        .forge-daily-container,
-        .forge-panel,
-        .boost-modal {
-            background-image:
+        /* ── PALETTE: stone (lighter cream tan) ── */
+        .aon-container, .skills-panel, .wardrobe-panel,
+        .forge-daily-container, .forge-panel, .boost-modal {
+            --panel-shines:
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,240,210,0.25) 0%, transparent 80%),
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.47  0 0 0 0 0.25  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%),
-                linear-gradient(180deg, #ecdab2 0%, #d8c096 100%) !important;
-            background-clip: border-box, border-box, border-box, border-box, padding-box, border-box !important;
-            background-origin: border-box !important;
-            background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat !important;
-            background-color: transparent !important;
-            border: 5px solid transparent !important;
-            border-image: none !important;
-            border-radius: 24px !important;
-            box-shadow:
+                radial-gradient(ellipse 50% 25% at 85% 95%, rgba(255,240,210,0.25) 0%, transparent 80%);
+            --panel-grain: var(--grain-cream);
+            --panel-face: linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%);
+            --panel-rim:  linear-gradient(180deg, #ecdab2 0%, #d8c096 100%);
+            --panel-inset-shadow:
                 inset 0 2px 0 rgba(255,252,240,0.6),
-                inset 0 -2px 2px rgba(215,190,150,0.2) !important;
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='24' ry='24' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%;
-                    mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-            filter: drop-shadow(0 3px 0 rgba(228,208,175,0.6)) drop-shadow(0 6px 10px rgba(150,115,65,0.25));
+                inset 0 -2px 2px rgba(215,190,150,0.2);
+            --panel-drop:
+                drop-shadow(0 3px 0 rgba(228,208,175,0.6))
+                drop-shadow(0 6px 10px rgba(150,115,65,0.25));
+        }
+
+        /* Inner low-frequency grain (multiply layer) on the 5 large lobby panels.
+           Breaks up the high-frequency outer grain. The host elements get
+           isolation: isolate so children render above this pseudo-element. */
+        .main-menu .forge-group::before,
+        .main-menu .menu-equipment-panel::before,
+        .main-menu .victory-chest-container::before,
+        .main-menu .xp-boost-container::before,
+        .main-menu .menu-stats-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image: var(--grain-cream-deep);
+            background-size: 400px 400px;
+            opacity: 0.5;
+            mix-blend-mode: multiply;
+            z-index: 0;
+        }
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            isolation: isolate;
+        }
+        .main-menu .forge-group > *,
+        .main-menu .menu-equipment-panel > *,
+        .main-menu .victory-chest-container > *,
+        .main-menu .xp-boost-container > *,
+        .main-menu .menu-stats-panel > * {
+            position: relative;
+            z-index: 1;
         }
 
         /* Battle Chests — empty slots get a slate-gray fill + chest logo */
@@ -12974,21 +12946,6 @@
                 inset 0 2px 0 rgba(255,250,235,0.45),
                 inset 0 -2px 2px rgba(90,80,60,0.22),
                 0 1px 2px rgba(60,45,20,0.18) !important;
-        }
-
-        /* Reset border thickness on retheme'd panels so content doesn't shift dramatically */
-        .stats-side-ext,
-        .char-options-box, .input-modal-box, .notice-box, .confirm-box,
-        .matchmaking-box, .weapon-action-box, .care-panel,
-        .leaderboard-container, .char-profile-sprite-frame,
-        .char-profile-stats-frame, .char-profile-history-frame,
-        .character-create-container, .levelup-container,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
-        .shop-panel, .vault-panel, .inventory-panel, .history-container,
-        .lobby-currency-bar, .session-dropdown,
-        .aon-container, .skills-panel, .wardrobe-panel,
-        .forge-daily-container, .forge-panel, .boost-modal {
-            border-width: 5px !important;
         }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
