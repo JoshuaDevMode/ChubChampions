@@ -12479,14 +12479,15 @@
                 0 7px 14px rgba(150,115,65,0.22) !important;
         }
 
-        /* Chipped/broken edges: mask cuts small triangular chunks out of the rim */
+        /* Chipped edges: mask is a sharp rect with chip cuts; CSS border-radius
+           handles the corner shape so non-uniform stretching never distorts the rim. */
         .main-menu .forge-group,
         .main-menu .menu-equipment-panel,
         .main-menu .victory-chest-container,
         .main-menu .xp-boost-container,
         .main-menu .menu-stats-panel {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' rx='26' ry='26' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
+                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='300' fill='white'/><polygon points='116,-2 122,4 128,-2' fill='black'/><polygon points='-2,177 4,184 -2,191' fill='black'/><polygon points='368,302 376,295 384,302' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='300' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
                     mask-size: 100% 100%;
             -webkit-mask-repeat: no-repeat;
@@ -12497,12 +12498,12 @@
                 inset 0 -2px 2px rgba(215,190,150,0.25) !important;
         }
 
-        /* Pill panels (topbar + profile): same chip detail, pill-shaped mask */
+        /* Pill panels: same idea — sharp-rect mask with chips, real pill via border-radius */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
         .main-menu .daily-claim-lobby-btn {
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' rx='40' ry='40' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' rx='40' ry='40' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
+                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 80' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='500' height='80' fill='white'/><polygon points='140,-2 146,5 152,-2' fill='black'/><polygon points='330,82 336,75 342,82' fill='black'/></mask></defs><rect x='0' y='0' width='500' height='80' fill='white' mask='url(%23m)'/></svg>");
             -webkit-mask-size: 100% 100%;
                     mask-size: 100% 100%;
             -webkit-mask-repeat: no-repeat;
