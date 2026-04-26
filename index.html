@@ -12779,7 +12779,6 @@
             border: 5px solid transparent !important;
             border-image: none !important;
             border-radius: 24px !important;
-            position: relative;
             box-shadow: var(--panel-inset-shadow) !important;
             -webkit-mask-image: var(--panel-mask-rect);
                     mask-image: var(--panel-mask-rect);
@@ -12826,6 +12825,14 @@
             --panel-drop:
                 drop-shadow(0 3px 0 rgba(228,208,175,0.6))
                 drop-shadow(0 6px 10px rgba(150,115,65,0.25));
+            /* Lobby cream uses a thinner rim than the iron/wood/stone variants,
+               which still need 5px of breathing room for their original layouts.
+               position:relative establishes the containing block for the
+               ::before grain accent and the .session-dropdown overflow child.
+               Kept off the base rule so modals with position:absolute (skills,
+               wardrobe, care, character-create…) retain their slide-in transforms. */
+            position: relative;
+            border-width: 2px !important;
         }
 
         /* Lobby pills look "lifted" rather than recessed (no inner-bottom shadow). */
@@ -12837,6 +12844,18 @@
             --panel-drop:
                 drop-shadow(0 2px 0 rgba(228,208,175,0.55))
                 drop-shadow(0 4px 8px rgba(150,115,65,0.22));
+        }
+
+        /* Hosts of absolutely-positioned children (the session dropdown lives
+           inside .profile-capsule → .lobby-currency-bar). The pill/rect mask
+           would clip the dropdown, and the filter context makes the host
+           repaint visibly when the dropdown opens. Disable both here; the
+           inset highlight + ambient drop on the dropdown itself carry the lift. */
+        .main-menu .profile-capsule,
+        .lobby-currency-bar {
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+            filter: none !important;
         }
 
         /* ── PALETTE: iron (cool gray) ── */
