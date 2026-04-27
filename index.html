@@ -13097,26 +13097,85 @@
             pointer-events: none;
         }
 
-        /* ── Currency pill: switch from dark brown to warm gold ── */
-        .main-menu .top-currency-group {
-            background: linear-gradient(180deg, #f8dc8a 0%, #ecbe55 50%, #c79024 100%) !important;
-            border-color: #2b1a0e !important;
+        /* ══════════ GOLD CRYSTAL GLASS — currency pill + lobby buttons ══════════ */
+        .main-menu .top-currency-group,
+        .main-menu .daily-claim-lobby-btn,
+        .main-menu .menu-bars-with-care .care-icon-btn,
+        .main-menu .skills-icon-btn {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0) 50%, rgba(120,70,10,0.18) 100%),
+                linear-gradient(165deg, rgba(253,230,138,0.55) 0%, rgba(251,191,36,0.62) 45%, rgba(180,110,20,0.7) 100%) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            border: 3px solid #2b1a0e !important;
+            color: #3d2410 !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.55) !important;
             box-shadow:
-                inset 0 2px 0 rgba(255,250,220,0.7),
-                inset 0 -3px 0 rgba(120,75,15,0.28),
+                inset 0 2px 2px rgba(255,255,255,0.55),
+                inset 0 -5px 9px rgba(120,70,10,0.35),
+                inset 0 0 0 1px rgba(255,255,255,0.25),
+                inset 0 0 24px rgba(255,210,100,0.25),
                 0 4px 0 #2b1a0e,
-                0 8px 18px rgba(0,0,0,0.35) !important;
+                0 10px 18px rgba(0,0,0,0.35) !important;
+            position: relative;
+            overflow: hidden;
         }
+        /* Crystal sheen sweep on the gold glass elements */
+        .main-menu .top-currency-group::after,
+        .main-menu .daily-claim-lobby-btn::after,
+        .main-menu .menu-bars-with-care .care-icon-btn::after,
+        .main-menu .skills-icon-btn::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            left: 0;
+            width: 55%;
+            height: 140%;
+            background: linear-gradient(105deg,
+                transparent 0%,
+                rgba(255,255,255,0.12) 30%,
+                rgba(255,255,255,0.6) 48%,
+                rgba(255,255,255,0.9) 50%,
+                rgba(255,255,255,0.6) 52%,
+                rgba(255,255,255,0.12) 70%,
+                transparent 100%);
+            transform: translateX(-160%) skewX(-20deg);
+            animation: crystalSheen 8s linear infinite;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            filter: blur(1px);
+            z-index: 2;
+        }
+        .main-menu .daily-claim-lobby-btn::after { animation-delay: 1.5s; }
+        .main-menu .menu-bars-with-care .care-icon-btn::after { animation-delay: 3s; }
+        .main-menu .skills-icon-btn::after { animation-delay: 5s; }
+
+        /* Currency item text contrast over the glass */
         .main-menu .currency-item {
             color: #3d2410 !important;
-            text-shadow: 0 1px 0 rgba(255,250,220,0.45) !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.55) !important;
+            position: relative;
+            z-index: 3;
         }
         .main-menu .currency-item + .currency-item {
-            border-left: 1px solid rgba(70,40,10,0.25) !important;
+            border-left: 1px solid rgba(70,40,10,0.28) !important;
         }
         .main-menu #currency-crystals {
             color: #1e3a5f !important;
-            text-shadow: 0 1px 0 rgba(255,250,220,0.45) !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.55) !important;
+        }
+        .main-menu .currency-plus-btn { position: relative; z-index: 3; }
+
+        /* Make Battle and AoN buttons more transparent / glassy */
+        .main-menu .menu-btn-battle {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.18) 100%),
+                linear-gradient(165deg, rgba(248,113,113,0.55) 0%, rgba(220,38,38,0.62) 45%, rgba(127,29,29,0.7) 100%) !important;
+        }
+        .main-menu .menu-btn-aon {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.18) 100%),
+                linear-gradient(165deg, rgba(96,165,250,0.55) 0%, rgba(37,99,235,0.62) 45%, rgba(30,58,138,0.7) 100%) !important;
         }
 
         /* ── Forge: drop the inner stone frame so only .forge-group shows ── */
