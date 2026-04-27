@@ -13030,7 +13030,7 @@
             padding: 0 !important;
         }
 
-        /* ── Drop the dark rim/3D effect behind every panel ── */
+        /* ── Drop only the dark rim border-width; keep shines + shadows ── */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
         .main-menu .forge-group,
@@ -13049,11 +13049,7 @@
         .session-dropdown,
         .aon-container, .skills-panel, .wardrobe-panel,
         .forge-daily-container, .forge-panel, .boost-modal {
-            --panel-rim: var(--panel-face) !important;
-            --panel-inset-shadow: none !important;
-            --panel-drop: none !important;
             border-width: 0 !important;
-            filter: none !important;
         }
 
         /* ── Cleaner panels: kill grain + soften shines for uniform tone ── */
@@ -13076,7 +13072,6 @@
         .aon-container, .skills-panel, .wardrobe-panel,
         .forge-daily-container, .forge-panel, .boost-modal {
             --panel-grain: none !important;
-            --panel-shines: none !important;
         }
         .main-menu .forge-group::before,
         .main-menu .menu-equipment-panel::before,
