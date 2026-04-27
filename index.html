@@ -13017,6 +13017,47 @@
             display: none !important;
         }
 
+        /* ── Limestone palette (paler, less yellow than cream) ── */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel {
+            --panel-face: linear-gradient(180deg, #f4eee0 0%, #e6dccb 70%, #d4c8b0 100%) !important;
+            --panel-rim:  linear-gradient(180deg, #e6dccb 0%, #d4c8b0 60%, #b8ab92 100%) !important;
+            --panel-inset-shadow:
+                inset 0 2px 0 rgba(255,253,247,0.8),
+                inset 0 -2px 2px rgba(190,178,158,0.2) !important;
+            --panel-drop:
+                drop-shadow(0 3px 0 rgba(206,196,178,0.55))
+                drop-shadow(0 6px 10px rgba(130,115,90,0.22)) !important;
+        }
+
+        /* ── Win rate: bigger SVG ring + centered in its column ── */
+        .main-menu .stats-top-right {
+            flex: 0 0 165px !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .main-menu #winrate-side-ext svg {
+            width: 90px !important;
+            height: 90px !important;
+            margin: 2px auto !important;
+        }
+        .main-menu #winrate-side-ext { gap: 3px !important; }
+
+        /* ── Forge bar: taller so the "X / Y" numbers aren't clipped ── */
+        .main-menu .fragment-bar-outer {
+            height: 18px !important;
+        }
+        .main-menu .fragment-bar-text {
+            font-size: 10px !important;
+            line-height: 1 !important;
+            padding: 0 4px !important;
+        }
+
         /* ── Forge: drop the inner stone frame so only .forge-group shows ── */
         .main-menu .forge-daily-container {
             background-image: none !important;
