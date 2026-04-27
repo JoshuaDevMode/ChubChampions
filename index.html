@@ -11670,10 +11670,10 @@
             align-items: center;
         }
         .main-menu .menu-char-lv-circle {
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 39,24 60,24 43,37 49,58 32,46 15,58 21,37 4,24 25,24' fill='%23fbbf24' stroke='%232b1a0e' stroke-width='3' stroke-linejoin='round'/></svg>") center/contain no-repeat !important;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32 6 C35 6 36 9 38 16 C40 22 42 24 48 25 C56 26 58 28 56 32 C54 36 50 39 49 43 C48 49 50 53 49 56 C47 60 44 58 38 55 C34 53 30 53 26 55 C20 58 17 60 15 56 C14 53 16 49 15 43 C14 39 10 36 8 32 C6 28 8 26 16 25 C22 24 24 22 26 16 C28 9 29 6 32 6 Z' fill='%23fde68a' stroke='%23b8741a' stroke-width='2.5' stroke-linejoin='round'/></svg>") center/contain no-repeat !important;
             border: none !important;
             box-shadow: none !important;
-            color: #2b1a0e !important;
+            color: #7a4a10 !important;
             font-family: 'Fredoka', sans-serif !important;
             font-weight: 900 !important;
             font-size: 1.15em !important;
@@ -12365,6 +12365,20 @@
             justify-content: center;
             padding: 4px 8px;
         }
+        .main-menu .stats-top-right {
+            flex: 0 0 160px;
+            gap: 4px;
+            padding: 6px 10px;
+        }
+        .main-menu #winrate-side-ext {
+            gap: 4px !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+        .main-menu #winrate-side-ext > span:last-child {
+            font-size: 11px !important;
+            gap: 14px !important;
+        }
         .main-menu .stats-top-left {
             border-right: 1px solid rgba(74,44,18,0.28);
         }
@@ -12966,6 +12980,37 @@
                 inset 0 -2px 2px rgba(90,80,60,0.22),
                 0 1px 2px rgba(60,45,20,0.18) !important;
         }
+
+        /* ── Top bar: kill the wood-frame paint behind the 3 inner pills ── */
+        .main-menu .lobby-currency-bar {
+            background-image: none !important;
+            background-color: transparent !important;
+            border: none !important;
+            border-image: none !important;
+            box-shadow: none !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+        }
+        .main-menu .lobby-currency-bar::before { display: none !important; }
+
+        /* ── Hide the bottom stats panel when Inventory or Care is open ── */
+        .main-menu.inventory-mode .menu-character-info,
+        .main-menu.care-mode .menu-character-info,
+        .main-menu.inventory-mode .stats-panel-outer,
+        .main-menu.care-mode .stats-panel-outer,
+        .main-menu.inventory-mode .menu-stats-panel,
+        .main-menu.care-mode .menu-stats-panel {
+            display: none !important;
+        }
+
+        /* ── Center the character in the space left by the side panel ──
+           Inventory & Care panels are 500px wide on the left; the remaining
+           space (500..1600) is centered at 1050px → +250px from the lobby
+           center (800px). Add !important so this beats the base centering. */
+        .main-menu.inventory-mode .menu-character-section,
+        .main-menu.care-mode .menu-character-section {
+            transform: translate(calc(-50% + 250px), 0) scale(1.15) !important;
+        }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
@@ -13108,7 +13153,9 @@
                 <div class="menu-equipment-panel" id="menu-equipment-panel" style="display:none;">
                     <div class="menu-equipment-title">⚔️ MY EQUIPMENT</div>
                     <div class="menu-equipment-slots" id="menu-equipment-slots"></div>
-                    <div class="menu-equip-section-title">CONSUMABLES</div>
+                </div>
+                <div class="menu-equipment-panel menu-consumables-panel" id="menu-consumables-panel" style="display:none;">
+                    <div class="menu-equipment-title">🍎 CONSUMABLES</div>
                     <div class="menu-equip-consumable-slots" id="menu-equip-consumable-slots"></div>
                 </div>
             </div>
@@ -22593,8 +22640,8 @@
                     const circ   = 2 * Math.PI * 17;
                     const arcLen = circ * (winRate / 100);
                     wrExt.innerHTML = `
-                        <span style="font-family:'Fredoka',sans-serif;font-size:9px;font-weight:700;color:#6b4820;letter-spacing:0.08em;text-transform:uppercase;">WIN RATE</span>
-                        <svg width="54" height="54" viewBox="0 0 44 44" style="display:block;">
+                        <span style="font-family:'Fredoka',sans-serif;font-size:11px;font-weight:700;color:#6b4820;letter-spacing:0.08em;text-transform:uppercase;">WIN RATE</span>
+                        <svg width="92" height="92" viewBox="0 0 44 44" style="display:block;">
                             <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(43,26,14,0.18)" stroke-width="4.5"/>
                             <circle cx="22" cy="22" r="17" fill="none" stroke="#22c55e" stroke-width="4.5"
                                 stroke-dasharray="${arcLen.toFixed(2)} ${circ.toFixed(2)}"
@@ -22603,8 +22650,8 @@
                                 font-family="Fredoka, sans-serif" font-weight="700">${winRate}%</text>
                         </svg>
                         <span>
-                            <span style="font-family:'Fredoka',sans-serif;font-size:10px;font-weight:700;color:#6b4820;">${played}<br><span style="font-weight:500;color:#8a6b3e;">played</span></span>
-                            <span style="font-family:'Fredoka',sans-serif;font-size:10px;font-weight:700;color:#16a34a;">${won}<br><span style="font-weight:500;color:#4ade80;">won</span></span>
+                            <span style="font-family:'Fredoka',sans-serif;font-size:12px;font-weight:700;color:#6b4820;">${played}<br><span style="font-weight:500;color:#8a6b3e;">played</span></span>
+                            <span style="font-family:'Fredoka',sans-serif;font-size:12px;font-weight:700;color:#16a34a;">${won}<br><span style="font-weight:500;color:#4ade80;">won</span></span>
                         </span>`;
                 }
 
@@ -34015,14 +34062,17 @@
         function updateMenuEquipmentPanel() {
             const character = getSelectedCharacter();
             const panel = document.getElementById('menu-equipment-panel');
+            const consPanel = document.getElementById('menu-consumables-panel');
             const slotsContainer = document.getElementById('menu-equipment-slots');
 
             if (!character) {
                 panel.style.display = 'none';
+                if (consPanel) consPanel.style.display = 'none';
                 return;
             }
 
             panel.style.display = '';
+            if (consPanel) consPanel.style.display = '';
 
             if (!character.equippedWeapons) {
                 character.equippedWeapons = [];
