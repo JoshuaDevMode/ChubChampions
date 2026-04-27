@@ -13030,6 +13030,32 @@
             padding: 0 !important;
         }
 
+        /* ── Drop the dark rim/3D effect behind every panel ── */
+        .main-menu .top-nav-group,
+        .main-menu .profile-capsule,
+        .main-menu .forge-group,
+        .main-menu .menu-equipment-panel,
+        .main-menu .victory-chest-container,
+        .main-menu .xp-boost-container,
+        .main-menu .menu-stats-panel,
+        .stats-side-ext,
+        .char-options-box, .input-modal-box, .notice-box, .confirm-box,
+        .matchmaking-box, .weapon-action-box, .care-panel,
+        .leaderboard-container, .char-profile-sprite-frame,
+        .char-profile-stats-frame, .char-profile-history-frame,
+        .character-create-container, .levelup-container,
+        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
+        .shop-panel, .vault-panel, .inventory-panel, .history-container,
+        .session-dropdown,
+        .aon-container, .skills-panel, .wardrobe-panel,
+        .forge-daily-container, .forge-panel, .boost-modal {
+            --panel-rim: var(--panel-face) !important;
+            --panel-inset-shadow: none !important;
+            --panel-drop: none !important;
+            border-width: 0 !important;
+            filter: none !important;
+        }
+
         /* ── Cleaner panels: kill grain + soften shines for uniform tone ── */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
