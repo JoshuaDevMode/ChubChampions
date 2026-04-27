@@ -13035,18 +13035,21 @@
                 drop-shadow(0 6px 10px rgba(130,115,90,0.22)) !important;
         }
 
-        /* ── Win rate: bigger SVG ring + centered in its column ── */
+        /* ── Win rate: modest ring centered in its column without growing the row ── */
         .main-menu .stats-top-right {
             flex: 0 0 165px !important;
             align-items: center !important;
             justify-content: center !important;
+            padding: 1px 8px !important;
         }
         .main-menu #winrate-side-ext svg {
-            width: 90px !important;
-            height: 90px !important;
-            margin: 2px auto !important;
+            width: 62px !important;
+            height: 62px !important;
+            margin: 0 auto !important;
         }
-        .main-menu #winrate-side-ext { gap: 3px !important; }
+        .main-menu #winrate-side-ext { gap: 1px !important; }
+        .main-menu #winrate-side-ext > span:first-child { font-size: 9px !important; }
+        .main-menu #winrate-side-ext > span:last-child { font-size: 9px !important; }
 
         /* ── Forge bar: taller so the "X / Y" numbers aren't clipped ── */
         .main-menu .fragment-bar-outer {
