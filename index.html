@@ -13053,12 +13053,26 @@
 
         /* ── Forge bar: taller so the "X / Y" numbers aren't clipped ── */
         .main-menu .fragment-bar-outer {
-            height: 18px !important;
+            height: 20px !important;
+            overflow: visible !important;
+        }
+        .main-menu .fragment-bar-inner {
+            border-radius: 999px !important;
         }
         .main-menu .fragment-bar-text {
-            font-size: 10px !important;
+            position: absolute !important;
+            inset: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 11px !important;
             line-height: 1 !important;
-            padding: 0 4px !important;
+            color: #fff !important;
+            text-shadow:
+                0 1px 0 #2b1a0e,
+                0 0 3px rgba(0,0,0,0.9) !important;
+            z-index: 5 !important;
+            pointer-events: none;
         }
 
         /* ── Forge: drop the inner stone frame so only .forge-group shows ── */
