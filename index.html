@@ -13464,7 +13464,92 @@
 
         /* Level star: shift number down to sit in the chubby body */
         .main-menu .menu-char-lv-circle {
-            padding: 4px 0 0 0 !important;
+            padding: 7px 0 0 0 !important;
+        }
+
+        /* ── BATTLE / AoN buttons: brownstone PNG mask + warm-orange palette ── */
+        @keyframes lavaFlow {
+            0%   { background-position: 0% 0%, 0% 50%, 0 0; }
+            50%  { background-position: 0% 0%, 100% 50%, 0 0; }
+            100% { background-position: 0% 0%, 0% 50%, 0 0; }
+        }
+        @keyframes lavaPulse {
+            0%, 100% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)) drop-shadow(0 0 12px rgba(255,90,20,0.55)); }
+            50%      { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)) drop-shadow(0 0 26px rgba(255,160,40,0.85)); }
+        }
+        .main-menu .menu-btn-battle,
+        .main-menu .menu-btn-aon {
+            background-color: transparent !important;
+            background-image:
+                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.28) 100%),
+                linear-gradient(165deg, #ffb060 0%, #e6772a 45%, #a83c0a 100%),
+                url('Assets/UI/btn-brownstone.png') !important;
+            background-size: 100% 100%, 100% 100%, 100% 100% !important;
+            background-position: center, center, center !important;
+            background-repeat: no-repeat, no-repeat, no-repeat !important;
+            background-blend-mode: normal, multiply, normal !important;
+            -webkit-mask-image: url('Assets/UI/btn-brownstone.png') !important;
+                    mask-image: url('Assets/UI/btn-brownstone.png') !important;
+            -webkit-mask-size: 100% 100% !important;
+                    mask-size: 100% 100% !important;
+            -webkit-mask-repeat: no-repeat !important;
+                    mask-repeat: no-repeat !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55));
+            color: #fff !important;
+            text-shadow: 0 2px 0 rgba(80,30,0,0.85), 0 0 12px rgba(255,200,120,0.55) !important;
+            isolation: isolate;
+        }
+        /* AoN — molten lava flow + warm pulsing glow */
+        .main-menu .menu-btn-aon {
+            background-image:
+                linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.3) 100%),
+                linear-gradient(110deg,
+                    #4a0a00 0%, #b22a00 18%, #ff5a10 32%, #ffb53a 45%,
+                    #fff0a0 50%, #ffb53a 55%, #ff5a10 68%, #b22a00 82%, #4a0a00 100%),
+                url('Assets/UI/btn-brownstone.png') !important;
+            background-size: 100% 100%, 320% 100%, 100% 100% !important;
+            background-blend-mode: normal, multiply, normal !important;
+            animation: lavaFlow 4s ease-in-out infinite, lavaPulse 2.4s ease-in-out infinite !important;
+            text-shadow: 0 2px 0 rgba(60,15,0,0.9), 0 0 14px rgba(255,180,60,0.85), 0 0 28px rgba(255,90,20,0.55) !important;
+        }
+        /* Sheen pseudo: keep the light streak, but mask it to the drawn shape */
+        .main-menu .menu-btn-battle::after,
+        .main-menu .menu-btn-aon::after {
+            -webkit-mask-image: url('Assets/UI/btn-brownstone.png') !important;
+                    mask-image: url('Assets/UI/btn-brownstone.png') !important;
+            -webkit-mask-size: 100% 100% !important;
+                    mask-size: 100% 100% !important;
+            -webkit-mask-position: center !important;
+                    mask-position: center !important;
+            -webkit-mask-repeat: no-repeat !important;
+                    mask-repeat: no-repeat !important;
+        }
+        /* Battle disabled / fatigue: desaturate the artwork instead of replacing it */
+        .main-menu .menu-btn-battle:disabled,
+        .main-menu .menu-btn-battle.fatigued {
+            background-image:
+                linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.35) 100%),
+                linear-gradient(165deg, #b8b8b8 0%, #7d7d7d 50%, #404040 100%),
+                url('Assets/UI/btn-brownstone.png') !important;
+            background-blend-mode: normal, multiply, normal !important;
+            color: #d8d8d8 !important;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.55) !important;
+            filter: grayscale(1) drop-shadow(0 4px 8px rgba(0,0,0,0.5)) !important;
+            cursor: not-allowed;
+        }
+        .main-menu .menu-btn-battle:disabled::after,
+        .main-menu .menu-btn-battle.fatigued::after {
+            animation: none !important;
+            opacity: 0 !important;
+        }
+        /* Drop fixed-circle sizing/border conflict */
+        .main-menu .menu-btn-battle,
+        .main-menu .menu-btn-aon {
+            min-height: 92px !important;
+            padding: 12px 24px !important;
         }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
