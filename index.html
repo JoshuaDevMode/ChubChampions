@@ -13554,9 +13554,17 @@
         }
         .main-menu .menu-btn-battle > *,
         .main-menu .menu-btn-aon > * { position: relative; z-index: 2; }
-        /* Battle disabled / fatigue: desaturate the artwork */
+        /* Battle disabled / fatigue: same brownstone artwork, just desaturated */
         .main-menu .menu-btn-battle:disabled,
         .main-menu .menu-btn-battle.fatigued {
+            background-color: transparent !important;
+            background-image: url('/ChubChampions/assets/btn-brownstone-C5qAHLvv.png') !important;
+            background-size: 100% 100% !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
             filter: grayscale(1) brightness(0.78) drop-shadow(0 4px 6px rgba(0,0,0,0.5)) !important;
             color: #d4d4d4 !important;
             text-shadow: 0 2px 0 rgba(0,0,0,0.55) !important;
