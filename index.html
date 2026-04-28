@@ -12590,7 +12590,7 @@
 
         /* Star level badge — chubby, sticker-cute, bright sunny fill */
         .main-menu .menu-char-lv-circle {
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M35.4,5.7 L43.2,16.6 L56,20.7 Q61.5,22.4 58.1,27.1 L50.1,37.9 L50.2,51.3 Q50.2,57.1 44.8,55.3 L32,51 L19.3,55.3 Q13.8,57.1 13.8,51.3 L13.9,37.9 L5.9,27.1 Q2.5,22.4 8,20.7 L20.8,16.6 L28.7,5.7 Q32,1 35.4,5.7 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='2.8' stroke-linejoin='round'/><ellipse cx='21' cy='18' rx='5' ry='3' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M35.4,5.7 L43.2,16.6 L56,20.7 Q61.5,22.4 58.1,27.1 L50.1,37.9 L50.2,51.3 Q50.2,57.1 44.8,55.3 L32,51 L19.3,55.3 Q13.8,57.1 13.8,51.3 L13.9,37.9 L5.9,27.1 Q2.5,22.4 8,20.7 L20.8,16.6 L28.7,5.7 Q32,1 35.4,5.7 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='2.8' stroke-linejoin='round'/><ellipse cx='22' cy='14' rx='6' ry='2.4' transform='rotate(-28 22 14)' fill='white' opacity='0.85'/><circle cx='29' cy='19' r='1.6' fill='white' opacity='0.75'/></svg>") center/contain no-repeat !important;
             color: #5e3508 !important;
             text-shadow: 0 1px 0 rgba(255,245,200,0.85) !important;
         }
@@ -13402,32 +13402,59 @@
         /* (Y-centering for character in inventory/care mode is set above.) */
 
         /* ── Forge: apply stone-frame.png to lobby widget AND modal panel ── */
-        .main-menu .forge-group {
+        .main-menu .forge-group,
+        .main-menu .forge-group > .forge-daily-container {
+            background: none !important;
             background-image: none !important;
             background-color: transparent !important;
             border: none !important;
             border-image: none !important;
             box-shadow: none !important;
+            outline: none !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+        }
+        .main-menu .forge-group {
             padding: 0 !important;
+            width: auto !important;
+            filter: none !important;
         }
         .main-menu .forge-group::before,
-        .main-menu .forge-group::after {
+        .main-menu .forge-group::after,
+        .main-menu .forge-daily-container::before,
+        .main-menu .forge-daily-container::after {
             display: none !important;
             content: none !important;
+            background: none !important;
+            box-shadow: none !important;
         }
         .main-menu .forge-daily-container,
         .forge-panel {
-            border: 44px solid transparent !important;
+            border: 52px solid transparent !important;
             border-image-source: url('/ChubChampions/assets/stone-frame-ixllCCgw.png') !important;
             border-image-slice: 17% fill !important;
-            border-image-width: 44px !important;
+            border-image-width: 52px !important;
             border-image-repeat: round !important;
+            background: none !important;
             background-image: none !important;
             background-color: transparent !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            padding: 14px 18px !important;
-            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+            padding: 18px 22px !important;
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+        }
+        .forge-panel {
+            max-width: 640px !important;
+            width: 92% !important;
+        }
+        .forge-panel .forge-title { font-size: 1.6em !important; }
+        .forge-panel .forge-desc { font-size: 1em !important; }
+        .forge-panel .forge-stat-value { font-size: 1.15em !important; }
+        .forge-panel .forge-btn { font-size: 1.1em !important; padding: 12px 18px !important; }
+
+        /* Level star: shift number down to sit in the chubby body */
+        .main-menu .menu-char-lv-circle {
+            padding: 4px 0 0 0 !important;
         }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
