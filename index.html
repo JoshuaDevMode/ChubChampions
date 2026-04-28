@@ -13545,12 +13545,17 @@
             animation: none !important;
             opacity: 0 !important;
         }
-        /* Drop fixed-circle sizing/border conflict */
+        /* Match the brownstone PNG's natural 810x386 aspect so the mask
+           doesn't squash the artwork (which read as a zoom-in effect) */
         .main-menu .menu-btn-battle,
         .main-menu .menu-btn-aon {
-            min-height: 92px !important;
-            padding: 12px 24px !important;
+            width: 280px !important;
+            height: 134px !important;
+            min-height: 0 !important;
+            padding: 0 24px !important;
+            line-height: 1.05 !important;
         }
+        .main-menu .menu-btn-aon { font-size: 1.25em !important; }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
