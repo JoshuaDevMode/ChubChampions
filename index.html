@@ -13170,58 +13170,37 @@
         }
         .main-menu .currency-plus-btn { position: relative; z-index: 3; }
 
-        /* ══════════ Battle / AoN — cracked stone look ══════════ */
+        /* ══════════ Battle / AoN — clean color body + shine, no cracks/notches ══════════ */
         .main-menu .menu-btn-battle {
             background:
-                /* Cracks overlay (stays on top of body) */
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 56' preserveAspectRatio='none'><g fill='none' stroke='rgba(20,0,0,0.6)' stroke-linecap='round'><path d='M14 10 L28 22 L40 18 L56 32 L70 28 L92 44' stroke-width='1.3'/><path d='M40 30 L48 40' stroke-width='0.7'/><path d='M118 6 L130 18 L146 14 L162 30 L156 46' stroke-width='1.2'/><path d='M138 22 L148 34' stroke-width='0.7'/><path d='M198 10 L210 22 L226 18 L240 36 L246 50' stroke-width='1.1'/><path d='M220 28 L232 40' stroke-width='0.7'/></g><g fill='rgba(0,0,0,0.45)'><circle cx='30' cy='46' r='1.4'/><circle cx='112' cy='12' r='1.1'/><circle cx='180' cy='44' r='1.5'/><circle cx='80' cy='8' r='0.9'/><circle cx='170' cy='10' r='1'/><circle cx='250' cy='30' r='1.2'/></g></svg>"),
-                /* Stone grain */
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='80'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                /* Top gloss + bottom shadow */
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.32) 100%),
-                /* Stone body — desaturated, darker than pure red */
-                linear-gradient(165deg, rgba(180,70,70,0.95) 0%, rgba(150,40,40,0.97) 45%, rgba(85,18,18,0.98) 100%) !important;
-            background-size: 100% 100%, 200px 80px, 100% 100%, 100% 100% !important;
-            background-repeat: no-repeat, repeat, no-repeat, no-repeat !important;
-            backdrop-filter: blur(8px) saturate(1.2) !important;
-            -webkit-backdrop-filter: blur(8px) saturate(1.2) !important;
-            border: 2.5px solid rgba(40,5,5,0.95) !important;
-            border-radius: 14px !important;
-            /* Chipped/cracked silhouette — small notches on the rim */
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 60' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='260' height='60' rx='14' ry='14' fill='white'/><polygon points='62,-2 70,7 78,-2' fill='black'/><polygon points='180,62 188,53 196,62' fill='black'/><polygon points='-2,38 5,32 -2,26' fill='black'/><polygon points='262,18 256,24 262,30' fill='black'/></mask></defs><rect x='0' y='0' width='260' height='60' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 60' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='260' height='60' rx='14' ry='14' fill='white'/><polygon points='62,-2 70,7 78,-2' fill='black'/><polygon points='180,62 188,53 196,62' fill='black'/><polygon points='-2,38 5,32 -2,26' fill='black'/><polygon points='262,18 256,24 262,30' fill='black'/></mask></defs><rect x='0' y='0' width='260' height='60' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+                linear-gradient(180deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0) 55%, rgba(0,0,0,0.25) 100%),
+                linear-gradient(165deg, rgba(248,113,113,0.96) 0%, rgba(220,38,38,0.98) 45%, rgba(127,29,29,1) 100%) !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+            border: 2.5px solid rgba(60,15,10,0.9) !important;
+            border-radius: 999px !important;
             box-shadow:
-                inset 0 2px 1px rgba(255,255,255,0.32),
-                inset 0 -5px 10px rgba(20,0,0,0.55),
-                inset 0 0 18px rgba(255,120,120,0.18),
-                0 5px 12px rgba(60,0,0,0.5),
-                0 12px 22px rgba(0,0,0,0.45) !important;
+                inset 0 2px 2px rgba(255,255,255,0.5),
+                inset 0 -5px 10px rgba(60,0,0,0.45),
+                inset 0 0 26px rgba(255,140,140,0.22),
+                0 4px 10px rgba(80,0,0,0.35),
+                0 10px 22px rgba(0,0,0,0.4) !important;
             isolation: isolate;
         }
         .main-menu .menu-btn-aon {
             background:
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 56' preserveAspectRatio='none'><g fill='none' stroke='rgba(0,5,30,0.6)' stroke-linecap='round'><path d='M22 8 L36 22 L48 16 L62 30 L80 24 L98 40' stroke-width='1.3'/><path d='M44 28 L52 38' stroke-width='0.7'/><path d='M124 10 L140 22 L154 18 L168 34 L160 48' stroke-width='1.2'/><path d='M148 26 L156 36' stroke-width='0.7'/><path d='M204 6 L218 20 L232 16 L244 32 L240 48' stroke-width='1.1'/><path d='M222 26 L234 38' stroke-width='0.7'/></g><g fill='rgba(0,0,0,0.45)'><circle cx='28' cy='42' r='1.3'/><circle cx='106' cy='14' r='1.1'/><circle cx='190' cy='40' r='1.5'/><circle cx='70' cy='10' r='0.9'/><circle cx='176' cy='8' r='1'/><circle cx='248' cy='28' r='1.2'/></g></svg>"),
-                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='80'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"),
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.32) 100%),
-                linear-gradient(165deg, rgba(70,120,200,0.95) 0%, rgba(35,80,180,0.97) 45%, rgba(15,35,90,0.98) 100%) !important;
-            background-size: 100% 100%, 200px 80px, 100% 100%, 100% 100% !important;
-            background-repeat: no-repeat, repeat, no-repeat, no-repeat !important;
-            backdrop-filter: blur(8px) saturate(1.2) !important;
-            -webkit-backdrop-filter: blur(8px) saturate(1.2) !important;
-            border: 2.5px solid rgba(5,12,40,0.95) !important;
-            border-radius: 14px !important;
-            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 60' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='260' height='60' rx='14' ry='14' fill='white'/><polygon points='84,-2 92,8 100,-2' fill='black'/><polygon points='160,62 168,52 176,62' fill='black'/><polygon points='-2,22 5,16 -2,10' fill='black'/><polygon points='262,42 256,48 262,54' fill='black'/></mask></defs><rect x='0' y='0' width='260' height='60' fill='white' mask='url(%23m)'/></svg>");
-                    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 60' preserveAspectRatio='none'><defs><mask id='m'><rect x='0' y='0' width='260' height='60' rx='14' ry='14' fill='white'/><polygon points='84,-2 92,8 100,-2' fill='black'/><polygon points='160,62 168,52 176,62' fill='black'/><polygon points='-2,22 5,16 -2,10' fill='black'/><polygon points='262,42 256,48 262,54' fill='black'/></mask></defs><rect x='0' y='0' width='260' height='60' fill='white' mask='url(%23m)'/></svg>");
-            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+                linear-gradient(180deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0) 55%, rgba(0,0,0,0.25) 100%),
+                linear-gradient(165deg, rgba(96,165,250,0.96) 0%, rgba(37,99,235,0.98) 45%, rgba(30,58,138,1) 100%) !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+            border: 2.5px solid rgba(15,30,70,0.9) !important;
+            border-radius: 999px !important;
             box-shadow:
-                inset 0 2px 1px rgba(255,255,255,0.32),
-                inset 0 -5px 10px rgba(0,5,30,0.55),
-                inset 0 0 18px rgba(140,180,255,0.18),
-                0 5px 12px rgba(0,10,50,0.5),
-                0 12px 22px rgba(0,0,0,0.45) !important;
+                inset 0 2px 2px rgba(255,255,255,0.5),
+                inset 0 -5px 10px rgba(0,10,60,0.45),
+                inset 0 0 26px rgba(140,180,255,0.22),
+                0 4px 10px rgba(0,15,80,0.35),
+                0 10px 22px rgba(0,0,0,0.4) !important;
             isolation: isolate;
         }
 
