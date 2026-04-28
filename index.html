@@ -11416,7 +11416,8 @@
             border: none !important;
             padding: 0 !important;
         }
-        .main-menu .menu-btn-battle { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .main-menu .menu-btn-battle { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 10px 20px !important; }
+        .main-menu .menu-btn-battle::before { display: none !important; }
         .main-menu .menu-btn-battle .daily-battle-counter {
             display: block !important;
             background: none !important;
@@ -12004,7 +12005,7 @@
             margin-top: 6px !important;
             font-size: 0.7em !important;
         }
-        .main-menu .menu-btn-battle { font-size: 1.6em !important; padding: 18px 20px !important; }
+        .main-menu .menu-btn-battle { font-size: 1.6em !important; padding: 10px 20px !important; }
         .main-menu .menu-btn-aon { font-size: 1.1em !important; padding: 16px 18px !important; }
 
         /* FIGHTER name + star */
@@ -12589,7 +12590,7 @@
 
         /* Star level badge — chubby, sticker-cute, bright sunny fill */
         .main-menu .menu-char-lv-circle {
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32,12 L41,21 L52,26 L47,37 L44,49 L32,46 L20,49 L17,37 L12,26 L23,21 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='9' stroke-linejoin='round' stroke-linecap='round' paint-order='stroke fill'/><ellipse cx='24' cy='22' rx='4' ry='2.5' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M34,11 L38.5,23.1 L51.2,23.7 Q56.7,24 52.4,27.4 L42.5,35.4 L45.9,47.7 Q47.3,53 42.7,50 L32,43 L21.3,50 Q16.7,53 18.1,47.7 L21.5,35.4 L11.6,27.4 Q7.3,24 12.8,23.7 L25.5,23.1 L30,11 Q32,6 34,11 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='2.6' stroke-linejoin='round'/><ellipse cx='24' cy='22' rx='4' ry='2.5' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
             color: #5e3508 !important;
             text-shadow: 0 1px 0 rgba(255,245,200,0.85) !important;
         }
