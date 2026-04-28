@@ -11416,7 +11416,24 @@
             border: none !important;
             padding: 0 !important;
         }
-        .main-menu .daily-battle-counter::before { content: "⭐ "; }
+        .main-menu .menu-btn-battle { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .main-menu .menu-btn-battle .daily-battle-counter {
+            display: block !important;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: auto !important;
+            font-size: 0.42em !important;
+            letter-spacing: 0.08em !important;
+            color: rgba(255,248,225,0.92) !important;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.35) !important;
+            line-height: 1.1 !important;
+            font-weight: 700 !important;
+        }
+        .main-menu .menu-btn-battle .daily-battle-counter.limit-reached {
+            color: #ffd9d9 !important;
+        }
 
         /* Crystal sheen: sweeps across full width over 1.5s, then pauses */
         @keyframes crystalSheen {
@@ -12572,7 +12589,7 @@
 
         /* Star level badge — chubby, sticker-cute, bright sunny fill */
         .main-menu .menu-char-lv-circle {
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32 6 Q36 18 47 22 Q60 26 53 34 Q47 41 51 53 Q52 60 44 56 Q37 52 32 58 Q27 52 20 56 Q12 60 13 53 Q17 41 11 34 Q4 26 17 22 Q28 18 32 6 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='2.6' stroke-linejoin='round'/><ellipse cx='24' cy='22' rx='5' ry='3' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32,8 L39,24 L56,25 L43,36 L48,53 L32,44 L16,53 L21,36 L8,25 L25,24 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='6' stroke-linejoin='round' stroke-linecap='round' paint-order='stroke fill'/><ellipse cx='24' cy='22' rx='4' ry='2.5' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
             color: #5e3508 !important;
             text-shadow: 0 1px 0 rgba(255,245,200,0.85) !important;
         }
@@ -13631,9 +13648,9 @@
                     <div class="victory-chest-label">BATTLE CHESTS</div>
                     <div class="victory-chest-slots" id="victory-chest-slots"></div>
                 </div>
-                <div class="daily-battle-counter" id="daily-battle-counter"></div>
                 <button class="menu-btn menu-btn-battle" id="menu-play-btn" disabled>
-                    BATTLE
+                    <span class="menu-btn-battle-label">BATTLE</span>
+                    <span class="daily-battle-counter" id="daily-battle-counter"></span>
                 </button>
                 <button class="menu-btn menu-btn-aon" id="menu-pvp-btn">
                     ALL OR<br>NOTHING
@@ -17140,11 +17157,10 @@
                 const midnight = new Date(now);
                 midnight.setHours(24, 0, 0, 0);
                 const hoursLeft = Math.ceil((midnight - now) / 3600000);
-                el.textContent = `NO EXP BATTLES LEFT — resets in ${hoursLeft}h`;
+                el.textContent = `NO EXP BATTLES LEFT — RESETS IN ${hoursLeft}H`;
                 el.classList.add('limit-reached');
             } else {
-                const suffix = effectiveLimit < DAILY_BATTLE_LIMIT ? ' (morale ↓)' : '';
-                el.textContent = `⚔️ ${remaining}/${effectiveLimit} EXP battles${suffix}`;
+                el.textContent = `${remaining}/${effectiveLimit} EXP BATTLES`;
                 el.classList.remove('limit-reached');
             }
         }
