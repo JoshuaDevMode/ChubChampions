@@ -13103,22 +13103,26 @@
         .main-menu .menu-bars-with-care .care-icon-btn,
         .main-menu .skills-icon-btn {
             background:
-                linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0) 50%, rgba(120,70,10,0.18) 100%),
-                linear-gradient(165deg, rgba(253,230,138,0.55) 0%, rgba(251,191,36,0.62) 45%, rgba(180,110,20,0.7) 100%) !important;
-            backdrop-filter: blur(6px) !important;
-            -webkit-backdrop-filter: blur(6px) !important;
+                /* top gloss + bottom shadow */
+                linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 22%, rgba(255,255,255,0) 55%, rgba(80,45,5,0.22) 100%),
+                /* warm gold body — opaque enough to read on any background */
+                linear-gradient(165deg, rgba(253,230,138,0.88) 0%, rgba(251,191,36,0.92) 45%, rgba(180,110,20,0.95) 100%) !important;
+            /* Strong blur + saturation grounds the glass to the bg behind it */
+            backdrop-filter: blur(10px) saturate(1.4) brightness(1.05) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(1.4) brightness(1.05) !important;
             border: 3px solid #2b1a0e !important;
             color: #3d2410 !important;
-            text-shadow: 0 1px 0 rgba(255,250,220,0.55) !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.6) !important;
             box-shadow:
-                inset 0 2px 2px rgba(255,255,255,0.55),
-                inset 0 -5px 9px rgba(120,70,10,0.35),
-                inset 0 0 0 1px rgba(255,255,255,0.25),
-                inset 0 0 24px rgba(255,210,100,0.25),
+                inset 0 2px 2px rgba(255,255,255,0.7),
+                inset 0 -5px 10px rgba(120,70,10,0.4),
+                inset 0 0 0 1px rgba(255,255,255,0.32),
+                inset 0 0 28px rgba(255,210,100,0.3),
                 0 4px 0 #2b1a0e,
-                0 10px 18px rgba(0,0,0,0.35) !important;
+                0 10px 22px rgba(0,0,0,0.4) !important;
             position: relative;
             overflow: hidden;
+            isolation: isolate;
         }
         /* Crystal sheen sweep on the gold glass elements */
         .main-menu .top-currency-group::after,
@@ -13166,16 +13170,22 @@
         }
         .main-menu .currency-plus-btn { position: relative; z-index: 3; }
 
-        /* Make Battle and AoN buttons more transparent / glassy */
+        /* Make Battle and AoN buttons crystal-glass but still grounded on bg */
         .main-menu .menu-btn-battle {
             background:
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.18) 100%),
-                linear-gradient(165deg, rgba(248,113,113,0.55) 0%, rgba(220,38,38,0.62) 45%, rgba(127,29,29,0.7) 100%) !important;
+                linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.22) 100%),
+                linear-gradient(165deg, rgba(248,113,113,0.85) 0%, rgba(220,38,38,0.92) 45%, rgba(127,29,29,0.96) 100%) !important;
+            backdrop-filter: blur(10px) saturate(1.35) brightness(1.04) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(1.35) brightness(1.04) !important;
+            isolation: isolate;
         }
         .main-menu .menu-btn-aon {
             background:
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.18) 100%),
-                linear-gradient(165deg, rgba(96,165,250,0.55) 0%, rgba(37,99,235,0.62) 45%, rgba(30,58,138,0.7) 100%) !important;
+                linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 18%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.22) 100%),
+                linear-gradient(165deg, rgba(96,165,250,0.85) 0%, rgba(37,99,235,0.92) 45%, rgba(30,58,138,0.96) 100%) !important;
+            backdrop-filter: blur(10px) saturate(1.35) brightness(1.04) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(1.35) brightness(1.04) !important;
+            isolation: isolate;
         }
 
         /* ── Forge: drop the inner stone frame so only .forge-group shows ── */
