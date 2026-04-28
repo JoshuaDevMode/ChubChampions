@@ -4551,23 +4551,36 @@
         }
         #lobby-loading-overlay.llo-hidden { opacity: 0; pointer-events: none; }
         @keyframes lloGlowPulse {
-            0%, 100% { filter: drop-shadow(0 0 6px rgba(255,215,0,0.5)); }
-            50%       { filter: drop-shadow(0 0 16px rgba(255,215,0,0.95)); }
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(255,140,40,0.55)); }
+            50%       { filter: drop-shadow(0 0 22px rgba(255,210,80,0.95)); }
+        }
+        @keyframes lloCompleteFlash {
+            0%   { filter: drop-shadow(0 0 18px rgba(255,210,80,0.9)) drop-shadow(0 0 38px rgba(255,150,40,0.7)); }
+            50%  { filter: drop-shadow(0 0 38px rgba(255,235,140,1))   drop-shadow(0 0 80px rgba(255,180,60,0.95)); }
+            100% { filter: drop-shadow(0 0 18px rgba(255,210,80,0.9)) drop-shadow(0 0 38px rgba(255,150,40,0.7)); }
+        }
+        @keyframes lloWaveSlide {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-128px); }
         }
         #llo-svg { animation: lloGlowPulse 2s ease-in-out infinite; }
+        #lobby-loading-overlay.llo-complete #llo-svg {
+            animation: lloCompleteFlash 1.4s ease-in-out infinite;
+        }
+        #llo-wave { animation: lloWaveSlide 2.4s linear infinite; transform-box: fill-box; }
         .llo-logo {
             font-family: 'Fredoka', sans-serif; font-size: 22px;
-            color: #c4b5fd; text-shadow: 0 0 24px rgba(196,181,253,0.55), 0 0 60px rgba(124,58,237,0.3);
+            color: #ffd684; text-shadow: 0 0 24px rgba(255,180,60,0.55), 0 0 60px rgba(255,120,30,0.3);
             letter-spacing: 3px;
         }
-        .llo-sub { font-family: 'Fredoka', sans-serif; font-size: 7px; color: #444; letter-spacing: 1px; }
+        .llo-sub { font-family: 'Fredoka', sans-serif; font-size: 7px; color: #6b4820; letter-spacing: 1px; }
         .llo-bar-wrap {
-            width: 220px; height: 6px; background: #111;
-            border-radius: 3px; border: 1px solid #1e1e1e; overflow: hidden;
+            width: 220px; height: 6px; background: #1a0d05;
+            border-radius: 3px; border: 1px solid #2b1a0e; overflow: hidden;
         }
         .llo-bar {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #7c3aed, #f97316);
+            background: linear-gradient(90deg, #ff6a00, #ffd24a);
             border-radius: 3px; transition: width 0.25s ease;
         }
         .mg-result {
@@ -13402,8 +13415,7 @@
         /* (Y-centering for character in inventory/care mode is set above.) */
 
         /* ── Forge: apply stone-frame.png to lobby widget AND modal panel ── */
-        .main-menu .forge-group,
-        .main-menu .forge-group > .forge-daily-container {
+        .main-menu .forge-group {
             background: none !important;
             background-image: none !important;
             background-color: transparent !important;
@@ -13413,8 +13425,6 @@
             outline: none !important;
             -webkit-mask-image: none !important;
                     mask-image: none !important;
-        }
-        .main-menu .forge-group {
             padding: 0 !important;
             width: auto !important;
             filter: none !important;
@@ -13473,8 +13483,9 @@
             <svg id="llo-svg" viewBox="0 0 1024 1024" width="370" height="370">
                 <defs>
                     <linearGradient id="llo-grad" x1="0" y1="820" x2="0" y2="200" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#7c3aed"/>
-                        <stop offset="100%" stop-color="#f97316"/>
+                        <stop offset="0%" stop-color="#ff6a00"/>
+                        <stop offset="55%" stop-color="#ffa030"/>
+                        <stop offset="100%" stop-color="#ffe066"/>
                     </linearGradient>
                     <clipPath id="llo-clip">
                         <!-- Only the outer boundary sub-path — keeps clip solid (no holes) -->
@@ -13487,6 +13498,10 @@
                 <!-- Liquid fill: rect clipped to the fighter silhouette, grows upward -->
                 <rect id="llo-fill-rect" x="0" y="1024" width="1024" height="0"
                       fill="url(#llo-grad)" clip-path="url(#llo-clip)"/>
+                <!-- Liquid surface wave: animated wavy band at the top of the fill -->
+                <g clip-path="url(#llo-clip)">
+                    <path id="llo-wave" d="" fill="rgba(255,240,180,0.55)"/>
+                </g>
                 <!-- White outline overlay — always on top of the gradient fill -->
                 <path d="M501.78 205.706C518.359 204.484 545.088 206.881 561.356 209.386C586.516 213.201 611.031 220.465 634.209 230.972C709.756 264.893 749.989 323.742 773.358 401.154C776.303 410.943 778.81 420.859 780.871 430.872C783.294 442.929 784.611 460.351 789.304 471.469C790.983 475.447 803.266 484.415 807.174 488.244C813.202 494.149 819.654 500.316 825.695 506.441C835.549 516.534 844.672 527.314 852.997 538.7C867.759 558.891 877.333 581.1 873.498 606.587C869.784 631.268 842.828 637.258 821.931 632.368C815.235 630.801 808.688 628.582 801.87 627.417L800.861 627.25C793.323 656.35 785.539 681.351 762.379 702.085C745.923 716.818 744.791 712.098 741.689 734.048C739.405 750.206 732.838 775.001 724.489 788.491C701.843 825.084 641.892 824.435 608.496 804.499C591.678 794.52 585.544 775.355 581.344 757.594C561.942 757.149 541.026 758.589 521.477 759.08C503.492 759.137 486.3 759.245 468.335 758.106C460.134 757.587 451.207 757.971 443.01 757.144C441.201 765.634 435.914 780.728 431.454 787.734C409.236 822.632 349.245 825.455 316.515 805.981C294.988 793.173 288.155 765.548 283.873 742.78C282.371 734.792 281.417 726.462 279.481 718.652L279.355 718.16C272.872 711.313 265.053 705.716 258.395 698.963C236.951 677.216 229.905 656.072 223.245 627.556C210.585 628.471 199.912 634.54 186.473 633.821C175.502 633.235 166.329 631.347 158.432 623.056C151.717 616.006 147.73 601.218 148.414 591.891C151.961 543.507 202.614 501.289 235.831 470.979C236.553 466.212 237.862 461.298 238.587 456.446C247.875 394.312 267.645 334.923 310.432 287.232C325.013 271.244 341.855 257.476 360.422 246.365C405.505 218.926 449.5 208.59 501.78 205.706Z"
                       fill="none" stroke="white" stroke-width="3"/>
@@ -31664,11 +31679,30 @@
 
         function _lloProgress(percent, text) {
             const fillRect = document.getElementById('llo-fill-rect');
+            const wave     = document.getElementById('llo-wave');
+            const overlay  = document.getElementById('lobby-loading-overlay');
             const subText  = document.getElementById('llo-sub');
             if (fillRect) {
                 const h = Math.max(1, (percent / 100) * 1024);
-                fillRect.setAttribute('y',      String(1024 - h));
+                const y = 1024 - h;
+                fillRect.setAttribute('y',      String(y));
                 fillRect.setAttribute('height', String(h));
+                if (wave) {
+                    // Build a sine-wave band that sits on top of the fill.
+                    // Path is 2x viewBox-wide so CSS translate animates it seamlessly.
+                    const amp = 14, period = 128, top = y - amp, base = y + amp;
+                    let d = `M -1024 ${base} L -1024 ${top}`;
+                    for (let x = -1024; x <= 2048; x += period / 4) {
+                        const yy = top + amp * (1 - Math.cos((x / period) * Math.PI * 2)) / 2;
+                        d += ` L ${x} ${yy.toFixed(2)}`;
+                    }
+                    d += ` L 2048 ${base} Z`;
+                    wave.setAttribute('d', d);
+                }
+            }
+            if (overlay) {
+                if (percent >= 100) overlay.classList.add('llo-complete');
+                else overlay.classList.remove('llo-complete');
             }
             if (subText && text) subText.textContent = text;
         }
