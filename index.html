@@ -13400,6 +13400,21 @@
         }
 
         /* (Y-centering for character in inventory/care mode is set above.) */
+
+        /* ── Forge: apply stone-frame.png to lobby widget AND modal panel ── */
+        .main-menu .forge-daily-container,
+        .forge-panel {
+            border: 28px solid transparent !important;
+            border-image-source: url('/ChubChampions/assets/stone-frame-ixllCCgw.png') !important;
+            border-image-slice: 17% fill !important;
+            border-image-width: 28px !important;
+            border-image-repeat: stretch !important;
+            background-image: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 14px 18px !important;
+        }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
