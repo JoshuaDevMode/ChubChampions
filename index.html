@@ -12570,10 +12570,11 @@
             border-color: #3a2410 !important;
         }
 
-        /* Star level badge — warmer amber */
+        /* Star level badge — chubby, sticker-cute, bright sunny fill */
         .main-menu .menu-char-lv-circle {
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 39,24 60,24 43,37 49,58 32,46 15,58 21,37 4,24 25,24' fill='%23f4a623' stroke='%234a2c12' stroke-width='3' stroke-linejoin='round'/></svg>") center/contain no-repeat !important;
-            color: #4a2c12 !important;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32 6 Q36 18 47 22 Q60 26 53 34 Q47 41 51 53 Q52 60 44 56 Q37 52 32 58 Q27 52 20 56 Q12 60 13 53 Q17 41 11 34 Q4 26 17 22 Q28 18 32 6 Z' fill='%23ffd663' stroke='%23a35e0c' stroke-width='2.6' stroke-linejoin='round'/><ellipse cx='24' cy='22' rx='5' ry='3' fill='%23fff5c4' opacity='0.85'/></svg>") center/contain no-repeat !important;
+            color: #5e3508 !important;
+            text-shadow: 0 1px 0 rgba(255,245,200,0.85) !important;
         }
 
         /* Session dropdown — match the warm cream palette */
@@ -13299,14 +13300,85 @@
         .main-menu .menu-exp-skills-row { margin-bottom: 2px !important; }
         .main-menu .menu-char-exp-track { height: 14px !important; }
 
-        /* ── Center the character in the space left by the side panel ──
-           Inventory & Care panels are 500px wide on the left; the remaining
-           space (500..1600) is centered at 1050px → +250px from the lobby
-           center (800px). Add !important so this beats the base centering. */
+        /* ── Care + Inventory: light brown limestone frame (no dark bronze) ── */
+        .care-panel,
+        .inventory-panel {
+            background-image:
+                linear-gradient(180deg, rgba(255,253,247,0.05), rgba(120,80,30,0.08)),
+                linear-gradient(180deg, #efe3c7 0%, #ddc99b 70%, #c9b076 100%) !important;
+            border: 4px solid #8b5a2b !important;
+            border-image: none !important;
+            border-radius: 18px !important;
+            box-shadow:
+                inset 0 3px 0 rgba(255,250,225,0.6),
+                inset 0 -4px 6px rgba(120,80,30,0.18),
+                0 8px 22px rgba(0,0,0,0.35) !important;
+            color: #3d2410 !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+            filter: drop-shadow(4px 0 14px rgba(0,0,0,0.35)) !important;
+        }
+
+        /* ── Inventory weapon cards: bigger, friendlier text ── */
+        .inventory-weapon-name {
+            font-family: 'Fredoka', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 0.95em !important;
+            letter-spacing: 0.02em;
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
+        .inventory-weapon-stats {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.85em !important;
+            font-weight: 600 !important;
+        }
+        .inventory-weapon-damage { color: #b91c1c !important; }
+        .inventory-weapon-crit   { color: #c47900 !important; }
+        .inv-equipment-title,
+        .inv-consumable-title {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.95em !important;
+            color: #4a2c12 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.6) !important;
+        }
+        .inv-filter-tab {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.7em !important;
+        }
+
+        /* Locked slots: cuter padlock background, no harsh emoji styling */
+        .inv-equipment-slot.locked,
+        .menu-equipment-slot.locked,
+        .menu-equip-consumable-slot.locked {
+            background: rgba(120,80,30,0.18) !important;
+            border-color: rgba(123,74,16,0.45) !important;
+            color: transparent !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        .inv-equipment-slot.locked svg,
+        .menu-equipment-slot.locked svg,
+        .menu-equip-consumable-slot.locked svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Stats card: drop the dark outer drop-shadow row, keep inset shines */
+        .main-menu .menu-stats-panel {
+            --panel-drop: none !important;
+            filter: none !important;
+        }
+
+        /* ── Y-center the character within the lobby when Care/Inventory is open ── */
         .main-menu.inventory-mode .menu-character-section,
         .main-menu.care-mode .menu-character-section {
-            transform: translate(calc(-50% + 250px), 0) scale(1.15) !important;
+            top: 50% !important;
+            transform: translate(calc(-50% + 250px), -50%) scale(1.15) !important;
         }
+
+        /* (Y-centering for character in inventory/care mode is set above.) */
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
@@ -15979,6 +16051,8 @@
         // Chest tier definitions
         const CHEST_IMG_PATH = 'Assets/UI/Chests/';
         const FRAG_ICON_HTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
+        // Cute drawn padlock — used in slot/card lock states
+        const LOCK_ICON_HTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" style="display:block;margin:auto;"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="#7a4a10" stroke-width="2.2" stroke-linecap="round"/><rect x="4.5" y="11" width="15" height="10" rx="2.6" fill="#fde68a" stroke="#7a4a10" stroke-width="2"/><circle cx="12" cy="15" r="1.5" fill="#7a4a10"/><path d="M12 16.4 L12 18.6" stroke="#7a4a10" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="13.7" r="0.7" fill="#fff5c4" opacity="0.85"/></svg>';
         const VICTORY_CHEST_TIERS = [
             { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 2,        fragments: 0, xpMult: 0,    singleReward: true },
             { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 4,        fragments: 1, xpMult: 0,    singleReward: true },
@@ -32888,10 +32962,10 @@
             // If character has no weapon slots yet, show a locked placeholder instead
             if (!character || getMaxEquippedWeapons(character.level) === 0) {
                 const placeholder = document.createElement('div');
-                placeholder.className = 'inventory-weapon-card locked';
+                placeholder.className = 'inventory-weapon-card locked weapon-locked-placeholder';
                 placeholder.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 24px; opacity: 0.7;';
                 placeholder.innerHTML = `
-                    <div class="inventory-weapon-icon">🔒</div>
+                    <div class="inventory-weapon-icon">${LOCK_ICON_HTML}</div>
                     <div class="inventory-weapon-name" style="font-size:0.9em;">Weapons unlock at Level 5</div>
                 `;
                 grid.appendChild(placeholder);
@@ -32983,7 +33057,7 @@
                 const card = document.createElement('div');
                 card.className = 'inventory-weapon-card locked';
                 card.innerHTML = `
-                    <div class="inventory-weapon-icon">🔒</div>
+                    <div class="inventory-weapon-icon">${LOCK_ICON_HTML}</div>
                     <div class="inventory-weapon-name">???</div>
                     <div class="inventory-weapon-stats">
                         <div class="inventory-weapon-damage">DMG: ???</div>
@@ -33014,7 +33088,7 @@
             const consumablesLocked = character.level < CONSUMABLE_MIN_LEVEL;
             if (consumablesLocked) {
                 equippedContainer.innerHTML = '';
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-family:\'Press Start 2P\',monospace;font-size:0.5em;padding:20px;">🔒 Consumables unlock at<br>Level ' + CONSUMABLE_MIN_LEVEL + '</div>';
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-family:\'Press Start 2P\',monospace;font-size:0.5em;padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;">' + LOCK_ICON_HTML + '<span>Consumables unlock at<br>Level ' + CONSUMABLE_MIN_LEVEL + '</span></div>';
                 return;
             }
 
@@ -34384,8 +34458,8 @@
                 const locked = i >= maxWeapons;
 
                 if (locked) {
-                    slot.className = 'menu-equipment-slot empty';
-                    slot.textContent = '🔒';
+                    slot.className = 'menu-equipment-slot empty locked';
+                    slot.innerHTML = LOCK_ICON_HTML;
                     slot.title = 'Unlocks at Level ' + (5 + i * 10);
                 } else if (weaponId && WEAPONS[weaponId]) {
                     const weapon = WEAPONS[weaponId];
@@ -34419,10 +34493,15 @@
                         slot.title = c.name;
                         slot.addEventListener('click', openInventoryForEquip);
                     } else {
-                        slot.className = 'menu-equip-consumable-slot empty';
-                        slot.textContent = i < maxC ? '+' : '🔒';
-                        slot.title = i < maxC ? 'Add consumable' : 'Unlocks at higher level';
-                        if (i < maxC) slot.addEventListener('click', openInventoryForEquip);
+                        slot.className = 'menu-equip-consumable-slot empty' + (i < maxC ? '' : ' locked');
+                        if (i < maxC) {
+                            slot.textContent = '+';
+                            slot.title = 'Add consumable';
+                            slot.addEventListener('click', openInventoryForEquip);
+                        } else {
+                            slot.innerHTML = LOCK_ICON_HTML;
+                            slot.title = 'Unlocks at higher level';
+                        }
                     }
                     consumableSlots.appendChild(slot);
                 }
@@ -34443,8 +34522,8 @@
                 const locked = i >= maxW;
 
                 if (locked) {
-                    slot.className = 'inv-equipment-slot empty';
-                    slot.textContent = '🔒';
+                    slot.className = 'inv-equipment-slot empty locked';
+                    slot.innerHTML = LOCK_ICON_HTML;
                     slot.title = 'Unlocks at Level ' + (5 + i * 10);
                 } else if (weaponId && WEAPONS[weaponId]) {
                     const weapon = WEAPONS[weaponId];
