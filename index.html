@@ -13371,7 +13371,10 @@
             filter: none !important;
         }
 
-        /* ── Y-center the character within the lobby when Care/Inventory is open ── */
+        /* ── Smooth movement of the character between lobby ↔ care/inventory ── */
+        .main-menu .menu-character-section {
+            transition: top 0.4s ease, transform 0.4s ease !important;
+        }
         .main-menu.inventory-mode .menu-character-section,
         .main-menu.care-mode .menu-character-section {
             top: 50% !important;
