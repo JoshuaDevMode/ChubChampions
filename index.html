@@ -13477,85 +13477,81 @@
             0%, 100% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)) drop-shadow(0 0 12px rgba(255,90,20,0.55)); }
             50%      { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)) drop-shadow(0 0 26px rgba(255,160,40,0.85)); }
         }
+        /* Both buttons: just the brownstone artwork (no mask trickery,
+           no extra gradient body). Aspect ratio matches the PNG so the
+           stone shape stays crisp. */
         .main-menu .menu-btn-battle,
         .main-menu .menu-btn-aon {
             background-color: transparent !important;
-            background-image:
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.28) 100%),
-                linear-gradient(165deg, #ffb060 0%, #e6772a 45%, #a83c0a 100%),
-                url('Assets/UI/btn-brownstone.png') !important;
-            background-size: 100% 100%, 100% 100%, 100% 100% !important;
-            background-position: center, center, center !important;
-            background-repeat: no-repeat, no-repeat, no-repeat !important;
-            background-blend-mode: normal, multiply, normal !important;
-            -webkit-mask-image: url('Assets/UI/btn-brownstone.png') !important;
-                    mask-image: url('Assets/UI/btn-brownstone.png') !important;
-            -webkit-mask-size: 100% 100% !important;
-                    mask-size: 100% 100% !important;
-            -webkit-mask-repeat: no-repeat !important;
-                    mask-repeat: no-repeat !important;
+            background-image: url('Assets/UI/btn-brownstone.png') !important;
+            background-size: 100% 100% !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55));
+            filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5));
             color: #fff !important;
-            text-shadow: 0 2px 0 rgba(80,30,0,0.85), 0 0 12px rgba(255,200,120,0.55) !important;
+            text-shadow: 0 2px 0 rgba(60,20,0,0.9), 0 0 10px rgba(255,180,80,0.55) !important;
+            width: 220px !important;
+            height: 105px !important;
+            min-height: 0 !important;
+            padding: 0 22px !important;
+            line-height: 1.05 !important;
             isolation: isolate;
+            position: relative;
+            overflow: visible !important;
         }
-        /* AoN — molten lava flow + warm pulsing glow */
-        .main-menu .menu-btn-aon {
-            background-image:
-                linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.3) 100%),
-                linear-gradient(110deg,
-                    #4a0a00 0%, #b22a00 18%, #ff5a10 32%, #ffb53a 45%,
-                    #fff0a0 50%, #ffb53a 55%, #ff5a10 68%, #b22a00 82%, #4a0a00 100%),
-                url('Assets/UI/btn-brownstone.png') !important;
-            background-size: 100% 100%, 320% 100%, 100% 100% !important;
-            background-blend-mode: normal, multiply, normal !important;
-            animation: lavaFlow 4s ease-in-out infinite, lavaPulse 2.4s ease-in-out infinite !important;
-            text-shadow: 0 2px 0 rgba(60,15,0,0.9), 0 0 14px rgba(255,180,60,0.85), 0 0 28px rgba(255,90,20,0.55) !important;
+        /* Kill the old icon + sheen glyphs from prior crystal-glass design */
+        .main-menu .menu-btn-battle::before,
+        .main-menu .menu-btn-aon::before {
+            display: none !important;
+            content: none !important;
         }
-        /* Sheen pseudo: keep the light streak, but mask it to the drawn shape */
-        .main-menu .menu-btn-battle::after,
+        .main-menu .menu-btn-battle::after { display: none !important; content: none !important; }
+        /* AoN — molten lava overlay clipped to the stone shape */
+        .main-menu .menu-btn-aon { font-size: 1.05em !important; animation: lavaPulse 2.4s ease-in-out infinite; }
         .main-menu .menu-btn-aon::after {
+            content: "" !important;
+            display: block !important;
+            position: absolute !important;
+            inset: 0 !important;
+            background-image: linear-gradient(110deg,
+                rgba(74,10,0,0.85) 0%, rgba(178,42,0,0.65) 18%, rgba(255,90,16,0.5) 32%,
+                rgba(255,181,58,0.45) 45%, rgba(255,240,160,0.4) 50%,
+                rgba(255,181,58,0.45) 55%, rgba(255,90,16,0.5) 68%,
+                rgba(178,42,0,0.65) 82%, rgba(74,10,0,0.85) 100%) !important;
+            background-size: 320% 100% !important;
+            background-repeat: no-repeat !important;
             -webkit-mask-image: url('Assets/UI/btn-brownstone.png') !important;
                     mask-image: url('Assets/UI/btn-brownstone.png') !important;
             -webkit-mask-size: 100% 100% !important;
                     mask-size: 100% 100% !important;
-            -webkit-mask-position: center !important;
-                    mask-position: center !important;
             -webkit-mask-repeat: no-repeat !important;
                     mask-repeat: no-repeat !important;
+            mix-blend-mode: overlay !important;
+            animation: lavaFlow 4s ease-in-out infinite !important;
+            pointer-events: none !important;
+            transform: none !important;
+            filter: none !important;
+            opacity: 1 !important;
+            z-index: 1 !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            width: auto !important;
+            height: auto !important;
         }
-        /* Battle disabled / fatigue: desaturate the artwork instead of replacing it */
+        .main-menu .menu-btn-battle > *,
+        .main-menu .menu-btn-aon > * { position: relative; z-index: 2; }
+        /* Battle disabled / fatigue: desaturate the artwork */
         .main-menu .menu-btn-battle:disabled,
         .main-menu .menu-btn-battle.fatigued {
-            background-image:
-                linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.35) 100%),
-                linear-gradient(165deg, #b8b8b8 0%, #7d7d7d 50%, #404040 100%),
-                url('Assets/UI/btn-brownstone.png') !important;
-            background-blend-mode: normal, multiply, normal !important;
-            color: #d8d8d8 !important;
+            filter: grayscale(1) brightness(0.78) drop-shadow(0 4px 6px rgba(0,0,0,0.5)) !important;
+            color: #d4d4d4 !important;
             text-shadow: 0 2px 0 rgba(0,0,0,0.55) !important;
-            filter: grayscale(1) drop-shadow(0 4px 8px rgba(0,0,0,0.5)) !important;
             cursor: not-allowed;
         }
-        .main-menu .menu-btn-battle:disabled::after,
-        .main-menu .menu-btn-battle.fatigued::after {
-            animation: none !important;
-            opacity: 0 !important;
-        }
-        /* Match the brownstone PNG's natural 810x386 aspect so the mask
-           doesn't squash the artwork (which read as a zoom-in effect) */
-        .main-menu .menu-btn-battle,
-        .main-menu .menu-btn-aon {
-            width: 280px !important;
-            height: 134px !important;
-            min-height: 0 !important;
-            padding: 0 24px !important;
-            line-height: 1.05 !important;
-        }
-        .main-menu .menu-btn-aon { font-size: 1.25em !important; }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
