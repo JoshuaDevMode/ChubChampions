@@ -22219,12 +22219,15 @@
                 // Dodge frames are 1024px canvas — clear armed-idle size so they render at 200px
                 defImg.style.width  = '';
                 defImg.style.height = '';
+                // Hide weapon idle overlay: the pose frame has a cutout where the
+                // character's hand grips it, which becomes a visible hole when the
+                // body swaps to a dodge frame. We render the raw weapon image instead.
+                hideWeaponIdleOverlay(defender);
                 hideOffHandOverlay(defender);
                 const _jdEquipped = jumpDodge ? weaponState[defender]?.equippedWeapon : null;
                 const _jdWRunF    = _jdEquipped ? _weaponRunFramesCache[_jdEquipped] : null;
                 if (jumpDodge && _jdEquipped && defImg._weaponRunFrames?.length > 0 && _jdWRunF?.length > 0) {
-                    // Jump dodge with weapon: weapon-run-overlay takes over the idle one.
-                    hideWeaponIdleOverlay(defender);
+                    // Jump dodge with weapon: show weapon-run frame (char + weapon, same index)
                     const _jdIdx = Math.min(2, defImg._weaponRunFrames.length - 1);
                     defImg.src = defImg._weaponRunFrames[_jdIdx];
                     const _jdWOv = document.createElement('img');
@@ -22233,13 +22236,26 @@
                     _jdWOv.src = _jdWRunF[Math.min(_jdIdx, _jdWRunF.length - 1)];
                     defenderEl.querySelector('.fighter-body').appendChild(_jdWOv);
                 } else if (defImg._dodgeFrames?.length > 0) {
-                    // Normal dodge: keep the regular weapon-idle-overlay visible at its
-                    // current size/position so the weapon stays as it appeared right
-                    // before the dodge — no special pose, no offset.
                     defImg.src = defImg._dodgeFrames[0];
                 }
                 if (!jumpDodge) {
                     fighterBody.classList.add('dodging');
+                    // Normal dodge with weapon: render the RAW weapon image (e.g.
+                    // Sword.png) at the same size/position as the idle overlay, so
+                    // there's no hand-cutout hole from the pose frame.
+                    const _dodgeWepId   = weaponState[defender]?.equippedWeapon;
+                    const _dodgeWepData = _dodgeWepId && WEAPONS[_dodgeWepId];
+                    if (_dodgeWepData?.img) {
+                        const _dodgeWOv = document.createElement('img');
+                        _dodgeWOv.className = 'dodge-weapon-overlay';
+                        const _dwSize = defImg._armedIdleW || '275px';
+                        const _facingFlipped = defenderEl.classList.contains('facing-flipped');
+                        const _isCpuDef = defenderEl.id === 'cpu';
+                        const _needsFlip = (_isCpuDef && !_facingFlipped) || (!_isCpuDef && _facingFlipped);
+                        _dodgeWOv.style.cssText = `position:absolute;top:50%;left:50%;width:${_dwSize};height:${_dwSize};object-fit:contain;pointer-events:none;z-index:1;transform:translate(-50%,-50%)${_needsFlip ? ' scaleX(-1)' : ''};`;
+                        _dodgeWOv.src = _dodgeWepData.img;
+                        fighterBody.appendChild(_dodgeWOv);
+                    }
                     // Slide defender back simultaneously with dodge frames (130px scaled to arena)
                     const _dArenaW   = document.getElementById('arena').offsetWidth;
                     const _dScale    = _dArenaW / 1600;
