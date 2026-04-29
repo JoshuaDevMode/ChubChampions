@@ -13563,12 +13563,33 @@
             background-position: center !important;
             background-repeat: no-repeat !important;
             border: none !important;
+            border-color: transparent !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+                    appearance: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
             filter: grayscale(1) brightness(0.78) drop-shadow(0 4px 6px rgba(0,0,0,0.5)) !important;
             color: #d4d4d4 !important;
             text-shadow: 0 2px 0 rgba(0,0,0,0.55) !important;
             cursor: not-allowed;
+            opacity: 1 !important;
+        }
+
+        /* Win Rate side widget: widen the iron-frame box so the ring + games
+           text fit cleanly inside the bordered area instead of overlapping it. */
+        .main-menu #winrate-side-ext.stats-side-ext,
+        .main-menu .stats-side-ext.stats-side-right {
+            width: 92px !important;
+            padding: 8px 6px !important;
+            border-width: 12px !important;
+            border-image-width: 12px !important;
+        }
+        .main-menu #winrate-side-ext svg {
+            width: 56px !important;
+            height: 56px !important;
         }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
