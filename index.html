@@ -21989,11 +21989,13 @@
             stopIdleBlink(defenderEl);
             attackerEl.classList.add('dashing');
             // Override .dashing !important transition globally for all movement branches in this attack.
-            // Reach weapons (spear/gun) approach with a pronounced skid — fast start, slow finish — so the
+            // Long-reach weapons (spear/gun) approach with a pronounced skid — fast start, slow finish — so the
             // character looks like they're decelerating into the strike rather than stopping on a dime.
-            const _isReachWepAnim = !!getWeaponById(attackType)?.reachAttack;
+            // Knife is reachAttack:true but thematically a close-range stab, so it keeps the normal approach.
+            const _wepDef           = getWeaponById(attackType);
+            const _isLongReachAnim  = !!_wepDef?.longReach;
             const _movMs   = Math.round(300 * atkMult);
-            const _movEase = _isReachWepAnim ? 'cubic-bezier(0.05, 0.7, 0.18, 1)' : 'ease-out';
+            const _movEase = _isLongReachAnim ? 'cubic-bezier(0.05, 0.7, 0.18, 1)' : 'ease-out';
             attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
             void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
@@ -22008,10 +22010,10 @@
             // Attack position: overlap attacker into defender's div.
             // Heavy weapons have a larger overlay that extends beyond the sprite, so they
             // stop further back — _ATCK_GAP = 180 (≈40px overlap) vs 100 (≈120px overlap).
-            // Reach weapons (spear/gun) keep even more distance: they hit at range, so the
-            // attacker shouldn't crowd the defender visually.
-            const _isHeavyWepAnim = !!getWeaponById(attackType)?.heavyAttack;
-            const _ATCK_GAP = _isReachWepAnim ? 230 : (_isHeavyWepAnim ? 180 : (isWeaponAnim ? 150 : 100));
+            // Long-reach weapons (spear/gun) keep even more distance: they hit at range, so the
+            // attacker shouldn't crowd the defender visually. Knife stabs close like other weapons.
+            const _isHeavyWepAnim = !!_wepDef?.heavyAttack;
+            const _ATCK_GAP = _isLongReachAnim ? 230 : (_isHeavyWepAnim ? 180 : (isWeaponAnim ? 150 : 100));
             // After a crossover player._homeX > cpu._homeX, so the approach side flips.
             // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
             const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
