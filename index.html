@@ -95,23 +95,29 @@
         }
 
         .player-info:first-child {
-            background: linear-gradient(180deg, #fecaca 0%, #ef4444 50%, #991b1b 100%);
-            border: 2px solid #4a0a0a;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%),
+                linear-gradient(180deg, rgba(220,38,38,0.55) 0%, rgba(127,29,29,0.65) 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1.5px solid rgba(120,20,20,0.85);
             box-shadow:
-                inset 0 2px 0 rgba(255,255,255,0.45),
-                inset 0 -2px 0 rgba(80,0,0,0.35),
-                0 3px 0 #4a0a0a,
-                0 6px 14px rgba(0,0,0,0.45);
+                inset 0 1px 0 rgba(255,255,255,0.18),
+                inset 0 0 0 1px rgba(255,255,255,0.05),
+                0 2px 6px rgba(0,0,0,0.35);
         }
 
         .player-info:last-child {
-            background: linear-gradient(180deg, #bfdbfe 0%, #3b82f6 50%, #1e3a8a 100%);
-            border: 2px solid #0a1f4a;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%),
+                linear-gradient(180deg, rgba(37,99,235,0.55) 0%, rgba(30,58,138,0.65) 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1.5px solid rgba(20,40,120,0.85);
             box-shadow:
-                inset 0 2px 0 rgba(255,255,255,0.45),
-                inset 0 -2px 0 rgba(0,0,80,0.35),
-                0 3px 0 #0a1f4a,
-                0 6px 14px rgba(0,0,0,0.45);
+                inset 0 1px 0 rgba(255,255,255,0.18),
+                inset 0 0 0 1px rgba(255,255,255,0.05),
+                0 2px 6px rgba(0,0,0,0.35);
         }
 
         #player-hud-info .player-name { color: #fff5d0; text-shadow: 0 2px 0 #4a0a0a, 0 0 8px rgba(255,180,120,0.4); }
@@ -1175,12 +1181,12 @@
         /* Weapon Inventory Bar - just below HUD, clear of right-side buttons */
         .weapon-bar {
             position: absolute;
-            top: 78px;
+            top: 105px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 0 12px;
+            padding: 0 18px;
             z-index: 9;
             pointer-events: none;
         }
@@ -1190,7 +1196,7 @@
             display: flex;
             gap: 8px;
             background: none;
-            padding: 6px 10px;
+            padding: 0;
             border-radius: 8px;
             border: none;
         }
@@ -1230,12 +1236,12 @@
         /* Consumable slots — second row, same edges as weapons */
         .consumable-bar {
             position: absolute;
-            top: 130px;
+            top: 158px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 0 12px;
+            padding: 0 18px;
             z-index: 9;
             pointer-events: none;
         }
@@ -1243,8 +1249,8 @@
 
         .consumable-slots {
             display: flex;
-            gap: 5px;
-            padding: 0 4px;
+            gap: 8px;
+            padding: 0;
         }
 
         .consumable-slot {
@@ -22308,16 +22314,16 @@
                     if (_dodgeWepData?.img) {
                         const _dodgeWOv = document.createElement('img');
                         _dodgeWOv.className = 'dodge-weapon-overlay';
-                        // Match the idle-weapon-overlay native size (200px), and nudge
-                        // the weapon slightly forward (toward the attacker) and up
-                        // so it sits where the idle weapon would render instead of
-                        // dwarfing the dodge-frame body.
-                        const _dwSize = 200;
+                        // The raw weapon PNG fills its bounding box, while the idle
+                        // pose frame renders the weapon at ~35% of its 1024-canvas.
+                        // Scale to that target so the weapon looks the same size as
+                        // it does during idle — not as tall as the whole fighter.
+                        const _dwSize = 95;
                         const _facingFlipped = defenderEl.classList.contains('facing-flipped');
                         const _isCpuDef = defenderEl.id === 'cpu';
                         const _needsFlip = (_isCpuDef && !_facingFlipped) || (!_isCpuDef && _facingFlipped);
-                        const _forwardX  = _isCpuDef ? -22 : 22;
-                        const _upY       = -22;
+                        const _forwardX  = _isCpuDef ? -34 : 34;
+                        const _upY       = -10;
                         _dodgeWOv.style.cssText = `position:absolute;top:50%;left:50%;width:${_dwSize}px;height:${_dwSize}px;object-fit:contain;pointer-events:none;z-index:1;transform:translate(calc(-50% + ${_forwardX}px), calc(-50% + ${_upY}px))${_needsFlip ? ' scaleX(-1)' : ''};`;
                         _dodgeWOv.src = _dodgeWepData.img;
                         fighterBody.appendChild(_dodgeWOv);
