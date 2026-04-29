@@ -13442,7 +13442,7 @@
         .forge-panel {
             border: 52px solid transparent !important;
             border-image-source: url('Assets/UI/stone-frame.png') !important;
-            border-image-slice: 17% fill !important;
+            border-image-slice: 18% fill !important;
             border-image-width: 52px !important;
             border-image-repeat: round !important;
             background: none !important;
@@ -13450,23 +13450,51 @@
             background-color: transparent !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            padding: 12px 14px !important;
             filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+            box-sizing: border-box !important;
+        }
+        /* Lobby forge: center the icon+bar inside the cream interior */
+        .main-menu .forge-daily-container {
+            padding: 10px 12px !important;
             display: flex !important;
             flex-direction: column !important;
-            align-items: center !important;
+            align-items: stretch !important;
             justify-content: center !important;
-            box-sizing: border-box !important;
         }
         .main-menu .forge-daily-container .fragment-chest-widget {
             width: 100% !important;
             padding: 0 !important;
+            display: flex !important;
             justify-content: center !important;
+            align-items: center !important;
+            gap: 10px !important;
         }
+        .main-menu .forge-daily-container .fragment-chest-info {
+            flex: 0 1 auto !important;
+            min-width: 0 !important;
+        }
+        /* Forge modal: keep its block-flow layout so the header
+           (title + X) lays out across the full panel width */
         .forge-panel {
             max-width: 640px !important;
             width: 92% !important;
+            padding: 18px 22px !important;
+            display: block !important;
         }
+        .forge-panel .forge-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin-bottom: 14px !important;
+        }
+        .forge-panel .forge-close {
+            font-size: 1.6em !important;
+            line-height: 1 !important;
+            padding: 0 4px !important;
+            color: #4a2c12 !important;
+        }
+        .forge-panel .forge-close:hover { color: #2b1a0e !important; }
         .forge-panel .forge-title { font-size: 1.6em !important; }
         .forge-panel .forge-desc { font-size: 1em !important; }
         .forge-panel .forge-stat-value { font-size: 1.15em !important; }
@@ -13578,18 +13606,25 @@
             opacity: 1 !important;
         }
 
-        /* Win Rate side widget: widen the iron-frame box so the ring + games
-           text fit cleanly inside the bordered area instead of overlapping it. */
+        /* Win Rate side widget: fill the .stats-top-right column entirely
+           and center the ring + games text inside the iron frame. */
+        .main-menu .stats-top-right {
+            padding: 0 !important;
+            align-items: stretch !important;
+        }
         .main-menu #winrate-side-ext.stats-side-ext,
         .main-menu .stats-side-ext.stats-side-right {
-            width: 92px !important;
-            padding: 8px 6px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 8px 8px !important;
             border-width: 12px !important;
             border-image-width: 12px !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         .main-menu #winrate-side-ext svg {
-            width: 56px !important;
-            height: 56px !important;
+            width: 64px !important;
+            height: 64px !important;
         }
 
         /* Pull left column (Forge / Equipment / Consumables) up so the
@@ -13598,6 +13633,81 @@
            ring that visually pushes the content downward. */
         .main-menu .menu-buttons-left {
             top: 36px !important;
+        }
+
+        /* ── RANKING (leaderboard) — darken text on the cream panel ── */
+        .leaderboard-container .leaderboard-title {
+            color: #2b1a0e !important;
+            font-weight: 900 !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.6), 0 0 14px rgba(255,200,80,0.35) !important;
+        }
+        .leaderboard-container .leaderboard-close {
+            color: #4a2c12 !important;
+        }
+        .leaderboard-container .leaderboard-close:hover { color: #2b1a0e !important; }
+        .leaderboard-container .leaderboard-header {
+            border-bottom-color: rgba(74,44,18,0.35) !important;
+        }
+        .leaderboard-container .lb-my-rank-name,
+        .leaderboard-container .lb-row-name {
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,230,0.45) !important;
+        }
+        .leaderboard-container .lb-row-rank,
+        .leaderboard-container .lb-row-pts,
+        .leaderboard-container .lb-empty,
+        .leaderboard-container .lb-loading {
+            color: #5a3a18 !important;
+        }
+        .leaderboard-container .lb-row-rank.top3 {
+            color: #b8741a !important;
+            text-shadow: 0 1px 0 rgba(255,250,220,0.5) !important;
+        }
+        .leaderboard-container .lb-row:hover { background: rgba(74,44,18,0.10) !important; }
+        .leaderboard-container .lb-row.lb-row-me { background: rgba(180,90,20,0.18) !important; }
+
+        /* ── SKILL TREE — light-wood face + readable dark text ── */
+        .skills-panel {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.10) 100%),
+                linear-gradient(180deg, #f0d8a6 0%, #e3c388 60%, #c9a05c 100%) !important;
+        }
+        .skills-panel .skills-title,
+        .skills-panel .sk-tab,
+        .skills-panel .sk-tab-active,
+        .skills-panel .snd-name,
+        .skills-panel .snd-branch-title,
+        .skills-panel .snd-tier-label,
+        .skills-panel .skills-points-text,
+        .skills-panel .skills-respec-btn,
+        .skills-panel .snd-cost,
+        .skills-panel .snd-desc,
+        .skills-panel .snd-fx,
+        .skills-panel .snd-rank,
+        .skills-panel .snd-maxed,
+        .skills-panel .skills-close {
+            color: #3a1f08 !important;
+            text-shadow: 0 1px 0 rgba(255,245,210,0.55) !important;
+        }
+        .skills-panel .skills-title { font-weight: 900 !important; color: #2b1a0e !important; }
+        .skills-panel .skills-close { color: #4a2c12 !important; }
+        .skills-panel .skills-close:hover { color: #2b1a0e !important; }
+        .skills-panel .snd-desc { color: #4a2c12 !important; opacity: 0.92; }
+        .skills-panel .snd-cost { color: #5a3a18 !important; }
+        .skills-panel .snd-lock { color: #8a1a05 !important; background: rgba(180,40,20,0.10) !important; }
+        .skills-panel .snd-conflict { color: #8a4a05 !important; background: rgba(180,90,0,0.10) !important; }
+        .skills-panel .snd-maxed { color: #b8741a !important; }
+        .skills-panel .skills-header { border-bottom-color: rgba(74,44,18,0.45) !important; }
+
+        /* ── Chubby lock icon (replaces 🔒 emoji where wrapped) ── */
+        .lock-icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            margin-right: 0.25em;
+            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 10 V8 a5 5 0 0 1 10 0 V10' fill='none' stroke='%23241208' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/><rect x='3.6' y='9.6' width='16.8' height='12.4' rx='3.4' fill='%23f5b048' stroke='%23241208' stroke-width='2.2' stroke-linejoin='round'/><circle cx='12' cy='15.4' r='1.9' fill='%23241208'/><rect x='11.1' y='15' width='1.8' height='4' rx='0.8' fill='%23241208'/></svg>") center/contain no-repeat;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45));
         }
     </style>
     <!-- ethers.js v6 — used for Monad wardrobe NFTs and on-chain AoN -->
@@ -15977,7 +16087,7 @@
                 p1Btn.style.cursor  = '';
                 p1Btn.title = '';
             } else {
-                p1Btn.innerHTML = `🔒 ${powers.p1.name}<span class="fpb-desc">Unlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}</span>`;
+                p1Btn.innerHTML = `<span class="lock-icon"></span>${powers.p1.name}<span class="fpb-desc">Unlocks at Lvl ${FURY_P1_UNLOCK_LEVEL}</span>`;
                 p1Btn.style.opacity = '0.45';
                 p1Btn.style.cursor  = 'not-allowed';
                 p1Btn.title = `Unlocks at level ${FURY_P1_UNLOCK_LEVEL}`;
@@ -15990,7 +16100,7 @@
                 p2Btn.style.cursor  = '';
                 p2Btn.title = '';
             } else {
-                p2Btn.innerHTML = `🔒 ${powers.p2.name}<span class="fpb-desc">Unlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}</span>`;
+                p2Btn.innerHTML = `<span class="lock-icon"></span>${powers.p2.name}<span class="fpb-desc">Unlocks at Lvl ${FURY_P2_UNLOCK_LEVEL}</span>`;
                 p2Btn.style.opacity = '0.45';
                 p2Btn.style.cursor  = 'not-allowed';
                 p2Btn.title = `Unlocks at level ${FURY_P2_UNLOCK_LEVEL}`;
@@ -16953,7 +17063,7 @@
                     } else {
                         const totalMs = CHEST_UNLOCK_TIMES[chest.tier];
                         const totalH = Math.round(totalMs / (60 * 60 * 1000));
-                        timerHtml = '<span class="chest-timer chest-timer-locked">🔒 ' + totalH + 'h</span>';
+                        timerHtml = '<span class="chest-timer chest-timer-locked"><span class="lock-icon"></span>' + totalH + 'h</span>';
                     }
                     html += '<div class="victory-chest-slot filled tier-' + tier.id + ' ' + stateClass + '" data-slot="' + i + '"><img src="' + tier.img + '" class="chest-slot-img" alt="' + tier.name + '">' + timerHtml + '</div>';
                 } else {
@@ -33808,7 +33918,7 @@
                               : '')
                         : '') +
                 '</div>' +
-                (isLocked ? '<div class="snd-lock">🔒 ' + lockReason + '</div>' : '');
+                (isLocked ? '<div class="snd-lock"><span class="lock-icon"></span>' + lockReason + '</div>' : '');
 
             if (isMaxed) {
                 html += '<div class="snd-maxed">★ MAXED OUT ★</div>';
