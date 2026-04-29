@@ -35,12 +35,12 @@
             justify-content: space-between;
             margin-bottom: 0;
             position: absolute;
-            top: 12px;
+            top: 8px;
             left: 0;
             right: 0;
             z-index: 10;
             background: none;
-            padding: 8px 15px 10px 15px;
+            padding: 4px 12px 6px 12px;
             gap: 0;
         }
 
@@ -50,11 +50,11 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 3px;
-            margin-top: 4px;
+            margin-top: 2px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.75em;
-            color: #fff;
-            text-shadow: 1px 1px 0 #000;
+            font-size: 0.7em;
+            color: #2b1a0e;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.5);
         }
 
         .player-stats-combat span {
@@ -63,8 +63,8 @@
 
         .player-info {
             flex: 1;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 4px 10px 5px 10px;
+            border-radius: 10px;
             position: relative;
             overflow: hidden;
         }
@@ -95,40 +95,52 @@
         }
 
         .player-info:first-child {
-            background: rgba(15, 40, 85, 0.7);
-            border: 1px solid rgba(40, 80, 160, 0.25);
+            background: linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%);
+            border: 2px solid #4a2c12;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.18),
+                0 3px 0 #2b1a0e,
+                0 6px 14px rgba(0,0,0,0.45);
         }
 
         .player-info:last-child {
-            background: rgba(85, 15, 15, 0.7);
-            border: 1px solid rgba(160, 40, 40, 0.25);
+            background: linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%);
+            border: 2px solid #4a2c12;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.18),
+                0 3px 0 #2b1a0e,
+                0 6px 14px rgba(0,0,0,0.45);
         }
+
+        #player-hud-info .player-name { color: #1e3a8a; }
+        #cpu-hud-info    .player-name { color: #991b1b; }
 
         .player-name {
             font-family: 'DynaPuff', sans-serif;
-            font-size: 1.05em;
-            margin-bottom: 4px;
-            color: #4ecdc4;
-            text-shadow: 2px 2px 0 #000;
-            letter-spacing: 2px;
+            font-size: 0.85em;
+            margin-bottom: 2px;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55);
+            letter-spacing: 1.5px;
         }
 
         .player-level {
-            font-size: 0.85em;
-            color: #ffd700;
-            margin-left: 8px;
+            font-size: 0.72em;
+            color: #b8741a;
+            margin-left: 6px;
         }
 
         .health-bar-container {
             position: relative;
             width: 100%;
-            height: 22px;
-            background: #333;
-            border: 3px solid #000;
-            border-radius: 5px;
+            height: 14px;
+            background: #2b1a0e;
+            border: 2px solid #2b1a0e;
+            border-radius: 999px;
             overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.5);
+            margin-bottom: 4px;
         }
 
         .health-bar {
@@ -156,6 +168,7 @@
             text-align: center;
             font-family: 'Sour Gummy', sans-serif;
             font-weight: bold;
+            font-size: 0.75em;
             color: #fff;
             text-shadow: 1px 1px 2px #000;
             z-index: 1;
@@ -163,30 +176,30 @@
 
         .fury-bar-container {
             width: 100%;
-            height: 15px;
-            background: #222;
-            border: 2px solid #000;
-            border-radius: 3px;
+            height: 9px;
+            background: #2b1a0e;
+            border: 1.5px solid #2b1a0e;
+            border-radius: 999px;
             overflow: hidden;
             position: relative;
         }
 
         .fury-bar {
             height: 100%;
-            background: linear-gradient(to right, #ffaa00, #ffdd00, #ffff00);
+            background: linear-gradient(to right, #d97706, #f59e0b, #fde047);
             transition: width 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
         }
 
         /* Stamina bar */
         .stamina-bar-container {
             width: 100%;
-            height: 11px;
-            background: #1a1a1a;
-            border: 1px solid #000;
-            border-radius: 3px;
+            height: 7px;
+            background: #2b1a0e;
+            border: 1px solid #2b1a0e;
+            border-radius: 999px;
             overflow: hidden;
-            margin-top: 3px;
+            margin-top: 2px;
             position: relative;
         }
         .stamina-bar {
@@ -195,14 +208,15 @@
             transition: width 0.25s ease;
         }
         .stamina-bar.exhausted {
-            background: #4b4b4b;
+            background: #6b4820;
         }
         .stamina-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 11px;
-            color: #d4a017;
-            margin-top: 2px;
+            font-size: 9px;
+            color: #6b4820;
+            margin-top: 1px;
             text-align: left;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.45);
         }
         #cpu-hud-info .stamina-text { text-align: right; }
 
@@ -21270,6 +21284,7 @@
 
         async function animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs, _startIdx = 0) {
             const _myGen = _replayAbortGen; // captured at entry — any scrub increments this
+            _replayCompleted = false; // set true only on natural end (not on abort)
 
             // First-time setup (skip on scrub resume to avoid resetting mid-replay state)
             if (_startIdx === 0) {
@@ -21630,6 +21645,7 @@
                         if (battleState.precomputedStats) { battleState.matchStats.player = battleState.precomputedStats.player; battleState.matchStats.cpu = battleState.precomputedStats.cpu; battleState.precomputedStats = null; }
                         const loser = event.winner === 'player' ? 'cpu' : 'player';
                         showGameOver(event.winner, loser, true);
+                        _replayCompleted = true;
                         return;
                     }
 
@@ -21637,6 +21653,7 @@
                         break;
                 }
             }
+            _replayCompleted = true;
         }
 
         function triggerArenaShake() {
@@ -28098,6 +28115,7 @@
         let _replayAbortGen = 0;  // incremented to abort the current animateBattleFromLog loop
         let _replayIsWatch  = false; // true only inside watchReplay — enables scrub bar
         let _replayScrub    = null;  // { events, finalPlayerHp, finalCpuHp, matchDurationMs, replay }
+        let _replayCompleted = true; // true once a playback runs out without being aborted
 
         // Applies a single event's state changes instantly, with no animation.
         // Used to fast-forward to a scrub position.
@@ -28203,9 +28221,23 @@
             _staminaRenderBars();
             _updateReplayScrubBar(clampedIdx, events.length);
 
+            // Rewind / fast-forward the match timer to match the scrub position.
+            // We can't recover the exact event timestamps here, so distribute the
+            // server's matchDurationMs evenly across events.
+            if (matchDurationMs && matchDurationMs > 0) {
+                const _frac = events.length > 0 ? (clampedIdx / events.length) : 0;
+                const _remainingMs = Math.max(1000, matchDurationMs - matchDurationMs * _frac);
+                const _secs = Math.max(1, Math.ceil(_remainingMs / 1000));
+                stopMatchTimer();
+                startMatchTimer(_secs);
+            }
+
             // Resume playback from scrub point if not at the end
+            _replayCompleted = false;
             if (clampedIdx < events.length) {
                 await animateBattleFromLog(events, finalPlayerHp, finalCpuHp, matchDurationMs, clampedIdx);
+            } else {
+                _replayCompleted = true;
             }
         }
 
@@ -28331,6 +28363,13 @@
             _updateReplayScrubBar(0, replay.events.length);
 
             await animateBattleFromLog(replay.events, replay.finalPlayerHp, replay.finalCpuHp, replay.matchDurationMs);
+            // The await above resolves immediately on a scrub abort while a fresh
+            // animateBattleFromLog is started inside _scrubReplayTo. Wait until a
+            // playback actually runs to its natural end before tearing down the
+            // scrubber so the user can keep rewinding.
+            while (!_replayCompleted) {
+                await new Promise(r => setTimeout(r, 80));
+            }
 
             // Teardown scrubber
             _replayIsWatch = false;
