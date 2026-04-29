@@ -13440,11 +13440,11 @@
         }
         .main-menu .forge-daily-container,
         .forge-panel {
-            border: 52px solid transparent !important;
+            border: 56px solid transparent !important;
             border-image-source: url('Assets/UI/stone-frame.png') !important;
-            border-image-slice: 18% fill !important;
-            border-image-width: 52px !important;
-            border-image-repeat: round !important;
+            border-image-slice: 22% fill !important;
+            border-image-width: 56px !important;
+            border-image-repeat: stretch !important;
             background: none !important;
             background-image: none !important;
             background-color: transparent !important;
@@ -13464,14 +13464,25 @@
         .main-menu .forge-daily-container .fragment-chest-widget {
             width: 100% !important;
             padding: 0 !important;
-            display: flex !important;
+            display: grid !important;
+            grid-template-columns: 64px 1fr !important;
             justify-content: center !important;
             align-items: center !important;
             gap: 10px !important;
+            margin: 0 auto !important;
+            max-width: 240px !important;
+        }
+        .main-menu .forge-daily-container .fragment-chest-icon-big {
+            width: 64px !important;
+            height: 64px !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            margin: 0 !important;
+            display: block !important;
         }
         .main-menu .forge-daily-container .fragment-chest-info {
-            flex: 0 1 auto !important;
             min-width: 0 !important;
+            text-align: left !important;
         }
         /* Forge modal: keep its block-flow layout so the header
            (title + X) lays out across the full panel width */
@@ -13698,6 +13709,81 @@
         .skills-panel .snd-conflict { color: #8a4a05 !important; background: rgba(180,90,0,0.10) !important; }
         .skills-panel .snd-maxed { color: #b8741a !important; }
         .skills-panel .skills-header { border-bottom-color: rgba(74,44,18,0.45) !important; }
+
+        /* ── CARE panel — darken labels/titles on the cream face ── */
+        .care-panel .care-title,
+        .care-panel .care-section-label,
+        .care-panel .care-section-subtitle,
+        .care-panel .care-stat-status,
+        .care-panel .care-tab,
+        .care-panel #care-drag-hint {
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.5) !important;
+        }
+        .care-panel .care-title { font-weight: 900 !important; }
+        .care-panel .care-section-subtitle { color: #5a3a18 !important; }
+        .care-panel .care-tab { background: rgba(74,44,18,0.10) !important; border-color: rgba(74,44,18,0.35) !important; }
+        .care-panel .care-tab.active { background: rgba(180,90,20,0.22) !important; border-color: #4a2c12 !important; color: #2b1a0e !important; }
+        .care-panel .care-tab:hover:not(.active) { color: #4a2c12 !important; border-color: rgba(74,44,18,0.55) !important; }
+        .care-panel .care-divider { background: rgba(74,44,18,0.25) !important; }
+        .care-panel .care-close { color: #4a2c12 !important; }
+        .care-panel .care-close:hover { color: #2b1a0e !important; }
+        .care-panel .care-stat-col {
+            background: rgba(74,44,18,0.10) !important;
+            border-color: rgba(74,44,18,0.30) !important;
+        }
+        .care-panel .care-stat-col.care-stat-clickable.active {
+            border-color: #b8741a !important;
+            box-shadow: 0 0 12px rgba(180,116,26,0.25), inset 0 0 8px rgba(180,116,26,0.10) !important;
+        }
+        .care-panel .care-header { border-bottom-color: rgba(74,44,18,0.35) !important; }
+
+        /* ── SKILL TREE — readable cards on the wood panel ── */
+        .skills-panel .skills-branch-content,
+        .skills-panel .skill-tree-side {
+            color: #f5e6c8;
+        }
+        .skills-panel .skill-node {
+            background: rgba(43,26,14,0.85) !important;
+            border-color: rgba(245,230,200,0.25) !important;
+            box-shadow: 0 2px 0 rgba(43,26,14,0.45) !important;
+        }
+        .skills-panel .skill-node:hover { border-color: rgba(245,230,200,0.55) !important; }
+        .skills-panel .skill-node.maxed {
+            border-color: rgba(255,215,0,0.7) !important;
+            background: rgba(120,80,20,0.85) !important;
+            box-shadow: 0 0 10px rgba(255,215,0,0.35) !important;
+        }
+        .skills-panel .skill-node-name { color: #fff5c4 !important; text-shadow: 0 1px 0 rgba(0,0,0,0.55) !important; }
+        .skills-panel .skill-node-rank { color: #d8b878 !important; }
+        .skills-panel .skill-node-desc { color: #e6d6b0 !important; }
+        .skills-panel .skill-node-value { color: #fff5c4 !important; }
+        .skills-panel .skill-node-value span.current-val { color: #7fc !important; }
+        .skills-panel .skill-node-value span.next-val { color: #ffd700 !important; }
+        .skills-panel .skill-node-cost { color: #ffd700 !important; }
+        /* Branch tabs on the left side: dark pill on wood, readable */
+        .skills-panel .skill-branch-tab {
+            color: #fff5c4 !important;
+            background: rgba(43,26,14,0.7) !important;
+            border-color: rgba(245,230,200,0.35) !important;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.55) !important;
+        }
+        .skills-panel .skill-branch-tab.active {
+            border-color: #ffd700 !important;
+            background: rgba(120,80,20,0.85) !important;
+            box-shadow: 0 0 8px rgba(255,215,0,0.35) !important;
+        }
+        .skills-panel .skill-branch-tab.locked { filter: grayscale(0.7) brightness(0.85); }
+        .skills-panel .skills-points-display {
+            color: #fff5c4 !important;
+            background: rgba(43,26,14,0.75) !important;
+            border-color: rgba(255,215,0,0.55) !important;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 0 8px rgba(255,215,0,0.45) !important;
+        }
+        .skills-panel .skill-rank-dot {
+            background: rgba(43,26,14,0.7) !important;
+            border-color: rgba(245,230,200,0.4) !important;
+        }
 
         /* ── Chubby lock icon (replaces 🔒 emoji where wrapped) ── */
         .lock-icon {
