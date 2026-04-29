@@ -13669,7 +13669,7 @@
         /* Win Rate side widget: keep equal margin on every side of the iron
            frame, so it doesn't lean against the panel's divider line. */
         .main-menu .stats-top-right {
-            padding: 8px 8px 8px 10px !important;
+            padding: 8px !important;
             align-items: stretch !important;
             justify-content: center !important;
         }
@@ -22617,6 +22617,9 @@
                 if (_blkHasShield && _blkIsHeavy) trimAndPlay(SHIELD_HEAVY_IMPACT_SOUND, 0.6);
                 else if (_blkHasShield && isWeaponAnim) trimAndPlay(SHIELD_LIGHT_IMPACT_SOUND, 0.55);
                 else playBlockSound();
+                // Layer a quiet heavy weapon hit on top of the block so the
+                // mass of the swing is still felt
+                if (_blkIsHeavy) trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.25);
                 _setPushDir(defender);
                 fighterBody.classList.add('blocking'); // pushback on impact
                 // Block fills fury for both fighters
