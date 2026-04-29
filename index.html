@@ -13669,7 +13669,10 @@
         /* Win Rate side widget: keep equal margin on every side of the iron
            frame, so it doesn't lean against the panel's divider line. */
         .main-menu .stats-top-right {
-            padding: 8px !important;
+            /* Larger left padding compensates for the divider sitting closer
+               than the panel's own right edge — without it the box reads as
+               shifted left even though it's centered in the column */
+            padding: 8px 8px 8px 18px !important;
             align-items: stretch !important;
             justify-content: center !important;
         }
