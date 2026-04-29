@@ -21996,11 +21996,13 @@
             const _isLongReachAnim  = !!_wepDef?.longReach;
             // Reach approach is held to a minimum 420ms so the skid is visible even
             // when the attacker has high AGI shrinking atkMult — the deceleration
-            // tail is the whole point of the effect.
-            const _movMs   = _isLongReachAnim
+            // tail is the whole point of the effect. Skid + long hold are skipped
+            // below when there isn't enough runway (see SKID_MIN_PX check).
+            let _movMs     = _isLongReachAnim
                 ? Math.max(420, Math.round(380 * atkMult))
                 : Math.round(300 * atkMult);
-            const _movEase = _isLongReachAnim ? 'cubic-bezier(0, 0.78, 0.08, 1)' : 'ease-out';
+            let _movEase   = _isLongReachAnim ? 'cubic-bezier(0, 0.78, 0.08, 1)' : 'ease-out';
+            // Initial transition (may be re-set below once we know the run distance)
             attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
             void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
@@ -22036,6 +22038,20 @@
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
+
+            // Skip the skid effect when there's not enough runway: with <250px
+            // to cover, the deceleration tail is < 55px — too short to read,
+            // and the 420ms hold just feels sluggish. Fall back to the normal
+            // ease-out approach in that case.
+            if (_isLongReachAnim) {
+                const _approachPx = Math.abs(_atkLeftPx - _attackerHomeScaled);
+                if (_approachPx < 250) {
+                    _movMs   = Math.round(300 * atkMult);
+                    _movEase = 'ease-out';
+                    attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
+                    void attackerEl.offsetWidth;
+                }
+            }
 
             if (isComboFollow) {
                 // Real combo follow-up: snap to combat position in case anything reset it
