@@ -180,7 +180,12 @@
             font-weight: bold;
             font-size: 10px;
             color: #fff;
-            text-shadow: 1px 1px 2px #000;
+            text-shadow:
+                -1px 0 0 #000,
+                 1px 0 0 #000,
+                 0 -1px 0 #000,
+                 0  1px 0 #000,
+                 1px 1px 2px rgba(0,0,0,0.6);
             z-index: 1;
         }
 
@@ -13536,10 +13541,16 @@
         .forge-panel .forge-stat-value { font-size: 1.15em !important; }
         .forge-panel .forge-btn { font-size: 1.1em !important; padding: 12px 18px !important; }
 
-        /* Level star: shift number down to sit in the chubby body */
+        /* Level star: center the number — flex centering with line-height
+           reset so the digit sits in the optical middle of the chubby body */
         .main-menu .menu-char-lv-circle {
-            padding: 7px 0 0 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            align-items: center !important;
+            justify-content: center !important;
+            display: flex !important;
         }
+        .main-menu .menu-char-lv-circle::before { display: none !important; content: none !important; }
 
         /* ── BATTLE / AoN buttons: brownstone PNG mask + warm-orange palette ── */
         @keyframes lavaFlow {
@@ -13585,6 +13596,19 @@
             content: none !important;
         }
         .main-menu .menu-btn-battle::after { display: none !important; content: none !important; }
+        /* When BATTLE is available (not :disabled), pulse a warm glow so it
+           feels active and inviting */
+        @keyframes battleReadyGlow {
+            0%, 100% { filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 14px rgba(255,180,80,0.55)) brightness(1.05); }
+            50%      { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) drop-shadow(0 0 28px rgba(255,210,120,0.95)) brightness(1.18); }
+        }
+        .main-menu .menu-btn-battle:not(:disabled):not(.fatigued) {
+            animation: battleReadyGlow 1.8s ease-in-out infinite !important;
+        }
+        .main-menu .menu-btn-battle:not(:disabled):not(.fatigued):hover {
+            animation: none !important;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.55)) drop-shadow(0 0 32px rgba(255,220,140,1)) brightness(1.22) !important;
+        }
         /* AoN — molten lava overlay clipped to the stone shape */
         .main-menu .menu-btn-aon { font-size: 1.05em !important; animation: lavaPulse 2.4s ease-in-out infinite; }
         .main-menu .menu-btn-aon::after {
@@ -13642,21 +13666,23 @@
             opacity: 1 !important;
         }
 
-        /* Win Rate side widget: fill the .stats-top-right column entirely
-           and center the ring + games text inside the iron frame. */
+        /* Win Rate side widget: keep equal margin on every side of the iron
+           frame, so it doesn't lean against the panel's divider line. */
         .main-menu .stats-top-right {
-            padding: 0 !important;
+            padding: 8px 10px !important;
             align-items: stretch !important;
+            justify-content: center !important;
         }
         .main-menu #winrate-side-ext.stats-side-ext,
         .main-menu .stats-side-ext.stats-side-right {
             width: 100% !important;
             min-width: 0 !important;
-            padding: 8px 8px !important;
+            padding: 6px 6px !important;
             border-width: 12px !important;
             border-image-width: 12px !important;
             align-items: center !important;
             justify-content: center !important;
+            margin: 0 auto !important;
         }
         .main-menu #winrate-side-ext svg {
             width: 64px !important;
@@ -13824,6 +13850,52 @@
             border-color: rgba(245,230,200,0.4) !important;
         }
 
+        /* ── NOTIFICATIONS panel — match lobby cream/wood palette ── */
+        .notif-panel {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 35%),
+                linear-gradient(180deg, #f7edd5 0%, #ebd9b3 100%) !important;
+            border: 2px solid #4a2c12 !important;
+            border-top: 3px solid #4a2c12 !important;
+            border-radius: 14px !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,255,255,0.5),
+                inset 0 -2px 0 rgba(120,60,0,0.18),
+                0 4px 0 #2b1a0e,
+                0 10px 22px rgba(0,0,0,0.45) !important;
+        }
+        .notif-panel .notif-panel-header {
+            background: rgba(74,44,18,0.10) !important;
+            border-bottom: 1px solid rgba(74,44,18,0.35) !important;
+        }
+        .notif-panel .notif-panel-header > span {
+            color: #2b1a0e !important;
+            font-weight: 900 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
+        .notif-panel .notif-clear {
+            color: #5a3a18 !important;
+            background: rgba(74,44,18,0.06) !important;
+            border: 1px solid rgba(74,44,18,0.45) !important;
+            font-weight: 700 !important;
+        }
+        .notif-panel .notif-clear:hover {
+            color: #fff !important;
+            background: #b8741a !important;
+            border-color: #4a2c12 !important;
+        }
+        .notif-panel .notif-empty { color: #5a3a18 !important; }
+        .notif-panel .notif-item { border-bottom-color: rgba(74,44,18,0.18) !important; }
+        .notif-panel .notif-item:hover { background: rgba(180,116,26,0.12) !important; }
+        .notif-panel .notif-text { color: #2b1a0e !important; text-shadow: 0 1px 0 rgba(255,250,225,0.45) !important; }
+        .notif-panel .notif-time { color: #6b4820 !important; }
+        .notif-panel .notif-item.levelup .notif-text { color: #b8741a !important; }
+        .notif-panel .notif-item.weapon  .notif-text { color: #6b21a8 !important; }
+        .notif-panel .notif-item.chest   .notif-text { color: #1e40af !important; }
+        .notif-panel .notif-item.pvp     .notif-text { color: #166534 !important; }
+        .notif-panel .notif-item.aon     .notif-text { color: #c2410c !important; }
+        .notif-panel .notif-item.streak  .notif-text { color: #c2410c !important; }
+
         /* ── RESULTS panel — silver palette with dark text ── */
         .results-panel {
             background:
@@ -13855,8 +13927,8 @@
         .results-panel .results-stat {
             border-bottom-color: rgba(30,41,59,0.18) !important;
         }
-        .results-panel .results-stat-label { color: #475569 !important; text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important; }
-        .results-panel .results-stat-value { color: #0f172a !important; text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important; }
+        .results-panel .results-stat-label { color: #1e293b !important; font-weight: 600 !important; text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important; }
+        .results-panel .results-stat-value { color: #0a0f1c !important; font-weight: 800 !important; text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important; }
         .results-panel .results-divider   { background: rgba(30,41,59,0.25) !important; }
         .results-panel .results-stat-exp {
             border-top-color: rgba(34,197,94,0.55) !important;
@@ -22319,12 +22391,12 @@
                         // pose frame renders the weapon at ~35% of its 1024-canvas.
                         // Scale to that target so the weapon looks the same size as
                         // it does during idle — not as tall as the whole fighter.
-                        const _dwSize = 95;
+                        const _dwSize = 105;
                         const _facingFlipped = defenderEl.classList.contains('facing-flipped');
                         const _isCpuDef = defenderEl.id === 'cpu';
                         const _needsFlip = (_isCpuDef && !_facingFlipped) || (!_isCpuDef && _facingFlipped);
-                        const _forwardX  = _isCpuDef ? -34 : 34;
-                        const _upY       = -10;
+                        const _forwardX  = _isCpuDef ? -48 : 48;
+                        const _upY       = -12;
                         _dodgeWOv.style.cssText = `position:absolute;top:50%;left:50%;width:${_dwSize}px;height:${_dwSize}px;object-fit:contain;pointer-events:none;z-index:1;transform:translate(calc(-50% + ${_forwardX}px), calc(-50% + ${_upY}px))${_needsFlip ? ' scaleX(-1)' : ''};`;
                         _dodgeWOv.src = _dodgeWepData.img;
                         fighterBody.appendChild(_dodgeWOv);
