@@ -21994,8 +21994,13 @@
             // Knife is reachAttack:true but thematically a close-range stab, so it keeps the normal approach.
             const _wepDef           = getWeaponById(attackType);
             const _isLongReachAnim  = !!_wepDef?.longReach;
-            const _movMs   = Math.round(300 * atkMult);
-            const _movEase = _isLongReachAnim ? 'cubic-bezier(0.05, 0.7, 0.18, 1)' : 'ease-out';
+            // Reach approach is held to a minimum 420ms so the skid is visible even
+            // when the attacker has high AGI shrinking atkMult — the deceleration
+            // tail is the whole point of the effect.
+            const _movMs   = _isLongReachAnim
+                ? Math.max(420, Math.round(380 * atkMult))
+                : Math.round(300 * atkMult);
+            const _movEase = _isLongReachAnim ? 'cubic-bezier(0, 0.78, 0.08, 1)' : 'ease-out';
             attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
             void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
             attackerEl.style.zIndex = '20';
@@ -22354,7 +22359,9 @@
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
-                await sleep(Math.round(300 * atkMult));
+                // Sleep must match _movMs so the transition fully completes
+                // (especially the long-reach skid tail) before the attack frame fires.
+                await sleep(_movMs);
                 stopRunAnimation(attackerEl);
                 playFootstep();
             }
