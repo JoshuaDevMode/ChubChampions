@@ -13669,7 +13669,7 @@
         /* Win Rate side widget: keep equal margin on every side of the iron
            frame, so it doesn't lean against the panel's divider line. */
         .main-menu .stats-top-right {
-            padding: 8px 10px !important;
+            padding: 8px 8px 8px 10px !important;
             align-items: stretch !important;
             justify-content: center !important;
         }
@@ -15452,10 +15452,9 @@
             }
             if (weaponId && WEAPON_HEAVY_SOUND_IDS.has(weaponId)) {
                 if (!heavyPreFired) {
-                    trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
+                    trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.85);
                     if (WEAPON_BLOOD_SPLASH_IDS.has(weaponId)) trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
                 }
-                trimAndPlay(CRITICAL_SOUND, 0.4);
                 return;
             }
             if (weaponId === 'tier_knife') {
@@ -22395,7 +22394,7 @@
                         const _facingFlipped = defenderEl.classList.contains('facing-flipped');
                         const _isCpuDef = defenderEl.id === 'cpu';
                         const _needsFlip = (_isCpuDef && !_facingFlipped) || (!_isCpuDef && _facingFlipped);
-                        const _forwardX  = _isCpuDef ? -48 : 48;
+                        const _forwardX  = _isCpuDef ? -58 : 58;
                         const _upY       = -12;
                         _dodgeWOv.style.cssText = `position:absolute;top:50%;left:50%;width:${_dwSize}px;height:${_dwSize}px;object-fit:contain;pointer-events:none;z-index:1;transform:translate(calc(-50% + ${_forwardX}px), calc(-50% + ${_upY}px))${_needsFlip ? ' scaleX(-1)' : ''};`;
                         _dodgeWOv.src = _dodgeWepData.img;
@@ -22493,13 +22492,7 @@
                     if (isWeaponAnim && WEAPON_HEAVY_SOUND_IDS.has(attackType)) {
                         trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.45);
                         setTimeout(() => trimAndPlay(HEAVY_WEAPON_WHOOSH_SOUND, 0.35), 160);
-                        if (defense === 'none' || (defense === 'dodge' && damage > 0)) {
-                            _heavyImpactPreScheduled = true;
-                            setTimeout(() => {
-                                trimAndPlay(HEAVY_WEAPON_HIT_SOUND, 0.8);
-                                trimAndPlay(WEAPON_BLOOD_SPLASH_SOUND, 0.25);
-                            }, 240);
-                        } else if (defense === 'dodge' && WEAPON_HEAVY_MISS_IDS.has(attackType)) {
+                        if (defense === 'dodge' && WEAPON_HEAVY_MISS_IDS.has(attackType)) {
                             setTimeout(() => trimAndPlay(HEAVY_WEAPON_MISS_SOUND, 0.5), 240);
                         }
                     } else if (isWeaponAnim && WEAPON_LIGHT_WHOOSH_IDS.has(attackType)) {
