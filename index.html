@@ -21993,17 +21993,9 @@
             // Knife is reachAttack:true but thematically a close-range stab, so it keeps the normal approach.
             const _wepDef           = getWeaponById(attackType);
             const _isLongReachAnim  = !!_wepDef?.longReach;
-            // Reach approach is held to a minimum 420ms so the skid is visible even
-            // when the attacker has high AGI shrinking atkMult — the deceleration
-            // tail is the whole point of the effect. Skid + long hold are skipped
-            // below when there isn't enough runway (see SKID_MIN_PX check).
-            let _movMs     = _isLongReachAnim
-                ? Math.max(420, Math.round(380 * atkMult))
-                : Math.round(300 * atkMult);
-            let _movEase   = _isLongReachAnim ? 'cubic-bezier(0, 0.78, 0.08, 1)' : 'ease-out';
-            // Initial transition (may be re-set below once we know the run distance)
-            attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
-            void attackerEl.offsetWidth; // force reflow so override is computed before any style.left changes
+            const _movMs   = Math.round(300 * atkMult);
+            attackerEl.style.setProperty('transition', `left ${_movMs}ms ease-out, right ${_movMs}ms ease-out`, 'important');
+            void attackerEl.offsetWidth;
             attackerEl.style.zIndex = '20';
             defenderEl.style.zIndex = '10';
 
@@ -22037,20 +22029,6 @@
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
-
-            // Skip the skid effect when there's not enough runway: with <250px
-            // to cover, the deceleration tail is < 55px — too short to read,
-            // and the 420ms hold just feels sluggish. Fall back to the normal
-            // ease-out approach in that case.
-            if (_isLongReachAnim) {
-                const _approachPx = Math.abs(_atkLeftPx - _attackerHomeScaled);
-                if (_approachPx < 250) {
-                    _movMs   = Math.round(300 * atkMult);
-                    _movEase = 'ease-out';
-                    attackerEl.style.setProperty('transition', `left ${_movMs}ms ${_movEase}, right ${_movMs}ms ${_movEase}`, 'important');
-                    void attackerEl.offsetWidth;
-                }
-            }
 
             if (isComboFollow) {
                 // Real combo follow-up: snap to combat position in case anything reset it
@@ -22374,9 +22352,7 @@
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
-                // Sleep must match _movMs so the transition fully completes
-                // (especially the long-reach skid tail) before the attack frame fires.
-                await sleep(_movMs);
+                await sleep(Math.round(300 * atkMult));
                 stopRunAnimation(attackerEl);
                 playFootstep();
             }
@@ -27155,6 +27131,17 @@
                 const _shieldOvPrevLeft = _shieldOv ? _shieldOv.style.left : null;
                 if (_shieldOv) { _shieldOv.style.width = '345px'; _shieldOv.style.height = '345px'; _shieldOv.style.left = '74%'; if (isReachWeapon) _shieldOv.style.top = 'calc(50% - 40px)'; }
 
+                // Long-reach lunge: when the spear/gun reaches the final
+                // (horizontal) frame, kick the body forward by a small amount
+                // to sell the thrust. Reset on the way back.
+                const _isLongReachLunge = !!(weaponId && getWeaponById(weaponId)?.longReach);
+                const _attackerOnLeft   = fighterEl.id === 'player'
+                    ? (typeof _playerIsOnLeft === 'function' ? _playerIsOnLeft() : true)
+                    : (typeof _playerIsOnLeft === 'function' ? !_playerIsOnLeft() : false);
+                const _lungeDirection   = _attackerOnLeft ? 1 : -1;
+                const _lungePx          = 36;
+                let _lungeApplied       = false;
+
                 let reversing = false;
                 let reverseIdx = sequence.length - 2; // start at frame 2, stop at frame 1
                 img._currentAnim = setInterval(function() {
@@ -27164,6 +27151,12 @@
                             charOverlay.src = sequence[idx];
                             if (weaponOverlay && weaponSequence) weaponOverlay.src = weaponSequence[idx % weaponSequence.length];
                             if (_shieldOv) _shieldOv.src = _shieldOffhandAttackFrames[idx % _shieldOffhandAttackFrames.length];
+                            // On the LAST forward frame (weapon horizontal), kick the body forward
+                            if (_isLongReachLunge && !_lungeApplied && idx === sequence.length - 1) {
+                                _lungeApplied = true;
+                                fighterEl.style.transition = 'transform 90ms cubic-bezier(0.2, 0.7, 0.3, 1)';
+                                fighterEl.style.transform  = `translateX(${_lungeDirection * _lungePx}px)`;
+                            }
                         } else if (idx === sequence.length || idx === sequence.length + 1) {
                             // Hold last frame for 3 ticks
                         } else {
@@ -27173,6 +27166,11 @@
                                 reverseIdx = sequence.length - 2;
                                 // Return shield to idle position as character starts pulling back
                                 if (_shieldOv) { _shieldOv.style.left = _shieldOvPrevLeft || '50%'; _shieldOv.style.top = '50%'; }
+                                // Pull the lunge back as the weapon retracts
+                                if (_isLongReachLunge && _lungeApplied) {
+                                    fighterEl.style.transition = 'transform 140ms ease-out';
+                                    fighterEl.style.transform  = '';
+                                }
                             } else {
                                 clearInterval(img._currentAnim);
                                 img._currentAnim = null;
@@ -27183,6 +27181,11 @@
                                 img.style.visibility = '';
                                 img.style.width  = img._armedIdleW || '';
                                 img.style.height = img._armedIdleW || '';
+                                if (_isLongReachLunge && _lungeApplied) {
+                                    fighterEl.style.transition = 'transform 140ms ease-out';
+                                    fighterEl.style.transform  = '';
+                                    setTimeout(() => { fighterEl.style.transition = ''; }, 160);
+                                }
                                 const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
                                 if (_postAtkIdleOv) {
                                     _postAtkIdleOv._hiddenByAnimation = false;
@@ -27207,6 +27210,11 @@
                             img.style.visibility = '';
                             img.style.width  = img._armedIdleW || '';
                             img.style.height = img._armedIdleW || '';
+                            if (_isLongReachLunge) {
+                                // Make sure the lunge transform is fully cleared
+                                fighterEl.style.transform  = '';
+                                setTimeout(() => { fighterEl.style.transition = ''; }, 160);
+                            }
                             const _postAtkIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
                             if (_postAtkIdleOv) {
                                 _postAtkIdleOv._hiddenByAnimation = false;
