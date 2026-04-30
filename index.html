@@ -21986,6 +21986,27 @@
 
             stopIdleBlink(attackerEl);
             stopIdleBlink(defenderEl);
+
+            // Defensive resync: if the defender ended up offset from their
+            // _homeX after a previous round's dodge/knockback/etc, snap them
+            // back before the new attack starts. Otherwise the attacker's
+            // run target (which is calculated from defender._homeX) lines up
+            // with empty air while the server still scores the hit.
+            {
+                const _preAtkArenaW = document.getElementById('arena').offsetWidth;
+                const _preAtkScale  = _preAtkArenaW / 1600;
+                const _defHomeXpx   = _visualPos(game[defender]._homeX ?? (defender === 'player' ? 128 : 1252)) * _preAtkScale;
+                const _defCurLeft   = parseFloat(defenderEl.style.left) || 0;
+                if (Math.abs(_defCurLeft - _defHomeXpx) > 6) {
+                    const _prevTransition = defenderEl.style.transition;
+                    defenderEl.style.setProperty('transition', 'none', 'important');
+                    defenderEl.style.left  = _defHomeXpx + 'px';
+                    defenderEl.style.right = 'auto';
+                    void defenderEl.offsetWidth;
+                    defenderEl.style.transition = _prevTransition;
+                }
+            }
+
             attackerEl.classList.add('dashing');
             // Override .dashing !important transition globally for all movement branches in this attack.
             // Long-reach weapons (spear/gun) approach with a pronounced skid — fast start, slow finish — so the
@@ -22624,6 +22645,20 @@
                 const _dodgeIdleOv = fighterBody.querySelector('.weapon-idle-overlay');
                 if (_dodgeIdleOv) { _dodgeIdleOv._hiddenByAnimation = false; _dodgeIdleOv._suppressEquipFlash = true; }
                 syncArmedIdle(defender);
+                // Slide defender back to their home X — without this the 130px
+                // dodge retreat persists into the next round, so the next
+                // attack lands "in the air" while the server still hits them
+                // at their (unmoved) _homeX.
+                if (!jumpDodge && defenderEl._dodgeSlid) {
+                    const _ddScale = document.getElementById('arena').offsetWidth / 1600;
+                    const _ddHomeX = _visualPos(game[defender]._homeX ?? (defender === 'player' ? 128 : 1252)) * _ddScale;
+                    defenderEl.style.transition = 'left 220ms ease-out';
+                    void defenderEl.offsetWidth;
+                    defenderEl.style.left = _ddHomeX + 'px';
+                    defenderEl.style.right = 'auto';
+                    delete defenderEl._dodgeSlid;
+                    setTimeout(() => { defenderEl.style.transition = ''; }, 240);
+                }
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
                 const _blkDefWS     = weaponState[defender];
