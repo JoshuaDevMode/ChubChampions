@@ -22019,7 +22019,13 @@
             // Extend the attacker's run target by the same amount so the combat gap stays
             // at _ATCK_GAP regardless of whether the defender dodges.
             const _dDefIsLeft   = (defender === 'player') === _playerIsOnLeft();
-            const _isDodgeRet   = defense === 'dodge' && !jumpDodge;
+            // Skip the dodge-retreat compensation for long-reach weapons: the
+            // spear/gun shouldn't chase a dodging defender — they hold their
+            // 230px range and let the defender retreat further out of reach.
+            // Without this the attacker's run target was being pulled 130px
+            // closer to the defender, which read as the spear character
+            // crowding the opponent on long approaches.
+            const _isDodgeRet   = defense === 'dodge' && !jumpDodge && !_isLongReachAnim;
             const _dRetCompPx   = _isDodgeRet ? Math.round(130 * _scale) : 0;
             const _dRetCompSign = _dDefIsLeft ? -1 : 1;
             const _atkLeftPxRaw = attacker === 'player'
