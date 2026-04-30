@@ -22645,19 +22645,10 @@
                 const _dodgeIdleOv = fighterBody.querySelector('.weapon-idle-overlay');
                 if (_dodgeIdleOv) { _dodgeIdleOv._hiddenByAnimation = false; _dodgeIdleOv._suppressEquipFlash = true; }
                 syncArmedIdle(defender);
-                // Dodge retreat is now permanent — update _homeX to match the
-                // new visual position so the next attacker (and the defensive
-                // resync at the top of animateServerAttack) lines up with the
-                // dodged-back fighter, not the original home.
-                if (!jumpDodge && defenderEl._dodgeSlid) {
-                    const _ddScale  = document.getElementById('arena').offsetWidth / 1600;
-                    const _ddCurLft = parseFloat(defenderEl.style.left) || 0;
-                    const _ddNewHX  = Math.round(_ddCurLft / _ddScale);
-                    // Clamp to playable arena bounds so we never leave _homeX
-                    // outside the walls (matches server clamp range 10..1370).
-                    game[defender]._homeX = Math.max(10, Math.min(1370, _ddNewHX));
-                    delete defenderEl._dodgeSlid;
-                }
+                // _dodgeSlid stays set — the next move event (emitted by the
+                // server right after this attack) will read it, snap to the
+                // exact server position, and update _homeX. Deleting it here
+                // would cause the move event to play a redundant run animation.
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
                 const _blkDefWS     = weaponState[defender];
