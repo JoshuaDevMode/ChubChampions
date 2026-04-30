@@ -22645,19 +22645,18 @@
                 const _dodgeIdleOv = fighterBody.querySelector('.weapon-idle-overlay');
                 if (_dodgeIdleOv) { _dodgeIdleOv._hiddenByAnimation = false; _dodgeIdleOv._suppressEquipFlash = true; }
                 syncArmedIdle(defender);
-                // Slide defender back to their home X — without this the 130px
-                // dodge retreat persists into the next round, so the next
-                // attack lands "in the air" while the server still hits them
-                // at their (unmoved) _homeX.
+                // Dodge retreat is now permanent — update _homeX to match the
+                // new visual position so the next attacker (and the defensive
+                // resync at the top of animateServerAttack) lines up with the
+                // dodged-back fighter, not the original home.
                 if (!jumpDodge && defenderEl._dodgeSlid) {
-                    const _ddScale = document.getElementById('arena').offsetWidth / 1600;
-                    const _ddHomeX = _visualPos(game[defender]._homeX ?? (defender === 'player' ? 128 : 1252)) * _ddScale;
-                    defenderEl.style.transition = 'left 220ms ease-out';
-                    void defenderEl.offsetWidth;
-                    defenderEl.style.left = _ddHomeX + 'px';
-                    defenderEl.style.right = 'auto';
+                    const _ddScale  = document.getElementById('arena').offsetWidth / 1600;
+                    const _ddCurLft = parseFloat(defenderEl.style.left) || 0;
+                    const _ddNewHX  = Math.round(_ddCurLft / _ddScale);
+                    // Clamp to playable arena bounds so we never leave _homeX
+                    // outside the walls (matches server clamp range 10..1370).
+                    game[defender]._homeX = Math.max(10, Math.min(1370, _ddNewHX));
                     delete defenderEl._dodgeSlid;
-                    setTimeout(() => { defenderEl.style.transition = ''; }, 240);
                 }
             } else if (defense === 'block') {
                 battleState.matchStats[defender].blocks = (battleState.matchStats[defender].blocks || 0) + 1;
