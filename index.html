@@ -22702,7 +22702,10 @@
                 // transition was clipped or another style change interrupted it,
                 // so the idle position matches the server's collision target
                 // (otherwise the next opponent attack lands "in the air").
+                // Also clear any residual transform from the long-reach lunge
+                // so the visual position equals style.left exactly.
                 attackerEl.style.setProperty('transition', 'none', 'important');
+                attackerEl.style.transform = '';
                 attackerEl.style.left = _retHomeX + 'px';
                 void attackerEl.offsetWidth;
             }
