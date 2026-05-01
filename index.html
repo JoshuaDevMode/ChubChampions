@@ -21988,24 +21988,33 @@
             stopIdleBlink(attackerEl);
             stopIdleBlink(defenderEl);
 
-            // Defensive resync: if the defender ended up offset from their
-            // _homeX after a previous round's dodge/knockback/etc, snap them
-            // back before the new attack starts. Otherwise the attacker's
-            // run target (which is calculated from defender._homeX) lines up
-            // with empty air while the server still scores the hit.
+            // Defensive resync: if either fighter ended up offset from their
+            // _homeX after a previous round's dodge/knockback/spear-lunge/etc,
+            // snap them back before the new attack starts. Also clears any
+            // leftover inline transform (e.g., spear lunge translateX) that
+            // would otherwise visually offset the fighter even when style.left
+            // is correct. Otherwise the attacker's run target — calculated
+            // from _homeX — lines up with empty air while the server still
+            // scores the hit.
             {
                 const _preAtkArenaW = document.getElementById('arena').offsetWidth;
                 const _preAtkScale  = _preAtkArenaW / 1600;
-                const _defHomeXpx   = _visualPos(game[defender]._homeX ?? (defender === 'player' ? 128 : 1252)) * _preAtkScale;
-                const _defCurLeft   = parseFloat(defenderEl.style.left) || 0;
-                if (Math.abs(_defCurLeft - _defHomeXpx) > 6) {
-                    const _prevTransition = defenderEl.style.transition;
-                    defenderEl.style.setProperty('transition', 'none', 'important');
-                    defenderEl.style.left  = _defHomeXpx + 'px';
-                    defenderEl.style.right = 'auto';
-                    void defenderEl.offsetWidth;
-                    defenderEl.style.transition = _prevTransition;
-                }
+                const _resyncFighter = (who, el) => {
+                    const _homeXpx = _visualPos(game[who]._homeX ?? (who === 'player' ? 128 : 1252)) * _preAtkScale;
+                    const _curLeft = parseFloat(el.style.left) || 0;
+                    const _hasXf   = !!el.style.transform;
+                    if (Math.abs(_curLeft - _homeXpx) > 6 || _hasXf) {
+                        const _prevTransition = el.style.transition;
+                        el.style.setProperty('transition', 'none', 'important');
+                        el.style.transform = '';
+                        el.style.left  = _homeXpx + 'px';
+                        el.style.right = 'auto';
+                        void el.offsetWidth;
+                        el.style.transition = _prevTransition;
+                    }
+                };
+                _resyncFighter(defender, defenderEl);
+                _resyncFighter(attacker, attackerEl);
             }
 
             attackerEl.classList.add('dashing');
@@ -27278,6 +27287,15 @@
             if (img._currentAnim) {
                 clearInterval(img._currentAnim);
                 img._currentAnim = null;
+            }
+
+            // Clear any leftover inline transform on the fighter element (e.g., spear lunge
+            // translateX). If the weapon attack interval was cancelled mid-flight, its own
+            // cleanup of fighterEl.style.transform never ran, leaving the visual offset
+            // by ~36px relative to style.left for the next round.
+            if (fighterEl.style.transform) {
+                fighterEl.style.transition = '';
+                fighterEl.style.transform  = '';
             }
 
             // Clean up any lingering weapon overlays (attack overlays from interrupted combos,
