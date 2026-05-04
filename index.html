@@ -22104,10 +22104,14 @@
                 const arenaEl   = document.getElementById('arena');
                 const arenaW    = arenaEl.offsetWidth;
                 const jaScale   = arenaW / 1600;
-                // Target: land at the defender's _homeX (server coords), offset by _ATCK_GAP
+                // Target: land at the defender's _homeX (server coords), offset by _jaGap.
+                // Jump landings always use the close-combat gap (100) regardless of weapon —
+                // a slam from above should make solid contact, not stop short like a stand-still
+                // weapon swing. Long-reach (spear) keeps a moderate range so it doesn't overlap.
+                const _jaGap    = _isLongReachAnim ? 180 : 100;
                 const defHomeX  = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
                 const jaGapSign = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
-                const defCx     = (defHomeX + jaGapSign * _ATCK_GAP) * jaScale + (attackerEl.offsetWidth / 2);
+                const defCx     = (defHomeX + jaGapSign * _jaGap) * jaScale + (attackerEl.offsetWidth / 2);
                 const jaEase    = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
                 // ── Phase 0: snap back to home corner for running start ──────
@@ -22116,7 +22120,7 @@
                 // pushed close together by move events the raw _homeX can be beyond the landing
                 // position, which would make the arc travel backward.  Always keep at least one
                 // body-width of approach distance so Phase 2 deltaX is in the right direction.
-                const _jaLandingLeft = (defHomeX + jaGapSign * _ATCK_GAP) * jaScale;
+                const _jaLandingLeft = (defHomeX + jaGapSign * _jaGap) * jaScale;
                 const _jaHomeRaw     = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * jaScale;
                 const _jaSafeGap     = attackerEl.offsetWidth; // min arc distance = 1 body width
                 const jaHomeLeftPx   = jaGapSign < 0
@@ -22264,7 +22268,8 @@
                 const haScale   = haArenaW / 1600;
                 const haDefHomeX = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
                 const haGapSign  = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
-                const haLandLeft = (haDefHomeX + haGapSign * _ATCK_GAP) * haScale;
+                const _haGap     = _isLongReachAnim ? 180 : 100;
+                const haLandLeft = (haDefHomeX + haGapSign * _haGap) * haScale;
                 const haCurrLeft = parseFloat(attackerEl.style.left) || (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * haScale;
                 const haDeltaX   = haLandLeft - haCurrLeft;
 
@@ -22574,8 +22579,11 @@
                 // Jump attack landing shockwave
                 if (event.jumpAttack) {
                     const defRect   = defenderEl.getBoundingClientRect();
+                    const atkRect   = attackerEl.getBoundingClientRect();
                     const arenaRect = document.getElementById('arena').getBoundingClientRect();
-                    const jwX = defRect.left - arenaRect.left + defRect.width  * 0.5;
+                    // Place shockwave at the contact edge of the defender (side facing attacker)
+                    const _swDir    = (atkRect.left + atkRect.width / 2) < (defRect.left + defRect.width / 2) ? -1 : 1;
+                    const jwX = defRect.left - arenaRect.left + defRect.width * 0.5 + (defRect.width * 0.3) * _swDir;
                     const jwY = defRect.top  - arenaRect.top  + defRect.height * 0.85;
                     const attackerChar = attacker === 'player' ? getSelectedCharacter() : null;
                     const attackerElem = attackerChar?.element || battleState.cpuStats?.element || 'none';
@@ -22753,6 +22761,22 @@
             attackerEl.classList.remove('dashing');
             attackerEl.style.zIndex = '';
             defenderEl.style.zIndex = '';
+            // Belt-and-suspenders: snap the DEFENDER back to its server _homeX as well.
+            // Jump attacks don't run a return phase for the defender, so any residual offset
+            // from pushback/knockback animations could leave style.left out of sync with
+            // game[defender]._homeX, making subsequent opponent attacks visually miss.
+            {
+                const _defHomeRaw = game[defender]?._homeX;
+                if (_defHomeRaw !== undefined && _defHomeRaw !== null) {
+                    const _defScale = document.getElementById('arena').offsetWidth / 1600;
+                    const _defHomePx = _visualPos(_defHomeRaw) * _defScale;
+                    defenderEl.style.setProperty('transition', 'none', 'important');
+                    defenderEl.style.left = _defHomePx + 'px';
+                    defenderEl.style.right = 'auto';
+                    void defenderEl.offsetWidth;
+                    defenderEl.style.removeProperty('transition');
+                }
+            }
             // Ensure facing is correct after attack return (covers crossover during knockback)
             _syncFacingDirection();
             startIdleBlink(defenderEl);
@@ -27682,7 +27706,18 @@
             const arenaRect = arena.getBoundingClientRect();
             const rect = el.getBoundingClientRect();
 
-            const cx = (rect.left - arenaRect.left) / zoom + (rect.width / zoom) / 2;
+            // Spawn FX at the contact edge (side facing the attacker) instead of the
+            // defender's geometric center, so the impact reads as landing on the body
+            // rather than floating past it. Shift ~30% from center toward the attacker.
+            const attacker = defender === 'player' ? 'cpu' : 'player';
+            const atkEl    = game[attacker]?.element;
+            const atkRect  = atkEl?.getBoundingClientRect();
+            const defCxPx  = rect.left + rect.width / 2;
+            const atkCxPx  = atkRect ? (atkRect.left + atkRect.width / 2) : defCxPx;
+            const dirSign  = atkCxPx < defCxPx ? -1 : 1; // attacker side relative to defender
+            const edgeShift = (rect.width * 0.3) * dirSign;
+            const cxRaw    = (rect.left - arenaRect.left) + rect.width / 2 + edgeShift;
+            const cx = cxRaw / zoom;
             const cy = (rect.top - arenaRect.top) / zoom + (rect.height / zoom) / 2 - 30;
 
             const dur = isCritical ? 0.35 : 0.28;
@@ -27904,6 +27939,14 @@
                     if (img._blinkTimeout) { clearTimeout(img._blinkTimeout); img._blinkTimeout = null; }
                     img._idleBlinkStopped = true;
                 });
+                // Clear any leftover attack overlays so they don't cover the win frame
+                [winner, loser].forEach(side => {
+                    const body = game[side].element.querySelector('.fighter-body');
+                    body?.querySelectorAll('.heavy-attack-char-overlay,.weapon-attack-overlay,.weapon-attack-char-overlay,.weapon-run-overlay').forEach(e => e.remove());
+                    const idleOv = body?.querySelector('.weapon-idle-overlay');
+                    if (idleOv) { idleOv.style.display = 'none'; idleOv._hiddenByAnimation = false; }
+                });
+                if (winnerEl) { winnerEl.style.visibility = ''; }
                 if (winnerEl && winnerEl.dataset.win) { winnerEl.style.width = ''; winnerEl.style.height = ''; winnerEl.src = winnerEl.dataset.win; }
                 if (loserEl && loserEl.dataset.lose)  { loserEl.style.width  = ''; loserEl.style.height  = ''; loserEl.src  = loserEl.dataset.lose;  }
                 game[winner].element.style.animation = 'victoryBounce 0.4s ease-in-out infinite';
@@ -28148,12 +28191,13 @@
 
             if (winnerEl && winnerEl.dataset.win) {
                 winnerEl.style.width = ''; winnerEl.style.height = '';
+                winnerEl.style.visibility = '';
                 winnerEl.src = winnerEl.dataset.win;
                 // Hide weapon overlay so the victory frame shows without the weapon on top
                 const _winBodyEl = game[winner].element.querySelector('.fighter-body');
                 const _winIdleOv = _winBodyEl?.querySelector('.weapon-idle-overlay');
                 if (_winIdleOv) { _winIdleOv.style.display = 'none'; _winIdleOv._hiddenByAnimation = false; }
-                _winBodyEl?.querySelector('.weapon-run-overlay')?.remove();
+                _winBodyEl?.querySelectorAll('.weapon-run-overlay,.heavy-attack-char-overlay,.weapon-attack-overlay,.weapon-attack-char-overlay').forEach(e => e.remove());
             }
             // Loser sprite: KO → floor/death animation. Time-up → unarmed idle (fighter stays standing).
             if (isKO) {
