@@ -22066,6 +22066,30 @@
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
 
+            // [DIAG] Log positions at attack start so we can compare _homeX (server) vs
+            // actual style.left (visual) after a prior jump attack. If they diverge, the
+            // attacker will snap to a target computed from a stale _homeX.
+            if (window.__diagAlign) {
+                const _aRect = attackerEl.getBoundingClientRect();
+                const _dRect = defenderEl.getBoundingClientRect();
+                const _arRect = document.getElementById('arena').getBoundingClientRect();
+                console.log('[align][attack-start]', {
+                    attacker, defender, attackType, isWeaponAnim,
+                    jumpAttack: !!event.jumpAttack, hopAttack: !!event.hopAttack,
+                    ATCK_GAP: _ATCK_GAP, atkGapSign: _atkGapSign, playerOnLeft: _playerIsOnLeft(),
+                    homeX: { player: game.player._homeX, cpu: game.cpu._homeX },
+                    atkStyleLeft: parseFloat(attackerEl.style.left) || null,
+                    defStyleLeft: parseFloat(defenderEl.style.left) || null,
+                    atkVisualLeft: Math.round(_aRect.left - _arRect.left),
+                    defVisualLeft: Math.round(_dRect.left - _arRect.left),
+                    atkVisualW:    Math.round(_aRect.width),
+                    defVisualW:    Math.round(_dRect.width),
+                    atkExpectedHomePx: Math.round((attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale),
+                    defExpectedHomePx: Math.round((defender === 'player' ? game.player._homeX : game.cpu._homeX) * _scale),
+                    targetAtkLeftPx: Math.round(_atkLeftPx),
+                });
+            }
+
             if (isComboFollow) {
                 // Real combo follow-up: snap to combat position in case anything reset it
                 attackerEl.style.left  = _atkLeftPx + 'px';
@@ -22249,6 +22273,21 @@
                 // transition when it's time to run back.
                 stopRunAnimation(attackerEl);
                 playFootstep();
+                if (window.__diagAlign) {
+                    const _arRect = document.getElementById('arena').getBoundingClientRect();
+                    const _aRect = attackerEl.getBoundingClientRect();
+                    const _dRect = defenderEl.getBoundingClientRect();
+                    console.log('[align][jump-landed]', {
+                        attacker, defender, jaGap: _jaGap,
+                        atkStyleLeft: parseFloat(attackerEl.style.left) || null,
+                        defStyleLeft: parseFloat(defenderEl.style.left) || null,
+                        atkVisualLeft: Math.round(_aRect.left - _arRect.left),
+                        defVisualLeft: Math.round(_dRect.left - _arRect.left),
+                        atkVisualRight: Math.round(_aRect.right - _arRect.left),
+                        defVisualRight: Math.round(_dRect.right - _arRect.left),
+                        gapBetweenBodies: Math.round(_dRect.left - _aRect.right), // negative = overlap
+                    });
+                }
                 // Defer facing flip — character turns around only after returning to corner
                 attackerEl._jumpReturn = { img: jaImg, isCpu: isCpuAtt };
             } else if (event.hopAttack) {
@@ -22581,9 +22620,9 @@
                     const defRect   = defenderEl.getBoundingClientRect();
                     const atkRect   = attackerEl.getBoundingClientRect();
                     const arenaRect = document.getElementById('arena').getBoundingClientRect();
-                    // Place shockwave at the contact edge of the defender (side facing attacker)
-                    const _swDir    = (atkRect.left + atkRect.width / 2) < (defRect.left + defRect.width / 2) ? -1 : 1;
-                    const jwX = defRect.left - arenaRect.left + defRect.width * 0.5 + (defRect.width * 0.3) * _swDir;
+                    // Shockwave at the midpoint between attacker and defender (actual contact zone)
+                    const _swMid    = ((atkRect.left + atkRect.width / 2) + (defRect.left + defRect.width / 2)) / 2;
+                    const jwX = _swMid - arenaRect.left;
                     const jwY = defRect.top  - arenaRect.top  + defRect.height * 0.85;
                     const attackerChar = attacker === 'player' ? getSelectedCharacter() : null;
                     const attackerElem = attackerChar?.element || battleState.cpuStats?.element || 'none';
@@ -22779,6 +22818,19 @@
             }
             // Ensure facing is correct after attack return (covers crossover during knockback)
             _syncFacingDirection();
+            if (window.__diagAlign) {
+                const _arRect = document.getElementById('arena').getBoundingClientRect();
+                const _aRect = attackerEl.getBoundingClientRect();
+                const _dRect = defenderEl.getBoundingClientRect();
+                console.log('[align][attack-end]', {
+                    attacker, defender,
+                    homeX: { player: game.player._homeX, cpu: game.cpu._homeX },
+                    atkStyleLeft: parseFloat(attackerEl.style.left) || null,
+                    defStyleLeft: parseFloat(defenderEl.style.left) || null,
+                    atkVisualLeft: Math.round(_aRect.left - _arRect.left),
+                    defVisualLeft: Math.round(_dRect.left - _arRect.left),
+                });
+            }
             startIdleBlink(defenderEl);
             startIdleBlink(attackerEl);
             await sleep(isComboFirst ? 80 : Math.round(500 * atkMult));
@@ -26964,8 +27016,15 @@
                 }
             }
             const hasWeaponRun = _armedWepId && img._weaponRunFrames && img._weaponRunFrames.length > 0;
-            // Never create weapon-run-overlay — idle overlay handles weapon display for both directions
-            const weaponFrames = [];
+            // Use the weapon-run sprite sheet so the weapon animates with the character.
+            const weaponFrames = (_armedWepId && _weaponRunFramesCache[_armedWepId]) || [];
+            // Hide the idle overlay while the run-overlay drives weapon display, so the
+            // weapon doesn't render twice (static idle pose + animated run pose).
+            if (hasWeaponRun && weaponFrames.length > 0 && _idleOv) {
+                _idleOv.style.display = 'none';
+                _idleOv._hiddenByAnimation = true;
+                _idleOv._suppressEquipFlash = true;
+            }
 
             // Frame and footstep rate: 7120/speed — ~3.8 frames per step at any AGI.
             // Same gait rhythm, different absolute speed — slow chars trudge, fast ones blur.
@@ -27706,18 +27765,17 @@
             const arenaRect = arena.getBoundingClientRect();
             const rect = el.getBoundingClientRect();
 
-            // Spawn FX at the contact edge (side facing the attacker) instead of the
-            // defender's geometric center, so the impact reads as landing on the body
-            // rather than floating past it. Shift ~30% from center toward the attacker.
+            // Spawn FX at the actual contact zone — the midpoint between attacker and
+            // defender centers. This puts the impact between the two bodies where the
+            // weapon/fist visually meets the defender, instead of floating at the
+            // defender's geometric center which often reads as "behind" the target.
             const attacker = defender === 'player' ? 'cpu' : 'player';
             const atkEl    = game[attacker]?.element;
             const atkRect  = atkEl?.getBoundingClientRect();
             const defCxPx  = rect.left + rect.width / 2;
             const atkCxPx  = atkRect ? (atkRect.left + atkRect.width / 2) : defCxPx;
-            const dirSign  = atkCxPx < defCxPx ? -1 : 1; // attacker side relative to defender
-            const edgeShift = (rect.width * 0.3) * dirSign;
-            const cxRaw    = (rect.left - arenaRect.left) + rect.width / 2 + edgeShift;
-            const cx = cxRaw / zoom;
+            const contactPx = (defCxPx + atkCxPx) / 2;
+            const cx = (contactPx - arenaRect.left) / zoom;
             const cy = (rect.top - arenaRect.top) / zoom + (rect.height / zoom) / 2 - 30;
 
             const dur = isCritical ? 0.35 : 0.28;
