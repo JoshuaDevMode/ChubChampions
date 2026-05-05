@@ -22620,8 +22620,10 @@
                     const defRect   = defenderEl.getBoundingClientRect();
                     const atkRect   = attackerEl.getBoundingClientRect();
                     const arenaRect = document.getElementById('arena').getBoundingClientRect();
-                    // Shockwave at the midpoint between attacker and defender (actual contact zone)
-                    const _swMid    = ((atkRect.left + atkRect.width / 2) + (defRect.left + defRect.width / 2)) / 2;
+                    // Shockwave biased to defender's body so the slam lands ON the target
+                    const _defCx  = defRect.left + defRect.width / 2;
+                    const _atkCx  = atkRect.left + atkRect.width / 2;
+                    const _swMid  = _defCx * 0.75 + _atkCx * 0.25;
                     const jwX = _swMid - arenaRect.left;
                     const jwY = defRect.top  - arenaRect.top  + defRect.height * 0.85;
                     const attackerChar = attacker === 'player' ? getSelectedCharacter() : null;
@@ -27765,16 +27767,15 @@
             const arenaRect = arena.getBoundingClientRect();
             const rect = el.getBoundingClientRect();
 
-            // Spawn FX at the actual contact zone — the midpoint between attacker and
-            // defender centers. This puts the impact between the two bodies where the
-            // weapon/fist visually meets the defender, instead of floating at the
-            // defender's geometric center which often reads as "behind" the target.
+            // Spawn FX at the contact zone, biased heavily toward the defender's body so
+            // the impact lands ON the target (not floating in the gap or behind the swing).
+            // 75% defender + 25% attacker → FX inside defender near the attacker-facing side.
             const attacker = defender === 'player' ? 'cpu' : 'player';
             const atkEl    = game[attacker]?.element;
             const atkRect  = atkEl?.getBoundingClientRect();
             const defCxPx  = rect.left + rect.width / 2;
             const atkCxPx  = atkRect ? (atkRect.left + atkRect.width / 2) : defCxPx;
-            const contactPx = (defCxPx + atkCxPx) / 2;
+            const contactPx = defCxPx * 0.75 + atkCxPx * 0.25;
             const cx = (contactPx - arenaRect.left) / zoom;
             const cy = (rect.top - arenaRect.top) / zoom + (rect.height / zoom) / 2 - 30;
 
