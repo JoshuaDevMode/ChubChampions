@@ -21432,13 +21432,13 @@
                     finalCpuHp:    finalCpuHp,
                 };
                 battleState.precomputedStats = computeStatsFromEvents(events);
-                // Server provides the authoritative match duration — restart the
-                // timer using the server's computed value so both sides agree.
-                if (matchDurationMs && matchDurationMs > 0) {
-                    const secs = Math.ceil(matchDurationMs / 1000);
-                    stopMatchTimer();
-                    startMatchTimer(secs);
-                }
+                // Always start the replay timer at the full 90s match limit so it
+                // matches the live-battle countdown the players experienced. The
+                // game_over event will end the battle naturally if it KO'd before 0.
+                // (Previously we used matchDurationMs — the actual animated length —
+                // which made KO replays start at e.g. 60s or 46s.)
+                stopMatchTimer();
+                startMatchTimer(90);
             } else {
                 // Scrub resume: serverResult was already set; just refresh timer display
                 battleState.serverResult = battleState.serverResult || { winner: 'player', finalPlayerHp, finalCpuHp };
@@ -28603,15 +28603,13 @@
             _updateReplayScrubBar(clampedIdx, events.length);
 
             // Rewind / fast-forward the match timer to match the scrub position.
-            // We can't recover the exact event timestamps here, so distribute the
-            // server's matchDurationMs evenly across events.
-            if (matchDurationMs && matchDurationMs > 0) {
-                const _frac = events.length > 0 ? (clampedIdx / events.length) : 0;
-                const _remainingMs = Math.max(1000, matchDurationMs - matchDurationMs * _frac);
-                const _secs = Math.max(1, Math.ceil(_remainingMs / 1000));
-                stopMatchTimer();
-                startMatchTimer(_secs);
-            }
+            // Treat the full 90s as the timer span (matches live battle) and scale
+            // by the event index fraction. matchDurationMs is the animated length
+            // and may be shorter than 90s when the battle KO'd early.
+            const _frac      = events.length > 0 ? (clampedIdx / events.length) : 0;
+            const _remaining = Math.max(1, Math.ceil(90 * (1 - _frac)));
+            stopMatchTimer();
+            startMatchTimer(_remaining);
 
             // Resume playback from scrub point if not at the end
             _replayCompleted = false;
