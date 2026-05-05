@@ -21632,6 +21632,13 @@
                                 }
                             }
                             updateWeaponDisplay(event.fighter);
+                            // Mark the idle overlay so syncArmedIdle plays the equip flash exactly
+                            // once for this real equip event — and not on flip / hit-restore syncs.
+                            if (!event.offHand) {
+                                const _eqEl = game[event.fighter]?.element;
+                                const _eqOv = _eqEl?.querySelector('.fighter-body .weapon-idle-overlay');
+                                if (_eqOv) _eqOv._pendingEquipFlash = true;
+                            }
                             syncArmedIdle(event.fighter);
                             // Ensure attack overlay frames are cached — retry if null (prev load failed)
                             if (!event.offHand && !_weaponAttackFramesCache[event.weaponId]) {
@@ -22511,22 +22518,26 @@
                         _dodgeWOv.src = _dodgeWepData.img;
                         fighterBody.appendChild(_dodgeWOv);
                     }
-                    // Slide defender back simultaneously with dodge frames (130px scaled to arena)
-                    const _dArenaW   = document.getElementById('arena').offsetWidth;
-                    const _dScale    = _dArenaW / 1600;
-                    const _dRetPx    = Math.round(130 * _dScale);
-                    const _dCurrLeft = parseFloat(defenderEl.style.left) || 0;
-                    // Defender retreats away from attacker — toward their own wall
-                    // _dDefIsLeft is precomputed above alongside _atkLeftPx so both use the same value.
-                    const _dIsOnLeft = _dDefIsLeft;
-                    const _dRetLeft  = _dIsOnLeft
-                        ? Math.max(Math.round(10 * _dScale), _dCurrLeft - _dRetPx)
-                        : Math.min(Math.round(1370 * _dScale), _dCurrLeft + _dRetPx);
-                    defenderEl.style.transition = 'left 130ms ease-out';
-                    void defenderEl.offsetWidth;
-                    defenderEl.style.left = _dRetLeft + 'px';
-                    defenderEl.style.right = 'auto';
-                    defenderEl._dodgeSlid = true;
+                    // Slide defender back 130px, but skip for long-reach attacks (spear/gun):
+                    // their hit lands through the dodge anyway, and sliding away from the
+                    // attacker leaves the defender visually impaled on the spear tip while
+                    // the impact FX renders at the defender's home position. Staying put
+                    // keeps the impact aligned with the body.
+                    if (!_isLongReachAnim) {
+                        const _dArenaW   = document.getElementById('arena').offsetWidth;
+                        const _dScale    = _dArenaW / 1600;
+                        const _dRetPx    = Math.round(130 * _dScale);
+                        const _dCurrLeft = parseFloat(defenderEl.style.left) || 0;
+                        const _dIsOnLeft = _dDefIsLeft;
+                        const _dRetLeft  = _dIsOnLeft
+                            ? Math.max(Math.round(10 * _dScale), _dCurrLeft - _dRetPx)
+                            : Math.min(Math.round(1370 * _dScale), _dCurrLeft + _dRetPx);
+                        defenderEl.style.transition = 'left 130ms ease-out';
+                        void defenderEl.offsetWidth;
+                        defenderEl.style.left = _dRetLeft + 'px';
+                        defenderEl.style.right = 'auto';
+                        defenderEl._dodgeSlid = true;
+                    }
                 }
                 await sleep(150);
                 if (!jumpDodge) defenderEl.style.transition = '';
@@ -27556,13 +27567,14 @@
                 // fires mid-attack on the same fighter after they switched from defender to attacker.
                 // The flag is set by hideWeaponIdleOverlay and cleared by startIdleBlink.
                 if (poseFrames && poseFrames.length > 0) {
-                    const wasHidden = overlay.style.display === 'none';
-                    // Only flash on genuine equip — not when restoring after hideWeaponIdleOverlay
-                    const doFlash = wasHidden && !overlay._suppressEquipFlash && !overlay._hiddenByAnimation;
-                    overlay._suppressEquipFlash = false;
+                    // Flash ONLY on real weapon_equip events (which set _pendingEquipFlash).
+                    // Other syncArmedIdle calls (facing flip, hit restore, etc.) must not flash —
+                    // the equip flash keyframe passes through yellow/orange and tints the body.
+                    const doFlash = !!overlay._pendingEquipFlash && !overlay._hiddenByAnimation;
                     overlay.src = poseFrames[0];
                     if (!overlay._hiddenByAnimation) {
                         overlay.style.display = 'block';
+                        overlay._pendingEquipFlash = false; // consumed
                     }
                     if (doFlash) {
                         overlay.classList.remove('weapon-equip-flash');
