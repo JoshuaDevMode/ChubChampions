@@ -1067,7 +1067,8 @@
         @keyframes pushback-hit {
             0%   { transform: translate(0, 0); }
             30%  { transform: translate(calc(var(--push-dir, -1) * 35px), 0); }
-            100% { transform: translate(calc(var(--push-dir, -1) * 22px), 0); }
+            70%  { transform: translate(calc(var(--push-dir, -1) * 22px), 0); }
+            100% { transform: translate(0, 0); }
         }
 
         .log-block {
@@ -22023,6 +22024,18 @@
             // Knife is reachAttack:true but thematically a close-range stab, so it keeps the normal approach.
             const _wepDef           = getWeaponById(attackType);
             const _isLongReachAnim  = !!_wepDef?.longReach;
+            // Defensive cleanup: clear any residual transform on attacker/defender bodies
+            // and sprites so each attack starts from a known visual baseline. Prevents
+            // accumulated lunge/push/facing transforms from making the same weapon look
+            // closer or further between hits.
+            const _atkBody = attackerEl.querySelector('.fighter-body');
+            const _defBody = defenderEl.querySelector('.fighter-body');
+            const _atkImg  = attackerEl.querySelector('img.character-png');
+            const _defImg  = defenderEl.querySelector('img.character-png');
+            if (_atkBody) _atkBody.style.transform = '';
+            if (_defBody) _defBody.style.transform = '';
+            if (_atkImg && !_atkImg._hurtActive)  _atkImg.style.transform  = '';
+            if (_defImg && !_defImg._hurtActive)  _defImg.style.transform  = '';
             const _movMs   = Math.round(300 * atkMult);
             attackerEl.style.setProperty('transition', `left ${_movMs}ms ease-out, right ${_movMs}ms ease-out`, 'important');
             void attackerEl.offsetWidth;
