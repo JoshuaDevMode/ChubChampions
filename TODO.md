@@ -30,6 +30,40 @@
 - [x] Fix: cofres no se podían abrir — syncStateFromServer ahora siempre respeta el servidor
   (antes ignoraba array vacío); start_chest_unlock ya no es fire-and-forget
 
+### Battle Visual Fixes (2026-05-05)
+- [x] Bat: agregado `heavyAttack: true` para que use animación 2-manos del personaje
+  (antes usaba la de 1 mano)
+- [x] Winner frame no se veía — `showGameOver` no limpiaba todos los overlays de ataque
+  (`heavy-attack-char-overlay`, `weapon-attack-overlay`, `weapon-attack-char-overlay`).
+  Ahora limpia en ambas ramas (AoN + normal) y resetea `visibility` del jaImg
+- [x] Hit FX aparecía "atrás" del oponente — antes usaba el centro del defensor.
+  Ahora se calcula como `defCx*0.75 + atkCx*0.25` para que aparezca DENTRO del cuerpo
+  del defensor cerca del lado donde el atacante hace contacto (showBloodEffect + jump shockwave)
+- [x] Defensor quedaba desfasado tras un jump attack causando que ataques posteriores
+  no conectaran visualmente — agregado snap defensivo del defender a su `_homeX` al final
+  de cada ataque (línea ~22760)
+- [x] Weapon-run-overlay re-habilitado: antes hardcoded a `[]` por bug de desync.
+  Ahora carga frames del cache `_weaponRunFramesCache[wepId]` y oculta idle overlay
+  durante la corrida para evitar arma duplicada
+- [x] Arma desaparecía al volver del attack run + flip de facing — `stopRunAnimation`
+  ahora restaura inmediatamente el `weapon-idle-overlay` cuando armado, y
+  `_syncFacingDirection` limpia el flag `_hiddenByAnimation` del idle overlay si no
+  hay otros overlays activos
+- [x] `_ATCK_GAP` recalibrado para que los blobs visibles se toquen al impactar
+  (los sprites son ~150-200px dentro del container de 220px):
+  unarmed=50, weapon=70, heavy=100, long-reach=100. Antes era 100/150/180/230
+- [x] Jump/hop landing gap unificado: unarmed=50, long-reach=100 (antes había gap heavy
+  que causaba landing demasiado atrás)
+- [x] `taking-damage` keyframe ahora retorna a `translate(0)` al 100% en vez de quedar
+  en 22px — eliminaba residuo de pushback que afectaba la posición visual del defensor
+  en el siguiente ataque
+- [x] Reset defensivo de transforms al inicio de cada ataque — limpia `attackerEl`,
+  `defenderEl`, sus `.fighter-body` y `img.character-png` para que cada ataque empiece
+  desde un estado visual idéntico (skip si `_hurtActive`)
+- [x] Diagnóstico runtime: `window.__diagAlign = true` en consola activa logs
+  `[align][attack-start]`, `[align][jump-landed]`, `[align][attack-end]` con
+  posiciones server vs visual, útil para debugear desfases
+
 ### Backend APIs (all on chub-champions-backend / Vercel)
 - [x] POST /api/battle/run
 - [x] POST /api/aon/start — deducts tokens, creates/resumes aon_matches row

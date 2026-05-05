@@ -21102,6 +21102,15 @@
             const cImg = game.cpu.element.querySelector('img.character-png');
             if (pImg) { pImg.style.transform = ''; pImg.style.transition = ''; }
             if (cImg) { cImg.style.transform = ''; cImg.style.transition = ''; }
+            // Clear stale _hiddenByAnimation so the idle weapon overlay is allowed to show
+            // when we re-sync. Without this, a flip after a run could leave the weapon
+            // invisible because syncArmedIdle skips overlay show when the flag is set.
+            ['player', 'cpu'].forEach(side => {
+                const _idle = game[side]?.element?.querySelector('.fighter-body .weapon-idle-overlay');
+                if (_idle && !game[side]?.element?.querySelector('.weapon-run-overlay, .weapon-attack-overlay, .weapon-attack-char-overlay, .heavy-attack-char-overlay')) {
+                    _idle._hiddenByAnimation = false;
+                }
+            });
             // Re-sync weapon idle overlay transform to match the new facing direction
             syncArmedIdle('player');
             syncArmedIdle('cpu');
@@ -27141,6 +27150,24 @@
                 if (_sraIdleOv && _sraIdleOv.style.display !== 'none') {
                     _sraIdleOv.style.display = 'none';
                     _sraIdleOv._hiddenByAnimation = false;
+                }
+            }
+            // If armed, immediately restore the idle weapon overlay so the weapon doesn't
+            // disappear in the gap between run-overlay removal and the next syncArmedIdle.
+            // Bug: when re-enabled, the weapon-run-overlay sets _hiddenByAnimation=true on
+            // the idle overlay; if syncArmedIdle fires (e.g. from _syncFacingDirection on
+            // facing flip) before startIdleBlink clears the flag, the weapon stays invisible.
+            if (fighterEl.id && weaponState[fighterEl.id]?.equippedWeapon) {
+                const _sraIdleOv = fighterEl.querySelector('.fighter-body .weapon-idle-overlay');
+                if (_sraIdleOv) {
+                    _sraIdleOv._hiddenByAnimation = false;
+                    _sraIdleOv._suppressEquipFlash = true;
+                    const _eqId = weaponState[fighterEl.id].equippedWeapon;
+                    const _pf   = _weaponIdlePoseCache[_eqId];
+                    if (_pf && _pf.length > 0) {
+                        _sraIdleOv.src = _pf[0];
+                        _sraIdleOv.style.display = 'block';
+                    }
                 }
             }
         }
