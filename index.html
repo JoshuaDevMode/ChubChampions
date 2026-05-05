@@ -22041,7 +22041,7 @@
             // Long-reach weapons (spear/gun) keep even more distance: they hit at range, so the
             // attacker shouldn't crowd the defender visually. Knife stabs close like other weapons.
             const _isHeavyWepAnim = !!_wepDef?.heavyAttack;
-            const _ATCK_GAP = _isLongReachAnim ? 230 : (_isHeavyWepAnim ? 180 : (isWeaponAnim ? 150 : 100));
+            const _ATCK_GAP = _isLongReachAnim ? 80 : (_isHeavyWepAnim ? 80 : (isWeaponAnim ? 50 : 30));
             // After a crossover player._homeX > cpu._homeX, so the approach side flips.
             // _atkGapSign: -1 in normal (approach from left), +1 in crossover (approach from right).
             const _atkGapSign = _playerIsOnLeft() ? -1 : 1;
@@ -22132,7 +22132,7 @@
                 // Jump landings always use the close-combat gap (100) regardless of weapon —
                 // a slam from above should make solid contact, not stop short like a stand-still
                 // weapon swing. Long-reach (spear) keeps a moderate range so it doesn't overlap.
-                const _jaGap    = _isLongReachAnim ? 180 : 100;
+                const _jaGap     = _isLongReachAnim ? 80 : 30;
                 const defHomeX  = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
                 const jaGapSign = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
                 const defCx     = (defHomeX + jaGapSign * _jaGap) * jaScale + (attackerEl.offsetWidth / 2);
@@ -22307,7 +22307,7 @@
                 const haScale   = haArenaW / 1600;
                 const haDefHomeX = (defender === 'player' ? game.player._homeX : game.cpu._homeX) ?? (defender === 'player' ? 128 : 1252);
                 const haGapSign  = (attacker === 'player') === _playerIsOnLeft() ? -1 : 1;
-                const _haGap     = _isLongReachAnim ? 180 : 100;
+                const _haGap     = _isLongReachAnim ? 80 : 30;
                 const haLandLeft = (haDefHomeX + haGapSign * _haGap) * haScale;
                 const haCurrLeft = parseFloat(attackerEl.style.left) || (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * haScale;
                 const haDeltaX   = haLandLeft - haCurrLeft;
