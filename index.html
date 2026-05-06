@@ -23233,8 +23233,8 @@
                             result:      r.winner === 'player' ? 'win' : 'loss',
                             playerHP:    r.player_hp_end,
                             cpuHP:       r.cpu_hp_end,
-                            playerStats: {},
-                            cpuStats:    {},
+                            playerStats: r.player_stats || {},
+                            cpuStats:    r.cpu_stats    || {},
                             replayId:    r.id,
                         })));
                         return;
