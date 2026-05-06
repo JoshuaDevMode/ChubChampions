@@ -1340,21 +1340,21 @@
 
         .inv-consumable-equipped {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
             margin-bottom: 10px;
         }
 
         .inv-consumable-equipped-slot {
-            width: 45px;
-            height: 45px;
+            width: 64px;
+            height: 64px;
             background: rgba(255,250,235,0.55);
             border: 2px solid rgba(120,80,30,0.35);
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
+            font-size: 2em;
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
@@ -6791,28 +6791,28 @@
 
         .inv-equipment-slots {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .inv-equipment-slot {
-            width: 45px;
-            height: 45px;
+            width: 64px;
+            height: 64px;
             background: rgba(255,250,235,0.55);
             border: 2px solid rgba(120,80,30,0.35);
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4px;
+            padding: 6px;
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
         .inv-equipment-slot img {
-            width: 28px;
-            height: 28px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
         }
 
@@ -35069,6 +35069,15 @@
         // Initialize inventory on page load
         populateInventoryPanel();
 
+        // Show only the equipped-slots section that matches the active tab
+        // (My Equipment with Weapons, Battle Items with Consumables).
+        function _syncInvSectionsToTab(filter) {
+            const eqSec   = document.querySelector('.inv-equipment-section');
+            const consSec = document.querySelector('.inv-consumable-section');
+            if (eqSec)   eqSec.style.display   = filter === 'weapons'     ? '' : 'none';
+            if (consSec) consSec.style.display = filter === 'consumables' ? '' : 'none';
+        }
+
         // Inventory button handler
         document.getElementById('menu-inventory-btn').addEventListener('click', () => {
             populateInventoryPanel();
@@ -35078,6 +35087,7 @@
             document.querySelector('.inv-filter-tab[data-filter="weapons"]').classList.add('active');
             document.getElementById('inventory-weapons-grid').style.display = '';
             document.getElementById('inventory-consumables-grid').style.display = 'none';
+            _syncInvSectionsToTab('weapons');
             document.getElementById('inventory-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('inventory-mode');
         });
@@ -35174,6 +35184,7 @@
                 const filter = tab.dataset.filter;
                 document.getElementById('inventory-weapons-grid').style.display = filter === 'weapons' ? '' : 'none';
                 document.getElementById('inventory-consumables-grid').style.display = filter === 'consumables' ? 'grid' : 'none';
+                _syncInvSectionsToTab(filter);
             });
         });
 
