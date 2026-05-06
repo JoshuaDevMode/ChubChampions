@@ -6904,12 +6904,13 @@
         .inventory-weapon-icon {
             display: flex;
             justify-content: center;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
         .inventory-weapon-icon img {
-            width: 48px;
-            height: 48px;
+            width: 72px !important;
+            height: 72px !important;
             object-fit: contain;
+            filter: drop-shadow(0 2px 3px rgba(60,30,10,0.35));
         }
 
         .inventory-weapon-name {
@@ -10779,27 +10780,31 @@
         .durability-bar-container {
             width: 100%;
             height: 8px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(120,80,30,0.25);
             border-radius: 4px;
             margin-top: 6px;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(120,80,30,0.35);
+            box-shadow: inset 0 1px 2px rgba(60,30,10,0.25);
         }
         .durability-bar-fill {
             height: 100%;
             border-radius: 3px;
             transition: width 0.3s ease, background 0.3s ease;
         }
-        .durability-bar-fill.dur-green { background: linear-gradient(to right, #22c55e, #4ade80); }
-        .durability-bar-fill.dur-yellow { background: linear-gradient(to right, #eab308, #facc15); }
-        .durability-bar-fill.dur-red { background: linear-gradient(to right, #ef4444, #f87171); }
+        .durability-bar-fill.dur-green  { background: linear-gradient(to right, #15803d, #22c55e); }
+        .durability-bar-fill.dur-yellow { background: linear-gradient(to right, #b45309, #eab308); }
+        .durability-bar-fill.dur-red    { background: linear-gradient(to right, #991b1b, #ef4444); }
         .durability-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.4em;
-            color: #ccc;
-            margin-top: 3px;
+            font-size: 0.55em;
+            font-weight: 700;
+            color: #4a2e16;
+            margin-top: 4px;
             text-align: center;
+            letter-spacing: 0.4px;
+            text-shadow: 0 1px 0 rgba(255,250,235,0.55);
         }
 
         /* Inventory card broken state */
@@ -33984,7 +33989,7 @@
                 const scaleLabel = weapon.statScale === 'agi' ? 'AGI' : 'STR';
                 const stCost = weapon.staminaCost || 0;
                 card.innerHTML = `
-                    <div class="inventory-weapon-icon">${weaponIconHTML(weapon, 48)}</div>
+                    <div class="inventory-weapon-icon">${weaponIconHTML(weapon, 72)}</div>
                     <div class="inventory-weapon-name">${weapon.name}</div>
                     <div class="inventory-weapon-stats">
                         <div class="inventory-weapon-damage">DMG: ${weaponDmgRange(weapon)}</div>
