@@ -1286,11 +1286,12 @@
 
         /* Consumable section in inventory */
         .inv-consumable-section {
-            background: rgba(0,0,0,0.3);
-            border: 2px solid #22c55e;
+            background: rgba(120,80,30,0.10);
+            border: 1px solid rgba(120,80,30,0.30);
             border-radius: 10px;
             padding: 12px 15px;
             margin-bottom: 15px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
         }
 
         .inv-filter-tabs {
@@ -1303,9 +1304,9 @@
             font-family: 'Fredoka', sans-serif;
             font-size: 0.5em;
             padding: 10px 8px;
-            border: 2px solid #555;
-            background: rgba(0,0,0,0.4);
-            color: #888;
+            border: 1px solid rgba(120,80,30,0.30);
+            background: rgba(255,248,225,0.40);
+            color: #7a5430;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -1317,22 +1318,24 @@
             border-left: none;
         }
         .inv-filter-tab.active {
-            background: rgba(168,85,247,0.3);
-            border-color: #a855f7;
-            color: #fff;
+            background: linear-gradient(180deg, rgba(255,248,225,0.85), rgba(255,232,180,0.55));
+            border-color: #92400e;
+            color: #6b3410;
+            font-weight: 700;
         }
         .inv-filter-tab:hover:not(.active) {
-            background: rgba(255,255,255,0.1);
-            color: #ccc;
+            background: rgba(255,250,235,0.65);
+            color: #4a2e16;
         }
 
         .inv-consumable-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.6em;
-            color: #22c55e;
-            text-shadow: 1px 1px 0 #000;
+            color: #6b3410;
+            text-shadow: 0 1px 0 rgba(255,250,235,0.7);
             text-align: center;
             margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
 
         .inv-consumable-equipped {
@@ -1345,8 +1348,8 @@
         .inv-consumable-equipped-slot {
             width: 45px;
             height: 45px;
-            background: rgba(0,0,0,0.4);
-            border: 2px solid #555;
+            background: rgba(255,250,235,0.55);
+            border: 2px solid rgba(120,80,30,0.35);
             border-radius: 6px;
             display: flex;
             align-items: center;
@@ -1354,15 +1357,16 @@
             font-size: 1.5em;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
 
         .inv-consumable-equipped-slot.filled {
-            border-color: #22c55e;
-            background: rgba(34,197,94,0.15);
+            border-color: #15803d;
+            background: rgba(34,197,94,0.20);
         }
 
         .inv-consumable-equipped-slot.empty {
-            color: #555;
+            color: #b08960;
             font-size: 1.2em;
         }
 
@@ -1374,23 +1378,24 @@
         }
 
         .inventory-consumable-card {
-            background: rgba(0,0,0,0.4);
-            border: 2px solid #555;
+            background: rgba(255,248,225,0.55);
+            border: 2px solid rgba(120,80,30,0.30);
             border-radius: 10px;
             padding: 8px;
             text-align: center;
             transition: all 0.2s;
             cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
 
         .inventory-consumable-card:hover {
-            border-color: #22c55e;
+            border-color: #b45309;
             transform: translateY(-2px);
         }
 
         .inventory-consumable-card.equipped {
-            border-color: #22c55e;
-            background: rgba(34,197,94,0.15);
+            border-color: #15803d;
+            background: linear-gradient(180deg, rgba(190,242,200,0.55), rgba(120,200,140,0.18));
         }
 
         .inv-cons-icon {
@@ -1401,20 +1406,21 @@
         .inv-cons-name {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.4em;
-            color: #ccc;
+            color: #4a2e16;
         }
 
         .inv-cons-qty {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.45em;
-            color: #22c55e;
+            color: #15803d;
             margin-top: 2px;
+            font-weight: 700;
         }
 
         .inv-cons-heal {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.35em;
-            color: #88cc88;
+            color: #6b4422;
         }
 
         .inv-cons-btn {
@@ -6765,20 +6771,22 @@
 
         /* Equipment section inside inventory panel */
         .inv-equipment-section {
-            background: rgba(101,67,33,0.15);
-            border: 2px solid rgba(101,67,33,0.4);
+            background: rgba(120,80,30,0.10);
+            border: 1px solid rgba(120,80,30,0.30);
             border-radius: 10px;
             padding: 12px 15px;
             margin-bottom: 15px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
         }
 
         .inv-equipment-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.7em;
-            color: #a855f7;
-            text-shadow: 1px 1px 0 #000;
+            color: #6b3410;
+            text-shadow: 0 1px 0 rgba(255,250,235,0.7);
             text-align: center;
             margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
 
         .inv-equipment-slots {
@@ -6791,8 +6799,8 @@
         .inv-equipment-slot {
             width: 45px;
             height: 45px;
-            background: rgba(0,0,0,0.4);
-            border: 2px solid #555;
+            background: rgba(255,250,235,0.55);
+            border: 2px solid rgba(120,80,30,0.35);
             border-radius: 6px;
             display: flex;
             align-items: center;
@@ -6800,6 +6808,7 @@
             padding: 4px;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
         .inv-equipment-slot img {
             width: 28px;
@@ -6808,12 +6817,12 @@
         }
 
         .inv-equipment-slot:hover {
-            border-color: #a855f7;
+            border-color: #b45309;
             transform: scale(1.1);
         }
 
         .inv-equipment-slot.empty {
-            color: #555;
+            color: #b08960;
             font-size: 1.2em;
         }
 
@@ -6828,35 +6837,69 @@
         }
 
         .inventory-weapon-card {
-            background: rgba(0,0,0,0.4);
-            border: 2px solid #555;
+            background: rgba(255,248,225,0.55);
+            border: 2px solid rgba(120,80,30,0.30);
             border-radius: 12px;
             padding: 10px;
             text-align: center;
             transition: all 0.2s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
 
         .inventory-weapon-card:hover {
-            border-color: #a855f7;
+            border-color: #b45309;
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(168,85,247,0.3);
+            box-shadow: 0 10px 20px rgba(120,80,30,0.30), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .inventory-weapon-card.equipped {
+            border-color: #15803d !important;
+            background: linear-gradient(180deg, rgba(190,242,200,0.55), rgba(120,200,140,0.18)) !important;
+            box-shadow: 0 0 10px rgba(34,197,94,0.30), inset 0 1px 0 rgba(255,255,255,0.5) !important;
         }
         .inventory-weapon-card[draggable="true"] { cursor: grab; }
         .inventory-weapon-card.inv-dragging { opacity: 0.3 !important; transform: none !important; cursor: grabbing; }
         .inv-equipment-slot[draggable="true"] { cursor: grab; }
         .inv-equipment-slot.inv-dragging { opacity: 0.3; cursor: grabbing; }
         .inv-equipment-slot.inv-drop-over {
-            border-color: #22c55e !important;
-            background: rgba(34,197,94,0.25) !important;
+            border-color: #15803d !important;
+            background: rgba(34,197,94,0.30) !important;
             box-shadow: 0 0 14px rgba(34,197,94,0.55);
             transform: scale(1.15);
         }
         .inventory-weapons-grid.inv-unequip-over {
-            outline: 2px dashed #ef4444;
+            outline: 2px dashed #b91c1c;
             outline-offset: 4px;
             border-radius: 8px;
-            background: rgba(239,68,68,0.04);
+            background: rgba(185,28,28,0.06);
         }
+
+        /* Stat scale + stamina chips on weapon cards */
+        .inventory-weapon-stamina {
+            color: #15803d;
+            font-weight: 700;
+        }
+        .inventory-weapon-scale {
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            margin-top: 2px;
+        }
+        .inventory-weapon-scale.scale-agi { color: #0369a1; }
+        .inventory-weapon-scale.scale-str { color: #c2410c; }
+
+        /* Inline tags under weapon cards (LONG REACH, ✓ EQUIPPED) */
+        .inv-weapon-tag {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.6em;
+            font-weight: 700;
+            margin-top: 4px;
+            letter-spacing: 0.6px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .inv-weapon-tag.tag-reach    { color: #5b21b6; background: rgba(167,139,250,0.18); border: 1px solid rgba(124,58,237,0.35); }
+        .inv-weapon-tag.tag-equipped { color: #14532d; background: rgba(34,197,94,0.18);   border: 1px solid rgba(20,128,52,0.35); }
 
         .inventory-weapon-icon {
             display: flex;
@@ -6878,7 +6921,7 @@
 
         .inventory-weapon-stats {
             font-size: 0.7em;
-            color: #aaa;
+            color: #6b4422;
         }
 
         .inventory-weapon-damage {
@@ -6899,7 +6942,7 @@
         }
 
         .inventory-weapon-locked-text {
-            color: #666;
+            color: #8b6840;
             font-size: 0.6em;
             margin-top: 5px;
         }
@@ -16562,19 +16605,19 @@
         // Weapon tiers organized by chest level (13 tiers)
         // Each tier contains one weapon, unlocked randomly from that tier
         const WEAPON_TIERS = {
-            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, statScale: 'agi', isOneHanded: true, attackOverlay: true, heavyAttack: true }],
-            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, statScale: 'agi', isOneHanded: true, attackOverlay: true, reachAttack: true }],
-            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, attackOverlay: true, heavyAttack: true },
-                  { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, isShield: true, shieldHP: 600 }],
-            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, attackOverlay: true, isOneHanded: true }],
-            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, statScale: 'agi', longReach: true, isOneHanded: true, attackOverlay: true, reachAttack: true }],
-            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06, isOneHanded: true, attackOverlay: true, heavyAttack: true }],
-            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, attackOverlay: true, heavyAttack: true }],
-            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, statScale: 'agi', attackOverlay: true }],
-            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06, attackOverlay: true, heavyAttack: true }],
-            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, statScale: 'agi', attackOverlay: true, isOneHanded: true }],
-            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, attackOverlay: true, heavyAttack: true }],
-            100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, statScale: 'agi', longReach: true, attackOverlay: true, reachAttack: true }]
+            5:   [{ id: 'tier_bat',           name: 'Bat',            img: 'Assets/Weapons/Bat.png',            dmgMin: 84,  dmgMax: 92,  critBonus: 0.08, staminaCost: 12, statScale: 'agi', isOneHanded: true, attackOverlay: true, heavyAttack: true }],
+            10:  [{ id: 'tier_knife',          name: 'Knife',          img: 'Assets/Weapons/Knife.png',          dmgMin: 97,  dmgMax: 107, critBonus: 0.15, staminaCost: 10, statScale: 'agi', isOneHanded: true, attackOverlay: true, reachAttack: true }],
+            15:  [{ id: 'tier_mace',           name: 'Mace',           img: 'Assets/Weapons/Mace.png',           dmgMin: 147, dmgMax: 163, critBonus: 0.08, staminaCost: 22, attackOverlay: true, heavyAttack: true },
+                  { id: 'tier_shield',         name: 'Shield',         img: 'Assets/Weapons/Shield.png',         dmgMin: 38,  dmgMax: 42,  critBonus: 0.05, staminaCost:  8, isShield: true, shieldHP: 600 }],
+            20:  [{ id: 'tier_sword',          name: 'Sword',          img: 'Assets/Weapons/Sword.png',          dmgMin: 108, dmgMax: 120, critBonus: 0.10, staminaCost: 18, attackOverlay: true, isOneHanded: true }],
+            25:  [{ id: 'tier_spear',          name: 'Spear',          img: 'Assets/Weapons/Spear.png',          dmgMin: 116, dmgMax: 128, critBonus: 0.12, staminaCost: 18, statScale: 'agi', longReach: true, isOneHanded: true, attackOverlay: true, reachAttack: true }],
+            30:  [{ id: 'tier_axe',            name: 'Axe',            img: 'Assets/Weapons/Axe.png',            dmgMin: 125, dmgMax: 139, critBonus: 0.06, staminaCost: 20, isOneHanded: true, attackOverlay: true, heavyAttack: true }],
+            40:  [{ id: 'tier_morning_star',   name: 'Morning Star',   img: 'Assets/Weapons/Morning Star.png',   dmgMin: 171, dmgMax: 189, critBonus: 0.09, staminaCost: 24, attackOverlay: true, heavyAttack: true }],
+            50:  [{ id: 'tier_katana',         name: 'Katana',         img: 'Assets/Weapons/Katana.png',         dmgMin: 159, dmgMax: 177, critBonus: 0.16, staminaCost: 16, statScale: 'agi', attackOverlay: true }],
+            60:  [{ id: 'tier_sledgehammer',   name: 'Sledgehammer',   img: 'Assets/Weapons/Sledgehammer.png',   dmgMin: 186, dmgMax: 206, critBonus: 0.06, staminaCost: 28, attackOverlay: true, heavyAttack: true }],
+            70:  [{ id: 'tier_labrys',         name: 'Labrys',         img: 'Assets/Weapons/Labrys.png',         dmgMin: 136, dmgMax: 150, critBonus: 0.13, staminaCost: 18, statScale: 'agi', attackOverlay: true, isOneHanded: true }],
+            80:  [{ id: 'tier_imperial_mace',  name: 'Imperial Mace',  img: 'Assets/Weapons/Imperial Mace.png',  dmgMin: 207, dmgMax: 229, critBonus: 0.08, staminaCost: 26, attackOverlay: true, heavyAttack: true }],
+            100: [{ id: 'tier_gun',            name: 'Gùn',           img: 'Assets/Weapons/Gun.png',            dmgMin: 88,  dmgMax: 98,  critBonus: 0.12, staminaCost: 15, statScale: 'agi', longReach: true, attackOverlay: true, reachAttack: true }]
         };
 
         // Pre-populate WEAPONS from all WEAPON_TIERS so CPU weapons (which can be
@@ -16588,6 +16631,7 @@
                         dmgMin: w.dmgMin,
                         dmgMax: w.dmgMax,
                         critBonus: w.critBonus,
+                        staminaCost: w.staminaCost || 0,
                         longReach: w.longReach || false,
                         isShield: w.isShield || false,
                         shieldHP: w.shieldHP || 0,
@@ -33937,25 +33981,24 @@
 
                 const card = document.createElement('div');
                 card.className = 'inventory-weapon-card' + (isEquipped ? ' equipped' : '') + (isBroken ? ' broken-weapon' : '');
-                if (isEquipped && !isBroken) {
-                    card.style.borderColor = '#22c55e';
-                    card.style.background = 'rgba(34,197,94,0.2)';
-                }
+                const scaleLabel = weapon.statScale === 'agi' ? 'AGI' : 'STR';
+                const stCost = weapon.staminaCost || 0;
                 card.innerHTML = `
                     <div class="inventory-weapon-icon">${weaponIconHTML(weapon, 48)}</div>
                     <div class="inventory-weapon-name">${weapon.name}</div>
                     <div class="inventory-weapon-stats">
                         <div class="inventory-weapon-damage">DMG: ${weaponDmgRange(weapon)}</div>
                         <div class="inventory-weapon-crit">CRIT: +${Math.round(weapon.critBonus * 100)}%</div>
-                        <div style="font-size:0.6em;color:${weapon.statScale === 'agi' ? '#38bdf8' : '#fb923c'};">${weapon.statScale === 'agi' ? 'AGI' : 'STR'}</div>
+                        <div class="inventory-weapon-stamina">ST: -${stCost}</div>
+                        <div class="inventory-weapon-scale scale-${scaleLabel.toLowerCase()}">${scaleLabel}</div>
                     </div>
                     <div class="durability-bar-container">
                         <div class="durability-bar-fill ${durColor}" style="width:${durability}%"></div>
                     </div>
                     <div class="durability-text">DUR: ${durability}%</div>
-                    ${weapon.longReach || weapon.jumpable ? '<div style="color:#a78bfa;font-size:0.6em;margin-top:3px;letter-spacing:0.05em;">LONG REACH</div>' : ''}
+                    ${weapon.longReach || weapon.jumpable ? '<div class="inv-weapon-tag tag-reach">LONG REACH</div>' : ''}
                     ${isBroken ? '<div class="broken-badge">BROKEN</div>' : ''}
-                    ${isEquipped && !isBroken ? '<div style="color:#22c55e;font-size:0.6em;margin-top:5px;">✓ EQUIPPED</div>' : ''}
+                    ${isEquipped && !isBroken ? '<div class="inv-weapon-tag tag-equipped">✓ EQUIPPED</div>' : ''}
                     ${character && isEquipped && !isBroken ? '<button class="inv-equip-btn inv-equip-btn-unequip">UNEQUIP</button>' : ''}
                     ${character && !isEquipped && canEquip && !isBroken ? '<button class="inv-equip-btn inv-equip-btn-equip">EQUIP</button>' : ''}
                 `;
@@ -34014,6 +34057,7 @@
                     <div class="inventory-weapon-stats">
                         <div class="inventory-weapon-damage">DMG: ???</div>
                         <div class="inventory-weapon-crit">CRIT: ???</div>
+                        <div class="inventory-weapon-stamina">ST: ???</div>
                     </div>
                 `;
                 grid.appendChild(card);
