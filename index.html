@@ -21202,14 +21202,18 @@
                     // Use _prevOnLeft (pre-move) so that during a crossover the sprite faces
                     // the direction of travel, not the post-crossover idle direction.
                     const isBack = ((event.fighter === 'player') === _prevOnLeft) ? movingLeft : !movingLeft;
-                    // Physics: duration scales inversely with AGI speed.
-                    // event.speed = moveSpeed(agi) — base px/turn (NOT half for cautious steps after this fix).
-                    // event.speed = moveSpeed(agi): inversely scales duration.
-                    // AGI 15 (47px) → ~568ms  |  AGI 68 (89px) → 300ms  |  AGI 300 (275px) → 120ms floor.
-                    // Without speed (jump / reposition events): fixed reference 180px/300ms.
+                    // Physics: duration scales inversely with AGI speed so low-AGI fighters
+                    // visibly trudge across the arena while high-AGI ones blur. The 3500ms
+                    // ceiling is just a sanity cap for extreme AGI 15 + cross-arena distances.
+                    // Per-stride visual chunking is handled backend-side (chunked move events).
+                    //   AGI  15 (47px),  89px stride →  568ms     | 800px raw → ~3500ms cap
+                    //   AGI  68 (89px),  89px stride →  300ms     | 800px raw → 2696ms
+                    //   AGI 300 (275px),275px stride →   97ms     | 800px raw →  282ms
+                    //   AGI 700 (452px),452px stride →   59ms→70  | 800px raw →  105ms
+                    // Without speed (jump / reposition): fixed reference 180px/300ms.
                     const pxPerTurn = event.speed;
                     const moveDur   = pxPerTurn
-                        ? Math.max(70, Math.min(600, Math.round(26700 * distServer / (pxPerTurn * pxPerTurn))))
+                        ? Math.max(70, Math.min(3500, Math.round(26700 * distServer / (pxPerTurn * pxPerTurn))))
                         : Math.max(120, Math.min(600, Math.round(distServer * 300 / 180)));
                     movEl.style.transition = `left ${moveDur}ms ease-out, right ${moveDur}ms ease-out`;
                     void movEl.offsetWidth;
