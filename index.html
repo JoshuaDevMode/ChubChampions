@@ -13321,47 +13321,46 @@
         /* Orbiting comet around every yellow button. Two streaks per button (180° apart)
            so a glow is always visible on at least one edge. Each yellow button has its
            own offset-path radius matching its border-radius (pills vs rounded rects). */
+        /* A tiny glowing "dot-comet": short streak so it never overshoots tight
+           corners, but the layered drop-shadows produce a soft trailing halo that
+           reads as a comet at any button size. */
         .top-currency-group::before,
         .top-currency-group::after,
         .skills-icon-btn::before,
         .skills-icon-btn::after,
         .menu-bars-with-care .care-icon-btn::before,
         .menu-bars-with-care .care-icon-btn::after,
-        .daily-claim-lobby-btn::before,
-        .daily-claim-lobby-btn::after {
+        .daily-claim-lobby-btn:not(.has-reward)::before,
+        .daily-claim-lobby-btn:not(.has-reward)::after {
             content: "";
             position: absolute;
             top: 0; left: 0;
-            height: 3px;
-            border-radius: 3px;
-            background: linear-gradient(to right, transparent 0%, rgba(255,235,160,0.35) 22%, rgba(255,252,200,0.95) 70%, #ffffff 100%);
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, rgba(255,250,210,0.95) 35%, rgba(255,220,120,0.4) 70%, transparent 100%);
             filter:
-                drop-shadow(0 0 4px rgba(255,248,190,0.95))
-                drop-shadow(0 0 10px rgba(255,210,0,0.85))
-                drop-shadow(0 0 18px rgba(255,170,0,0.55));
-            offset-rotate: auto;
+                drop-shadow(0 0 5px rgba(255,250,210,1))
+                drop-shadow(0 0 12px rgba(255,210,80,0.95))
+                drop-shadow(0 0 22px rgba(255,170,0,0.65));
+            offset-rotate: 0deg;
             animation: orbitBorder 3s linear infinite;
             pointer-events: none;
             z-index: 10;
             transform: none;
             mix-blend-mode: normal;
         }
-        /* Pill-shaped (top-currency-group + skills-icon-btn): wide streak, gentle curves */
+        /* Pill-shaped buttons trace the full pill */
         .top-currency-group::before,
         .top-currency-group::after,
         .skills-icon-btn::before,
         .skills-icon-btn::after {
-            width: 26px;
             offset-path: inset(2px round 999px);
         }
-        /* Rounded-rect (care-icon-btn + daily-claim-lobby-btn): short streak so it
-           doesn't overshoot the 6px corner radius (a long bar can't bend through a
-           tight arc — the rectangle ends stick out tangentially) */
+        /* Rounded-rect buttons match their 6px corner */
         .menu-bars-with-care .care-icon-btn::before,
         .menu-bars-with-care .care-icon-btn::after,
-        .daily-claim-lobby-btn::before,
-        .daily-claim-lobby-btn::after {
-            width: 10px;
+        .daily-claim-lobby-btn:not(.has-reward)::before,
+        .daily-claim-lobby-btn:not(.has-reward)::after {
             offset-path: inset(2px round 6px);
         }
         /* Second streak orbits half a lap behind the first */
