@@ -13311,7 +13311,11 @@
                 0 4px 0 #2b1a0e,
                 0 10px 22px rgba(0,0,0,0.35) !important;
             position: relative;
-            overflow: hidden;
+            /* clip the streak rectangle to the button edge but let its drop-shadow
+               glow bleed out a few pixels — otherwise the comet only shows a thin
+               sliver at the bottom (where box-shadow already covers it) */
+            overflow: clip;
+            overflow-clip-margin: 22px;
             isolation: isolate;
         }
         /* Orbiting comet around every yellow button. Two streaks per button (180° apart)
@@ -13338,7 +13342,7 @@
             offset-rotate: auto;
             animation: orbitBorder 3s linear infinite;
             pointer-events: none;
-            z-index: 5;
+            z-index: 10;
             transform: none;
             mix-blend-mode: normal;
         }
