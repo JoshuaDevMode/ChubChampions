@@ -13314,35 +13314,55 @@
             overflow: hidden;
             isolation: isolate;
         }
-        /* Crystal sheen sweep on the gold glass elements */
-        .main-menu .top-currency-group::after,
-        .main-menu .daily-claim-lobby-btn::after,
-        .main-menu .menu-bars-with-care .care-icon-btn::after,
-        .main-menu .skills-icon-btn::after {
+        /* Orbiting comet around every yellow button. Two streaks per button (180° apart)
+           so a glow is always visible on at least one edge. Each yellow button has its
+           own offset-path radius matching its border-radius (pills vs rounded rects). */
+        .top-currency-group::before,
+        .top-currency-group::after,
+        .skills-icon-btn::before,
+        .skills-icon-btn::after,
+        .menu-bars-with-care .care-icon-btn::before,
+        .menu-bars-with-care .care-icon-btn::after,
+        .daily-claim-lobby-btn::before,
+        .daily-claim-lobby-btn::after {
             content: "";
             position: absolute;
-            top: -20%;
-            left: 0;
-            width: 55%;
-            height: 140%;
-            background: linear-gradient(105deg,
-                transparent 0%,
-                rgba(255,255,255,0.12) 30%,
-                rgba(255,255,255,0.6) 48%,
-                rgba(255,255,255,0.9) 50%,
-                rgba(255,255,255,0.6) 52%,
-                rgba(255,255,255,0.12) 70%,
-                transparent 100%);
-            transform: translateX(-160%) skewX(-20deg);
-            animation: crystalSheen 8s linear infinite;
+            top: 0; left: 0;
+            width: 26px; height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(to right, transparent 0%, rgba(255,235,160,0.35) 22%, rgba(255,252,200,0.95) 70%, #ffffff 100%);
+            filter:
+                drop-shadow(0 0 4px rgba(255,248,190,0.95))
+                drop-shadow(0 0 10px rgba(255,210,0,0.85))
+                drop-shadow(0 0 18px rgba(255,170,0,0.55));
+            offset-rotate: auto;
+            animation: orbitBorder 3s linear infinite;
             pointer-events: none;
-            mix-blend-mode: screen;
-            filter: blur(1px);
-            z-index: 2;
+            z-index: 5;
+            transform: none;
+            mix-blend-mode: normal;
         }
-        .main-menu .daily-claim-lobby-btn::after { animation-delay: 1.5s; }
-        .main-menu .menu-bars-with-care .care-icon-btn::after { animation-delay: 3s; }
-        .main-menu .skills-icon-btn::after { animation-delay: 5s; }
+        /* Pill-shaped (top-currency-group + skills-icon-btn): trace the full pill */
+        .top-currency-group::before,
+        .top-currency-group::after,
+        .skills-icon-btn::before,
+        .skills-icon-btn::after {
+            offset-path: inset(2px round 999px);
+        }
+        /* Rounded-rect (care-icon-btn + daily-claim-lobby-btn): match 6px corner */
+        .menu-bars-with-care .care-icon-btn::before,
+        .menu-bars-with-care .care-icon-btn::after,
+        .daily-claim-lobby-btn::before,
+        .daily-claim-lobby-btn::after {
+            offset-path: inset(2px round 6px);
+        }
+        /* Second streak orbits half a lap behind the first */
+        .top-currency-group::after,
+        .skills-icon-btn::after,
+        .menu-bars-with-care .care-icon-btn::after,
+        .daily-claim-lobby-btn::after {
+            animation-delay: -1.5s;
+        }
 
         /* Currency item text contrast over the glass */
         .main-menu .currency-item {
