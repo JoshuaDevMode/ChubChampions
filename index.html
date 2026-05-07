@@ -6811,9 +6811,10 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
         }
         .inv-equipment-slot img {
-            width: 44px;
-            height: 44px;
+            width: 48px !important;
+            height: 48px !important;
             object-fit: contain;
+            filter: drop-shadow(0 1px 2px rgba(60,30,10,0.30));
         }
 
         .inv-equipment-slot:hover {
@@ -35539,7 +35540,7 @@
                 } else if (weaponId && WEAPONS[weaponId]) {
                     const weapon = WEAPONS[weaponId];
                     slot.className = 'inv-equipment-slot';
-                    slot.innerHTML = weaponIconHTML(weapon, 28);
+                    slot.innerHTML = weaponIconHTML(weapon, 48);
                     slot.title = weapon.name;
                     slot.addEventListener('click', () => showWeaponAction(weaponId, true));
                     // Drag equipped weapon out to unequip
