@@ -3052,9 +3052,10 @@
             position: relative;
         }
         .menu-equipment-slot img {
-            width: 24px;
-            height: 24px;
+            width: 40px !important;
+            height: 40px !important;
             object-fit: contain;
+            filter: drop-shadow(0 1px 2px rgba(60,30,10,0.30));
         }
 
         .menu-equipment-slot:hover {
@@ -3097,7 +3098,7 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 1.1em;
+            font-size: 1.7em;
             line-height: 1;
         }
 
@@ -11876,15 +11877,22 @@
         .main-menu .menu-char-xp-label {
             position: absolute;
             top: 50%;
-            left: 10px;
+            left: 12px;
             transform: translateY(-50%);
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
             color: #fff;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            -webkit-text-stroke: 0.6px #1a0f04;
+            text-shadow:
+                -1px -1px 0 #1a0f04,
+                 1px -1px 0 #1a0f04,
+                -1px  1px 0 #1a0f04,
+                 1px  1px 0 #1a0f04,
+                 0 1px 2px rgba(0,0,0,0.6);
             letter-spacing: 0.08em;
             z-index: 2;
+            line-height: 1;
         }
         .main-menu .menu-char-exp-text {
             position: absolute;
@@ -11893,11 +11901,19 @@
             align-items: center;
             justify-content: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 800;
             color: #fff;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            -webkit-text-stroke: 0.6px #1a0f04;
+            text-shadow:
+                -1px -1px 0 #1a0f04,
+                 1px -1px 0 #1a0f04,
+                -1px  1px 0 #1a0f04,
+                 1px  1px 0 #1a0f04,
+                 0 1px 2px rgba(0,0,0,0.6);
             z-index: 2;
+            line-height: 1;
+            letter-spacing: 0.04em;
         }
         .main-menu .skills-icon-btn {
             background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%) !important;
@@ -12121,7 +12137,7 @@
         .main-menu .menu-equip-section-title { font-size: 0.9em !important; }
         .main-menu .menu-equipment-slots > *,
         .main-menu .menu-equip-consumable-slots > * {
-            min-height: 46px !important;
+            min-height: 58px !important;
         }
 
         /* Right column — wider + fix z-index of chest counter vs battle btn */
@@ -13477,7 +13493,7 @@
         .main-menu .instinct-section-title { font-size: 0.55em !important; margin-bottom: 2px !important; }
         .main-menu .instinct-hint { margin-top: 3px !important; font-size: 0.5em !important; }
         .main-menu .menu-exp-skills-row { margin-bottom: 2px !important; }
-        .main-menu .menu-char-exp-track { height: 14px !important; }
+        .main-menu .menu-char-exp-track { height: 22px !important; }
 
         /* ── Care + Inventory: light brown limestone frame (no dark bronze) ── */
         .care-panel,
@@ -35477,7 +35493,7 @@
                 } else if (weaponId && WEAPONS[weaponId]) {
                     const weapon = WEAPONS[weaponId];
                     slot.className = 'menu-equipment-slot';
-                    slot.innerHTML = weaponIconHTML(weapon, 28);
+                    slot.innerHTML = weaponIconHTML(weapon, 40);
                     slot.title = weapon.name;
                     slot.addEventListener('click', () => showWeaponAction(weaponId, true));
                 } else {
