@@ -32582,25 +32582,32 @@
         var _lobbySpritesLoaded = false; // var avoids TDZ — called before this line via hoisted function
 
 
-        // Highest progress percent we've shown — prevents stale callers (e.g. a second
-        // preloadLobbySprites() race) from making the liquid fill jump backwards.
-        var _lloLastPct = 0;
-        function _lloProgress(percent, text) {
-            // Monotonic: never regress. Allow exact 100 to be re-applied (idempotent).
-            if (percent < _lloLastPct && percent < 100) return;
-            _lloLastPct = Math.max(_lloLastPct, percent);
+        // Target percent (set by callers) vs displayed percent (rendered by RAF).
+        // The render loop interpolates display→target each frame so the liquid
+        // rises smoothly even when callers jump in big steps (e.g. 12 → 38).
+        var _lloLastPct    = 0;   // monotonic target — never regresses
+        var _lloDisplayPct = 0;   // currently rendered percent
+        var _lloRafId      = 0;
+        var _lloPhaseClass = '';  // tracks .llo-complete on the overlay
+        function _lloRenderFrame() {
+            _lloRafId = 0;
             const fillRect = document.getElementById('llo-fill-rect');
             const wave     = document.getElementById('llo-wave');
             const overlay  = document.getElementById('lobby-loading-overlay');
-            const subText  = document.getElementById('llo-sub');
+            // Ease toward target. Higher factor = faster catch-up; small floor
+            // keeps motion alive near the end so the fill always settles.
+            const delta = _lloLastPct - _lloDisplayPct;
+            if (Math.abs(delta) < 0.05) {
+                _lloDisplayPct = _lloLastPct;
+            } else {
+                _lloDisplayPct += delta * 0.08 + Math.sign(delta) * 0.04;
+            }
             if (fillRect) {
-                const h = Math.max(1, (_lloLastPct / 100) * 1024);
+                const h = Math.max(1, (_lloDisplayPct / 100) * 1024);
                 const y = 1024 - h;
                 fillRect.setAttribute('y',      String(y));
                 fillRect.setAttribute('height', String(h));
                 if (wave) {
-                    // Build a sine-wave band that sits on top of the fill.
-                    // Path is 2x viewBox-wide so CSS translate animates it seamlessly.
                     const amp = 14, period = 128, top = y - amp, base = y + amp;
                     let d = `M -1024 ${base} L -1024 ${top}`;
                     for (let x = -1024; x <= 2048; x += period / 4) {
@@ -32612,10 +32619,25 @@
                 }
             }
             if (overlay) {
-                if (percent >= 100) overlay.classList.add('llo-complete');
-                else overlay.classList.remove('llo-complete');
+                const desired = _lloDisplayPct >= 99.95 ? 'complete' : '';
+                if (desired !== _lloPhaseClass) {
+                    if (desired === 'complete') overlay.classList.add('llo-complete');
+                    else overlay.classList.remove('llo-complete');
+                    _lloPhaseClass = desired;
+                }
             }
+            // Keep ticking until the rendered fill catches up to the target.
+            if (_lloDisplayPct < _lloLastPct) {
+                _lloRafId = requestAnimationFrame(_lloRenderFrame);
+            }
+        }
+        function _lloProgress(percent, text) {
+            // Monotonic: never regress. Allow exact 100 to be re-applied (idempotent).
+            if (percent < _lloLastPct && percent < 100) return;
+            _lloLastPct = Math.max(_lloLastPct, Math.min(100, percent));
+            const subText = document.getElementById('llo-sub');
             if (subText && text) subText.textContent = text;
+            if (!_lloRafId) _lloRafId = requestAnimationFrame(_lloRenderFrame);
         }
 
         var _preloadLobbyInFlight = null;
