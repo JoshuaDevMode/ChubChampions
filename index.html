@@ -16143,13 +16143,13 @@
             desc:'Bleed also reduces enemy attack power.',
             values:[0,0.05,0.09,0.14,0.21,0.30], unit:'% atk reduce' },
           { tree:'attack',  id:'rupture',        name:'Rupture',        depth:3, x:376, y:418,
-            parent:'expose',         exclusiveWith:'attack_lifetap',
+            parent:'expose',         exclusiveWith:'attack_predator',
             desc:'Crits against Exposed enemies deal extra damage.',
             values:[0,0.14,0.25,0.38,0.55,0.76], unit:'% crit bonus' },
-          { tree:'attack',  id:'lifetap',        name:'Lifetap',        depth:3, x:428, y:418,
+          { tree:'attack',  id:'predator',       name:'Predator',       depth:3, x:428, y:418,
             parent:'expose',         exclusiveWith:'attack_rupture',
-            desc:'Lifesteal against Exposed enemies.',
-            values:[0,0.06,0.11,0.17,0.25,0.35], unit:'% lifesteal' },
+            desc:'Hits against Exposed enemies gain a massive crit chance bonus — R5 guarantees crit.',
+            values:[0,0.20,0.40,0.60,0.80,1.00], unit:'% crit chance vs Exposed' },
 
           // ── DEFENSE TREE ─────────────────────────────────────────────────────────────
           // L0 — root
@@ -16166,11 +16166,10 @@
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Unlocks dual-wielding: equip a shield in your off hand alongside a one-handed weapon. Higher ranks also reduce block stamina cost.',
             values:[0,1,1,1,1,1], unit:'off-hand unlock' },
-          { tree:'defense', id:'resilience',     name:'Resilience',     depth:1, x:900, y:190,
+          { tree:'defense', id:'vitality',      name:'Vitality',       depth:1, x:900, y:190,
             parent:'iron_hide',      exclusiveWith:null,
-            desc:'Increases maximum HP and passively regenerates stamina each turn.',
-            values:[0,0.06,0.12,0.20,0.30,0.44], unit:'% max HP',
-            values2:[0,0.006,0.012,0.020,0.030,0.044], unit2:'% max ST/turn' },
+            desc:'Hardens body and spirit — increases maximum HP.',
+            values:[0,0.05,0.10,0.16,0.23,0.32], unit:'% max HP' },
           // L2 — exclusive
           { tree:'defense', id:'bulwark',        name:'Bulwark',        depth:2, x:538, y:308,
             parent:'fortify',        exclusiveWith:'defense_counter',
@@ -16181,11 +16180,11 @@
             desc:'Chance to automatically counterattack after blocking a hit.',
             values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% counter chance' },
           { tree:'defense', id:'regeneration',   name:'Regeneration',   depth:2, x:768, y:308,
-            parent:'resilience',     exclusiveWith:'defense_lifesteal',
+            parent:'vitality',       exclusiveWith:'defense_lifesteal',
             desc:'Passively recover % of max HP each turn.',
             values:[0,0.012,0.022,0.035,0.052,0.074], unit:'% HP/turn' },
           { tree:'defense', id:'lifesteal',      name:'Lifesteal',      depth:2, x:872, y:308,
-            parent:'resilience',     exclusiveWith:'defense_regeneration',
+            parent:'vitality',       exclusiveWith:'defense_regeneration',
             desc:'Heal % of all damage dealt.',
             values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% lifesteal' },
           // L3 — exclusive
@@ -16211,16 +16210,41 @@
             values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% max HP healed' },
           { tree:'defense', id:'endurance',      name:'Endurance',      depth:3, x:794, y:418,
             parent:'regeneration',   exclusiveWith:'defense_second_wind',
-            desc:'Regen rate doubles when below 50% HP.',
-            values:[0,1,1,2,2,3], unit:'x multiplier' },
+            desc:'Regen rate scales up the lower your HP — peaks below 50%.',
+            values:[0,1.3,1.6,2.0,2.5,3.0], unit:'x multiplier <50% HP' },
           { tree:'defense', id:'vampiric',       name:'Vampiric',       depth:3, x:846, y:418,
-            parent:'lifesteal',      exclusiveWith:'defense_blood_armor',
+            parent:'lifesteal',      exclusiveWith:'defense_sanguine_ward',
             desc:'Lifesteal scales with missing HP — much stronger when wounded.',
             values:[0,0.05,0.09,0.14,0.20,0.28], unit:'% bonus/10%HP' },
-          { tree:'defense', id:'blood_armor',    name:'Blood Armor',    depth:3, x:898, y:418,
+          { tree:'defense', id:'sanguine_ward',  name:'Sanguine Ward',  depth:3, x:898, y:418,
             parent:'lifesteal',      exclusiveWith:'defense_vampiric',
-            desc:'Lifesteal also generates a temporary absorption shield.',
-            values:[0,0.25,0.40,0.60,0.85,1.20], unit:'% dmg as shield' },
+            desc:'Once per battle: when HP drops below 50%, gain a flat damage reduction for 3 turns.',
+            values:[0,0.05,0.10,0.15,0.20,0.25], unit:'% DR for 3 turns' },
+          // ── Shield Mastery branch (Phase 2) ──────────────────────────────────────
+          { tree:'defense', id:'bash',           name:'Bash',           depth:2, x:660, y:308,
+            parent:'shield_mastery', exclusiveWith:'defense_bastion',
+            desc:'When you block, your shield slams back — deal a % of the blocked damage to the attacker.',
+            values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% bash dmg' },
+          { tree:'defense', id:'bastion',        name:'Bastion',        depth:2, x:752, y:308,
+            parent:'shield_mastery', exclusiveWith:'defense_bash',
+            desc:'Master the shield — additional flat block effectiveness.',
+            values:[0,0.05,0.10,0.15,0.20,0.25], unit:'% extra block' },
+          { tree:'defense', id:'aegis',          name:'Aegis',          depth:3, x:638, y:520,
+            parent:'bash',           exclusiveWith:'defense_retaliation',
+            desc:'The first block of every battle is near-perfect — most of the damage is negated.',
+            values:[0,0.50,0.65,0.80,0.90,1.00], unit:'% first-block negate' },
+          { tree:'defense', id:'retaliation',    name:'Retaliation',    depth:3, x:686, y:520,
+            parent:'bash',           exclusiveWith:'defense_aegis',
+            desc:'Bash also dazes the attacker — they skip turns afterward.',
+            values:[0,1,1,1,2,2], unit:'turns of stun' },
+          { tree:'defense', id:'phalanx',        name:'Phalanx',        depth:3, x:740, y:520,
+            parent:'bastion',        exclusiveWith:'defense_guardian_stance',
+            desc:'Your shield repairs itself between turns.',
+            values:[0,0.05,0.09,0.14,0.20,0.30], unit:'% shield HP/turn' },
+          { tree:'defense', id:'guardian_stance',name:'Guardian Stance',depth:3, x:790, y:520,
+            parent:'bastion',        exclusiveWith:'defense_phalanx',
+            desc:'Critical hits against you while blocking are sharply reduced.',
+            values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% crit dmg reduce' },
 
           // ── ALCHEMIST TREE ───────────────────────────────────────────────────────────
           // L0 — root
@@ -16245,7 +16269,7 @@
           { tree:'alchemist', id:'quick_dose',   name:'Quick Dose',   depth:2, x:1098, y:308,
             parent:'potency',      exclusiveWith:'alchemist_amplify',
             desc:'Consumables used in battle have reduced cooldown between uses.',
-            values:[0,1,1,2,2,3], unit:'turns cooldown reduce' },
+            values:[0,1,2,2,3,3], unit:'turns cooldown reduce' },
           { tree:'alchemist', id:'extended',     name:'Extended',     depth:2, x:1162, y:308,
             parent:'duration',     exclusiveWith:'alchemist_compound',
             desc:'Timed buffs last significantly longer — doubles the Duration bonus.',
@@ -16253,7 +16277,40 @@
           { tree:'alchemist', id:'compound',     name:'Compound',     depth:2, x:1248, y:308,
             parent:'duration',     exclusiveWith:'alchemist_extended',
             desc:'Using a consumable while a buff is already active stacks the effect instead of replacing it.',
-            values:[0,1,1,2,2,3], unit:'max stacks' },
+            values:[0,1,2,3,4,5], unit:'max stacks' },
+          // ── Alchemist L3 (Phase 2) ───────────────────────────────────────────────
+          { tree:'alchemist', id:'mixology',     name:'Mixology',     depth:3, x:990,  y:418,
+            parent:'amplify',      exclusiveWith:'alchemist_reservoir',
+            desc:'HP-restoring consumables also restore stamina.',
+            values:[0,0.10,0.18,0.27,0.36,0.46], unit:'% max ST restored' },
+          { tree:'alchemist', id:'reservoir',    name:'Reservoir',    depth:3, x:1034, y:418,
+            parent:'amplify',      exclusiveWith:'alchemist_mixology',
+            desc:'Carry extra consumable slots into battle (stacks with Brew Master).',
+            values:[0,1,1,2,2,3], unit:'extra slots' },
+          { tree:'alchemist', id:'rapid_reflex', name:'Rapid Reflex', depth:3, x:1080, y:418,
+            parent:'quick_dose',   exclusiveWith:'alchemist_stim_pack',
+            desc:'Further reduces consumable cooldown — stacks with Quick Dose.',
+            values:[0,1,2,2,3,3], unit:'extra CD reduce' },
+          { tree:'alchemist', id:'stim_pack',    name:'Stim Pack',    depth:3, x:1124, y:418,
+            parent:'quick_dose',   exclusiveWith:'alchemist_rapid_reflex',
+            desc:'Using any consumable grants a brief damage boost for 2 turns afterward.',
+            values:[0,0.06,0.12,0.18,0.25,0.35], unit:'% dmg boost' },
+          { tree:'alchemist', id:'eternity',     name:'Eternity',     depth:3, x:1170, y:418,
+            parent:'extended',     exclusiveWith:'alchemist_catalyst',
+            desc:'Timed buffs last several extra turns on top of Duration + Extended.',
+            values:[0,1,2,3,4,6], unit:'extra turns' },
+          { tree:'alchemist', id:'catalyst',     name:'Catalyst',     depth:3, x:1214, y:418,
+            parent:'extended',     exclusiveWith:'alchemist_eternity',
+            desc:'When a timed buff expires, your next attack is empowered.',
+            values:[0,0.15,0.25,0.40,0.60,0.85], unit:'% bonus dmg' },
+          { tree:'alchemist', id:'stack_master', name:'Stack Master', depth:3, x:1260, y:418,
+            parent:'compound',     exclusiveWith:'alchemist_synthesis',
+            desc:'Compound can stack many more times.',
+            values:[0,1,2,3,4,5], unit:'extra max stacks' },
+          { tree:'alchemist', id:'synthesis',    name:'Synthesis',    depth:3, x:1304, y:418,
+            parent:'compound',     exclusiveWith:'alchemist_stack_master',
+            desc:'Each active Compound stack also boosts consumable potency.',
+            values:[0,0.06,0.10,0.15,0.20,0.28], unit:'% potency / stack' },
         ];
 
         // ── Skill Node Icons ────────────────────────────────────────────────────────
@@ -16272,11 +16329,11 @@
           'attack_hemorrhage':    '🫀',
           'attack_rend':          '🗡️',
           'attack_rupture':       '⚡',
-          'attack_lifetap':       '💚',
+          'attack_predator':      '🐺',
           'defense_iron_hide':    '🛡️',
           'defense_shield_mastery':'⚔️🛡️',
           'defense_fortify':      '🏰',
-          'defense_resilience':   '❤️',
+          'defense_vitality':     '❤️',
           'defense_bulwark':      '⬛',
           'defense_counter':      '↩️',
           'defense_regeneration': '🌿',
@@ -16288,7 +16345,13 @@
           'defense_second_wind':  '💨',
           'defense_endurance':    '🏋️',
           'defense_vampiric':     '🧛',
-          'defense_blood_armor':  '🔴',
+          'defense_sanguine_ward':'🩷',
+          'defense_bash':         '🔨',
+          'defense_bastion':      '🏯',
+          'defense_aegis':        '✨',
+          'defense_retaliation':  '💫',
+          'defense_phalanx':      '🛡️',
+          'defense_guardian_stance':'🪨',
           'alchemist_brew_master': '⚗️',
           'alchemist_potency':     '✨',
           'alchemist_duration':    '⏳',
@@ -16296,10 +16359,51 @@
           'alchemist_quick_dose':  '⚡',
           'alchemist_extended':    '🔮',
           'alchemist_compound':    '🧬',
+          'alchemist_mixology':    '🍹',
+          'alchemist_reservoir':   '🎒',
+          'alchemist_rapid_reflex':'⏱️',
+          'alchemist_stim_pack':   '💉',
+          'alchemist_eternity':    '♾️',
+          'alchemist_catalyst':    '☄️',
+          'alchemist_stack_master':'📚',
+          'alchemist_synthesis':   '⚛️',
         };
 
         // SKILL_NODE_MAP: 'tree_nodeId' → node (for O(1) lookup)
         const SKILL_NODE_MAP = new Map(SKILL_NODES.map(n => [n.tree + '_' + n.id, n]));
+
+        // ── Dev audit (open browser console, run __chubAudit()) ──────────────────────
+        // Verifies frontend SKILL_NODES integrity: icons, parents, exclusivity (bidirectional),
+        // value array shape. Catches drift from backend skill-tree-rules.ts.
+        window.__chubAudit = function () {
+            const issues = [];
+            const keys = new Set();
+            for (const n of SKILL_NODES) {
+                const key = n.tree + '_' + n.id;
+                if (keys.has(key)) issues.push('duplicate node: ' + key);
+                keys.add(key);
+                if (!SKILL_ICONS[key]) issues.push('missing icon: ' + key);
+                if (!Array.isArray(n.values) || n.values.length !== 6) issues.push('bad values length: ' + key);
+                if (n.parent && !SKILL_NODE_MAP.has(n.tree + '_' + n.parent))
+                    issues.push('unknown parent: ' + key + ' → ' + n.parent);
+                if (n.exclusiveWith) {
+                    if (!SKILL_NODE_MAP.has(n.exclusiveWith))
+                        issues.push('unknown exclusiveWith: ' + key + ' → ' + n.exclusiveWith);
+                    else {
+                        const sib = SKILL_NODE_MAP.get(n.exclusiveWith);
+                        if (sib.exclusiveWith !== key)
+                            issues.push('non-bidirectional exclusivity: ' + key + ' ↔ ' + n.exclusiveWith);
+                    }
+                }
+            }
+            const counts = SKILL_NODES.reduce((a, n) => (a[n.tree] = (a[n.tree] || 0) + 1, a), {});
+            console.group('%c[chubAudit] Skill tree integrity', 'color:#a855f7;font-weight:700');
+            console.log('Total nodes:', SKILL_NODES.length, '| breakdown:', counts);
+            if (issues.length === 0) console.log('%c✓ no structural issues', 'color:#4ade80');
+            else { console.warn(issues.length + ' issue(s):'); issues.forEach(i => console.warn(' • ' + i)); }
+            console.groupEnd();
+            return { total: SKILL_NODES.length, breakdown: counts, issues };
+        };
 
         // ── Skill Helper Functions ──────────────────────────────────────────────────
 
@@ -20240,28 +20344,29 @@
                     if (c.minigameDailyPurchases === undefined) { c.minigameDailyPurchases = 0; needsSave = true; }
                     if (c.minigamePurchaseDate === undefined) { c.minigamePurchaseDate = ''; needsSave = true; }
                     if (c.shopFragmentDate === undefined) { c.shopFragmentDate = ''; needsSave = true; }
-                    // Migrate: rename branch IDs (strength→warrior, defense→guardian, agility→phantom)
+                    // Migrate: skill tree refactor → 3-tree system (attack / defense / alchemist).
+                    // Legacy keys from prior trees are dropped and the spent skill points are refunded
+                    // so the player can re-spec into the new graph.
                     if (c.skills) {
-                        const keys = Object.keys(c.skills);
-                        for (const key of keys) {
-                            if (key.startsWith('strength_') || key.startsWith('defense_') || key.startsWith('agility_')) {
-                                const newKey = key.startsWith('strength_') ? 'warrior_' + key.slice(9)
-                                             : key.startsWith('defense_')  ? 'guardian_' + key.slice(8)
-                                             : 'phantom_' + key.slice(8);
-                                c.skills[newKey] = c.skills[key];
+                        // Rename: defense_resilience → defense_vitality (Phase 1 rename, same node).
+                        if (c.skills.defense_resilience !== undefined) {
+                            c.skills.defense_vitality = (c.skills.defense_vitality || 0) + c.skills.defense_resilience;
+                            delete c.skills.defense_resilience;
+                            needsSave = true;
+                        }
+                        // Drop any key not in the canonical graph and refund its points.
+                        let refunded = 0;
+                        for (const key of Object.keys(c.skills)) {
+                            if (!SKILL_NODE_MAP.has(key)) {
+                                const rank = c.skills[key] | 0;
+                                for (let r = 1; r <= rank; r++) refunded += SKILL_RANK_COSTS[r] || 0;
                                 delete c.skills[key];
                                 needsSave = true;
                             }
                         }
-                    }
-                    // Migrate: convert old index-based skill keys (warrior_0) → nodeId-based (warrior_heavy_blow)
-                    if (c.skills) {
-                        // Remove orphaned keys not present in SKILL_NODES
-                        for (const key of Object.keys(c.skills)) {
-                            if (!SKILL_NODE_MAP.has(key)) {
-                                delete c.skills[key];
-                                needsSave = true;
-                            }
+                        if (refunded > 0) {
+                            c.skillPoints = (c.skillPoints || 0) + refunded;
+                            console.log('[migrate] character', c.id, 'refunded', refunded, 'skill pts from legacy keys');
                         }
                     }
                 });
@@ -20342,7 +20447,7 @@
 
             // ── Zael — Defense/Alchemist build, water (67pts used of 69) ─────
             // Skill tree: iron_hide R5 → fortify R4 → bulwark R3
-            //                           resilience R3 → regeneration R2 → second_wind R1
+            //                           vitality R3 → regeneration R2 → second_wind R1
             //             brew_master R2 → duration R2 | power_strike R2
             // Consumables: 4 slots (brew_master R2 = 1+3 base)
             const C = {
@@ -20353,7 +20458,7 @@
                     defense_iron_hide:    5,
                     defense_fortify:      4,
                     defense_bulwark:      3,
-                    defense_resilience:   3,
+                    defense_vitality:     3,
                     defense_regeneration: 2,
                     defense_second_wind:  1,
                     alchemist_brew_master: 2,
@@ -24882,11 +24987,11 @@
                 hemorrhageMax:          sv('attack',  'hemorrhage'),
                 rendAtkReduce:          sv('attack',  'rend'),
                 ruptureCritBonus:       sv('attack',  'rupture'),
-                lifetapPct:             sv('attack',  'lifetap'),
+                predatorCritBonus:      sv('attack',  'predator'),
                 // DEFENSE TREE
                 ironHideDmgReduce:      sv('defense', 'iron_hide'),
                 fortifyReduce:          sv('defense', 'fortify'),
-                resilienceHp:           sv('defense', 'resilience'),
+                vitalityHp:             sv('defense', 'vitality'),
                 bulwarkDR:              sv('defense', 'bulwark'),
                 counterChance:          sv('defense', 'counter'),
                 regenPerTurn:           sv('defense', 'regeneration'),
@@ -24898,7 +25003,7 @@
                 secondWindHeal:         sv('defense', 'second_wind'),
                 enduranceMulti:         sv('defense', 'endurance'),
                 vampiricBonus:          sv('defense', 'vampiric'),
-                bloodArmorShield:       sv('defense', 'blood_armor'),
+                sanguineWardPct:        sv('defense', 'sanguine_ward'),
                 // Legacy keys (zeroed — old system removed)
                 awakeningPerBranch: 0, auraBonus: 0, decisiveMomentCrit: 0, synergyPct: 0, apexBonus: 0,
             };
@@ -34361,7 +34466,7 @@
                 { group: 'ATTACK',  icon: '🩸', label: 'BLEED',         val: getVal('attack','bleed') },
                 { group: 'DEFENSE', icon: '🛡️', label: 'IRON HIDE',     val: getVal('defense','iron_hide') },
                 { group: 'DEFENSE', icon: '🏰', label: 'FORTIFY',       val: getVal('defense','fortify') },
-                { group: 'DEFENSE', icon: '❤️', label: 'RESILIENCE HP', val: getVal('defense','resilience') },
+                { group: 'DEFENSE', icon: '❤️', label: 'VITALITY HP',   val: getVal('defense','vitality') },
                 { group: 'DEFENSE', icon: '🌿', label: 'REGEN',         val: getVal('defense','regeneration') },
                 { group: 'DEFENSE', icon: '🩸', label: 'LIFESTEAL',     val: getVal('defense','lifesteal') },
                 { group: 'DEFENSE', icon: '🌵', label: 'THORNS',        val: getVal('defense','thorns') },
@@ -34768,6 +34873,15 @@
                 valEl.innerHTML = '<span class="current-val">' + fmtVal(curVal) + '</span> → <span class="next-val">' + fmtVal(nextVal) + ' ' + (node.unit || '') + '</span>';
             }
             card.appendChild(valEl);
+
+            // R5 preview — let the player see the maxed value before committing points
+            if (!isMaxed && node.values[maxRank] !== undefined) {
+                const maxPreview = document.createElement('div');
+                maxPreview.className = 'skill-node-max-preview';
+                maxPreview.style.cssText = 'font-size:0.68em; color:#888; margin-top:2px; letter-spacing:0.3px;';
+                maxPreview.innerHTML = 'At R5: <span style="color:#ffd700">' + fmtVal(node.values[maxRank]) + ' ' + (node.unit || '') + '</span>';
+                card.appendChild(maxPreview);
+            }
 
             if (isLocked) {
                 const lockEl = document.createElement('div');
