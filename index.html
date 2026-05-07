@@ -13332,7 +13332,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0;
-            width: 26px; height: 3px;
+            height: 3px;
             border-radius: 3px;
             background: linear-gradient(to right, transparent 0%, rgba(255,235,160,0.35) 22%, rgba(255,252,200,0.95) 70%, #ffffff 100%);
             filter:
@@ -13346,18 +13346,22 @@
             transform: none;
             mix-blend-mode: normal;
         }
-        /* Pill-shaped (top-currency-group + skills-icon-btn): trace the full pill */
+        /* Pill-shaped (top-currency-group + skills-icon-btn): wide streak, gentle curves */
         .top-currency-group::before,
         .top-currency-group::after,
         .skills-icon-btn::before,
         .skills-icon-btn::after {
+            width: 26px;
             offset-path: inset(2px round 999px);
         }
-        /* Rounded-rect (care-icon-btn + daily-claim-lobby-btn): match 6px corner */
+        /* Rounded-rect (care-icon-btn + daily-claim-lobby-btn): short streak so it
+           doesn't overshoot the 6px corner radius (a long bar can't bend through a
+           tight arc — the rectangle ends stick out tangentially) */
         .menu-bars-with-care .care-icon-btn::before,
         .menu-bars-with-care .care-icon-btn::after,
         .daily-claim-lobby-btn::before,
         .daily-claim-lobby-btn::after {
+            width: 10px;
             offset-path: inset(2px round 6px);
         }
         /* Second streak orbits half a lap behind the first */
