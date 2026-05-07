@@ -13321,9 +13321,10 @@
         /* Orbiting comet around every yellow button. Two streaks per button (180° apart)
            so a glow is always visible on at least one edge. Each yellow button has its
            own offset-path radius matching its border-radius (pills vs rounded rects). */
-        /* A tiny glowing "dot-comet": short streak so it never overshoots tight
-           corners, but the layered drop-shadows produce a soft trailing halo that
-           reads as a comet at any button size. */
+        /* Match the Daily Rewards comet: bright white streak with strong gold glow
+           and offset-rotate:auto so the streak hugs the perimeter. Width is tuned
+           per button so the streak stays in scale (a 52px bar on a 70px-wide care
+           btn would dominate; ~30% of the shortest button dimension reads well). */
         .top-currency-group::before,
         .top-currency-group::after,
         .skills-icon-btn::before,
@@ -13335,32 +13336,50 @@
             content: "";
             position: absolute;
             top: 0; left: 0;
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 50% 50%, #ffffff 0%, rgba(255,250,210,0.95) 35%, rgba(255,220,120,0.4) 70%, transparent 100%);
+            height: 4px;
+            border-radius: 4px;
+            background: linear-gradient(to right,
+                transparent 0%,
+                rgba(255,255,255,0.25) 20%,
+                rgba(255,255,255,0.92) 70%,
+                rgba(255,255,255,1.0) 100%);
             filter:
-                drop-shadow(0 0 5px rgba(255,250,210,1))
-                drop-shadow(0 0 12px rgba(255,210,80,0.95))
-                drop-shadow(0 0 22px rgba(255,170,0,0.65));
-            offset-rotate: 0deg;
-            animation: orbitBorder 3s linear infinite;
+                drop-shadow(0 0 4px rgba(255,255,255,1.0))
+                drop-shadow(0 0 10px rgba(255,220,0,1.0))
+                drop-shadow(0 0 20px rgba(255,180,0,0.75));
+            offset-rotate: auto;
+            animation: orbitBorder 2s linear infinite;
+            transform: none;
             pointer-events: none;
             z-index: 10;
-            transform: none;
             mix-blend-mode: normal;
         }
-        /* Pill-shaped buttons trace the full pill */
-        .top-currency-group::before,
         .top-currency-group::after,
-        .skills-icon-btn::before,
-        .skills-icon-btn::after {
+        .skills-icon-btn::after,
+        .menu-bars-with-care .care-icon-btn::after,
+        .daily-claim-lobby-btn:not(.has-reward)::after {
+            animation-delay: -1s;
+        }
+        /* Pill-shaped buttons — full pill perimeter trace */
+        .top-currency-group::before,
+        .top-currency-group::after {
+            width: 48px;
             offset-path: inset(2px round 999px);
         }
-        /* Rounded-rect buttons match their 6px corner */
+        .skills-icon-btn::before,
+        .skills-icon-btn::after {
+            width: 22px;
+            offset-path: inset(2px round 999px);
+        }
+        /* Rounded-rect — width scaled to button size; care-btn is the smallest */
         .menu-bars-with-care .care-icon-btn::before,
-        .menu-bars-with-care .care-icon-btn::after,
+        .menu-bars-with-care .care-icon-btn::after {
+            width: 18px;
+            offset-path: inset(2px round 6px);
+        }
         .daily-claim-lobby-btn:not(.has-reward)::before,
         .daily-claim-lobby-btn:not(.has-reward)::after {
+            width: 40px;
             offset-path: inset(2px round 6px);
         }
         /* Second streak orbits half a lap behind the first */
