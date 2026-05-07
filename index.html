@@ -3052,10 +3052,9 @@
             position: relative;
         }
         .menu-equipment-slot img {
-            width: 40px !important;
-            height: 40px !important;
+            width: 24px;
+            height: 24px;
             object-fit: contain;
-            filter: drop-shadow(0 1px 2px rgba(60,30,10,0.30));
         }
 
         .menu-equipment-slot:hover {
@@ -3098,7 +3097,7 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 1.7em;
+            font-size: 1.1em;
             line-height: 1;
         }
 
@@ -11823,10 +11822,18 @@
             margin-bottom: 10px;
         }
         .main-menu .menu-character-exp {
-            flex: 1;
+            flex: 1 1 auto !important;
+            width: auto !important;
+            min-width: 0;
             gap: 10px !important;
             display: flex;
             align-items: center;
+            margin: 0 !important;
+        }
+        /* The exp track must fill the full container — no implicit shrinking */
+        .main-menu .menu-character-exp .menu-char-exp-track {
+            flex: 1 1 auto !important;
+            width: 100%;
         }
         .main-menu .menu-char-lv-circle {
             background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M33,8.6 L38.5,23.1 L54,23.9 Q56.7,24 54.6,25.7 L42.5,35.4 L46.6,50.4 Q47.3,53 45,51.5 L32,43 L19,51.5 Q16.7,53 17.4,50.4 L21.5,35.4 L9.4,25.7 Q7.3,24 10,23.9 L25.5,23.1 L31,8.6 Q32,6 33,8.6 Z' fill='%23fde68a' stroke='%23b8741a' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/></svg>") center/contain no-repeat !important;
@@ -11883,13 +11890,8 @@
             font-size: 11px;
             font-weight: 800;
             color: #fff;
-            -webkit-text-stroke: 0.6px #1a0f04;
-            text-shadow:
-                -1px -1px 0 #1a0f04,
-                 1px -1px 0 #1a0f04,
-                -1px  1px 0 #1a0f04,
-                 1px  1px 0 #1a0f04,
-                 0 1px 2px rgba(0,0,0,0.6);
+            -webkit-text-stroke: 2px #1a0f04;
+            paint-order: stroke fill;
             letter-spacing: 0.08em;
             z-index: 2;
             line-height: 1;
@@ -11904,13 +11906,8 @@
             font-size: 13px;
             font-weight: 800;
             color: #fff;
-            -webkit-text-stroke: 0.6px #1a0f04;
-            text-shadow:
-                -1px -1px 0 #1a0f04,
-                 1px -1px 0 #1a0f04,
-                -1px  1px 0 #1a0f04,
-                 1px  1px 0 #1a0f04,
-                 0 1px 2px rgba(0,0,0,0.6);
+            -webkit-text-stroke: 2px #1a0f04;
+            paint-order: stroke fill;
             z-index: 2;
             line-height: 1;
             letter-spacing: 0.04em;
@@ -12137,7 +12134,7 @@
         .main-menu .menu-equip-section-title { font-size: 0.9em !important; }
         .main-menu .menu-equipment-slots > *,
         .main-menu .menu-equip-consumable-slots > * {
-            min-height: 58px !important;
+            min-height: 46px !important;
         }
 
         /* Right column — wider + fix z-index of chest counter vs battle btn */
@@ -35493,7 +35490,7 @@
                 } else if (weaponId && WEAPONS[weaponId]) {
                     const weapon = WEAPONS[weaponId];
                     slot.className = 'menu-equipment-slot';
-                    slot.innerHTML = weaponIconHTML(weapon, 40);
+                    slot.innerHTML = weaponIconHTML(weapon, 28);
                     slot.title = weapon.name;
                     slot.addEventListener('click', () => showWeaponAction(weaponId, true));
                 } else {
