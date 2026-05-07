@@ -32582,13 +32582,19 @@
         var _lobbySpritesLoaded = false; // var avoids TDZ — called before this line via hoisted function
 
 
+        // Highest progress percent we've shown — prevents stale callers (e.g. a second
+        // preloadLobbySprites() race) from making the liquid fill jump backwards.
+        var _lloLastPct = 0;
         function _lloProgress(percent, text) {
+            // Monotonic: never regress. Allow exact 100 to be re-applied (idempotent).
+            if (percent < _lloLastPct && percent < 100) return;
+            _lloLastPct = Math.max(_lloLastPct, percent);
             const fillRect = document.getElementById('llo-fill-rect');
             const wave     = document.getElementById('llo-wave');
             const overlay  = document.getElementById('lobby-loading-overlay');
             const subText  = document.getElementById('llo-sub');
             if (fillRect) {
-                const h = Math.max(1, (percent / 100) * 1024);
+                const h = Math.max(1, (_lloLastPct / 100) * 1024);
                 const y = 1024 - h;
                 fillRect.setAttribute('y',      String(y));
                 fillRect.setAttribute('height', String(h));
@@ -32612,7 +32618,15 @@
             if (subText && text) subText.textContent = text;
         }
 
+        var _preloadLobbyInFlight = null;
         async function preloadLobbySprites() {
+            // Re-entrancy guard: if preload is already running (or done), reuse it.
+            // Two call sites (post-login + module-init session resume) can otherwise
+            // launch parallel runs that fight over _lloProgress and make the liquid
+            // fill jump up/down/refill repeatedly.
+            if (_lobbySpritesLoaded) return;
+            if (_preloadLobbyInFlight) return _preloadLobbyInFlight;
+            _preloadLobbyInFlight = (async () => {
             const overlay = document.getElementById('lobby-loading-overlay');
             window._imgBlobCache = {};
 
@@ -32742,6 +32756,8 @@
                 overlay.classList.add('llo-hidden');
                 setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 500);
             }
+            })();
+            return _preloadLobbyInFlight;
         }
 
         // Called when the selected character changes in the lobby.
