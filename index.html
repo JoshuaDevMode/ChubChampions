@@ -6173,6 +6173,26 @@
             padding-right: 4px;
         }
 
+        /* Skill tree pan container — hides scrollbar across browsers and shows
+           a grab cursor on desktop. Touch devices use native pan-x scrolling. */
+        .skill-pan-wrap {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;       /* Firefox */
+            -ms-overflow-style: none;    /* legacy IE/Edge */
+            cursor: grab;
+            touch-action: pan-x;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .skill-pan-wrap::-webkit-scrollbar { display: none; width: 0; height: 0; }
+        .skill-pan-wrap.dragging { cursor: grabbing; }
+        /* Mobile: pointer:coarse — no cursor change, just native touch pan */
+        @media (pointer: coarse) {
+            .skill-pan-wrap { cursor: default; }
+        }
+
         .skill-node {
             background: rgba(0,0,0,0.35);
             border: 2px solid rgba(255,255,255,0.12);
@@ -13325,8 +13345,6 @@
            and offset-rotate:auto so the streak hugs the perimeter. Width is tuned
            per button so the streak stays in scale (a 52px bar on a 70px-wide care
            btn would dominate; ~30% of the shortest button dimension reads well). */
-        .top-currency-group::before,
-        .top-currency-group::after,
         .skills-icon-btn::before,
         .skills-icon-btn::after,
         .menu-bars-with-care .care-icon-btn::before,
@@ -13354,18 +13372,12 @@
             z-index: 10;
             mix-blend-mode: normal;
         }
-        .top-currency-group::after,
         .skills-icon-btn::after,
         .menu-bars-with-care .care-icon-btn::after,
         .daily-claim-lobby-btn:not(.has-reward)::after {
             animation-delay: -1s;
         }
         /* Pill-shaped buttons — full pill perimeter trace */
-        .top-currency-group::before,
-        .top-currency-group::after {
-            width: 48px;
-            offset-path: inset(2px round 999px);
-        }
         .skills-icon-btn::before,
         .skills-icon-btn::after {
             width: 22px;
@@ -13375,19 +13387,12 @@
         .menu-bars-with-care .care-icon-btn::before,
         .menu-bars-with-care .care-icon-btn::after {
             width: 18px;
-            offset-path: inset(2px round 6px);
+            offset-path: inset(2px round 14px);
         }
         .daily-claim-lobby-btn:not(.has-reward)::before,
         .daily-claim-lobby-btn:not(.has-reward)::after {
             width: 40px;
             offset-path: inset(2px round 6px);
-        }
-        /* Second streak orbits half a lap behind the first */
-        .top-currency-group::after,
-        .skills-icon-btn::after,
-        .menu-bars-with-care .care-icon-btn::after,
-        .daily-claim-lobby-btn::after {
-            animation-delay: -1.5s;
         }
 
         /* Currency item text contrast over the glass */
@@ -16151,162 +16156,161 @@
             values:[0,0.20,0.40,0.60,0.80,1.00], unit:'% crit chance vs Exposed' },
 
           // ── DEFENSE TREE ─────────────────────────────────────────────────────────────
-          // L0 — root
-          { tree:'defense', id:'iron_hide',      name:'Iron Hide',      depth:0, x:705, y:72,
+          // Layout: 3 L1 columns (fortify | shield_mastery | vitality), each spawning
+          // 2 L2 children, each spawning 2 L3 grandchildren. 22 nodes spread across
+          // x=490..1073 (defense column 470..1100).
+          { tree:'defense', id:'iron_hide',      name:'Iron Hide',      depth:0, x:781, y:72,
             parent:null,             exclusiveWith:null,
             desc:'Increases base damage reduction on all incoming hits.',
             values:[0,0.05,0.10,0.17,0.26,0.38], unit:'% dmg reduction' },
-          // L1 — three available
-          { tree:'defense', id:'fortify',        name:'Fortify',        depth:1, x:510, y:190,
+          // L1 — three columns
+          { tree:'defense', id:'fortify',        name:'Fortify',        depth:1, x:569, y:190,
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Flat damage reduction — reduces all incoming damage by %.',
             values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% flat reduce' },
-          { tree:'defense', id:'shield_mastery', name:'Shield Mastery', depth:1, x:705, y:190,
+          { tree:'defense', id:'shield_mastery', name:'Shield Mastery', depth:1, x:781, y:190,
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Unlocks dual-wielding: equip a shield in your off hand alongside a one-handed weapon. Higher ranks also reduce block stamina cost.',
             values:[0,1,1,1,1,1], unit:'off-hand unlock' },
-          { tree:'defense', id:'vitality',      name:'Vitality',       depth:1, x:900, y:190,
+          { tree:'defense', id:'vitality',       name:'Vitality',       depth:1, x:993, y:190,
             parent:'iron_hide',      exclusiveWith:null,
             desc:'Hardens body and spirit — increases maximum HP.',
             values:[0,0.05,0.10,0.16,0.23,0.32], unit:'% max HP' },
-          // L2 — exclusive
-          { tree:'defense', id:'bulwark',        name:'Bulwark',        depth:2, x:538, y:308,
+          // L2 — six pairs (one pair per L1 parent)
+          { tree:'defense', id:'bulwark',        name:'Bulwark',        depth:2, x:516, y:308,
             parent:'fortify',        exclusiveWith:'defense_counter',
             desc:'Damage reduction scales higher the more HP you have remaining.',
             values:[0,0.05,0.09,0.14,0.21,0.30], unit:'% bonus DR at full HP' },
-          { tree:'defense', id:'counter',        name:'Counter',        depth:2, x:642, y:308,
+          { tree:'defense', id:'counter',        name:'Counter',        depth:2, x:622, y:308,
             parent:'fortify',        exclusiveWith:'defense_bulwark',
             desc:'Chance to automatically counterattack after blocking a hit.',
             values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% counter chance' },
-          { tree:'defense', id:'regeneration',   name:'Regeneration',   depth:2, x:768, y:308,
-            parent:'vitality',       exclusiveWith:'defense_lifesteal',
-            desc:'Passively recover % of max HP each turn.',
-            values:[0,0.012,0.022,0.035,0.052,0.074], unit:'% HP/turn' },
-          { tree:'defense', id:'lifesteal',      name:'Lifesteal',      depth:2, x:872, y:308,
-            parent:'vitality',       exclusiveWith:'defense_regeneration',
-            desc:'Heal % of all damage dealt.',
-            values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% lifesteal' },
-          // L3 — exclusive
-          { tree:'defense', id:'unbreakable',    name:'Unbreakable',    depth:3, x:512, y:418,
-            parent:'bulwark',        exclusiveWith:'defense_thorns',
-            desc:'Damage reduction increases as HP drops — peaks when near death.',
-            values:[0,0.06,0.11,0.17,0.25,0.36], unit:'% bonus DR' },
-          { tree:'defense', id:'thorns',         name:'Thorns',         depth:3, x:564, y:418,
-            parent:'bulwark',        exclusiveWith:'defense_unbreakable',
-            desc:'Reflect % of incoming damage back to the attacker.',
-            values:[0,0.09,0.16,0.25,0.36,0.50], unit:'% reflect' },
-          { tree:'defense', id:'riposte',        name:'Riposte',        depth:3, x:616, y:418,
-            parent:'counter',        exclusiveWith:'defense_counter_strike',
-            desc:'Counter hit deals a burst equal to % of the blocked damage.',
-            values:[0,0.35,0.60,0.90,1.30,1.80], unit:'% burst' },
-          { tree:'defense', id:'counter_strike', name:'Counter Strike', depth:3, x:668, y:418,
-            parent:'counter',        exclusiveWith:'defense_riposte',
-            desc:'After a counterattack, your next offensive hit deals bonus damage.',
-            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% bonus' },
-          { tree:'defense', id:'second_wind',    name:'Second Wind',    depth:3, x:742, y:418,
-            parent:'regeneration',   exclusiveWith:'defense_endurance',
-            desc:'Once per battle, burst-heal when dropping below 25% HP.',
-            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% max HP healed' },
-          { tree:'defense', id:'endurance',      name:'Endurance',      depth:3, x:794, y:418,
-            parent:'regeneration',   exclusiveWith:'defense_second_wind',
-            desc:'Regen rate scales up the lower your HP — peaks below 50%.',
-            values:[0,1.3,1.6,2.0,2.5,3.0], unit:'x multiplier <50% HP' },
-          { tree:'defense', id:'vampiric',       name:'Vampiric',       depth:3, x:846, y:418,
-            parent:'lifesteal',      exclusiveWith:'defense_sanguine_ward',
-            desc:'Lifesteal scales with missing HP — much stronger when wounded.',
-            values:[0,0.05,0.09,0.14,0.20,0.28], unit:'% bonus/10%HP' },
-          { tree:'defense', id:'sanguine_ward',  name:'Sanguine Ward',  depth:3, x:898, y:418,
-            parent:'lifesteal',      exclusiveWith:'defense_vampiric',
-            desc:'Once per battle: when HP drops below 50%, gain a flat damage reduction for 3 turns.',
-            values:[0,0.05,0.10,0.15,0.20,0.25], unit:'% DR for 3 turns' },
-          // ── Shield Mastery branch (Phase 2) ──────────────────────────────────────
-          { tree:'defense', id:'bash',           name:'Bash',           depth:2, x:660, y:308,
+          { tree:'defense', id:'bash',           name:'Bash',           depth:2, x:728, y:308,
             parent:'shield_mastery', exclusiveWith:'defense_bastion',
             desc:'When you block, your shield slams back — deal a % of the blocked damage to the attacker.',
             values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% bash dmg' },
-          { tree:'defense', id:'bastion',        name:'Bastion',        depth:2, x:752, y:308,
+          { tree:'defense', id:'bastion',        name:'Bastion',        depth:2, x:834, y:308,
             parent:'shield_mastery', exclusiveWith:'defense_bash',
             desc:'Master the shield — additional flat block effectiveness.',
             values:[0,0.05,0.10,0.15,0.20,0.25], unit:'% extra block' },
-          { tree:'defense', id:'aegis',          name:'Aegis',          depth:3, x:638, y:520,
+          { tree:'defense', id:'regeneration',   name:'Regeneration',   depth:2, x:940, y:308,
+            parent:'vitality',       exclusiveWith:'defense_lifesteal',
+            desc:'Passively recover % of max HP each turn.',
+            values:[0,0.012,0.022,0.035,0.052,0.074], unit:'% HP/turn' },
+          { tree:'defense', id:'lifesteal',      name:'Lifesteal',      depth:2, x:1046, y:308,
+            parent:'vitality',       exclusiveWith:'defense_regeneration',
+            desc:'Heal % of all damage dealt.',
+            values:[0,0.04,0.08,0.13,0.19,0.27], unit:'% lifesteal' },
+          // L3 — twelve grandchildren, exclusive within each L2 pair
+          { tree:'defense', id:'unbreakable',    name:'Unbreakable',    depth:3, x:490, y:418,
+            parent:'bulwark',        exclusiveWith:'defense_thorns',
+            desc:'Damage reduction increases as HP drops — peaks when near death.',
+            values:[0,0.06,0.11,0.17,0.25,0.36], unit:'% bonus DR' },
+          { tree:'defense', id:'thorns',         name:'Thorns',         depth:3, x:543, y:418,
+            parent:'bulwark',        exclusiveWith:'defense_unbreakable',
+            desc:'Reflect % of incoming damage back to the attacker.',
+            values:[0,0.09,0.16,0.25,0.36,0.50], unit:'% reflect' },
+          { tree:'defense', id:'riposte',        name:'Riposte',        depth:3, x:596, y:418,
+            parent:'counter',        exclusiveWith:'defense_counter_strike',
+            desc:'Counter hit deals a burst equal to % of the blocked damage.',
+            values:[0,0.35,0.60,0.90,1.30,1.80], unit:'% burst' },
+          { tree:'defense', id:'counter_strike', name:'Counter Strike', depth:3, x:649, y:418,
+            parent:'counter',        exclusiveWith:'defense_riposte',
+            desc:'After a counterattack, your next offensive hit deals bonus damage.',
+            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% bonus' },
+          { tree:'defense', id:'aegis',          name:'Aegis',          depth:3, x:702, y:418,
             parent:'bash',           exclusiveWith:'defense_retaliation',
             desc:'The first block of every battle is near-perfect — most of the damage is negated.',
             values:[0,0.50,0.65,0.80,0.90,1.00], unit:'% first-block negate' },
-          { tree:'defense', id:'retaliation',    name:'Retaliation',    depth:3, x:686, y:520,
+          { tree:'defense', id:'retaliation',    name:'Retaliation',    depth:3, x:755, y:418,
             parent:'bash',           exclusiveWith:'defense_aegis',
             desc:'Bash also dazes the attacker — they skip turns afterward.',
             values:[0,1,1,1,2,2], unit:'turns of stun' },
-          { tree:'defense', id:'phalanx',        name:'Phalanx',        depth:3, x:740, y:520,
+          { tree:'defense', id:'phalanx',        name:'Phalanx',        depth:3, x:808, y:418,
             parent:'bastion',        exclusiveWith:'defense_guardian_stance',
             desc:'Your shield repairs itself between turns.',
             values:[0,0.05,0.09,0.14,0.20,0.30], unit:'% shield HP/turn' },
-          { tree:'defense', id:'guardian_stance',name:'Guardian Stance',depth:3, x:790, y:520,
+          { tree:'defense', id:'guardian_stance',name:'Guardian Stance',depth:3, x:861, y:418,
             parent:'bastion',        exclusiveWith:'defense_phalanx',
             desc:'Critical hits against you while blocking are sharply reduced.',
             values:[0,0.10,0.18,0.28,0.40,0.55], unit:'% crit dmg reduce' },
+          { tree:'defense', id:'second_wind',    name:'Second Wind',    depth:3, x:914, y:418,
+            parent:'regeneration',   exclusiveWith:'defense_endurance',
+            desc:'Once per battle, burst-heal when dropping below 25% HP.',
+            values:[0,0.12,0.20,0.30,0.44,0.60], unit:'% max HP healed' },
+          { tree:'defense', id:'endurance',      name:'Endurance',      depth:3, x:967, y:418,
+            parent:'regeneration',   exclusiveWith:'defense_second_wind',
+            desc:'Regen rate scales up the lower your HP — peaks below 50%.',
+            values:[0,1.3,1.6,2.0,2.5,3.0], unit:'x multiplier <50% HP' },
+          { tree:'defense', id:'vampiric',       name:'Vampiric',       depth:3, x:1020, y:418,
+            parent:'lifesteal',      exclusiveWith:'defense_sanguine_ward',
+            desc:'Lifesteal scales with missing HP — much stronger when wounded.',
+            values:[0,0.05,0.09,0.14,0.20,0.28], unit:'% bonus/10%HP' },
+          { tree:'defense', id:'sanguine_ward',  name:'Sanguine Ward',  depth:3, x:1073, y:418,
+            parent:'lifesteal',      exclusiveWith:'defense_vampiric',
+            desc:'Once per battle: when HP drops below 50%, gain a flat damage reduction for 3 turns.',
+            values:[0,0.05,0.10,0.15,0.20,0.25], unit:'% DR for 3 turns' },
 
           // ── ALCHEMIST TREE ───────────────────────────────────────────────────────────
-          // L0 — root
-          { tree:'alchemist', id:'brew_master',  name:'Brew Master',  depth:0, x:1130, y:72,
+          // Layout: 2 L1 columns (potency | duration), 4 L2, 8 L3 grandchildren.
+          // Spans x=1130..1480 (alchemist column 1100..1500).
+          { tree:'alchemist', id:'brew_master',  name:'Brew Master',  depth:0, x:1305, y:72,
             parent:null,           exclusiveWith:null,
             desc:'Increases the maximum number of consumables you can bring into battle (+1 slot per rank).',
             values:[0,1,2,3,4,5], unit:'extra slots' },
-          // L1 — both available
-          { tree:'alchemist', id:'potency',      name:'Potency',      depth:1, x:1055, y:190,
+          { tree:'alchemist', id:'potency',      name:'Potency',      depth:1, x:1205, y:190,
             parent:'brew_master',  exclusiveWith:null,
             desc:'All consumable effects (heal, buff strength) are more powerful.',
             values:[0,0.08,0.15,0.24,0.34,0.46], unit:'% stronger' },
-          { tree:'alchemist', id:'duration',     name:'Duration',     depth:1, x:1205, y:190,
+          { tree:'alchemist', id:'duration',     name:'Duration',     depth:1, x:1405, y:190,
             parent:'brew_master',  exclusiveWith:null,
             desc:'Timed buff consumables last extra turns.',
             values:[0,1,2,3,4,5], unit:'extra turns' },
-          // L2 — exclusive
-          { tree:'alchemist', id:'amplify',      name:'Amplify',      depth:2, x:1012, y:308,
+          { tree:'alchemist', id:'amplify',      name:'Amplify',      depth:2, x:1155, y:308,
             parent:'potency',      exclusiveWith:'alchemist_quick_dose',
             desc:'Further amplifies consumable potency — stacks with Potency.',
             values:[0,0.05,0.10,0.16,0.24,0.34], unit:'% extra boost' },
-          { tree:'alchemist', id:'quick_dose',   name:'Quick Dose',   depth:2, x:1098, y:308,
+          { tree:'alchemist', id:'quick_dose',   name:'Quick Dose',   depth:2, x:1255, y:308,
             parent:'potency',      exclusiveWith:'alchemist_amplify',
             desc:'Consumables used in battle have reduced cooldown between uses.',
             values:[0,1,2,2,3,3], unit:'turns cooldown reduce' },
-          { tree:'alchemist', id:'extended',     name:'Extended',     depth:2, x:1162, y:308,
+          { tree:'alchemist', id:'extended',     name:'Extended',     depth:2, x:1355, y:308,
             parent:'duration',     exclusiveWith:'alchemist_compound',
             desc:'Timed buffs last significantly longer — doubles the Duration bonus.',
             values:[0,1,2,3,4,5], unit:'extra turns (×2 Duration)' },
-          { tree:'alchemist', id:'compound',     name:'Compound',     depth:2, x:1248, y:308,
+          { tree:'alchemist', id:'compound',     name:'Compound',     depth:2, x:1455, y:308,
             parent:'duration',     exclusiveWith:'alchemist_extended',
             desc:'Using a consumable while a buff is already active stacks the effect instead of replacing it.',
             values:[0,1,2,3,4,5], unit:'max stacks' },
-          // ── Alchemist L3 (Phase 2) ───────────────────────────────────────────────
-          { tree:'alchemist', id:'mixology',     name:'Mixology',     depth:3, x:990,  y:418,
+          { tree:'alchemist', id:'mixology',     name:'Mixology',     depth:3, x:1130, y:418,
             parent:'amplify',      exclusiveWith:'alchemist_reservoir',
             desc:'HP-restoring consumables also restore stamina.',
             values:[0,0.10,0.18,0.27,0.36,0.46], unit:'% max ST restored' },
-          { tree:'alchemist', id:'reservoir',    name:'Reservoir',    depth:3, x:1034, y:418,
+          { tree:'alchemist', id:'reservoir',    name:'Reservoir',    depth:3, x:1180, y:418,
             parent:'amplify',      exclusiveWith:'alchemist_mixology',
             desc:'Carry extra consumable slots into battle (stacks with Brew Master).',
             values:[0,1,1,2,2,3], unit:'extra slots' },
-          { tree:'alchemist', id:'rapid_reflex', name:'Rapid Reflex', depth:3, x:1080, y:418,
+          { tree:'alchemist', id:'rapid_reflex', name:'Rapid Reflex', depth:3, x:1230, y:418,
             parent:'quick_dose',   exclusiveWith:'alchemist_stim_pack',
             desc:'Further reduces consumable cooldown — stacks with Quick Dose.',
             values:[0,1,2,2,3,3], unit:'extra CD reduce' },
-          { tree:'alchemist', id:'stim_pack',    name:'Stim Pack',    depth:3, x:1124, y:418,
+          { tree:'alchemist', id:'stim_pack',    name:'Stim Pack',    depth:3, x:1280, y:418,
             parent:'quick_dose',   exclusiveWith:'alchemist_rapid_reflex',
             desc:'Using any consumable grants a brief damage boost for 2 turns afterward.',
             values:[0,0.06,0.12,0.18,0.25,0.35], unit:'% dmg boost' },
-          { tree:'alchemist', id:'eternity',     name:'Eternity',     depth:3, x:1170, y:418,
+          { tree:'alchemist', id:'eternity',     name:'Eternity',     depth:3, x:1330, y:418,
             parent:'extended',     exclusiveWith:'alchemist_catalyst',
             desc:'Timed buffs last several extra turns on top of Duration + Extended.',
             values:[0,1,2,3,4,6], unit:'extra turns' },
-          { tree:'alchemist', id:'catalyst',     name:'Catalyst',     depth:3, x:1214, y:418,
+          { tree:'alchemist', id:'catalyst',     name:'Catalyst',     depth:3, x:1380, y:418,
             parent:'extended',     exclusiveWith:'alchemist_eternity',
             desc:'When a timed buff expires, your next attack is empowered.',
             values:[0,0.15,0.25,0.40,0.60,0.85], unit:'% bonus dmg' },
-          { tree:'alchemist', id:'stack_master', name:'Stack Master', depth:3, x:1260, y:418,
+          { tree:'alchemist', id:'stack_master', name:'Stack Master', depth:3, x:1430, y:418,
             parent:'compound',     exclusiveWith:'alchemist_synthesis',
             desc:'Compound can stack many more times.',
             values:[0,1,2,3,4,5], unit:'extra max stacks' },
-          { tree:'alchemist', id:'synthesis',    name:'Synthesis',    depth:3, x:1304, y:418,
+          { tree:'alchemist', id:'synthesis',    name:'Synthesis',    depth:3, x:1480, y:418,
             parent:'compound',     exclusiveWith:'alchemist_stack_master',
             desc:'Each active Compound stack also boosts consumable potency.',
             values:[0,0.06,0.10,0.15,0.20,0.28], unit:'% potency / stack' },
@@ -34498,7 +34502,7 @@
             contentEl.innerHTML = '';
 
             const ns = 'http://www.w3.org/2000/svg';
-            const CW = 1320, CH = 470;
+            const CW = 1500, CH = 470;
 
             const canvas = document.createElement('div');
             canvas.style.cssText = 'position:relative;width:' + CW + 'px;height:' + CH + 'px;';
@@ -34533,17 +34537,17 @@
                 svg.appendChild(txt);
             }
             makeTreeLabel('ATTACK',   235, '#e74c3c');
-            makeTreeLabel('DEFENSE',  705, '#3498db');
+            makeTreeLabel('DEFENSE',  781, '#3498db');
 
             // Second divider (defense | alchemist)
             const divider2 = document.createElementNS(ns, 'line');
-            divider2.setAttribute('x1', 960); divider2.setAttribute('y1', 20);
-            divider2.setAttribute('x2', 960); divider2.setAttribute('y2', CH - 30);
+            divider2.setAttribute('x1', 1100); divider2.setAttribute('y1', 20);
+            divider2.setAttribute('x2', 1100); divider2.setAttribute('y2', CH - 30);
             divider2.setAttribute('stroke', 'rgba(255,255,255,0.07)');
             divider2.setAttribute('stroke-width', '1');
             divider2.setAttribute('stroke-dasharray', '4,4');
             svg.appendChild(divider2);
-            makeTreeLabel('ALCHEMIST', 1140, '#2ecc71');
+            makeTreeLabel('ALCHEMIST', 1305, '#2ecc71');
 
             // Draw parent→child connection lines
             for (const node of SKILL_NODES) {
@@ -34590,11 +34594,49 @@
                 '<span style="font-size:11px;color:' + ptsColor + ';letter-spacing:.04em">' + remPts + '/' + totalPts + ' pts remaining</span>';
             canvas.appendChild(totDiv);
 
-            // Wrap in scroll container
+            // Wrap in pan container — scrollbar hidden, mouse drag-to-pan, touch native.
             const wrapper = document.createElement('div');
-            wrapper.style.cssText = 'width:100%;overflow-x:auto;overflow-y:hidden;';
+            wrapper.className = 'skill-pan-wrap';
             wrapper.appendChild(canvas);
             contentEl.appendChild(wrapper);
+
+            // Mouse-only drag-to-pan. Touch falls through to native overflow scrolling.
+            // Tracks movement so a click that ends a drag does NOT fire on the node beneath.
+            (function attachPan(el) {
+                let drag = null;
+                let moved = false;
+                el.addEventListener('pointerdown', (e) => {
+                    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+                    drag = { x: e.clientX, scroll: el.scrollLeft, pid: e.pointerId };
+                    moved = false;
+                    el.classList.add('dragging');
+                });
+                el.addEventListener('pointermove', (e) => {
+                    if (!drag) return;
+                    const dx = e.clientX - drag.x;
+                    if (Math.abs(dx) > 4) moved = true;
+                    el.scrollLeft = drag.scroll - dx;
+                });
+                const end = () => {
+                    if (!drag) return;
+                    drag = null;
+                    el.classList.remove('dragging');
+                };
+                el.addEventListener('pointerup', end);
+                el.addEventListener('pointercancel', end);
+                el.addEventListener('pointerleave', end);
+                // Suppress click after a real drag so node click handlers don't fire.
+                el.addEventListener('click', (e) => {
+                    if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+                }, true);
+                // Mouse wheel converts vertical scroll to horizontal pan when over the tree.
+                el.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0 && el.scrollWidth > el.clientWidth) {
+                        el.scrollLeft += e.deltaY;
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            })(wrapper);
 
             // ── Guide panel ──────────────────────────────────────────────────────────
             const guide = document.createElement('div');
@@ -34691,17 +34733,24 @@
 
             canvas.appendChild(el);
 
-            // Node name label below node
+            // Node name label below node — coloured by tree so unranked nodes stay legible
+            // against the busy dark background, with a subtle text-shadow for contrast.
             if (!isPathLocked) {
                 const lbl = document.createElement('div');
+                const labelColor = rank > 0
+                    ? 'rgba(255,255,255,0.92)'
+                    : (node.tree === 'attack'    ? 'rgba(255,180,170,0.78)'
+                     : node.tree === 'alchemist' ? 'rgba(180,240,200,0.78)'
+                     :                              'rgba(170,210,255,0.78)');
                 lbl.style.cssText =
                     'position:absolute;' +
                     'left:' + (node.x - 40) + 'px;' +
                     'top:'  + (node.y + R + 3) + 'px;' +
                     'width:80px;text-align:center;' +
-                    'font-family:Fredoka,sans-serif;font-size:9px;' +
-                    'color:rgba(255,255,255,' + (rank > 0 ? '0.8' : '0.4') + ');' +
-                    'letter-spacing:.03em;pointer-events:none;z-index:3;line-height:1.3;';
+                    'font-family:Fredoka,sans-serif;font-size:9px;font-weight:500;' +
+                    'color:' + labelColor + ';' +
+                    'letter-spacing:.03em;pointer-events:none;z-index:3;line-height:1.3;' +
+                    'text-shadow:0 1px 2px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.6);';
                 lbl.textContent = node.name;
                 canvas.appendChild(lbl);
             }
