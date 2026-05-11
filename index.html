@@ -11178,7 +11178,6 @@
         .main-menu #menu-shop-btn::before       { content: "🏪"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
-        .main-menu #menu-vault-btn::before      { content: "🗃️"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
         .main-menu .top-nav-btn:hover {
             background: rgba(59,130,246,0.1) !important;
@@ -14213,12 +14212,11 @@
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
-                <button class="top-nav-btn" id="menu-vault-btn">VAULT</button>
                 <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
             </div>
             <div class="lobby-topright-cluster">
             <div class="top-currency-group">
-                <span class="currency-item" id="currency-tokens">🪙 <span id="currency-tokens-val">0</span><button class="currency-plus-btn" onclick="(document.getElementById('menu-shop-btn')||{}).click?.()" title="Get more">+</button></span>
+                <span class="currency-item" id="currency-tokens">🪙 <span id="currency-tokens-val">0</span><button class="currency-plus-btn" id="currency-tokens-plus-btn" onclick="openVaultFromCurrency()" title="Open vault">+</button></span>
                 <span class="currency-item" id="currency-fragments"><img src="Assets/UI/Fragment.png" class="fragment-icon-currency" alt=""> <span id="currency-fragments-val">0 / 10</span><button class="currency-plus-btn" onclick="(document.getElementById('fragment-chest-button')||{}).click?.()" title="Forge">+</button></span>
                 <span class="currency-item" id="currency-crystals" title="Crystals — used for rare skins">💎 <span id="currency-crystals-val">0</span><button class="currency-plus-btn" onclick="(document.getElementById('menu-shop-btn')||{}).click?.()" title="Get more">+</button></span>
                 <span class="currency-item chain-balance" id="wallet-balance" style="display:none;" onclick="refreshWalletBalance()" title="Wallet balance — click to refresh"></span>
@@ -19562,6 +19560,11 @@
             // Fetch live crypto prices for pack display
             await _fetchCryptoPrices();
             renderVault();
+        }
+
+        function openVaultFromCurrency() {
+            closeShop();
+            openVaultPanel();
         }
 
         function closeVaultPanel() {
@@ -35412,7 +35415,7 @@
         });
 
         // Vault button + panel
-        document.getElementById('menu-vault-btn').addEventListener('click', () => {
+        document.getElementById('menu-vault-btn')?.addEventListener('click', () => {
             closeShop(); // close shop if open
             openVaultPanel();
         });
