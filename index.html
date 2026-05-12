@@ -14726,12 +14726,11 @@
                     </div>
                     <div class="aon-custom-row">
                         <button class="aon-custom-btn" id="aon-pvp-custom-toggle">CUSTOM</button>
-                        <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 55 🪙" min="55" style="display:none;">
+                        <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 10 🪙" min="10" style="display:none;">
                     </div>
                     <div class="aon-section-label">FORMATO</div>
                     <div class="aon-format-grid" id="aon-pvp-format-grid">
                         <button class="aon-format-btn aon-pvp-format-btn selected" data-rtw="2">BEST OF 3</button>
-                        <button class="aon-format-btn aon-pvp-format-btn" data-rtw="3">BEST OF 5</button>
                     </div>
                     <div class="aon-summary" id="aon-pvp-summary">
                         <div class="aon-summary-row"><span>Wager</span><span class="aon-val" id="aon-pvp-sum-fee">🪙 --</span></div>
@@ -18241,7 +18240,7 @@
         let aonEntryFee = 0;
         // PvP AoN state
         let aonPvpFee = 0;
-        let aonPvpRoundsToWin = 2; // 2=BO3, 3=BO5
+        let aonPvpRoundsToWin = 2; // BO3 only
         let aonPvpMyChallenge = null; // { matchId, entryFee, roundsToWin } if open challenge exists
         let aonFormat = 3; // Best of 3 or 5
         let aonRoundsToWin = 2;
@@ -29328,7 +29327,7 @@
             const formEl  = document.getElementById('aon-pvp-create-form');
             const detEl   = document.getElementById('aon-my-challenge-details');
             if (aonPvpMyChallenge) {
-                const fmt = aonPvpMyChallenge.roundsToWin === 3 ? 'BO5' : 'BO3';
+                const fmt = 'BO3';
                 detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — Waiting for opponent...';
                 boxEl.style.display  = 'block';
                 formEl.style.display = 'none';
@@ -29433,7 +29432,7 @@
                 }
 
                 listEl.innerHTML = challenges.map(c => {
-                    const fmt   = c.roundsToWin === 3 ? 'BO5' : 'BO3';
+                    const fmt   = 'BO3';
                     const pot   = Math.round(c.entryFee * 2 * 0.96);
                     const chain = c.chain === 'monad' ? '<span class="aon-chain-badge monad">MONAD</span>'
                                 : c.chain === 'solana' ? '<span class="aon-chain-badge solana">SOLANA</span>'
@@ -29478,7 +29477,7 @@
 
             if (isCrossChain) {
                 // Cross-chain on-chain join
-                const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+                const fmt = 'Best of 3';
                 showConfirm(
                     '⚔️ CROSS-CHAIN CHALLENGE',
                     `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nYour wallet: ${p2Chain.toUpperCase()}\n\nYour wager will be locked on ${p2Chain.toUpperCase()} until the battle resolves.`,
@@ -29495,7 +29494,7 @@
 
             // ── Same-chain on-chain join ────────────────────────────────────────
             if (chain && onChainRoomId && chain === p2Chain) {
-                const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+                const fmt = 'Best of 3';
                 showConfirm(
                     '⚔️ ON-CHAIN CHALLENGE',
                     `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
@@ -29516,7 +29515,7 @@
                 showNotice('Not enough tokens. You need 🪙 ' + entryFee + '.'); return;
             }
 
-            const fmt = roundsToWin === 3 ? 'Best of 5' : 'Best of 3';
+            const fmt = 'Best of 3';
             showConfirm(
                 '⚔️ ACCEPT CHALLENGE',
                 `vs ${challengerName}\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
@@ -29538,7 +29537,9 @@
                         if (!data.ok) { showNotice(data.error || 'Failed to accept the challenge.'); aonLoadLobby(); return; }
 
                         // Award tokens locally (server already updated the DB)
-                        if (data.won) {
+                        if (data.refunded) {
+                            // No local change: the server refunded the accepted wager.
+                        } else if (data.won) {
                             globalTokens = globalTokens - entryFee + data.potWon;
                         } else {
                             globalTokens = globalTokens - entryFee;
@@ -29547,14 +29548,20 @@
 
                         // Show result in lobby tab
                         const score = data.seriesScore;
-                        const roundLines = (data.roundResults || []).map((r, i) =>
-                            `Round ${i + 1}: ${r.winner === 'player' ? '✓ ' + challengerName : '✓ You'} (${r.turns} turns)`
-                        ).join('<br>');
+                        const roundLines = (data.roundResults || []).map((r, i) => {
+                            const label = r.winner === 'draw'
+                                ? 'Draw'
+                                : (r.winner === 'player' ? '✓ ' + challengerName : '✓ You');
+                            return `Round ${i + 1}: ${label} (${r.turns} turns)`;
+                        }).join('<br>');
+                        const resultClass = data.refunded ? 'loss' : (data.won ? 'win' : 'loss');
+                        const resultTitle = data.refunded ? 'DRAW - REFUNDED' : (data.won ? '🏆 YOU WON!' : '💀 YOU LOST');
+                        const resultPot   = data.refunded ? '🪙 Wager refunded' : (data.won ? '+🪙 ' + (data.potWon - entryFee) + ' net profit' : '-🪙 ' + entryFee);
 
                         listEl.innerHTML = `
-                            <div class="aon-pvp-result ${data.won ? 'win' : 'loss'}">
-                                <div class="aon-pvp-result-title">${data.won ? '🏆 YOU WON!' : '💀 YOU LOST'}</div>
-                                <div class="aon-pvp-result-pot">${data.won ? '+🪙 ' + (data.potWon - entryFee) + ' net profit' : '-🪙 ' + entryFee}</div>
+                            <div class="aon-pvp-result ${resultClass}">
+                                <div class="aon-pvp-result-title">${resultTitle}</div>
+                                <div class="aon-pvp-result-pot">${resultPot}</div>
                                 <div class="aon-pvp-result-score">vs ${challengerName} — ${score.opponent}-${score.challenger}</div>
                                 <div class="aon-pvp-result-rounds" style="margin-top:8px;">${roundLines}</div>
                             </div>
@@ -35538,7 +35545,7 @@
         });
         document.getElementById('aon-pvp-custom-input').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            aonPvpFee = (!isNaN(val) && val >= 15) ? val : 0;
+            aonPvpFee = (!isNaN(val) && val >= 10) ? val : 0;
             aonUpdatePvpSummary();
         });
 
@@ -35547,7 +35554,7 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.aon-pvp-format-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
-                aonPvpRoundsToWin = parseInt(btn.dataset.rtw);
+                aonPvpRoundsToWin = 2;
                 aonUpdatePvpSummary();
             });
         });
