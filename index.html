@@ -657,6 +657,60 @@
             text-shadow: 2px 2px 0 #000, 0 0 10px rgba(34,197,94,0.6);
         }
 
+        .skill-scroll-pop {
+            position: absolute;
+            min-width: 118px;
+            max-width: 190px;
+            padding: 6px 16px 7px;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.05;
+            text-align: center;
+            color: #4a2a10;
+            background:
+                linear-gradient(90deg, rgba(115,70,28,0.18), transparent 15%, transparent 85%, rgba(115,70,28,0.18)),
+                linear-gradient(180deg, #fff2c4 0%, #e8c678 54%, #bd8741 100%);
+            border: 1px solid #6f3f18;
+            border-radius: 7px;
+            box-shadow: 0 3px 0 #4a260e, 0 7px 14px rgba(0,0,0,0.28);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+            pointer-events: none;
+            z-index: 4;
+            animation: skill-scroll-float 1.65s ease-out forwards;
+        }
+        .skill-scroll-pop::before,
+        .skill-scroll-pop::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 11px;
+            height: 22px;
+            transform: translateY(-50%);
+            border: 1px solid #6f3f18;
+            background: linear-gradient(180deg, #ffe2a0, #b87335);
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18);
+        }
+        .skill-scroll-pop::before {
+            left: -7px;
+            border-radius: 9px 3px 3px 9px;
+        }
+        .skill-scroll-pop::after {
+            right: -7px;
+            border-radius: 3px 9px 9px 3px;
+        }
+        .skill-scroll-pop.heal { color: #14532d; }
+        .skill-scroll-pop.damage { color: #7f1d1d; }
+        .skill-scroll-pop.guard { color: #1e3a8a; }
+        .skill-scroll-pop.control { color: #5b21b6; }
+        @keyframes skill-scroll-float {
+            0%   { opacity: 0; transform: translate(-50%, 12px) scale(0.86); }
+            14%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            72%  { opacity: 1; transform: translate(-50%, -18px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -42px) scale(0.96); }
+        }
+
         @keyframes hot-pulse {
             0%, 100% { filter: brightness(1); }
             50% { filter: brightness(1.4) drop-shadow(0 0 6px rgba(34,197,94,0.6)); }
@@ -670,9 +724,10 @@
         /* Wind passive sphere — gyroscope ring effect, pulses once per turn */
         .wind-sphere-overlay {
             position: absolute;
-            inset: -12px;
+            inset: -20px -16px -12px;
             pointer-events: none;
             animation: windSphereLifetime 2s ease-out forwards;
+            mix-blend-mode: screen;
         }
         .wind-sphere-front { z-index: 20; }  /* in front of fighter */
         .wind-sphere-back  { z-index: 1;  }  /* behind fighter-body */
@@ -690,14 +745,15 @@
             top: 50%; left: 50%;
             border-radius: 50%;
             border-style: solid;
+            filter: drop-shadow(0 0 7px rgba(210,248,255,0.55));
         }
         /* Equatorial ring — wide flat oval, morphs scaleX to fake Y-axis rotation */
         .wind-ring-eq {
             width: 100%; height: 28%;
             margin-top: -14%; margin-left: -50%;
-            border-width: 1.5px;
-            border-color: rgba(210,195,160,0.7);
-            box-shadow: 0 0 5px rgba(255,255,255,0.15);
+            border-width: 2px;
+            border-color: rgba(218,250,255,0.86);
+            box-shadow: 0 0 10px rgba(190,242,255,0.45), inset 0 0 8px rgba(255,255,255,0.22);
             animation: windEqSpin 1.6s ease-in-out forwards;
         }
         @keyframes windEqSpin {
@@ -711,9 +767,9 @@
         .wind-ring-po {
             width: 28%; height: 100%;
             margin-top: -50%; margin-left: -14%;
-            border-width: 1.5px;
-            border-color: rgba(255,255,255,0.6);
-            box-shadow: 0 0 5px rgba(255,255,255,0.15);
+            border-width: 2px;
+            border-color: rgba(255,255,255,0.76);
+            box-shadow: 0 0 9px rgba(210,250,255,0.38), inset 0 0 7px rgba(255,255,255,0.18);
             animation: windPoSpin 2s ease-in-out forwards;
         }
         @keyframes windPoSpin {
@@ -726,8 +782,8 @@
         .wind-ring-di {
             width: 80%; height: 80%;
             margin-top: -40%; margin-left: -40%;
-            border-width: 1px;
-            border-color: rgba(225,210,180,0.45);
+            border-width: 1.5px;
+            border-color: rgba(178,236,255,0.58);
             animation: windDiSpin 1.8s ease-in-out forwards;
         }
         @keyframes windDiSpin {
@@ -875,6 +931,180 @@
             0%   { transform: scaleX(0); opacity: 1; }
             65%  { transform: scaleX(1); opacity: 0.9; }
             100% { transform: scaleX(1.05); opacity: 0; }
+        }
+
+        .fp-wind-stream {
+            position: absolute;
+            pointer-events: none;
+            z-index: 114;
+            height: 132px;
+            transform-origin: left center;
+            overflow: visible;
+            animation: fp-wind-stream-fade var(--dur, 0.8s) ease-out forwards;
+            mix-blend-mode: screen;
+        }
+        .fp-wind-stream::before,
+        .fp-wind-stream::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0 12px,
+                    rgba(255,255,255,0.72) 13px 15px,
+                    rgba(172,236,255,0.36) 16px 19px,
+                    transparent 20px 32px
+                );
+            filter: blur(0.4px) drop-shadow(0 0 10px rgba(200,245,255,0.55));
+            transform: skewX(-14deg) scaleX(0);
+            animation: fp-wind-stream-shear var(--dur, 0.8s) cubic-bezier(0.16,1,0.3,1) forwards;
+        }
+        .fp-wind-stream::after {
+            height: 82%;
+            top: 9%;
+            opacity: 0.65;
+            animation-delay: 0.08s;
+            transform-origin: right center;
+        }
+        @keyframes fp-wind-stream-shear {
+            0%   { transform: skewX(-18deg) scaleX(0);   opacity: 0; }
+            16%  { transform: skewX(-12deg) scaleX(0.7); opacity: 0.95; }
+            65%  { transform: skewX(-8deg)  scaleX(1);   opacity: 0.75; }
+            100% { transform: skewX(-4deg)  scaleX(1.04);opacity: 0; }
+        }
+        @keyframes fp-wind-stream-fade {
+            0%   { opacity: 0; }
+            12%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .fp-wind-tornado {
+            position: absolute;
+            pointer-events: none;
+            z-index: 116;
+            width: 170px;
+            height: 250px;
+            transform: translate(-50%, -82%);
+            transform-origin: center bottom;
+            opacity: 0;
+            animation: fp-wind-tornado-lifetime 1.05s cubic-bezier(0.16,1,0.3,1) forwards;
+            mix-blend-mode: screen;
+        }
+        .fp-wind-tornado::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50% 50% 42% 42% / 18% 18% 82% 82%;
+            background:
+                repeating-conic-gradient(from 0deg,
+                    transparent 0deg 16deg,
+                    rgba(255,255,255,0.78) 17deg 22deg,
+                    rgba(156,226,255,0.42) 23deg 32deg,
+                    transparent 33deg 52deg),
+                radial-gradient(ellipse at 50% 8%, rgba(255,255,255,0.6), transparent 44%),
+                linear-gradient(180deg, rgba(215,248,255,0.82), rgba(154,218,232,0.36) 58%, transparent 100%);
+            clip-path: polygon(16% 0%, 84% 0%, 68% 44%, 57% 76%, 52% 100%, 48% 100%, 43% 76%, 32% 44%);
+            filter: blur(0.6px) drop-shadow(0 0 14px rgba(195,244,255,0.72));
+            animation: fp-wind-tornado-spin 0.24s linear infinite;
+        }
+        .fp-wind-tornado::after {
+            content: "";
+            position: absolute;
+            left: 18%;
+            right: 18%;
+            bottom: -6px;
+            height: 26px;
+            border-radius: 50%;
+            border: 3px solid rgba(225,250,255,0.68);
+            box-shadow: 0 0 20px rgba(185,242,255,0.7), inset 0 0 18px rgba(255,255,255,0.28);
+            animation: fp-wind-ground-spin 0.34s linear infinite;
+        }
+        @keyframes fp-wind-tornado-lifetime {
+            0%   { opacity: 0; transform: translate(-50%, -82%) scale(0.35, 0.72); }
+            18%  { opacity: 1; transform: translate(-50%, -82%) scale(1.05, 1); }
+            78%  { opacity: 0.92; transform: translate(-50%, -82%) scale(1, 1.08); }
+            100% { opacity: 0; transform: translate(-50%, -82%) scale(1.2, 0.88); }
+        }
+        @keyframes fp-wind-tornado-spin {
+            0%   { transform: rotate(0deg) scaleX(1); }
+            50%  { transform: rotate(180deg) scaleX(0.82); }
+            100% { transform: rotate(360deg) scaleX(1); }
+        }
+        @keyframes fp-wind-ground-spin {
+            0%   { transform: rotateX(68deg) rotateZ(0deg) scale(0.8); }
+            100% { transform: rotateX(68deg) rotateZ(360deg) scale(1.05); }
+        }
+
+        .fp-wind-column {
+            position: absolute;
+            pointer-events: none;
+            z-index: 116;
+            width: 70px;
+            height: 230px;
+            transform: translate(-50%, -95%);
+            opacity: 0;
+            animation: fp-wind-column-rise 0.78s ease-out var(--delay,0s) both;
+            mix-blend-mode: screen;
+        }
+        .fp-wind-column::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background:
+                repeating-linear-gradient(
+                    84deg,
+                    transparent 0 16px,
+                    rgba(255,255,255,0.82) 17px 20px,
+                    rgba(151,229,255,0.38) 21px 28px,
+                    transparent 29px 45px
+                );
+            clip-path: polygon(30% 100%, 70% 100%, 90% 18%, 74% 0%, 50% 8%, 26% 0%, 10% 18%);
+            filter: blur(0.35px) drop-shadow(0 0 12px rgba(195,244,255,0.65));
+            animation: fp-wind-column-twist 0.18s linear infinite;
+        }
+        .fp-wind-column::after {
+            content: "";
+            position: absolute;
+            left: 3px;
+            right: 3px;
+            bottom: -8px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(225,250,255,0.62);
+            box-shadow: 0 0 14px rgba(172,236,255,0.5);
+        }
+        @keyframes fp-wind-column-rise {
+            0%   { opacity: 0; transform: translate(-50%, -72%) scaleY(0.25); }
+            18%  { opacity: 1; transform: translate(-50%, -95%) scaleY(1.04); }
+            72%  { opacity: 0.88; transform: translate(-50%, -98%) scaleY(1); }
+            100% { opacity: 0; transform: translate(-50%, -104%) scaleY(0.8); }
+        }
+        @keyframes fp-wind-column-twist {
+            0%   { transform: skewX(-8deg) scaleX(0.85); }
+            50%  { transform: skewX(8deg) scaleX(1.08); }
+            100% { transform: skewX(-8deg) scaleX(0.85); }
+        }
+
+        .fp-wind-slash {
+            position: absolute;
+            pointer-events: none;
+            z-index: 117;
+            width: 150px;
+            height: 18px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), rgba(177,238,255,0.72), transparent);
+            box-shadow: 0 0 12px rgba(206,247,255,0.78);
+            transform: translate(-50%, -50%) rotate(var(--rot,0deg)) scaleX(0);
+            animation: fp-wind-slash-cut 0.42s ease-out var(--delay,0s) both;
+            mix-blend-mode: screen;
+        }
+        @keyframes fp-wind-slash-cut {
+            0%   { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot,0deg)) scaleX(0); }
+            25%  { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot,0deg)) scaleX(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot,0deg)) scaleX(1.25) translateX(var(--drift,20px)); }
         }
 
         .fp-ground-crack {
@@ -4503,6 +4733,144 @@
             color: #888;
             margin-top: 3px;
             line-height: 1.3;
+        }
+        .instinct-details-btn {
+            margin-top: 5px;
+            width: 100%;
+            border: 1px solid #5b21b6;
+            border-radius: 6px;
+            background: linear-gradient(180deg, #ede9fe, #c4b5fd);
+            color: #2e1065;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 4px 7px;
+            box-shadow: 0 2px 0 #4c1d95;
+        }
+        .instinct-details-btn:hover { filter: brightness(1.04); transform: translateY(-1px); }
+        .instinct-details-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #4c1d95; }
+
+        .instinct-panel-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(10,8,18,0.58);
+            z-index: 10000;
+        }
+        .instinct-panel-overlay.active { display: flex; }
+        .instinct-panel {
+            width: min(860px, 96vw);
+            max-height: min(760px, 92vh);
+            overflow: auto;
+            background: linear-gradient(180deg, #fff8dc, #ead29a);
+            border: 3px solid #5a3415;
+            border-radius: 8px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.38);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+        }
+        .instinct-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px 9px;
+            border-bottom: 2px solid rgba(90,52,21,0.28);
+        }
+        .instinct-panel-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 13px;
+            color: #4c1d95;
+            line-height: 1.35;
+        }
+        .instinct-panel-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 2px solid #5a3415;
+            background: #fef3c7;
+            color: #3b220f;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #5a3415;
+        }
+        .instinct-panel-body {
+            padding: 14px 16px 16px;
+            display: grid;
+            gap: 12px;
+        }
+        .instinct-progress-card {
+            display: grid;
+            gap: 7px;
+        }
+        .instinct-progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .instinct-big-track {
+            height: 16px;
+            border-radius: 7px;
+            overflow: hidden;
+            border: 2px solid #5a3415;
+            background: #3b2412;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.4);
+        }
+        .instinct-big-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #7c3aed, #22c55e, #facc15);
+            transition: width 0.6s ease;
+        }
+        .instinct-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .instinct-card {
+            border: 2px solid rgba(90,52,21,0.35);
+            border-radius: 7px;
+            background: rgba(255,255,255,0.36);
+            padding: 10px;
+        }
+        .instinct-card h4 {
+            margin: 0 0 7px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #5b21b6;
+            line-height: 1.35;
+        }
+        .instinct-list {
+            display: grid;
+            gap: 5px;
+            font-size: 12px;
+            line-height: 1.25;
+        }
+        .instinct-pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .instinct-pill {
+            border: 1px solid rgba(90,52,21,0.35);
+            border-radius: 6px;
+            background: #fef3c7;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        @media (max-width: 720px) {
+            .instinct-grid { grid-template-columns: 1fr; }
+            .instinct-panel-title { font-size: 11px; }
         }
 
         /* .care-grid, .care-left, .care-right, .care-sprite, .care-play-btn, .care-stat-block removed (old layout) */
@@ -9786,7 +10154,7 @@
         .forge-desc {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.7em;
-            color: #b0b0c0;
+            color: #3b220f;
             text-align: center;
             line-height: 1.6;
             margin-bottom: 16px;
@@ -9808,13 +10176,13 @@
         .forge-stat-label {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.55em;
-            color: #888;
+            color: #3b220f;
             margin-bottom: 6px;
         }
         .forge-stat-value {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.8em;
-            color: #fff;
+            color: #1a0e06;
         }
         .forge-progress-section {
             margin-bottom: 18px;
@@ -9901,7 +10269,7 @@
         .forge-weapons-collected {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.6em;
-            color: #666;
+            color: #3b220f;
             text-align: center;
             margin-top: 12px;
         }
@@ -13714,9 +14082,31 @@
             color: #4a2c12 !important;
         }
         .forge-panel .forge-close:hover { color: #2b1a0e !important; }
-        .forge-panel .forge-title { font-size: 1.6em !important; }
-        .forge-panel .forge-desc { font-size: 1em !important; }
-        .forge-panel .forge-stat-value { font-size: 1.15em !important; }
+        .forge-panel .forge-title {
+            font-size: 1.6em !important;
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.65) !important;
+        }
+        .forge-panel .forge-desc {
+            font-size: 1em !important;
+            color: #3b220f !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
+        .forge-panel .forge-stat-box {
+            background: rgba(255,245,210,0.38) !important;
+            border-color: rgba(74,44,18,0.35) !important;
+        }
+        .forge-panel .forge-stat-label,
+        .forge-panel .forge-progress-text,
+        .forge-panel .forge-weapons-collected {
+            color: #3b220f !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
+        .forge-panel .forge-stat-value {
+            font-size: 1.15em !important;
+            color: #1a0e06 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
         .forge-panel .forge-btn { font-size: 1.1em !important; padding: 12px 18px !important; }
 
         /* Level star: center the number — flex centering with line-height
@@ -14391,6 +14781,7 @@
                                 <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
                             </div>
                             <div class="instinct-hint">BP = Battle Points · Earn by fighting · Higher = sharper AI in combat</div>
+                            <button class="instinct-details-btn" id="instinct-details-btn" type="button">LEARNING REPORT</button>
                         </div>
                     </div><!-- /menu-stats-panel -->
                     <div class="stats-side-ext stats-side-right" id="winrate-side-ext"></div>
@@ -14430,6 +14821,17 @@
             <div class="minigame-title" id="minigame-title">MINI-GAME</div>
             <div id="minigame-game-area" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:920px;"></div>
             <button class="minigame-back-btn" id="minigame-back-btn">BACK</button>
+        </div>
+    </div>
+
+    <!-- Battle Instinct Learning Report -->
+    <div class="instinct-panel-overlay" id="instinct-panel-overlay">
+        <div class="instinct-panel">
+            <div class="instinct-panel-head">
+                <div class="instinct-panel-title" id="instinct-panel-title">BATTLE INSTINCT REPORT</div>
+                <button class="instinct-panel-close" id="instinct-panel-close" type="button">&times;</button>
+            </div>
+            <div class="instinct-panel-body" id="instinct-panel-body"></div>
         </div>
     </div>
 
@@ -18434,7 +18836,11 @@
         function _applyStatDecay(character, field, timestampField, baseRate, getRate) {
             if (character[field] === undefined) return;
             const now = Date.now();
-            const hoursElapsed = (now - (character[timestampField] || now)) / 3600000;
+            const fallbackTimestamp = character.lastBattleTimestamp || (
+                typeof character.id === 'number' && character.id > 1000000000000 ? character.id : null
+            );
+            const referenceTimestamp = character[timestampField] || fallbackTimestamp || now;
+            const hoursElapsed = (now - referenceTimestamp) / 3600000;
             if (hoursElapsed <= 0) return;
             const rate = getRate ? getRate(character, baseRate) : baseRate;
             const decay = Math.floor(hoursElapsed * rate);
@@ -21374,12 +21780,17 @@
                 }
             }
 
-            playFuryPowerAnimation(event.caster, event.target, event.power, fpColor);
+            const fpVisualPower = event.power.includes('tornado') && event.hitCount === 2
+                ? (event.hitIndex === 1 ? event.power + '_lift' : event.power + '_slam')
+                : event.power;
+            playFuryPowerAnimation(event.caster, event.target, fpVisualPower, fpColor);
             if (event.damage > 0) {
                 const fpHitDelay = event.power.includes('fireball')    ? 700
                                  : event.power.includes('giant_rock')  ? 1500
                                  : event.power.includes('earth_spike') ? 650
-                                 : event.power.includes('tsunami') || event.power.includes('tornado') ? 460
+                                 : event.power.includes('tsunami')      ? 460
+                                 : fpVisualPower.includes('tornado_lift') ? 520
+                                 : fpVisualPower.includes('tornado_slam') ? 420
                                  : 0;
                 if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
                 else showDamage(event.target, event.damage, false);
@@ -21391,6 +21802,8 @@
                             : event.power.includes('fireball')        ? 2900
                             : event.power.includes('giant_rock')      ? 3700
                             : event.power.includes('earth_spike')     ? 3400
+                            : fpVisualPower.includes('tornado_lift')  ? 820
+                            : fpVisualPower.includes('tornado_slam')  ? 1200
                             : 980;
             await sleep(fpSleepMs);
         }
@@ -21827,6 +22240,9 @@
                             showHealText(event.fighter, event.value);
                         } else if (event.value < 0) {
                             showDamage(event.fighter, Math.abs(event.value), false);
+                        }
+                        if (event.fighter === 'player') {
+                            showPlayerSkillScroll(event);
                         }
                         // Water regen aura flash
                         if (event.effect === 'hot') {
@@ -25303,6 +25719,54 @@
             healEl.addEventListener('animationend', () => healEl.remove(), { once: true });
         }
 
+        function getSkillScrollInfo(effect, value) {
+            const v = Math.abs(Math.round(Number(value) || 0));
+            const map = {
+                hot:             { text: v ? 'Regen +' + v : 'Regen', tone: 'heal' },
+                regeneration:    { text: v ? 'Regeneration +' + v : 'Regeneration', tone: 'heal' },
+                second_wind:     { text: v ? 'Second Wind +' + v : 'Second Wind', tone: 'heal' },
+                lifesteal:       { text: v ? 'Lifesteal +' + v : 'Lifesteal', tone: 'heal' },
+                bleed:           { text: v ? 'Bleed -' + v : 'Bleed', tone: 'damage' },
+                burn:            { text: v ? 'Burn -' + v : 'Burn', tone: 'damage' },
+                wind_cut:        { text: v ? 'Wind Cut -' + v : 'Wind Cut', tone: 'damage' },
+                thorns:          { text: v ? 'Thorns -' + v : 'Thorns', tone: 'damage' },
+                counterattack:   { text: v ? 'Counter -' + v : 'Counter', tone: 'damage' },
+                exposed:         { text: 'Exposed ' + (v || 1) + 'T', tone: 'control' },
+                fire_passive:    { text: 'Fire Aura', tone: 'damage' },
+                wind_passive:    { text: 'Wind Guard', tone: 'guard' },
+                sanguine_ward:   { text: 'Sanguine Ward', tone: 'guard' },
+                shield_aegis:    { text: 'Aegis Block', tone: 'guard' },
+                bash:            { text: v ? 'Bash -' + v : 'Bash', tone: 'damage' },
+                retaliation:     { text: 'Retaliation', tone: 'control' },
+                stun:            { text: 'Stunned', tone: 'control' },
+            };
+            return map[effect] || { text: String(effect || 'Skill').replace(/_/g, ' '), tone: value > 0 ? 'heal' : value < 0 ? 'damage' : 'guard' };
+        }
+
+        function showPlayerSkillScroll(event) {
+            const arena = document.getElementById('arena');
+            const fighterEl = game.player?.element;
+            if (!arena || !fighterEl) return;
+            const info = getSkillScrollInfo(event.effect, event.value);
+            if (!info.text) return;
+
+            const pop = document.createElement('div');
+            pop.className = 'skill-scroll-pop ' + info.tone;
+            pop.textContent = info.text;
+
+            const arenaRect = arena.getBoundingClientRect();
+            const fighterRect = fighterEl.getBoundingClientRect();
+            const zoom = (typeof getGameZoom === 'function') ? getGameZoom() : 1;
+            const facingLeft = fighterEl.classList.contains('facing-flipped');
+            const behindOffset = facingLeft ? 130 : -130;
+            const verticalJitter = (fighterEl._skillScrollSeq = ((fighterEl._skillScrollSeq || 0) + 1) % 3) * 18;
+
+            pop.style.left = ((fighterRect.left - arenaRect.left + fighterRect.width / 2 + behindOffset) / zoom) + 'px';
+            pop.style.top = ((fighterRect.top - arenaRect.top + 34 - verticalJitter) / zoom) + 'px';
+            arena.appendChild(pop);
+            pop.addEventListener('animationend', () => pop.remove(), { once: true });
+        }
+
         function showConsumablePop(fighter, icon) {
             const popEl = document.createElement('div');
             popEl.className = 'consumable-pop';
@@ -26552,18 +27016,130 @@
 
                 case 'wind':
                     if (power.includes('tornado')) {
+                        const liftPhase = power.includes('tornado_lift') || !power.includes('tornado_slam');
+                        const slamPhase = power.includes('tornado_slam');
                         const fromLeft = caster === 'player';
-                        const vortex = document.createElement('div');
-                        vortex.className = 'fp-wave';
-                        vortex.style.cssText = `left:${fromLeft ? cp.x : tp.x-65}px;top:${Math.min(cp.y,tp.y)-40}px;width:${Math.abs(tp.x-cp.x)+80}px;height:110px;background:linear-gradient(to ${fromLeft?'right':'left'},transparent,${color}55,${color}bb,transparent);border-radius:50%;transform-origin:${fromLeft?'left':'right'} center;`;
-                        vortex.style.setProperty('--dur', '0.52s');
-                        arena.appendChild(vortex);
-                        vortex.addEventListener('animationend', () => vortex.remove(), { once: true });
-                        setTimeout(() => { spawnImpact(tp.x, tp.y, 75, color); spawnParticles(tp.x, tp.y, 12, color); }, 460);
+                        const dx = tp.x - cp.x;
+                        const dy = tp.y - cp.y;
+                        const dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        const targetEl = game[target]?.element;
+                        const targetImg = targetEl?.querySelector('img');
+                        const isCpuTarget = target === 'cpu';
+
+                        if (liftPhase) {
+                            const stream = document.createElement('div');
+                            stream.className = 'fp-wind-stream';
+                            stream.style.cssText = `left:${cp.x}px;top:${cp.y - 66}px;width:${dist}px;transform:rotate(${angle}deg);`;
+                            stream.style.setProperty('--dur', '0.82s');
+                            arena.appendChild(stream);
+                            stream.addEventListener('animationend', () => stream.remove(), { once: true });
+                        }
+
+                        const tornado = document.createElement('div');
+                        tornado.className = 'fp-wind-tornado';
+                        tornado.style.left = tp.x + 'px';
+                        tornado.style.top = ((_fighterGroundY[target] ?? getCharacterFeetY(target)) - 8) + 'px';
+                        tornado.style.animationDuration = slamPhase ? '0.78s' : '1.05s';
+                        arena.appendChild(tornado);
+                        tornado.addEventListener('animationend', () => tornado.remove(), { once: true });
+
+                        const slashCount = slamPhase ? 9 : 7;
+                        for (let i = 0; i < slashCount; i++) {
+                            const slash = document.createElement('div');
+                            slash.className = 'fp-wind-slash';
+                            slash.style.left = (tp.x + (Math.random() - 0.5) * 90) + 'px';
+                            slash.style.top = (tp.y - 70 + Math.random() * 130) + 'px';
+                            slash.style.setProperty('--rot', (-26 + Math.random() * 52) + 'deg');
+                            slash.style.setProperty('--drift', (fromLeft ? 28 : -28) + 'px');
+                            slash.style.setProperty('--delay', (0.18 + i * 0.055) + 's');
+                            arena.appendChild(slash);
+                            slash.addEventListener('animationend', () => slash.remove(), { once: true });
+                        }
+
+                        if (liftPhase && targetEl) {
+                            targetEl._windTornadoActive = true;
+                            targetEl.style.transition = 'transform 0.52s cubic-bezier(0.16,1,0.3,1)';
+                            targetEl.style.transform = 'translateY(-185px)';
+                            if (targetImg) {
+                                if (targetImg._hurtFrames && targetImg._hurtFrames.length > 0) {
+                                    targetImg.style.width = '';
+                                    targetImg.style.height = '';
+                                    targetImg._hurtActive = true;
+                                    targetImg.src = targetImg._hurtFrames[Math.floor(Math.random() * targetImg._hurtFrames.length)];
+                                }
+                                targetImg.style.transformOrigin = 'center center';
+                                targetImg.style.transition = 'transform 0.52s cubic-bezier(0.16,1,0.3,1)';
+                                targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -28 : 28}deg)`;
+                            }
+                        }
+
+                        if (slamPhase && targetEl) {
+                            targetEl.style.transition = 'transform 0.36s cubic-bezier(0.42,0,1,1)';
+                            targetEl.style.transform = '';
+                            if (targetImg) {
+                                targetImg.style.transformOrigin = 'center center';
+                                targetImg.style.transition = 'transform 0.16s cubic-bezier(0.42,0,1,1)';
+                                targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -92 : 92}deg)`;
+                                setTimeout(() => {
+                                    targetImg.style.transition = 'transform 0.34s ease-out';
+                                    targetImg.style.transform = '';
+                                    targetImg._hurtActive = false;
+                                    if (targetImg._idleSrc) {
+                                        targetImg.src = targetImg._idleSrc;
+                                        targetImg.style.width = targetImg._armedIdleW || '';
+                                        targetImg.style.height = targetImg._armedIdleH || '';
+                                    }
+                                    setTimeout(() => {
+                                        targetImg.style.transition = '';
+                                        targetImg.style.transformOrigin = '';
+                                    }, 360);
+                                }, 650);
+                            }
+                            setTimeout(() => {
+                                targetEl._windTornadoActive = false;
+                                targetEl.style.transition = '';
+                            }, 760);
+                        }
+
+                        setTimeout(() => {
+                            arenaShake();
+                            const impactY = slamPhase ? ((_fighterGroundY[target] ?? getCharacterFeetY(target)) - 70) : tp.y - 150;
+                            spawnImpact(tp.x, impactY, slamPhase ? 104 : 72, '#dff8ff');
+                            spawnRing(tp.x, impactY, slamPhase ? 62 : 42, color);
+                            spawnParticles(tp.x, impactY, slamPhase ? 24 : 16, color, slamPhase ? 135 : 95);
+                            showHitEffect(target, 'normal');
+                        }, slamPhase ? 420 : 520);
                     } else if (power.includes('air_columns')) {
-                        [-35, 0, 35].forEach((oy, i) => {
-                            spawnProjectile(cp.x, cp.y + oy, tp.x, tp.y + oy, 18, color + '99', color, 0.28, i * 0.11);
-                            setTimeout(() => spawnImpact(tp.x, tp.y + oy, 36, color), 260 + i*110);
+                        const offsets = [-72, 0, 72];
+                        offsets.forEach((ox, i) => {
+                            const x = tp.x + ox;
+                            const groundY = (_fighterGroundY[target] ?? getCharacterFeetY(target)) - 4;
+                            const col = document.createElement('div');
+                            col.className = 'fp-wind-column';
+                            col.style.left = x + 'px';
+                            col.style.top = groundY + 'px';
+                            col.style.setProperty('--delay', (i * 0.12) + 's');
+                            arena.appendChild(col);
+                            col.addEventListener('animationend', () => col.remove(), { once: true });
+
+                            for (let s = 0; s < 2; s++) {
+                                const slash = document.createElement('div');
+                                slash.className = 'fp-wind-slash';
+                                slash.style.left = (x + (s === 0 ? -18 : 18)) + 'px';
+                                slash.style.top = (tp.y - 42 + s * 58) + 'px';
+                                slash.style.setProperty('--rot', (s === 0 ? -62 : 62) + 'deg');
+                                slash.style.setProperty('--drift', (caster === 'player' ? 18 : -18) + 'px');
+                                slash.style.setProperty('--delay', (0.16 + i * 0.12 + s * 0.06) + 's');
+                                arena.appendChild(slash);
+                                slash.addEventListener('animationend', () => slash.remove(), { once: true });
+                            }
+
+                            setTimeout(() => {
+                                spawnImpact(x, tp.y, 42, '#dff8ff');
+                                spawnParticles(x, tp.y, 7, color, 58);
+                                if (i === 1) showHitEffect(target, 'normal');
+                            }, 260 + i * 120);
                         });
                     }
                     break;
@@ -29146,7 +29722,7 @@
             // Clear arena overlays
             const arena = document.getElementById('arena');
             // Note: DO NOT remove countdown-overlay as it's a permanent HTML element
-            arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
+                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-tornado, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
             arena.classList.remove('fp-arena-shake');
 
             // Clear any fury intervals
@@ -32681,30 +33257,200 @@
 
         // ===== INSTINCT (Q-LEARNING) DISPLAY =====
 
+        const INSTINCT_MAX_BP = 500;
+        const INSTINCT_ACTIONS = [
+            'punch', 'kick', 'uppercut', 'headbutt', 'dodge', 'block', 'jump', 'jump_back',
+            'jump_forward', 'advance', 'advance_half', 'retreat', 'retreat_half', 'stay',
+            'jump_attack', 'hop_attack', 'activate_fury', 'use_fury_power', 'anti_air',
+            'jump_fury_back', 'jump_fury_forward', 'use_consumable', 'aerial_attack', 'land', 'wait'
+        ];
+        const INSTINCT_ACTION_LABELS = {
+            punch: 'short punches', kick: 'fast kicks', uppercut: 'uppercuts', headbutt: 'headbutts',
+            dodge: 'dodging', block: 'blocking', jump: 'jump defense', jump_back: 'jumping back',
+            jump_forward: 'jumping forward', advance: 'closing distance', advance_half: 'careful advance',
+            retreat: 'retreating', retreat_half: 'small retreats', stay: 'holding ground',
+            jump_attack: 'jump attacks', hop_attack: 'hop attacks', activate_fury: 'fury timing',
+            use_fury_power: 'fury powers', anti_air: 'anti-air reads', jump_fury_back: 'fury back jumps',
+            jump_fury_forward: 'fury forward jumps', use_consumable: 'consumable timing',
+            aerial_attack: 'aerial attacks', land: 'safe landings', wait: 'waiting'
+        };
+
+        function instinctTier(adapt) {
+            if (adapt < 25) return 'Rookie';
+            if (adapt < 75) return 'Learning';
+            if (adapt < 150) return 'Seasoned';
+            if (adapt < 300) return 'Veteran';
+            return 'Master';
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+
+        function getQActions(raw) {
+            if (Array.isArray(raw)) {
+                const out = {};
+                for (let i = 0; i < raw.length && i < INSTINCT_ACTIONS.length; i++) {
+                    out[INSTINCT_ACTIONS[i]] = Number(raw[i]) || 0;
+                }
+                return out;
+            }
+            if (raw && typeof raw === 'object') {
+                const out = {};
+                for (const [k, v] of Object.entries(raw)) out[k] = Number(v) || 0;
+                return out;
+            }
+            return {};
+        }
+
+        function decodeInstinctState(key) {
+            const s = String(key || '');
+            if (s.length < 11) return null;
+            const num = i => Number(s.charAt(i));
+            return {
+                myHp: num(0), enemyHp: num(1), fury: num(2), enemyFury: num(3),
+                consumables: num(4), stamina: num(5), enemyWeapon: num(8),
+                inventory: num(9), distance: num(10), speed: num(11),
+                airborne: num(12), enemyAirborne: num(13), enemyStunned: num(14),
+                pressure: num(15), offhandShield: num(17), equippedWeapon: num(18),
+            };
+        }
+
+        function analyzeBattleInstinct(character) {
+            const qTable = character?.qTable || {};
+            const actionTotals = {};
+            const actionCounts = {};
+            const bestCounts = {};
+            const situationCounts = {
+                lowHpDefense: 0, closePressure: 0, longRange: 0, antiWeapon: 0,
+                furyTiming: 0, consumables: 0, antiAir: 0, shieldPlay: 0,
+            };
+            let stateCount = 0;
+            let positiveStates = 0;
+
+            for (const [stateKey, rawActions] of Object.entries(qTable)) {
+                const actions = getQActions(rawActions);
+                const entries = Object.entries(actions).filter(([, v]) => Number.isFinite(v));
+                if (entries.length === 0) continue;
+                stateCount++;
+                let bestAction = null;
+                let bestValue = -Infinity;
+                for (const [action, value] of entries) {
+                    actionTotals[action] = (actionTotals[action] || 0) + value;
+                    actionCounts[action] = (actionCounts[action] || 0) + 1;
+                    if (value > bestValue) { bestValue = value; bestAction = action; }
+                }
+                if (bestAction && bestValue > 0.02) {
+                    positiveStates++;
+                    bestCounts[bestAction] = (bestCounts[bestAction] || 0) + 1;
+                    const st = decodeInstinctState(stateKey);
+                    if (st) {
+                        if (st.myHp <= 1 && ['dodge','block','jump_back','retreat','retreat_half'].includes(bestAction)) situationCounts.lowHpDefense++;
+                        if (st.distance <= 1 && ['punch','kick','uppercut','headbutt','block','hop_attack'].includes(bestAction)) situationCounts.closePressure++;
+                        if (st.distance >= 2 && ['advance','advance_half','jump_attack','use_fury_power','wait'].includes(bestAction)) situationCounts.longRange++;
+                        if (st.enemyWeapon >= 1 && ['dodge','block','anti_air','retreat','jump_back'].includes(bestAction)) situationCounts.antiWeapon++;
+                        if (['activate_fury','use_fury_power','jump_fury_back','jump_fury_forward'].includes(bestAction)) situationCounts.furyTiming++;
+                        if (bestAction === 'use_consumable') situationCounts.consumables++;
+                        if (bestAction === 'anti_air' || (st.enemyAirborne && ['wait','anti_air'].includes(bestAction))) situationCounts.antiAir++;
+                        if (st.offhandShield || ['block','bash'].includes(bestAction)) situationCounts.shieldPlay++;
+                    }
+                }
+            }
+
+            const topActions = Object.entries(actionTotals)
+                .map(([action, total]) => ({ action, avg: total / Math.max(1, actionCounts[action] || 1), best: bestCounts[action] || 0 }))
+                .filter(row => row.avg > 0.01 || row.best > 0)
+                .sort((a, b) => (b.best - a.best) || (b.avg - a.avg))
+                .slice(0, 6);
+
+            const stats = character?.stats || {};
+            const recommendations = [];
+            if ((stats.agility || 0) >= (stats.strength || 0) + 8) recommendations.push('Fast weapons: Knife, Katana, Spear or Gun.');
+            if ((stats.strength || 0) >= (stats.agility || 0) + 8) recommendations.push('Heavy pressure: Mace, Axe, Sledgehammer or Imperial Mace.');
+            if ((stats.defense || 0) >= (stats.attack || 0)) recommendations.push('Shield line: Shield plus a one-handed weapon fits this fighter.');
+            if (topActions.some(a => ['dodge','jump_back','retreat','retreat_half'].includes(a.action))) recommendations.push('The fighter is learning evasive spacing; long-reach weapons will help.');
+            if (topActions.some(a => ['block','anti_air'].includes(a.action))) recommendations.push('The fighter is reading enemy attacks; shield builds are recommended.');
+            if (topActions.some(a => ['kick','hop_attack','jump_attack','advance'].includes(a.action))) recommendations.push('The fighter likes pressure; high AGI weapons and Fury timing fit well.');
+            if (recommendations.length === 0) recommendations.push('Keep fighting to discover weapon preferences.');
+
+            return { stateCount, positiveStates, topActions, situationCounts, recommendations };
+        }
+
+        function renderInstinctReport(character) {
+            if (!character) return '<div class="instinct-card">No fighter selected.</div>';
+            const adapt = Math.round(character.adaptability || 0);
+            const pct = Math.max(0, Math.min(100, Math.round((adapt / INSTINCT_MAX_BP) * 100)));
+            const analysis = analyzeBattleInstinct(character);
+            const learned = [
+                ['Low HP survival', analysis.situationCounts.lowHpDefense],
+                ['Close-range pressure', analysis.situationCounts.closePressure],
+                ['Long-range spacing', analysis.situationCounts.longRange],
+                ['Weapon defense reads', analysis.situationCounts.antiWeapon],
+                ['Fury timing', analysis.situationCounts.furyTiming],
+                ['Consumable timing', analysis.situationCounts.consumables],
+                ['Anti-air reactions', analysis.situationCounts.antiAir],
+                ['Shield discipline', analysis.situationCounts.shieldPlay],
+            ].sort((a, b) => b[1] - a[1]);
+            const learnedHtml = learned.map(([label, count]) =>
+                '<div>' + escapeHtml(label) + ': <strong>' + count + '</strong> learned states</div>'
+            ).join('');
+            const actionsHtml = analysis.topActions.length
+                ? analysis.topActions.map(row =>
+                    '<span class="instinct-pill">' + escapeHtml(INSTINCT_ACTION_LABELS[row.action] || row.action) + ' +' + row.best + '</span>'
+                  ).join('')
+                : '<span class="instinct-pill">No strong preferences yet</span>';
+            const recHtml = analysis.recommendations.map(r => '<div>' + escapeHtml(r) + '</div>').join('');
+
+            return '' +
+                '<div class="instinct-progress-card">' +
+                    '<div class="instinct-progress-row"><span>' + escapeHtml(instinctTier(adapt)) + '</span><span>' + adapt + ' / ' + INSTINCT_MAX_BP + ' BP</span></div>' +
+                    '<div class="instinct-big-track"><div class="instinct-big-fill" style="width:' + pct + '%"></div></div>' +
+                    '<div class="instinct-list">Known combat states: <strong>' + analysis.stateCount + '</strong> · Confident reads: <strong>' + analysis.positiveStates + '</strong></div>' +
+                '</div>' +
+                '<div class="instinct-grid">' +
+                    '<div class="instinct-card"><h4>FAVORITE READS</h4><div class="instinct-pill-row">' + actionsHtml + '</div></div>' +
+                    '<div class="instinct-card"><h4>WHAT IT LEARNED</h4><div class="instinct-list">' + learnedHtml + '</div></div>' +
+                    '<div class="instinct-card"><h4>WEAPON ADVICE</h4><div class="instinct-list">' + recHtml + '</div></div>' +
+                    '<div class="instinct-card"><h4>HOW TO IMPROVE</h4><div class="instinct-list">' +
+                        '<div>Fight varied opponents to unlock more combat states.</div>' +
+                        '<div>Use weapons and Fury often if you want the fighter to learn those timings.</div>' +
+                        '<div>Losses still train survival patterns, but wins grow BP faster.</div>' +
+                    '</div></div>' +
+                '</div>';
+        }
+
+        function openInstinctPanel() {
+            const character = getSelectedCharacter();
+            const overlay = document.getElementById('instinct-panel-overlay');
+            const body = document.getElementById('instinct-panel-body');
+            const title = document.getElementById('instinct-panel-title');
+            if (!overlay || !body) return;
+            if (title) title.textContent = (character?.name || 'Fighter') + ' - BATTLE INSTINCT REPORT';
+            body.innerHTML = renderInstinctReport(character);
+            overlay.classList.add('active');
+        }
+
+        function closeInstinctPanel() {
+            document.getElementById('instinct-panel-overlay')?.classList.remove('active');
+        }
+
         function updateInstinctDisplay(character) {
             const container = document.getElementById('instinct-bar-container');
             if (!container) return;
             if (!character) { container.style.display = 'none'; return; }
 
             const adapt   = character.adaptability || 0;
-            // Epsilon mirrors backend formula: max(0.02, 1 / (1 + adapt * 0.08))
-            const epsilon = Math.max(0.02, 1 / (1 + adapt * 0.08));
-            // Bar shows how "instinctive" the character is (0% = random, ~98% = near-perfect)
-            const pct     = Math.round((1 - epsilon) * 100);
-
-            // Tier label based on raw adaptability
-            const tierLabel = adapt < 25  ? 'Rookie'
-                            : adapt < 75  ? 'Learning'
-                            : adapt < 150 ? 'Seasoned'
-                            : adapt < 300 ? 'Veteran'
-                            :               'Master';
+            const pct     = Math.max(0, Math.min(100, Math.round((adapt / INSTINCT_MAX_BP) * 100)));
+            const tierLabel = instinctTier(adapt);
 
             const label = document.getElementById('instinct-status-text');
             const valEl = document.getElementById('instinct-value-text');
             const fill  = document.getElementById('instinct-bar-fill');
 
             if (label) label.textContent = tierLabel;
-            if (valEl) valEl.textContent = Math.round(adapt) + ' BP';  // Battle Points
+            if (valEl) valEl.textContent = Math.round(adapt) + ' / ' + INSTINCT_MAX_BP + ' BP';
             if (fill)  fill.style.width  = pct + '%';
 
             container.style.display = '';
@@ -34681,23 +35427,23 @@
 
             // ── Guide panel ──────────────────────────────────────────────────────────
             const guide = document.createElement('div');
-            guide.style.cssText = 'margin-top:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-family:Fredoka,sans-serif;';
+            guide.style.cssText = 'margin-top:10px;padding:10px 14px;background:rgba(255,245,210,0.58);border:1px solid rgba(74,44,18,0.32);border-radius:8px;font-family:Fredoka,sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,0.4);';
             guide.innerHTML = [
                 '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;user-select:none;" id="skill-guide-toggle">',
-                '  <span style="font-size:13px;color:rgba(255,255,255,0.5);">ℹ</span>',
-                '  <span style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.08em;">HOW THE SKILL TREE WORKS</span>',
-                '  <span id="skill-guide-arrow" style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:auto;">▼</span>',
+                '  <span style="font-size:13px;color:#2b1a0e;">ℹ</span>',
+                '  <span style="font-size:11px;color:#2b1a0e;letter-spacing:.08em;font-weight:700;">HOW THE SKILL TREE WORKS</span>',
+                '  <span id="skill-guide-arrow" style="font-size:11px;color:#4a2c12;margin-left:auto;">▼</span>',
                 '</div>',
                 '<div id="skill-guide-body" style="display:none;">',
                 '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;">',
-                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">TWO TREES</div>',
-                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Start with <span style="color:#e74c3c">ATTACK</span> and/or <span style="color:#3498db">DEFENSE</span> roots — both are free to invest in. Go deep into one, mix both, or balance them.</div></div>',
-                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">EXCLUSIVE CHOICES</div>',
-                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">From depth 2 onward, sibling nodes are exclusive — choosing one permanently locks the other in that branch. Choose carefully.</div></div>',
-                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">RANKS (1–5)</div>',
-                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Each node has 5 ranks. Costs: R1=1 · R2=2 · R3=4 · R4=7 · R5=12 pts. Maxing a node = 26 pts total.</div></div>',
-                '    <div><div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:4px;letter-spacing:.06em;">POINTS</div>',
-                '    <div style="font-size:9.5px;color:rgba(255,255,255,0.45);line-height:1.6;">Points = Level − 1 (99 at max level). Max 12 active nodes. No color restrictions — build freely.</div></div>',
+                '    <div><div style="font-size:10px;color:#2b1a0e;font-weight:700;margin-bottom:4px;letter-spacing:.06em;">TWO TREES</div>',
+                '    <div style="font-size:9.5px;color:#3b220f;line-height:1.6;">Start with <span style="color:#9f1f16;font-weight:700;">ATTACK</span> and/or <span style="color:#174f9a;font-weight:700;">DEFENSE</span> roots — both are free to invest in. Go deep into one, mix both, or balance them.</div></div>',
+                '    <div><div style="font-size:10px;color:#2b1a0e;font-weight:700;margin-bottom:4px;letter-spacing:.06em;">EXCLUSIVE CHOICES</div>',
+                '    <div style="font-size:9.5px;color:#3b220f;line-height:1.6;">From depth 2 onward, sibling nodes are exclusive — choosing one permanently locks the other in that branch. Choose carefully.</div></div>',
+                '    <div><div style="font-size:10px;color:#2b1a0e;font-weight:700;margin-bottom:4px;letter-spacing:.06em;">RANKS (1–5)</div>',
+                '    <div style="font-size:9.5px;color:#3b220f;line-height:1.6;">Each node has 5 ranks. Costs: R1=1 · R2=2 · R3=4 · R4=7 · R5=12 pts. Maxing a node = 26 pts total.</div></div>',
+                '    <div><div style="font-size:10px;color:#2b1a0e;font-weight:700;margin-bottom:4px;letter-spacing:.06em;">POINTS</div>',
+                '    <div style="font-size:9.5px;color:#3b220f;line-height:1.6;">Points = Level − 1 (99 at max level). Max 12 active nodes. No color restrictions — build freely.</div></div>',
                 '  </div>',
                 '</div>',
             ].join('');
@@ -35060,6 +35806,12 @@
 
         document.getElementById('skills-close').addEventListener('click', () => {
             document.getElementById('skills-panel').classList.remove('active');
+        });
+
+        document.getElementById('instinct-details-btn')?.addEventListener('click', openInstinctPanel);
+        document.getElementById('instinct-panel-close')?.addEventListener('click', closeInstinctPanel);
+        document.getElementById('instinct-panel-overlay')?.addEventListener('click', (e) => {
+            if (e.target.id === 'instinct-panel-overlay') closeInstinctPanel();
         });
 
         // ─── Wardrobe (NFT) Panel ──────────────────────────────────────────────
