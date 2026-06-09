@@ -5747,6 +5747,49 @@
             box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,120,100,0.12);
             text-shadow: 0 0 10px rgba(255,140,100,0.5), 0 1px 0 #000;
         }
+        .aon-mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .aon-mode-btn {
+            background: linear-gradient(160deg, #1a1008 0%, #0e0a04 100%);
+            border: 1px solid #3a2a10;
+            border-bottom: 3px solid #0a0804;
+            border-radius: 8px;
+            color: #886644;
+            font-size: 0.82em;
+            font-weight: bold;
+            padding: 9px;
+            cursor: pointer;
+            transition: all 0.18s;
+            font-family: inherit;
+            text-align: left;
+            text-shadow: 0 1px 0 #000;
+        }
+        .aon-mode-btn:hover {
+            border-color: #b03020;
+            border-bottom-color: #6a1808;
+            color: #ffcc88;
+            background: linear-gradient(160deg, #32180a 0%, #1c0e04 100%);
+        }
+        .aon-mode-btn.selected {
+            border-color: #f59e0b;
+            border-bottom-color: #92400e;
+            background: linear-gradient(160deg, #7c4a16 0%, #3b220f 100%);
+            color: #fff4cc;
+            box-shadow: 0 0 16px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,210,120,0.16);
+        }
+        .aon-mode-btn small {
+            display: block;
+            margin-top: 3px;
+            color: #9f8a70;
+            font-size: 0.72em;
+            line-height: 1.25;
+            text-shadow: none;
+        }
+        .aon-mode-btn.selected small { color: #ffe4a3; }
 
         /* Summary */
         .aon-summary {
@@ -15130,13 +15173,19 @@
                         <button class="aon-custom-btn" id="aon-pvp-custom-toggle">CUSTOM</button>
                         <input type="number" class="aon-custom-input" id="aon-pvp-custom-input" placeholder="Min 10 🪙" min="10" style="display:none;">
                     </div>
+                    <div class="aon-section-label">MODO DE REPARTO</div>
+                    <div class="aon-mode-grid" id="aon-pvp-mode-grid">
+                        <button class="aon-mode-btn aon-pvp-mode-btn selected" data-mode="all_in">ALL IN<small>Winner takes 96%</small></button>
+                        <button class="aon-mode-btn aon-pvp-mode-btn" data-mode="split">SPLIT SAFE<small>Winner 66% · loser 30%</small></button>
+                    </div>
                     <div class="aon-section-label">FORMATO</div>
                     <div class="aon-format-grid" id="aon-pvp-format-grid">
                         <button class="aon-format-btn aon-pvp-format-btn selected" data-rtw="2">BEST OF 3</button>
                     </div>
                     <div class="aon-summary" id="aon-pvp-summary">
                         <div class="aon-summary-row"><span>Wager</span><span class="aon-val" id="aon-pvp-sum-fee">🪙 --</span></div>
-                        <div class="aon-summary-row aon-winnings"><span>Total Prize</span><span class="aon-val" id="aon-pvp-sum-win">🪙 --</span></div>
+                        <div class="aon-summary-row aon-winnings"><span>Winner Gets</span><span class="aon-val" id="aon-pvp-sum-win">🪙 --</span></div>
+                        <div class="aon-summary-row"><span>Loser Keeps</span><span class="aon-val" id="aon-pvp-sum-loser">🪙 --</span></div>
                         <div class="aon-summary-row aon-fee-row"><span>Fee (4%)</span><span class="aon-val" id="aon-pvp-sum-platform">🪙 --</span></div>
                     </div>
                     <button class="aon-create-btn" id="aon-pvp-create-btn" disabled>POST CHALLENGE</button>
@@ -18642,6 +18691,7 @@
         let aonEntryFee = 0;
         // PvP AoN state
         let aonPvpFee = 0;
+        let aonPvpPayoutMode = 'all_in';
         let aonPvpRoundsToWin = 2; // BO3 only
         let aonPvpMyChallenge = null; // { matchId, entryFee, roundsToWin } if open challenge exists
         let aonFormat = 3; // Best of 3 or 5
@@ -18653,6 +18703,27 @@
         let aonDailyWins = 0;
         let aonDailyDate = '';
         let aonRoundResults = []; // Track winner of each round ('player' or 'cpu')
+        const AON_PAYOUT_MODES = {
+            all_in: { label: 'All In', winnerBps: 9600, loserBps: 0,    platformBps: 400 },
+            split:  { label: 'Split Safe', winnerBps: 6600, loserBps: 3000, platformBps: 400 },
+        };
+
+        function getAonPayoutMode(mode) {
+            return AON_PAYOUT_MODES[mode] || AON_PAYOUT_MODES.all_in;
+        }
+
+        function calcAonPayouts(entryFee, mode) {
+            const pool = Math.max(0, Number(entryFee) || 0) * 2;
+            const cfg = getAonPayoutMode(mode);
+            return {
+                mode,
+                label: cfg.label,
+                pool,
+                winner: Math.floor(pool * cfg.winnerBps / 10000),
+                loser: Math.floor(pool * cfg.loserBps / 10000),
+                platform: Math.floor(pool * cfg.platformBps / 10000),
+            };
+        }
 
         // Wardrobe (NFT) panel state
         const WARDROBE_NFT_PROGRAM_SOLANA = 'ChubNft111111111111111111111111111111111111';
@@ -29850,11 +29921,13 @@
             // Reset PvP form
             document.querySelectorAll('.aon-pvp-fee-btn').forEach(b => b.classList.remove('selected'));
             document.querySelectorAll('.aon-pvp-format-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.aon-pvp-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === 'all_in'));
             document.querySelector('.aon-pvp-format-btn[data-rtw="2"]').classList.add('selected');
             document.getElementById('aon-pvp-custom-toggle').classList.remove('selected');
             document.getElementById('aon-pvp-custom-input').style.display = 'none';
             document.getElementById('aon-pvp-custom-input').value = '';
             aonPvpFee = 0;
+            aonPvpPayoutMode = 'all_in';
             aonPvpRoundsToWin = 2;
             // Always open on PvP tab
             aonSwitchTab('pvp');
@@ -29879,18 +29952,18 @@
         function aonUpdatePvpSummary() {
             const feeEl      = document.getElementById('aon-pvp-sum-fee');
             const winEl      = document.getElementById('aon-pvp-sum-win');
+            const loserEl    = document.getElementById('aon-pvp-sum-loser');
             const platEl     = document.getElementById('aon-pvp-sum-platform');
             const createBtn  = document.getElementById('aon-pvp-create-btn');
             if (aonPvpFee <= 0) {
-                feeEl.textContent = '🪙 --'; winEl.textContent = '🪙 --'; platEl.textContent = '🪙 --';
+                feeEl.textContent = '🪙 --'; winEl.textContent = '🪙 --'; loserEl.textContent = '🪙 --'; platEl.textContent = '🪙 --';
                 createBtn.disabled = true; createBtn.textContent = 'POST CHALLENGE'; return;
             }
-            const totalPool  = aonPvpFee * 2;
-            const platform   = Math.floor(totalPool * 0.04);
-            const prize      = totalPool - platform;
+            const payouts = calcAonPayouts(aonPvpFee, aonPvpPayoutMode);
             feeEl.textContent  = '🪙 ' + aonPvpFee;
-            winEl.textContent  = '🪙 ' + prize;
-            platEl.textContent = '-🪙 ' + platform;
+            winEl.textContent  = '🪙 ' + payouts.winner;
+            loserEl.textContent = '🪙 ' + payouts.loser;
+            platEl.textContent = '-🪙 ' + payouts.platform;
             if (globalTokens < aonPvpFee) {
                 createBtn.disabled = true; createBtn.textContent = 'NOT ENOUGH TOKENS';
             } else {
@@ -29904,7 +29977,8 @@
             const detEl   = document.getElementById('aon-my-challenge-details');
             if (aonPvpMyChallenge) {
                 const fmt = 'BO3';
-                detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — Waiting for opponent...';
+                const modeLabel = getAonPayoutMode(aonPvpMyChallenge.payoutMode).label;
+                detEl.textContent = '🪙 ' + aonPvpMyChallenge.entryFee + ' — ' + fmt + ' — ' + modeLabel + ' — Waiting for opponent...';
                 boxEl.style.display  = 'block';
                 formEl.style.display = 'none';
             } else {
@@ -29936,6 +30010,7 @@
                         playerId:     playerSession.playerId,
                         characterId:  character.id,
                         entryFee:     aonPvpFee,
+                        payoutMode:   aonPvpPayoutMode,
                         roundsToWin:  aonPvpRoundsToWin,
                         displayName:  playerSession.displayName || playerSession.name || 'Challenger',
                         charName:     character.name || 'Fighter',
@@ -29949,7 +30024,7 @@
 
                 globalTokens = data.newTokens;
                 saveProgression();
-                aonPvpMyChallenge = { matchId: data.matchId, entryFee: aonPvpFee, roundsToWin: aonPvpRoundsToWin };
+                aonPvpMyChallenge = { matchId: data.matchId, entryFee: aonPvpFee, payoutMode: aonPvpPayoutMode, roundsToWin: aonPvpRoundsToWin };
                 aonRefreshPvpTab();
                 showToast('Challenge posted! Waiting for opponent...');
             } catch (e) {
@@ -30009,14 +30084,16 @@
 
                 listEl.innerHTML = challenges.map(c => {
                     const fmt   = 'BO3';
-                    const pot   = Math.round(c.entryFee * 2 * 0.96);
+                    const payoutMode = c.payoutMode || c.payout_mode || 'all_in';
+                    const payouts = calcAonPayouts(c.entryFee, payoutMode);
                     const chain = c.chain === 'monad' ? '<span class="aon-chain-badge monad">MONAD</span>'
                                 : c.chain === 'solana' ? '<span class="aon-chain-badge solana">SOLANA</span>'
                                 : '';
+                    const modeLabel = getAonPayoutMode(payoutMode).label;
                     return `<div class="aon-challenge-row">
                         <div class="aon-challenge-info">
                             <div class="aon-challenge-name">${c.challengerName}${chain}</div>
-                            <div class="aon-challenge-details">${c.charName} · Lv.${c.charLevel} · ${fmt}</div>
+                            <div class="aon-challenge-details">${c.charName} · Lv.${c.charLevel} · ${fmt} · ${modeLabel}</div>
                         </div>
                         <span class="aon-challenge-fee">🪙 ${c.entryFee}</span>
                         <button class="aon-join-btn"
@@ -30024,7 +30101,9 @@
                             data-fee="${c.entryFee}"
                             data-rtw="${c.roundsToWin}"
                             data-cname="${c.challengerName}"
-                            data-pot="${pot}"
+                            data-pot="${payouts.winner}"
+                            data-losershare="${payouts.loser}"
+                            data-payoutmode="${payoutMode}"
                             data-chain="${c.chain || ''}"
                             data-onchainroomid="${c.onChainRoomId || ''}">
                             UNIRSE
@@ -30036,10 +30115,13 @@
             }
         }
 
-        async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot, chain, onChainRoomId) {
+        async function aonAcceptChallenge(matchId, entryFee, roundsToWin, challengerName, pot, loserShare, payoutMode, chain, onChainRoomId) {
             if (!playerSession) return;
             const character = getSelectedCharacter();
             if (!character) { showNotice('Select a character to join the challenge.'); return; }
+            payoutMode = payoutMode || 'all_in';
+            const payoutInfo = calcAonPayouts(entryFee, payoutMode);
+            const modeLabel = getAonPayoutMode(payoutMode).label;
 
             // ── Detect cross-chain scenario ─────────────────────────────────────
             // P2's chain is determined by which wallet is available
@@ -30056,7 +30138,7 @@
                 const fmt = 'Best of 3';
                 showConfirm(
                     '⚔️ CROSS-CHAIN CHALLENGE',
-                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nYour wallet: ${p2Chain.toUpperCase()}\n\nYour wager will be locked on ${p2Chain.toUpperCase()} until the battle resolves.`,
+                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nMode: ${modeLabel}\nWinner: 🪙 ${payoutInfo.winner} · Loser keeps: 🪙 ${payoutInfo.loser}\nYour wallet: ${p2Chain.toUpperCase()}\n\nYour wager will be locked on ${p2Chain.toUpperCase()} until the battle resolves.`,
                     async () => {
                         if (p2Chain === 'monad') {
                             await aonJoinCrossChainFromMonad(character, onChainRoomId, entryFee, challengerName);
@@ -30073,7 +30155,7 @@
                 const fmt = 'Best of 3';
                 showConfirm(
                     '⚔️ ON-CHAIN CHALLENGE',
-                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
+                    `vs ${challengerName} (${chain.toUpperCase()})\nWager: 🪙 ${entryFee} — ${fmt}\nMode: ${modeLabel}\nWinner: 🪙 ${payoutInfo.winner} · Loser keeps: 🪙 ${payoutInfo.loser}`,
                     async () => {
                         if (chain === 'monad') {
                             await aonJoinSameChainMonad(character, matchId, onChainRoomId, challengerName, entryFee);
@@ -30094,7 +30176,7 @@
             const fmt = 'Best of 3';
             showConfirm(
                 '⚔️ ACCEPT CHALLENGE',
-                `vs ${challengerName}\nWager: 🪙 ${entryFee} — ${fmt}\nTotal prize: 🪙 ${pot}`,
+                `vs ${challengerName}\nWager: 🪙 ${entryFee} — ${fmt}\nMode: ${modeLabel}\nWinner: 🪙 ${payoutInfo.winner} · Loser keeps: 🪙 ${payoutInfo.loser}`,
                 async () => {
                     const listEl = document.getElementById('aon-lobby-list');
                     listEl.innerHTML = '<div class="aon-lobby-empty">Fighting against ' + challengerName + '...</div>';
@@ -30106,6 +30188,7 @@
                                 playerId:    playerSession.playerId,
                                 matchId:     matchId,
                                 characterId: character.id,
+                                payoutMode:  payoutMode,
                             }),
                         });
                         if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
@@ -30118,7 +30201,8 @@
                         } else if (data.won) {
                             globalTokens = globalTokens - entryFee + data.potWon;
                         } else {
-                            globalTokens = globalTokens - entryFee;
+                            const loserRefund = Number(data.loserRefund ?? data.loserShare ?? payoutInfo.loser ?? 0);
+                            globalTokens = globalTokens - entryFee + loserRefund;
                         }
                         saveProgression();
 
@@ -30132,13 +30216,13 @@
                         }).join('<br>');
                         const resultClass = data.refunded ? 'loss' : (data.won ? 'win' : 'loss');
                         const resultTitle = data.refunded ? 'DRAW - REFUNDED' : (data.won ? '🏆 YOU WON!' : '💀 YOU LOST');
-                        const resultPot   = data.refunded ? '🪙 Wager refunded' : (data.won ? '+🪙 ' + (data.potWon - entryFee) + ' net profit' : '-🪙 ' + entryFee);
+                        const resultPot   = data.refunded ? '🪙 Wager refunded' : (data.won ? '+🪙 ' + (data.potWon - entryFee) + ' net profit' : '-🪙 ' + (entryFee - Number(data.loserRefund ?? data.loserShare ?? payoutInfo.loser ?? 0)));
 
                         listEl.innerHTML = `
                             <div class="aon-pvp-result ${resultClass}">
-                                <div class="aon-pvp-result-title">${resultTitle}</div>
-                                <div class="aon-pvp-result-pot">${resultPot}</div>
-                                <div class="aon-pvp-result-score">vs ${challengerName} — ${score.opponent}-${score.challenger}</div>
+                            <div class="aon-pvp-result-title">${resultTitle}</div>
+                            <div class="aon-pvp-result-pot">${resultPot}</div>
+                            <div class="aon-pvp-result-score">vs ${challengerName} — ${score.opponent}-${score.challenger} — ${modeLabel}</div>
                                 <div class="aon-pvp-result-rounds" style="margin-top:8px;">${roundLines}</div>
                             </div>
                             <button class="aon-lobby-refresh" id="aon-lobby-refresh" style="margin-top:10px;width:100%;padding:10px;">↻ Browse more challenges</button>
@@ -30524,6 +30608,7 @@
                             playerId:    playerSession?.playerId,
                             roomId,
                             entryFee:    aonEntryFee,
+                            payoutMode:  aonPvpPayoutMode || 'all_in',
                             characterId: character.id,
                             chain:       'monad',
                         }),
@@ -30813,6 +30898,7 @@
                         playerId: playerSession?.playerId,
                         roomId: roomIdBig.toString(),
                         entryFee: aonEntryFee,
+                        payoutMode: aonPvpPayoutMode || 'all_in',
                         characterId: character.id,
                         chain: 'solana',
                     }),
@@ -36301,6 +36387,16 @@
             aonUpdatePvpSummary();
         });
 
+        // PvP tab: payout mode
+        document.querySelectorAll('.aon-pvp-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.aon-pvp-mode-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                aonPvpPayoutMode = btn.dataset.mode || 'all_in';
+                aonUpdatePvpSummary();
+            });
+        });
+
         // PvP tab: format buttons
         document.querySelectorAll('.aon-pvp-format-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -36330,6 +36426,8 @@
                 parseInt(btn.dataset.rtw),
                 btn.dataset.cname,
                 parseInt(btn.dataset.pot),
+                parseInt(btn.dataset.losershare || '0'),
+                btn.dataset.payoutmode || 'all_in',
                 btn.dataset.chain || null,
                 btn.dataset.onchainroomid || null,
             );
