@@ -1245,6 +1245,79 @@
             100% { opacity: 0; transform: translateX(-50%) scaleY(1); transform-origin: top center; }
         }
 
+        .fp-electric-orb-shot {
+            position: absolute;
+            pointer-events: none;
+            z-index: 116;
+            width: 94px;
+            height: 94px;
+            transform: translate(-50%, -50%) scale(0.44);
+            opacity: 0;
+            animation: fp-electric-orb-flight var(--dur,0.78s) cubic-bezier(0.16,1,0.3,1) forwards;
+            mix-blend-mode: screen;
+        }
+        .fp-electric-orb-shot img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            filter: saturate(1.55) brightness(1.22) drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 22px var(--glow,#ffd740));
+        }
+        .fp-electric-orb-shot::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 126px;
+            height: 34px;
+            border-radius: 50%;
+            background:
+                repeating-linear-gradient(0deg,
+                    transparent 0 7px,
+                    rgba(255,255,255,0.78) 8px 10px,
+                    rgba(255,215,64,0.45) 11px 14px,
+                    transparent 15px 24px),
+                linear-gradient(90deg, rgba(255,236,116,0.72), rgba(255,255,255,0.18), transparent);
+            transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0);
+            transform-origin: left center;
+            filter: blur(0.35px) drop-shadow(0 0 9px var(--glow,#ffd740));
+            opacity: 0;
+            animation: fp-electric-orb-trail var(--dur,0.78s) ease-out forwards;
+        }
+        .fp-electric-burst {
+            position: absolute;
+            pointer-events: none;
+            z-index: 118;
+            width: 148px;
+            height: 148px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            opacity: 0;
+            mix-blend-mode: screen;
+            background:
+                radial-gradient(circle, rgba(255,255,255,0.96) 0 8%, rgba(255,236,116,0.68) 9% 24%, rgba(255,215,64,0.22) 25% 50%, transparent 64%),
+                repeating-conic-gradient(from 0deg, transparent 0deg 18deg, rgba(255,255,255,0.9) 19deg 22deg, rgba(255,215,64,0.55) 23deg 28deg, transparent 29deg 44deg);
+            filter: drop-shadow(0 0 16px var(--glow,#ffd740)) drop-shadow(0 0 32px rgba(255,215,64,0.55));
+            animation: fp-electric-burst-pop 0.52s ease-out forwards;
+        }
+        @keyframes fp-electric-orb-flight {
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.38); filter: blur(1px); }
+            14%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.98); filter: blur(0); }
+            58%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.05); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.18); filter: blur(0.8px); }
+        }
+        @keyframes fp-electric-orb-trail {
+            0%   { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            16%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            32%  { opacity: 0.9; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.58); }
+            82%  { opacity: 0.78; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1); }
+            100% { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1.12); }
+        }
+        @keyframes fp-electric-burst-pop {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.28) rotate(0deg); }
+            20%  { opacity: 1; transform: translate(-50%, -50%) scale(0.92) rotate(28deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.65) rotate(110deg); }
+        }
+
         .fp-particle {
             position: absolute;
             border-radius: 50%;
@@ -21974,6 +22047,7 @@
                                  : event.power.includes('giant_rock')  ? 1500
                                  : event.power.includes('earth_spike') ? 650
                                  : event.power.includes('tsunami')      ? 460
+                                 : event.power.includes('lightning_bolt') ? 820
                                  : fpVisualPower.includes('wind_sphere_launch') ? 1000
                                  : fpVisualPower.includes('wind_sphere_impact') ? 140
                                  : 0;
@@ -21987,6 +22061,7 @@
                             : event.power.includes('fireball')        ? 2900
                             : event.power.includes('giant_rock')      ? 3700
                             : event.power.includes('earth_spike')     ? 3400
+                            : event.power.includes('lightning_bolt')  ? 1250
                             : fpVisualPower.includes('wind_sphere_launch')  ? 1040
                             : fpVisualPower.includes('wind_sphere_impact')  ? 1200
                             : 980;
@@ -26539,39 +26614,83 @@
 
                 case 'lightning':
                     if (power.includes('lightning_bolt')) {
-                        // Charge orb at caster: expands then compresses, then directional bolt fires
-                        const lbChargeOrb = document.createElement('div');
-                        lbChargeOrb.style.cssText = `position:absolute;left:${cp.x}px;top:${cp.y}px;width:60px;height:60px;transform:translate(-50%,-50%) scale(0);border-radius:50%;background:radial-gradient(circle,#fff 0%,${color}cc 40%,${color}44 70%,transparent 100%);box-shadow:0 0 20px ${color},0 0 40px ${color}88;transition:transform 0.28s ease-out;z-index:30;pointer-events:none;`;
-                        arena.appendChild(lbChargeOrb);
-                        requestAnimationFrame(() => requestAnimationFrame(() => { lbChargeOrb.style.transform = 'translate(-50%,-50%) scale(1)'; }));
+                        const fromLeft = caster === 'player';
+                        const startX = cp.x + (fromLeft ? 72 : -72);
+                        const startY = cp.y - 10;
+                        const endX = tp.x + (fromLeft ? -26 : 26);
+                        const endY = tp.y - 12;
+                        const lbDx = endX - startX;
+                        const lbDy = endY - startY;
+                        const lbAngle = Math.atan2(lbDy, lbDx) * 180 / Math.PI;
+                        const lbHue = caster === 'cpu' ? selectedCpuHue : selectedPlayerHue;
+                        const isGreyBolt = lbHue === 0;
+                        const glowColor = isGreyBolt ? '#a0a0b0' : color;
+                        const hueFilter = isGreyBolt
+                            ? `saturate(0) brightness(1.2) drop-shadow(0 0 10px ${glowColor}) drop-shadow(0 0 24px ${glowColor})`
+                            : `hue-rotate(${lbHue - FURY_ORB_BASE_HUE}deg) saturate(1.65) brightness(1.25) drop-shadow(0 0 10px ${glowColor}) drop-shadow(0 0 24px ${glowColor})`;
+
+                        const orb = document.createElement('div');
+                        orb.className = 'fp-electric-orb-shot';
+                        orb.style.left = startX + 'px';
+                        orb.style.top = startY + 'px';
+                        orb.style.setProperty('--dx', lbDx + 'px');
+                        orb.style.setProperty('--dy', lbDy + 'px');
+                        orb.style.setProperty('--dx58', (lbDx * 0.56) + 'px');
+                        orb.style.setProperty('--dy58', (lbDy * 0.56) + 'px');
+                        orb.style.setProperty('--back-angle', (lbAngle + 180) + 'deg');
+                        orb.style.setProperty('--dur', '0.78s');
+                        orb.style.setProperty('--glow', glowColor);
+
+                        const img = document.createElement('img');
+                        const frames = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES : [FURY_ORB_SRC];
+                        img.src = frames[0];
+                        img.style.filter = hueFilter;
+                        orb.appendChild(img);
+                        arena.appendChild(orb);
+
+                        let frame = 0;
+                        const frameTimer = setInterval(() => {
+                            frame = (frame + 1) % frames.length;
+                            img.src = frames[frame];
+                        }, 50);
+                        orb.addEventListener('animationend', () => {
+                            clearInterval(frameTimer);
+                            orb.remove();
+                        }, { once: true });
+
                         setTimeout(() => {
-                            lbChargeOrb.style.transition = 'transform 0.14s ease-in';
-                            lbChargeOrb.style.transform = 'translate(-50%,-50%) scale(0.1)';
-                        }, 300);
-                        setTimeout(() => {
-                            lbChargeOrb.remove();
-                            const lbDx = tp.x - cp.x, lbDy = tp.y - cp.y;
-                            const lbAngle = Math.atan2(lbDy, lbDx);
-                            const lbLen   = Math.sqrt(lbDx*lbDx + lbDy*lbDy);
-                            const lbEl = document.createElement('div');
-                            lbEl.className = 'fury-lightning-bolt';
-                            lbEl.appendChild(createLightningCanvas(50, lbLen, lbAngle));
-                            // Center the 50px-wide element on cp.x so pivot (25px from left) = caster center
-                            lbEl.style.left = (cp.x - 25) + 'px';
-                            lbEl.style.top  = cp.y + 'px';
-                            lbEl.style.transformOrigin = '25px 0px';
-                            lbEl.style.setProperty('--rot', (lbAngle * 180 / Math.PI + 90) + 'deg');
-                            lbEl.style.setProperty('--duration', '0.5s');
-                            const lbHue = caster === 'cpu' ? selectedCpuHue : selectedPlayerHue;
-                            lbEl.style.filter = lbHue === 0
-                                ? `saturate(0.15) brightness(1.3) drop-shadow(0 0 8px #a0a0b0) drop-shadow(0 0 20px #a0a0b088)`
-                                : `hue-rotate(${lbHue - FURY_ORB_BASE_HUE}deg) saturate(1.6) brightness(1.3) drop-shadow(0 0 8px ${color}) drop-shadow(0 0 20px ${color}88)`;
-                            arena.appendChild(lbEl);
-                            lbEl.addEventListener('animationend', () => lbEl.remove(), { once: true });
-                            spawnImpact(tp.x, tp.y, 65, color);
-                            spawnParticles(tp.x, tp.y, 8, color);
+                            const burst = document.createElement('div');
+                            burst.className = 'fp-electric-burst';
+                            burst.style.left = endX + 'px';
+                            burst.style.top = endY + 'px';
+                            burst.style.setProperty('--glow', glowColor);
+                            arena.appendChild(burst);
+                            burst.addEventListener('animationend', () => burst.remove(), { once: true });
+
+                            for (let i = 0; i < 9; i++) {
+                                const boltAngle = (Math.PI * 2 * i / 9) + (Math.random() - 0.5) * 0.35;
+                                const boltLen = 78 + Math.random() * 72;
+                                const bolt = document.createElement('div');
+                                bolt.className = 'fury-lightning';
+                                bolt.style.left = endX + 'px';
+                                bolt.style.top = endY + 'px';
+                                bolt.style.transformOrigin = 'center top';
+                                bolt.style.setProperty('--rot', (boltAngle * 180 / Math.PI - 90) + 'deg');
+                                bolt.style.setProperty('--duration', (0.32 + Math.random() * 0.18) + 's');
+                                bolt.style.filter = isGreyBolt
+                                    ? `saturate(0.1) brightness(1.35) drop-shadow(0 0 8px ${glowColor})`
+                                    : `hue-rotate(${lbHue - FURY_ORB_BASE_HUE}deg) saturate(1.8) brightness(1.35) drop-shadow(0 0 8px ${glowColor})`;
+                                bolt.appendChild(createLightningCanvas(46, boltLen, boltAngle));
+                                arena.appendChild(bolt);
+                                bolt.addEventListener('animationend', () => bolt.remove(), { once: true });
+                            }
+
+                            arenaShake();
+                            spawnImpact(endX, endY, 88, glowColor);
+                            spawnRing(endX, endY, 58, glowColor);
+                            spawnParticles(endX, endY, 18, glowColor, 105);
                             showHitEffect(target, 'normal');
-                        }, 450);
+                        }, 780);
                     } else if (power.includes('sky_discharge')) {
                         [-45, 0, 45].forEach((offset, i) => {
                             setTimeout(() => {
@@ -29932,7 +30051,7 @@
             // Clear arena overlays
             const arena = document.getElementById('arena');
             // Note: DO NOT remove countdown-overlay as it's a permanent HTML element
-                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-charge, .fp-wind-sphere-shot, .fp-wind-sphere-impact, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
+                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-charge, .fp-wind-sphere-shot, .fp-wind-sphere-impact, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-electric-orb-shot, .fp-electric-burst, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
             arena.classList.remove('fp-arena-shake');
 
             // Clear any fury intervals
