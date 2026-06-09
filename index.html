@@ -1031,7 +1031,7 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 152px;
+            width: 172px;
             height: 64px;
             border-radius: 50%;
             background:
@@ -1040,10 +1040,10 @@
                     rgba(255,255,255,0.58) 11px 13px,
                     rgba(172,236,255,0.28) 14px 17px,
                     transparent 18px 28px),
-                linear-gradient(90deg, rgba(177,238,255,0.62), rgba(255,255,255,0.22), transparent);
+                linear-gradient(90deg, rgba(177,238,255,0.68), rgba(255,255,255,0.2), transparent);
             filter: blur(0.45px) drop-shadow(0 0 10px rgba(200,245,255,0.56));
-            transform: translate(-112%, -50%) rotate(var(--angle,0deg)) scaleX(0);
-            transform-origin: right center;
+            transform: translate(0, -50%) rotate(var(--back-angle, 180deg)) scaleX(0);
+            transform-origin: left center;
             opacity: 0;
             animation: fp-wind-trail-drag var(--dur, 0.9s) ease-out forwards;
         }
@@ -1091,16 +1091,16 @@
             0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.18); filter: blur(1.6px); }
             12%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.86); filter: blur(0.25px); }
             20%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1.03); filter: blur(0); }
-            48%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx48), var(--dy48)) scale(1.06); }
-            82%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx82), var(--dy82)) scale(1.08); }
+            60%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx60), var(--dy60)) scale(1.06); }
+            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84), var(--dy84)) scale(1.08); }
             100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.28); filter: blur(0.8px); }
         }
         @keyframes fp-wind-trail-drag {
-            0%   { opacity: 0; transform: translate(-86%, -50%) rotate(var(--angle,0deg)) scaleX(0); }
-            18%  { opacity: 0; transform: translate(-86%, -50%) rotate(var(--angle,0deg)) scaleX(0); }
-            34%  { opacity: 0.78; transform: translate(-108%, -50%) rotate(var(--angle,0deg)) scaleX(0.62); }
-            82%  { opacity: 0.68; transform: translate(-118%, -50%) rotate(var(--angle,0deg)) scaleX(1); }
-            100% { opacity: 0; transform: translate(-126%, -50%) rotate(var(--angle,0deg)) scaleX(1.1); }
+            0%   { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            20%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            34%  { opacity: 0.78; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.55); }
+            84%  { opacity: 0.7; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1); }
+            100% { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1.12); }
         }
         @keyframes fp-wind-loop-spin {
             0%   { transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) rotateY(0deg) scaleX(0.92); }
@@ -1135,7 +1135,7 @@
             height: 340px;
             transform: translate(-50%, -132%);
             opacity: 0;
-            animation: fp-wind-lance-drop 0.92s cubic-bezier(0.16,1,0.3,1) var(--delay,0s) both;
+            animation: fp-wind-lance-drop 0.68s linear var(--delay,0s) both;
             mix-blend-mode: screen;
         }
         .fp-wind-column::before {
@@ -1170,7 +1170,7 @@
             border-top: 3px solid rgba(225,250,255,0.74);
             box-shadow: 0 0 22px rgba(172,236,255,0.68), inset 0 0 18px rgba(255,255,255,0.18);
             transform: scaleX(0.35);
-            animation: fp-wind-lance-ground-flare 0.46s ease-out 0.34s both;
+            animation: fp-wind-lance-ground-flare 0.36s ease-out 0.42s both;
         }
         .fp-wind-lance-core {
             position: absolute;
@@ -1185,11 +1185,11 @@
             clip-path: polygon(50% 0%, 100% 20%, 66% 86%, 50% 100%, 34% 86%, 0% 20%);
         }
         @keyframes fp-wind-lance-drop {
-            0%   { opacity: 0; transform: translate(-50%, -172%) scale(0.6, 0.7); filter: blur(1.6px); }
-            14%  { opacity: 1; transform: translate(-50%, -146%) scale(0.9, 0.96); filter: blur(0.4px); }
-            44%  { opacity: 1; transform: translate(-50%, -98%) scale(1.05, 1.05); filter: blur(0); }
-            72%  { opacity: 0.88; transform: translate(-50%, -93%) scale(0.98, 1); }
-            100% { opacity: 0; transform: translate(-50%, -89%) scale(0.82, 0.86); filter: blur(1px); }
+            0%   { opacity: 0; transform: translate(-50%, -210%) scale(0.72, 0.88); filter: blur(1.4px); }
+            12%  { opacity: 1; transform: translate(-50%, -178%) scale(0.94, 1); filter: blur(0.3px); }
+            72%  { opacity: 1; transform: translate(-50%, -96%) scale(1.04, 1.04); filter: blur(0); }
+            88%  { opacity: 0.9; transform: translate(-50%, -91%) scale(0.98, 1); }
+            100% { opacity: 0; transform: translate(-50%, -86%) scale(0.82, 0.84); filter: blur(0.8px); }
         }
         @keyframes fp-wind-lance-shimmer {
             0%   { transform: translateX(-50%) skewX(-4deg) translateX(-1px); }
@@ -27241,17 +27241,17 @@
                             const sphere = buildWindSphereEl('fp-wind-sphere-shot');
                             const trail = document.createElement('div');
                             trail.className = 'fp-wind-trail';
-                            trail.style.setProperty('--angle', angle + 'deg');
+                            trail.style.setProperty('--back-angle', (angle + 180) + 'deg');
                             trail.style.setProperty('--dur', '0.96s');
                             sphere.appendChild(trail);
                             sphere.style.left = startX + 'px';
                             sphere.style.top = startY + 'px';
                             sphere.style.setProperty('--dx', (endX - startX) + 'px');
                             sphere.style.setProperty('--dy', (endY - startY) + 'px');
-                            sphere.style.setProperty('--dx48', ((endX - startX) * 0.35) + 'px');
-                            sphere.style.setProperty('--dy48', ((endY - startY) * 0.35) + 'px');
-                            sphere.style.setProperty('--dx82', ((endX - startX) * 0.78) + 'px');
-                            sphere.style.setProperty('--dy82', ((endY - startY) * 0.78) + 'px');
+                            sphere.style.setProperty('--dx60', ((endX - startX) * 0.5) + 'px');
+                            sphere.style.setProperty('--dy60', ((endY - startY) * 0.5) + 'px');
+                            sphere.style.setProperty('--dx84', ((endX - startX) * 0.8) + 'px');
+                            sphere.style.setProperty('--dy84', ((endY - startY) * 0.8) + 'px');
                             sphere.style.setProperty('--dur', '0.96s');
                             arena.appendChild(sphere);
                             sphere.addEventListener('animationend', () => sphere.remove(), { once: true });
@@ -27350,7 +27350,7 @@
                             spawnRing(x, tp.y, 44, color);
                             spawnParticles(x, tp.y, 14, color, 90);
                             showHitEffect(target, 'normal');
-                        }, 430);
+                        }, 480);
                     }
                     break;
             }
