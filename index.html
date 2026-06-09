@@ -980,61 +980,88 @@
             100% { opacity: 0; }
         }
 
-        .fp-wind-tornado {
+        .fp-wind-sphere-shot {
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 170px;
-            height: 250px;
-            transform: translate(-50%, -82%);
-            transform-origin: center bottom;
+            width: 168px;
+            height: 132px;
+            transform: translate(-50%, -50%) scale(0.24);
+            transform-origin: center center;
             opacity: 0;
-            animation: fp-wind-tornado-lifetime 1.05s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fp-wind-sphere-flight var(--dur, 0.9s) cubic-bezier(0.16,1,0.3,1) forwards;
             mix-blend-mode: screen;
         }
-        .fp-wind-tornado::before {
+        .fp-wind-sphere-shot::before {
             content: "";
             position: absolute;
-            inset: 0;
-            border-radius: 50% 50% 42% 42% / 18% 18% 82% 82%;
-            background:
-                repeating-conic-gradient(from 0deg,
-                    transparent 0deg 16deg,
-                    rgba(255,255,255,0.78) 17deg 22deg,
-                    rgba(156,226,255,0.42) 23deg 32deg,
-                    transparent 33deg 52deg),
-                radial-gradient(ellipse at 50% 8%, rgba(255,255,255,0.6), transparent 44%),
-                linear-gradient(180deg, rgba(215,248,255,0.82), rgba(154,218,232,0.36) 58%, transparent 100%);
-            clip-path: polygon(16% 0%, 84% 0%, 68% 44%, 57% 76%, 52% 100%, 48% 100%, 43% 76%, 32% 44%);
-            filter: blur(0.6px) drop-shadow(0 0 14px rgba(195,244,255,0.72));
-            animation: fp-wind-tornado-spin 0.24s linear infinite;
-        }
-        .fp-wind-tornado::after {
-            content: "";
-            position: absolute;
-            left: 18%;
-            right: 18%;
-            bottom: -6px;
-            height: 26px;
+            inset: 24px 31px;
             border-radius: 50%;
-            border: 3px solid rgba(225,250,255,0.68);
-            box-shadow: 0 0 20px rgba(185,242,255,0.7), inset 0 0 18px rgba(255,255,255,0.28);
-            animation: fp-wind-ground-spin 0.34s linear infinite;
+            background: radial-gradient(circle, rgba(238,253,255,0.46), rgba(180,239,255,0.14) 42%, transparent 68%);
+            filter: blur(2px) drop-shadow(0 0 18px rgba(206,247,255,0.78));
         }
-        @keyframes fp-wind-tornado-lifetime {
-            0%   { opacity: 0; transform: translate(-50%, -82%) scale(0.35, 0.72); }
-            18%  { opacity: 1; transform: translate(-50%, -82%) scale(1.05, 1); }
-            78%  { opacity: 0.92; transform: translate(-50%, -82%) scale(1, 1.08); }
-            100% { opacity: 0; transform: translate(-50%, -82%) scale(1.2, 0.88); }
+        .fp-wind-sphere-shot::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: 50%;
+            height: 18px;
+            border-radius: 50%;
+            border-top: 3px solid rgba(242,253,255,0.92);
+            border-bottom: 2px solid rgba(144,226,252,0.42);
+            box-shadow: 0 0 14px rgba(206,247,255,0.72), inset 0 0 12px rgba(255,255,255,0.2);
+            transform: translateY(-50%) rotateX(64deg);
         }
-        @keyframes fp-wind-tornado-spin {
-            0%   { transform: rotate(0deg) scaleX(1); }
-            50%  { transform: rotate(180deg) scaleX(0.82); }
-            100% { transform: rotate(360deg) scaleX(1); }
+        .fp-wind-loop {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: var(--w, 132px);
+            height: var(--h, 72px);
+            border-radius: 50%;
+            border: 0;
+            border-top: var(--thick, 4px) solid rgba(246,253,255,0.92);
+            border-left: 2px solid rgba(169,235,255,0.48);
+            border-right: 2px solid rgba(169,235,255,0.28);
+            filter: blur(0.25px) drop-shadow(0 0 9px rgba(206,247,255,0.74));
+            transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+            animation: fp-wind-loop-spin var(--spin, 0.42s) linear infinite;
         }
-        @keyframes fp-wind-ground-spin {
-            0%   { transform: rotateX(68deg) rotateZ(0deg) scale(0.8); }
-            100% { transform: rotateX(68deg) rotateZ(360deg) scale(1.05); }
+        .fp-wind-loop:nth-child(2) { --w: 148px; --h: 54px; --rot: 62deg;  --spin: 0.34s; --thick: 3px; opacity: 0.9; }
+        .fp-wind-loop:nth-child(3) { --w: 120px; --h: 92px; --rot: -48deg; --spin: 0.5s;  --thick: 4px; opacity: 0.82; }
+        .fp-wind-loop:nth-child(4) { --w: 82px;  --h: 114px;--rot: 118deg; --spin: 0.38s; --thick: 3px; opacity: 0.72; }
+        .fp-wind-loop:nth-child(5) { --w: 160px; --h: 30px; --rot: -8deg;  --spin: 0.28s; --thick: 2px; opacity: 0.58; }
+        @keyframes fp-wind-sphere-flight {
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.24); filter: blur(1.8px); }
+            18%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1.08); filter: blur(0); }
+            34%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.92); }
+            82%  { opacity: 0.96; transform: translate(-50%, -50%) translate(var(--dx80), var(--dy80)) scale(1.04); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.42); filter: blur(1px); }
+        }
+        @keyframes fp-wind-loop-spin {
+            0%   { transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) rotateY(0deg) scaleX(0.92); }
+            50%  { transform: translate(-50%, -50%) rotate(calc(var(--rot, 0deg) + 180deg)) rotateY(72deg) scaleX(1.08); }
+            100% { transform: translate(-50%, -50%) rotate(calc(var(--rot, 0deg) + 360deg)) rotateY(0deg) scaleX(0.92); }
+        }
+        .fp-wind-sphere-impact {
+            position: absolute;
+            pointer-events: none;
+            z-index: 117;
+            width: 190px;
+            height: 118px;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            mix-blend-mode: screen;
+            animation: fp-wind-sphere-impact-pop 0.62s ease-out forwards;
+        }
+        .fp-wind-sphere-impact .fp-wind-loop {
+            animation-duration: 0.22s;
+        }
+        @keyframes fp-wind-sphere-impact-pop {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+            24%  { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.85); }
         }
 
         .fp-wind-column {
@@ -17005,7 +17032,7 @@
             lightning: { p1: { name: 'Sky Discharge', desc: '3 sequential lightning strikes' },      p2: { name: 'Lightning Bolt',desc: 'High damage + electrocution' } },
             earth:     { p1: { name: 'Giant Rock',    desc: 'Devastating single hit' },              p2: { name: 'Earth Spike',   desc: 'Damage + 2-turn stun' } },
             water:     { p1: { name: 'Hydro Barrage', desc: '3 pressurized water hits' },            p2: { name: 'Tsunami',       desc: 'Massive wave + enemy skips turn' } },
-            wind:      { p1: { name: 'Air Columns',   desc: '3-hit air juggle' },                   p2: { name: 'Tornado',       desc: 'Huge damage + skip turn' } },
+            wind:      { p1: { name: 'Air Columns',   desc: '3-hit air juggle' },                   p2: { name: 'Wind Sphere',   desc: 'Charged wind rings + skip turn' } },
         };
 
         // Per-character fury power selection (keyed by character id, persists in session)
@@ -21851,8 +21878,8 @@
                 }
             }
 
-            const fpVisualPower = event.power.includes('tornado') && event.hitCount === 2
-                ? (event.hitIndex === 1 ? event.power + '_lift' : event.power + '_slam')
+            const fpVisualPower = event.power.includes('wind_sphere') && event.hitCount === 2
+                ? (event.hitIndex === 1 ? event.power + '_launch' : event.power + '_impact')
                 : event.power;
             playFuryPowerAnimation(event.caster, event.target, fpVisualPower, fpColor);
             if (event.damage > 0) {
@@ -21860,8 +21887,8 @@
                                  : event.power.includes('giant_rock')  ? 1500
                                  : event.power.includes('earth_spike') ? 650
                                  : event.power.includes('tsunami')      ? 460
-                                 : fpVisualPower.includes('tornado_lift') ? 520
-                                 : fpVisualPower.includes('tornado_slam') ? 420
+                                 : fpVisualPower.includes('wind_sphere_launch') ? 520
+                                 : fpVisualPower.includes('wind_sphere_impact') ? 420
                                  : 0;
                 if (fpHitDelay > 0) setTimeout(() => showDamage(event.target, event.damage, false), fpHitDelay);
                 else showDamage(event.target, event.damage, false);
@@ -21873,8 +21900,8 @@
                             : event.power.includes('fireball')        ? 2900
                             : event.power.includes('giant_rock')      ? 3700
                             : event.power.includes('earth_spike')     ? 3400
-                            : fpVisualPower.includes('tornado_lift')  ? 820
-                            : fpVisualPower.includes('tornado_slam')  ? 1200
+                            : fpVisualPower.includes('wind_sphere_launch')  ? 820
+                            : fpVisualPower.includes('wind_sphere_impact')  ? 1200
                             : 980;
             await sleep(fpSleepMs);
         }
@@ -27086,9 +27113,9 @@
                     break;
 
                 case 'wind':
-                    if (power.includes('tornado')) {
-                        const liftPhase = power.includes('tornado_lift') || !power.includes('tornado_slam');
-                        const slamPhase = power.includes('tornado_slam');
+                    if (power.includes('wind_sphere')) {
+                        const launchPhase = power.includes('wind_sphere_launch') || !power.includes('wind_sphere_impact');
+                        const impactPhase = power.includes('wind_sphere_impact');
                         const fromLeft = caster === 'player';
                         const dx = tp.x - cp.x;
                         const dy = tp.y - cp.y;
@@ -27097,30 +27124,55 @@
                         const targetEl = game[target]?.element;
                         const targetImg = targetEl?.querySelector('img');
                         const isCpuTarget = target === 'cpu';
+                        const startX = cp.x + (fromLeft ? 96 : -96);
+                        const startY = cp.y - 14;
+                        const endX = tp.x + (fromLeft ? -28 : 28);
+                        const endY = tp.y - 16;
 
-                        if (liftPhase) {
+                        function buildWindSphereEl(className) {
+                            const sphere = document.createElement('div');
+                            sphere.className = className;
+                            for (let i = 0; i < 5; i++) {
+                                const loop = document.createElement('div');
+                                loop.className = 'fp-wind-loop';
+                                sphere.appendChild(loop);
+                            }
+                            return sphere;
+                        }
+
+                        if (launchPhase) {
                             const stream = document.createElement('div');
                             stream.className = 'fp-wind-stream';
-                            stream.style.cssText = `left:${cp.x}px;top:${cp.y - 66}px;width:${dist}px;transform:rotate(${angle}deg);`;
+                            stream.style.cssText = `left:${startX}px;top:${startY - 66}px;width:${Math.max(120, dist - 90)}px;transform:rotate(${angle}deg);`;
                             stream.style.setProperty('--dur', '0.82s');
                             arena.appendChild(stream);
                             stream.addEventListener('animationend', () => stream.remove(), { once: true });
+
+                            const sphere = buildWindSphereEl('fp-wind-sphere-shot');
+                            sphere.style.left = startX + 'px';
+                            sphere.style.top = startY + 'px';
+                            sphere.style.setProperty('--dx', (endX - startX) + 'px');
+                            sphere.style.setProperty('--dy', (endY - startY) + 'px');
+                            sphere.style.setProperty('--dx80', ((endX - startX) * 0.82) + 'px');
+                            sphere.style.setProperty('--dy80', ((endY - startY) * 0.82) + 'px');
+                            sphere.style.setProperty('--dur', '0.92s');
+                            arena.appendChild(sphere);
+                            sphere.addEventListener('animationend', () => sphere.remove(), { once: true });
                         }
 
-                        const tornado = document.createElement('div');
-                        tornado.className = 'fp-wind-tornado';
-                        tornado.style.left = tp.x + 'px';
-                        tornado.style.top = ((_fighterGroundY[target] ?? getCharacterFeetY(target)) - 8) + 'px';
-                        tornado.style.animationDuration = slamPhase ? '0.78s' : '1.05s';
-                        arena.appendChild(tornado);
-                        tornado.addEventListener('animationend', () => tornado.remove(), { once: true });
+                        const impact = buildWindSphereEl('fp-wind-sphere-impact');
+                        impact.style.left = endX + 'px';
+                        impact.style.top = endY + 'px';
+                        impact.style.animationDelay = impactPhase ? '0.08s' : '0.48s';
+                        arena.appendChild(impact);
+                        impact.addEventListener('animationend', () => impact.remove(), { once: true });
 
-                        const slashCount = slamPhase ? 9 : 7;
+                        const slashCount = impactPhase ? 9 : 7;
                         for (let i = 0; i < slashCount; i++) {
                             const slash = document.createElement('div');
                             slash.className = 'fp-wind-slash';
-                            slash.style.left = (tp.x + (Math.random() - 0.5) * 90) + 'px';
-                            slash.style.top = (tp.y - 70 + Math.random() * 130) + 'px';
+                            slash.style.left = (endX + (Math.random() - 0.5) * 92) + 'px';
+                            slash.style.top = (endY - 64 + Math.random() * 128) + 'px';
                             slash.style.setProperty('--rot', (-26 + Math.random() * 52) + 'deg');
                             slash.style.setProperty('--drift', (fromLeft ? 28 : -28) + 'px');
                             slash.style.setProperty('--delay', (0.18 + i * 0.055) + 's');
@@ -27128,10 +27180,24 @@
                             slash.addEventListener('animationend', () => slash.remove(), { once: true });
                         }
 
-                        if (liftPhase && targetEl) {
-                            targetEl._windTornadoActive = true;
-                            targetEl.style.transition = 'transform 0.52s cubic-bezier(0.16,1,0.3,1)';
-                            targetEl.style.transform = 'translateY(-185px)';
+                        if (targetEl) {
+                            const pushPx = impactPhase ? 78 : 48;
+                            const pushDir = fromLeft ? 1 : -1;
+                            const pushDelay = impactPhase ? 420 : 520;
+                            targetEl._windSphereActive = true;
+                            setTimeout(() => {
+                                targetEl.style.transition = 'transform 0.18s cubic-bezier(0.16,1,0.3,1)';
+                                targetEl.style.transform = `translateX(${pushDir * pushPx}px)`;
+                                setTimeout(() => {
+                                    targetEl.style.transition = 'transform 0.36s ease-out';
+                                    targetEl.style.transform = '';
+                                    setTimeout(() => {
+                                        targetEl._windSphereActive = false;
+                                        targetEl.style.transition = '';
+                                    }, 380);
+                                }, 160);
+                            }, pushDelay);
+
                             if (targetImg) {
                                 if (targetImg._hurtFrames && targetImg._hurtFrames.length > 0) {
                                     targetImg.style.width = '';
@@ -27140,18 +27206,8 @@
                                     targetImg.src = targetImg._hurtFrames[Math.floor(Math.random() * targetImg._hurtFrames.length)];
                                 }
                                 targetImg.style.transformOrigin = 'center center';
-                                targetImg.style.transition = 'transform 0.52s cubic-bezier(0.16,1,0.3,1)';
-                                targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -28 : 28}deg)`;
-                            }
-                        }
-
-                        if (slamPhase && targetEl) {
-                            targetEl.style.transition = 'transform 0.36s cubic-bezier(0.42,0,1,1)';
-                            targetEl.style.transform = '';
-                            if (targetImg) {
-                                targetImg.style.transformOrigin = 'center center';
-                                targetImg.style.transition = 'transform 0.16s cubic-bezier(0.42,0,1,1)';
-                                targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -92 : 92}deg)`;
+                                targetImg.style.transition = 'transform 0.16s cubic-bezier(0.16,1,0.3,1)';
+                                targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -10 : 10}deg)`;
                                 setTimeout(() => {
                                     targetImg.style.transition = 'transform 0.34s ease-out';
                                     targetImg.style.transform = '';
@@ -27165,22 +27221,17 @@
                                         targetImg.style.transition = '';
                                         targetImg.style.transformOrigin = '';
                                     }, 360);
-                                }, 650);
+                                }, pushDelay + 170);
                             }
-                            setTimeout(() => {
-                                targetEl._windTornadoActive = false;
-                                targetEl.style.transition = '';
-                            }, 760);
                         }
 
                         setTimeout(() => {
                             arenaShake();
-                            const impactY = slamPhase ? ((_fighterGroundY[target] ?? getCharacterFeetY(target)) - 70) : tp.y - 150;
-                            spawnImpact(tp.x, impactY, slamPhase ? 104 : 72, '#dff8ff');
-                            spawnRing(tp.x, impactY, slamPhase ? 62 : 42, color);
-                            spawnParticles(tp.x, impactY, slamPhase ? 24 : 16, color, slamPhase ? 135 : 95);
+                            spawnImpact(endX, endY, impactPhase ? 108 : 78, '#dff8ff');
+                            spawnRing(endX, endY, impactPhase ? 64 : 44, color);
+                            spawnParticles(endX, endY, impactPhase ? 24 : 16, color, impactPhase ? 135 : 95);
                             showHitEffect(target, 'normal');
-                        }, slamPhase ? 420 : 520);
+                        }, impactPhase ? 420 : 520);
                     } else if (power.includes('air_columns')) {
                         const offsets = [-72, 0, 72];
                         offsets.forEach((ox, i) => {
@@ -29793,7 +29844,7 @@
             // Clear arena overlays
             const arena = document.getElementById('arena');
             // Note: DO NOT remove countdown-overlay as it's a permanent HTML element
-                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-tornado, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
+                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-sphere-shot, .fp-wind-sphere-impact, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
             arena.classList.remove('fp-arena-shake');
 
             // Clear any fury intervals
@@ -37217,7 +37268,7 @@
                     ['🌍 SHATTER',    'earth',     'stone_skin_break','#8bc34a'],
                     ['💧 TSUNAMI',    'water',     'tsunami',         '#4fc3f7'],
                     ['💧 HYDRO',      'water',     'hydro_barrage',   '#4fc3f7'],
-                    ['🌬️ TORNADO',   'wind',      'tornado',         '#b0bec5'],
+                    ['🌬️ WIND SPH',  'wind',      'wind_sphere',     '#b0bec5'],
                     ['🌬️ COLUMNS',   'wind',      'air_columns',     '#b0bec5'],
                 ].forEach(([lbl, el, sfx, col]) => bar.appendChild(mkBtn(lbl, el, sfx, col)));
 
