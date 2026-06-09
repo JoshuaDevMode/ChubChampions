@@ -1072,83 +1072,63 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 112px;
-            height: 260px;
-            transform: translate(-50%, -95%);
+            width: 58px;
+            height: 285px;
+            transform: translate(-50%, -132%);
             opacity: 0;
-            animation: fp-wind-column-rise 0.9s ease-out var(--delay,0s) both;
+            animation: fp-wind-column-drop 0.78s cubic-bezier(0.16,1,0.3,1) var(--delay,0s) both;
             mix-blend-mode: screen;
         }
         .fp-wind-column::before {
             content: "";
             position: absolute;
-            left: 12px;
-            right: 12px;
+            left: 7px;
+            right: 7px;
             top: 0;
-            bottom: 12px;
-            border-radius: 50% 50% 44% 44% / 13% 13% 87% 87%;
+            bottom: 0;
+            border-radius: 46% 46% 52% 52% / 8% 8% 92% 92%;
             background:
-                radial-gradient(ellipse at 50% 7%, rgba(255,255,255,0.54), transparent 38%),
-                repeating-conic-gradient(from var(--spin, 0deg),
-                    transparent 0deg 18deg,
-                    rgba(255,255,255,0.78) 19deg 24deg,
-                    rgba(155,230,255,0.32) 25deg 34deg,
-                    transparent 35deg 58deg),
-                linear-gradient(180deg, rgba(222,250,255,0.74), rgba(159,230,246,0.32) 58%, transparent 100%);
-            clip-path: polygon(18% 0%, 82% 0%, 72% 28%, 63% 58%, 55% 100%, 45% 100%, 37% 58%, 28% 28%);
-            filter: blur(0.35px) drop-shadow(0 0 14px rgba(195,244,255,0.68));
-            animation: fp-wind-column-twist 0.24s linear infinite;
+                repeating-linear-gradient(
+                    92deg,
+                    transparent 0 9px,
+                    rgba(255,255,255,0.86) 10px 12px,
+                    rgba(151,229,255,0.42) 13px 17px,
+                    transparent 18px 30px
+                ),
+                linear-gradient(180deg, transparent 0%, rgba(222,250,255,0.42) 14%, rgba(195,244,255,0.78) 46%, rgba(255,255,255,0.58) 72%, transparent 100%);
+            clip-path: polygon(34% 0%, 66% 0%, 76% 74%, 58% 100%, 42% 100%, 24% 74%);
+            filter: blur(0.35px) drop-shadow(0 0 15px rgba(195,244,255,0.72));
+            animation: fp-wind-column-shimmer 0.16s linear infinite;
         }
         .fp-wind-column::after {
             content: "";
             position: absolute;
-            left: 4px;
-            right: 4px;
-            bottom: -10px;
-            height: 34px;
+            left: -16px;
+            right: -16px;
+            bottom: -12px;
+            height: 30px;
             border-radius: 50%;
-            border: 3px solid rgba(225,250,255,0.66);
-            border-left-color: rgba(151,229,255,0.28);
-            border-right-color: rgba(151,229,255,0.28);
-            box-shadow: 0 0 18px rgba(172,236,255,0.56), inset 0 0 16px rgba(255,255,255,0.16);
-            animation: fp-wind-column-base-spin 0.32s linear infinite;
+            border-top: 3px solid rgba(225,250,255,0.74);
+            box-shadow: 0 0 18px rgba(172,236,255,0.64), inset 0 0 18px rgba(255,255,255,0.18);
+            transform: scaleX(0.35);
+            animation: fp-wind-column-ground-flare 0.42s ease-out 0.23s both;
         }
-        .fp-wind-column-ring {
-            position: absolute;
-            left: 50%;
-            bottom: var(--y, 18px);
-            width: var(--w, 92px);
-            height: var(--h, 24px);
-            border-radius: 50%;
-            border-top: var(--thick, 3px) solid rgba(246,253,255,0.88);
-            border-left: 2px solid rgba(170,236,255,0.4);
-            border-right: 2px solid rgba(170,236,255,0.22);
-            filter: blur(0.2px) drop-shadow(0 0 8px rgba(206,247,255,0.65));
-            transform: translateX(-50%) rotateX(68deg) rotate(var(--rot, 0deg));
-            opacity: 0;
-            animation: fp-wind-column-ring-rise 0.78s ease-out var(--delay,0s) both;
+        @keyframes fp-wind-column-drop {
+            0%   { opacity: 0; transform: translate(-50%, -162%) scale(0.48, 0.62); filter: blur(1.6px); }
+            16%  { opacity: 1; transform: translate(-50%, -138%) scale(0.78, 0.9); filter: blur(0.4px); }
+            42%  { opacity: 1; transform: translate(-50%, -98%) scale(1, 1.04); filter: blur(0); }
+            72%  { opacity: 0.78; transform: translate(-50%, -94%) scale(0.92, 1); }
+            100% { opacity: 0; transform: translate(-50%, -90%) scale(0.72, 0.82); filter: blur(1px); }
         }
-        @keyframes fp-wind-column-rise {
-            0%   { opacity: 0; transform: translate(-50%, -72%) scale(0.72, 0.22); }
-            16%  { opacity: 1; transform: translate(-50%, -95%) scale(0.98, 1.05); }
-            70%  { opacity: 0.9; transform: translate(-50%, -99%) scale(1.02, 1); }
-            100% { opacity: 0; transform: translate(-50%, -106%) scale(0.86, 0.78); }
+        @keyframes fp-wind-column-shimmer {
+            0%   { transform: skewX(-4deg) translateX(-1px); }
+            50%  { transform: skewX(5deg) translateX(1px); }
+            100% { transform: skewX(-4deg) translateX(-1px); }
         }
-        @keyframes fp-wind-column-twist {
-            0%   { --spin: 0deg; transform: skewX(-5deg) scaleX(0.9); }
-            50%  { transform: skewX(5deg) scaleX(1.06); }
-            100% { --spin: 360deg; transform: skewX(-5deg) scaleX(0.9); }
-        }
-        @keyframes fp-wind-column-base-spin {
-            0%   { transform: rotate(0deg) scaleX(1); }
-            50%  { transform: rotate(180deg) scaleX(0.88); }
-            100% { transform: rotate(360deg) scaleX(1); }
-        }
-        @keyframes fp-wind-column-ring-rise {
-            0%   { opacity: 0; transform: translateX(-50%) translateY(20px) rotateX(68deg) rotate(var(--rot, 0deg)) scale(0.45); }
-            22%  { opacity: var(--op, 0.78); transform: translateX(-50%) translateY(0) rotateX(68deg) rotate(calc(var(--rot, 0deg) + 110deg)) scale(1); }
-            82%  { opacity: var(--op, 0.78); transform: translateX(-50%) translateY(-18px) rotateX(68deg) rotate(calc(var(--rot, 0deg) + 300deg)) scale(1.08); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-34px) rotateX(68deg) rotate(calc(var(--rot, 0deg) + 420deg)) scale(0.72); }
+        @keyframes fp-wind-column-ground-flare {
+            0%   { opacity: 0; transform: scaleX(0.25); }
+            35%  { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(1.35); }
         }
 
         .fp-wind-slash {
@@ -27295,17 +27275,6 @@
                             col.style.left = x + 'px';
                             col.style.top = groundY + 'px';
                             col.style.setProperty('--delay', (i * 0.12) + 's');
-                            for (let r = 0; r < 6; r++) {
-                                const ring = document.createElement('div');
-                                ring.className = 'fp-wind-column-ring';
-                                ring.style.setProperty('--y', (18 + r * 34) + 'px');
-                                ring.style.setProperty('--w', (98 - r * 7) + 'px');
-                                ring.style.setProperty('--h', (28 - r * 2) + 'px');
-                                ring.style.setProperty('--rot', ((r % 2 === 0 ? -18 : 22) + r * 21) + 'deg');
-                                ring.style.setProperty('--op', (0.86 - r * 0.08).toFixed(2));
-                                ring.style.setProperty('--delay', (i * 0.12 + r * 0.035) + 's');
-                                col.appendChild(ring);
-                            }
                             arena.appendChild(col);
                             col.addEventListener('animationend', () => col.remove(), { once: true });
 
