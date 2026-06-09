@@ -1237,12 +1237,98 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            animation: fp-lightning-v-anim var(--dur,0.4s) ease-out var(--delay,0s) both;
+            width: 104px;
+            height: var(--h,360px);
+            overflow: visible;
+            opacity: 0;
+            transform: translateX(-50%);
+            animation: fp-lightning-v-anim var(--dur,0.56s) linear var(--delay,0s) both;
+            mix-blend-mode: screen;
+        }
+        .fp-lightning-v::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 58px;
+            height: 100%;
+            transform: translateX(-50%) scaleY(0);
+            transform-origin: top center;
+            background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,244,145,0.34) 22%, rgba(255,255,255,0.66) 58%, rgba(255,215,64,0.2) 84%, transparent);
+            filter: blur(7px) drop-shadow(0 0 16px var(--glow,#ffd740));
+            animation: fp-lightning-shaft var(--dur,0.56s) cubic-bezier(0.12,0.88,0.26,1) var(--delay,0s) both;
+        }
+        .fp-lightning-core {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 72px;
+            height: 100%;
+            transform: translateX(-50%);
+            opacity: 0;
+            filter: drop-shadow(0 0 8px var(--glow,#ffd740)) drop-shadow(0 0 18px var(--glow,#ffd740));
+            animation: fp-lightning-core-flicker var(--dur,0.56s) steps(2,end) var(--delay,0s) both;
+        }
+        .fp-lightning-core.alt {
+            width: 50px;
+            animation-delay: calc(var(--delay,0s) + 0.05s);
+            opacity: 0.75;
+        }
+        .fp-lightning-ground {
+            position: absolute;
+            left: 50%;
+            bottom: -18px;
+            width: 118px;
+            height: 42px;
+            border-radius: 50%;
+            transform: translateX(-50%) scale(0);
+            background: radial-gradient(circle, rgba(255,255,255,0.94), rgba(255,215,64,0.52) 26%, rgba(255,215,64,0.16) 54%, transparent 72%);
+            filter: drop-shadow(0 0 14px var(--glow,#ffd740));
+            animation: fp-lightning-ground-pop 0.4s ease-out calc(var(--delay,0s) + 0.12s) both;
+        }
+        .fp-lightning-spark {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 3px;
+            height: 34px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, transparent, #fff, var(--glow,#ffd740), transparent);
+            transform: translateX(calc(-50% + var(--sx,0px))) translateY(var(--sy,-20px));
+            opacity: 0;
+            filter: drop-shadow(0 0 7px var(--glow,#ffd740));
+            animation: fp-lightning-spark-fall var(--sdur,0.42s) linear var(--sdelay,0s) both;
         }
         @keyframes fp-lightning-v-anim {
-            0%   { opacity: 1; transform: translateX(-50%) scaleY(0); transform-origin: top center; }
-            25%  { opacity: 1; transform: translateX(-50%) scaleY(1); transform-origin: top center; }
-            100% { opacity: 0; transform: translateX(-50%) scaleY(1); transform-origin: top center; }
+            0%   { opacity: 0; transform: translateX(-50%) translateY(-30px) scaleY(0.92); }
+            8%   { opacity: 1; transform: translateX(-50%) translateY(-8px) scaleY(1); }
+            42%  { opacity: 1; transform: translateX(-50%) translateY(0) scaleY(1); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(0) scaleY(1.02); }
+        }
+        @keyframes fp-lightning-shaft {
+            0%   { opacity: 0; transform: translateX(-50%) scaleY(0); }
+            18%  { opacity: 0.95; transform: translateX(-50%) scaleY(1); }
+            58%  { opacity: 0.7; transform: translateX(-50%) scaleY(1); }
+            100% { opacity: 0; transform: translateX(-50%) scaleY(1); }
+        }
+        @keyframes fp-lightning-core-flicker {
+            0%   { opacity: 0; clip-path: inset(0 0 100% 0); }
+            12%  { opacity: 1; clip-path: inset(0 0 0 0); }
+            24%  { opacity: 0.45; }
+            38%  { opacity: 1; }
+            54%  { opacity: 0.2; }
+            72%  { opacity: 0.85; }
+            100% { opacity: 0; clip-path: inset(0 0 0 0); }
+        }
+        @keyframes fp-lightning-ground-pop {
+            0%   { opacity: 0; transform: translateX(-50%) scale(0.2); }
+            30%  { opacity: 1; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) scale(1.45); }
+        }
+        @keyframes fp-lightning-spark-fall {
+            0%   { opacity: 0; transform: translateX(calc(-50% + var(--sx,0px))) translateY(var(--sy,-20px)) scaleY(0.4); }
+            18%  { opacity: 1; }
+            100% { opacity: 0; transform: translateX(calc(-50% + var(--ex,0px))) translateY(var(--ey,260px)) scaleY(1.15); }
         }
 
         .fp-electric-orb-shot {
@@ -22047,6 +22133,7 @@
                                  : event.power.includes('giant_rock')  ? 1500
                                  : event.power.includes('earth_spike') ? 650
                                  : event.power.includes('tsunami')      ? 460
+                                 : event.power.includes('sky_discharge') ? 180
                                  : event.power.includes('lightning_bolt') ? 820
                                  : fpVisualPower.includes('wind_sphere_launch') ? 1000
                                  : fpVisualPower.includes('wind_sphere_impact') ? 140
@@ -26387,17 +26474,67 @@
             }
 
             function spawnLightningV(x, targetY, col, delay) {
-                const canvas = createLightningCanvas(40, Math.max(targetY + 20, 80), 0);
+                const boltHeight = Math.max(targetY + 86, 160);
                 const bolt   = document.createElement('div');
                 bolt.className  = 'fp-lightning-v';
                 bolt.style.left = x + 'px';
-                bolt.style.top  = '0px';
+                bolt.style.top  = '-70px';
                 bolt.style.filter = `hue-rotate(${getHueRotateForColor(col)}deg) saturate(1.8) brightness(1.2) drop-shadow(0 0 8px ${col})`;
-                bolt.style.setProperty('--dur', '0.42s');
+                bolt.style.setProperty('--h', boltHeight + 'px');
+                bolt.style.setProperty('--dur', '0.56s');
                 bolt.style.setProperty('--delay', (delay||0) + 's');
-                bolt.appendChild(canvas);
+                bolt.style.setProperty('--glow', col);
+
+                const core = createLightningCanvas(72, boltHeight, 0);
+                core.className = 'fp-lightning-core';
+                const altCore = createLightningCanvas(50, boltHeight - 12, 0);
+                altCore.className = 'fp-lightning-core alt';
+                altCore.style.marginTop = '6px';
+                const ground = document.createElement('div');
+                ground.className = 'fp-lightning-ground';
+
+                bolt.appendChild(core);
+                bolt.appendChild(altCore);
+                bolt.appendChild(ground);
+
+                for (let i = 0; i < 9; i++) {
+                    const spark = document.createElement('i');
+                    spark.className = 'fp-lightning-spark';
+                    const sx = -40 + Math.random() * 80;
+                    const ex = sx + (-14 + Math.random() * 28);
+                    spark.style.setProperty('--sx', sx + 'px');
+                    spark.style.setProperty('--ex', ex + 'px');
+                    spark.style.setProperty('--sy', (-30 + Math.random() * 58) + 'px');
+                    spark.style.setProperty('--ey', (targetY + 28 + Math.random() * 34) + 'px');
+                    spark.style.setProperty('--sdur', (0.28 + Math.random() * 0.24) + 's');
+                    spark.style.setProperty('--sdelay', ((delay || 0) + Math.random() * 0.16) + 's');
+                    bolt.appendChild(spark);
+                }
+
                 arena.appendChild(bolt);
-                bolt.addEventListener('animationend', () => bolt.remove(), { once: true });
+
+                const startAt = Math.max(0, delay || 0) * 1000;
+                let redraws = 0;
+                let redrawTimer = null;
+                let redrawStartTimer = null;
+                const startRedraw = () => {
+                    redrawTimer = setInterval(() => {
+                        redrawLightningCanvas(core, 72, boltHeight);
+                        redrawLightningCanvas(altCore, 50, boltHeight - 12);
+                        redraws++;
+                        if (redraws >= 9) {
+                            clearInterval(redrawTimer);
+                            redrawTimer = null;
+                        }
+                    }, 48);
+                };
+                redrawStartTimer = setTimeout(startRedraw, startAt);
+                bolt.addEventListener('animationend', (event) => {
+                    if (event.target !== bolt) return;
+                    if (redrawStartTimer) clearTimeout(redrawStartTimer);
+                    if (redrawTimer) clearInterval(redrawTimer);
+                    bolt.remove();
+                }, { once: true });
             }
 
             function arenaShake() {
@@ -26694,9 +26831,14 @@
                     } else if (power.includes('sky_discharge')) {
                         [-45, 0, 45].forEach((offset, i) => {
                             setTimeout(() => {
-                                spawnLightningV(tp.x + offset, tp.y, color);
-                                spawnImpact(tp.x + offset, tp.y, 42, color);
-                                if (i === 0) showHitEffect(target, 'normal');
+                                const strikeX = tp.x + offset;
+                                spawnLightningV(strikeX, tp.y, color);
+                                setTimeout(() => {
+                                    spawnImpact(strikeX, tp.y, 52, color);
+                                    spawnRing(strikeX, tp.y, 42, color, 0.12);
+                                    spawnParticles(strikeX, tp.y, 10, color, 82);
+                                    if (i === 0) showHitEffect(target, 'normal');
+                                }, 150);
                             }, i * 1500);
                         });
                     } else if (power.includes('orb_active')) {
@@ -28939,12 +29081,9 @@
             }
         }
 
-        function createLightningCanvas(width, height, angle) {
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
+        function redrawLightningCanvas(canvas, width, height) {
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
+            ctx.clearRect(0, 0, width, height);
             const centerX = width / 2;
             const startY = 10;
             const endY = height - 10;
@@ -28970,6 +29109,13 @@
             ctx.strokeStyle = '#ffffdd';
             ctx.lineWidth = 2;
             drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
+        }
+
+        function createLightningCanvas(width, height, angle) {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            redrawLightningCanvas(canvas, width, height);
 
             return canvas;
         }
