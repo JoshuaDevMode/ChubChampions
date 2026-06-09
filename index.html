@@ -937,47 +937,51 @@
             position: absolute;
             pointer-events: none;
             z-index: 114;
-            height: 132px;
-            transform-origin: left center;
+            width: 150px;
+            height: 82px;
+            transform-origin: center center;
             overflow: visible;
-            animation: fp-wind-stream-fade var(--dur, 0.8s) ease-out forwards;
+            opacity: 0;
+            animation: fp-wind-stream-travel var(--dur, 0.9s) cubic-bezier(0.16,1,0.3,1) forwards;
             mix-blend-mode: screen;
         }
         .fp-wind-stream::before,
         .fp-wind-stream::after {
             content: "";
             position: absolute;
-            inset: 0;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 56px;
             border-radius: 50%;
             background:
                 repeating-linear-gradient(
                     0deg,
-                    transparent 0 12px,
-                    rgba(255,255,255,0.72) 13px 15px,
-                    rgba(172,236,255,0.36) 16px 19px,
-                    transparent 20px 32px
+                    transparent 0 10px,
+                    rgba(255,255,255,0.68) 11px 13px,
+                    rgba(172,236,255,0.34) 14px 17px,
+                    transparent 18px 28px
                 );
             filter: blur(0.4px) drop-shadow(0 0 10px rgba(200,245,255,0.55));
-            transform: skewX(-14deg) scaleX(0);
-            animation: fp-wind-stream-shear var(--dur, 0.8s) cubic-bezier(0.16,1,0.3,1) forwards;
+            transform: translate(-78%, -50%) skewX(-14deg) scaleX(0.68);
+            animation: fp-wind-stream-shear 0.28s ease-out var(--delay, 0s) both;
         }
         .fp-wind-stream::after {
-            height: 82%;
-            top: 9%;
+            height: 38px;
             opacity: 0.65;
-            animation-delay: 0.08s;
-            transform-origin: right center;
+            animation-delay: calc(var(--delay, 0s) + 0.08s);
         }
         @keyframes fp-wind-stream-shear {
-            0%   { transform: skewX(-18deg) scaleX(0);   opacity: 0; }
-            16%  { transform: skewX(-12deg) scaleX(0.7); opacity: 0.95; }
-            65%  { transform: skewX(-8deg)  scaleX(1);   opacity: 0.75; }
-            100% { transform: skewX(-4deg)  scaleX(1.04);opacity: 0; }
+            0%   { transform: translate(-52%, -50%) skewX(-18deg) scaleX(0.2); opacity: 0; }
+            35%  { transform: translate(-76%, -50%) skewX(-12deg) scaleX(0.82); opacity: 0.9; }
+            100% { transform: translate(-108%, -50%) skewX(-8deg) scaleX(1.08); opacity: 0; }
         }
-        @keyframes fp-wind-stream-fade {
-            0%   { opacity: 0; }
-            12%  { opacity: 1; }
-            100% { opacity: 0; }
+        @keyframes fp-wind-stream-travel {
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) rotate(var(--angle, 0deg)) scale(0.36); }
+            12%  { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx12), var(--dy12)) rotate(var(--angle, 0deg)) scale(0.78); }
+            22%  { opacity: 0.82; transform: translate(-50%, -50%) translate(var(--dx22), var(--dy22)) rotate(var(--angle, 0deg)) scale(0.94); }
+            82%  { opacity: 0.74; transform: translate(-50%, -50%) translate(var(--dx82), var(--dy82)) rotate(var(--angle, 0deg)) scale(1.02); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--angle, 0deg)) scale(1.14); }
         }
 
         .fp-wind-sphere-shot {
@@ -1034,10 +1038,10 @@
         .fp-wind-loop:nth-child(5) { --w: 160px; --h: 30px; --rot: -8deg;  --spin: 0.28s; --thick: 2px; opacity: 0.58; }
         @keyframes fp-wind-sphere-flight {
             0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.24); filter: blur(1.8px); }
-            18%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1.08); filter: blur(0); }
-            34%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.92); }
-            82%  { opacity: 0.96; transform: translate(-50%, -50%) translate(var(--dx80), var(--dy80)) scale(1.04); }
-            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.42); filter: blur(1px); }
+            12%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx12), var(--dy12)) scale(0.72); filter: blur(0.4px); }
+            24%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx24), var(--dy24)) scale(1.06); filter: blur(0); }
+            82%  { opacity: 0.96; transform: translate(-50%, -50%) translate(var(--dx80), var(--dy80)) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.38); filter: blur(1px); }
         }
         @keyframes fp-wind-loop-spin {
             0%   { transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) rotateY(0deg) scaleX(0.92); }
@@ -27140,23 +27144,40 @@
                         }
 
                         if (launchPhase) {
-                            const stream = document.createElement('div');
-                            stream.className = 'fp-wind-stream';
-                            stream.style.cssText = `left:${startX}px;top:${startY - 66}px;width:${Math.max(120, dist - 90)}px;transform:rotate(${angle}deg);`;
-                            stream.style.setProperty('--dur', '0.82s');
-                            arena.appendChild(stream);
-                            stream.addEventListener('animationend', () => stream.remove(), { once: true });
-
                             const sphere = buildWindSphereEl('fp-wind-sphere-shot');
                             sphere.style.left = startX + 'px';
                             sphere.style.top = startY + 'px';
                             sphere.style.setProperty('--dx', (endX - startX) + 'px');
                             sphere.style.setProperty('--dy', (endY - startY) + 'px');
+                            sphere.style.setProperty('--dx12', ((endX - startX) * 0.08) + 'px');
+                            sphere.style.setProperty('--dy12', ((endY - startY) * 0.08) + 'px');
+                            sphere.style.setProperty('--dx24', ((endX - startX) * 0.2) + 'px');
+                            sphere.style.setProperty('--dy24', ((endY - startY) * 0.2) + 'px');
                             sphere.style.setProperty('--dx80', ((endX - startX) * 0.82) + 'px');
                             sphere.style.setProperty('--dy80', ((endY - startY) * 0.82) + 'px');
                             sphere.style.setProperty('--dur', '0.92s');
                             arena.appendChild(sphere);
                             sphere.addEventListener('animationend', () => sphere.remove(), { once: true });
+
+                            for (let i = 0; i < 2; i++) {
+                                const stream = document.createElement('div');
+                                stream.className = 'fp-wind-stream';
+                                stream.style.left = startX + 'px';
+                                stream.style.top = (startY + (i === 0 ? -8 : 10)) + 'px';
+                                stream.style.setProperty('--angle', angle + 'deg');
+                                stream.style.setProperty('--dx', (endX - startX) + 'px');
+                                stream.style.setProperty('--dy', (endY - startY) + 'px');
+                                stream.style.setProperty('--dx12', ((endX - startX) * 0.08) + 'px');
+                                stream.style.setProperty('--dy12', ((endY - startY) * 0.08) + 'px');
+                                stream.style.setProperty('--dx22', ((endX - startX) * 0.2) + 'px');
+                                stream.style.setProperty('--dy22', ((endY - startY) * 0.2) + 'px');
+                                stream.style.setProperty('--dx82', ((endX - startX) * 0.82) + 'px');
+                                stream.style.setProperty('--dy82', ((endY - startY) * 0.82) + 'px');
+                                stream.style.setProperty('--delay', (i * 0.08) + 's');
+                                stream.style.setProperty('--dur', '0.92s');
+                                arena.appendChild(stream);
+                                stream.addEventListener('animationend', () => stream.remove(), { once: true });
+                            }
                         }
 
                         const impact = buildWindSphereEl('fp-wind-sphere-impact');
