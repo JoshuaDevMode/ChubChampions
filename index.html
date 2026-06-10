@@ -1024,7 +1024,7 @@
             transform: translate(-50%, -50%) scale(0.24);
             transform-origin: center center;
             opacity: 0;
-            animation: fp-wind-sphere-flight var(--dur, 0.9s) cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fp-wind-sphere-flight var(--dur, 1.08s) cubic-bezier(0.16,1,0.3,1) forwards;
             mix-blend-mode: screen;
         }
         .fp-wind-sphere-shot .fp-wind-trail {
@@ -1045,7 +1045,7 @@
             transform: translate(0, -50%) rotate(var(--back-angle, 180deg)) scaleX(0);
             transform-origin: left center;
             opacity: 0;
-            animation: fp-wind-trail-drag var(--dur, 0.9s) ease-out forwards;
+            animation: fp-wind-trail-drag var(--dur, 1.08s) ease-out forwards;
         }
         .fp-wind-sphere-shot::before {
             content: "";
@@ -1091,8 +1091,11 @@
             0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.18); filter: blur(1.6px); }
             12%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.86); filter: blur(0.25px); }
             20%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1.03); filter: blur(0); }
-            60%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx60), var(--dy60)) scale(1.06); }
-            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84), var(--dy84)) scale(1.08); }
+            34%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34), var(--dy34)) scale(1.04); }
+            48%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx48), var(--dy48)) scale(1.05); }
+            62%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx62), var(--dy62)) scale(1.06); }
+            76%  { opacity: 0.99; transform: translate(-50%, -50%) translate(var(--dx76), var(--dy76)) scale(1.07); }
+            90%  { opacity: 0.94; transform: translate(-50%, -50%) translate(var(--dx90), var(--dy90)) scale(1.09); }
             100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.28); filter: blur(0.8px); }
         }
         @keyframes fp-wind-trail-drag {
@@ -1131,8 +1134,8 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 118px;
-            height: 340px;
+            width: 148px;
+            height: 360px;
             transform: translate(-50%, -132%);
             opacity: 0;
             animation: fp-wind-lance-drop 0.68s linear var(--delay,0s) both;
@@ -1143,7 +1146,7 @@
             position: absolute;
             left: 50%;
             top: 0;
-            width: 78px;
+            width: 108px;
             height: 100%;
             transform: translateX(-50%);
             border-radius: 50% 50% 24% 24% / 8% 8% 92% 92%;
@@ -1155,8 +1158,8 @@
                     rgba(255,255,255,0.7) 13px 15px,
                     rgba(151,229,255,0.34) 16px 22px,
                     transparent 23px 38px);
-            clip-path: polygon(50% 0%, 68% 20%, 62% 70%, 50% 100%, 38% 70%, 32% 20%);
-            filter: blur(0.3px) drop-shadow(0 0 18px rgba(195,244,255,0.8));
+            clip-path: polygon(50% 0%, 76% 18%, 68% 70%, 50% 100%, 32% 70%, 24% 18%);
+            filter: blur(0.25px) drop-shadow(0 0 20px rgba(195,244,255,0.84));
             animation: fp-wind-lance-shimmer 0.16s linear infinite;
         }
         .fp-wind-column::after {
@@ -1176,13 +1179,13 @@
             position: absolute;
             left: 50%;
             top: 12px;
-            width: 18px;
-            height: 260px;
+            width: 36px;
+            height: 282px;
             transform: translateX(-50%);
             border-radius: 999px;
             background: linear-gradient(180deg, transparent, rgba(255,255,255,0.96) 34%, rgba(185,241,255,0.7) 72%, transparent);
-            box-shadow: 0 0 20px rgba(218,250,255,0.88);
-            clip-path: polygon(50% 0%, 100% 20%, 66% 86%, 50% 100%, 34% 86%, 0% 20%);
+            box-shadow: 0 0 24px rgba(218,250,255,0.9);
+            clip-path: polygon(50% 0%, 100% 22%, 74% 84%, 50% 100%, 26% 84%, 0% 22%);
         }
         @keyframes fp-wind-lance-drop {
             0%   { opacity: 0; transform: translate(-50%, -210%) scale(0.72, 0.88); filter: blur(1.4px); }
@@ -1237,7 +1240,7 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 104px;
+            width: 220px;
             height: var(--h,360px);
             overflow: visible;
             opacity: 0;
@@ -1250,27 +1253,29 @@
             position: absolute;
             left: 50%;
             top: 0;
-            width: 58px;
+            width: 188px;
             height: 100%;
             transform: translateX(-50%) scaleY(0);
             transform-origin: top center;
-            background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,244,145,0.34) 22%, rgba(255,255,255,0.66) 58%, rgba(255,215,64,0.2) 84%, transparent);
-            filter: blur(7px) drop-shadow(0 0 16px var(--glow,#ffd740));
+            background:
+                radial-gradient(ellipse at center, rgba(255,255,255,0.52) 0 9%, rgba(255,244,145,0.24) 30%, rgba(255,215,64,0.08) 54%, transparent 76%),
+                linear-gradient(180deg, rgba(255,255,255,0), rgba(255,244,145,0.24) 22%, rgba(255,255,255,0.48) 58%, rgba(255,215,64,0.14) 84%, transparent);
+            filter: blur(13px) drop-shadow(0 0 18px var(--glow,#ffd740));
             animation: fp-lightning-shaft var(--dur,0.56s) cubic-bezier(0.12,0.88,0.26,1) var(--delay,0s) both;
         }
         .fp-lightning-core {
             position: absolute;
             left: 50%;
             top: 0;
-            width: 72px;
+            width: 132px;
             height: 100%;
             transform: translateX(-50%);
             opacity: 0;
-            filter: drop-shadow(0 0 8px var(--glow,#ffd740)) drop-shadow(0 0 18px var(--glow,#ffd740));
+            filter: drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 24px var(--glow,#ffd740));
             animation: fp-lightning-core-flicker var(--dur,0.56s) steps(2,end) var(--delay,0s) both;
         }
         .fp-lightning-core.alt {
-            width: 50px;
+            width: 104px;
             animation-delay: calc(var(--delay,0s) + 0.05s);
             opacity: 0.75;
         }
@@ -1278,7 +1283,7 @@
             position: absolute;
             left: 50%;
             bottom: -18px;
-            width: 118px;
+            width: 172px;
             height: 42px;
             border-radius: 50%;
             transform: translateX(-50%) scale(0);
@@ -1290,7 +1295,7 @@
             position: absolute;
             left: 50%;
             top: 0;
-            width: 3px;
+            width: 4px;
             height: 34px;
             border-radius: 999px;
             background: linear-gradient(180deg, transparent, #fff, var(--glow,#ffd740), transparent);
@@ -1342,11 +1347,24 @@
             animation: fp-electric-orb-flight var(--dur,0.78s) cubic-bezier(0.16,1,0.3,1) forwards;
             mix-blend-mode: screen;
         }
+        .fp-electric-orb-frame {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            overflow: hidden;
+        }
         .fp-electric-orb-shot img {
             width: 100%;
             height: 100%;
             display: block;
             filter: saturate(1.55) brightness(1.22) drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 22px var(--glow,#ffd740));
+        }
+        .fp-electric-orb-shot.sheet-mode img {
+            width: 500%;
+            height: 200%;
+            max-width: none;
+            transform: translate(var(--sheet-x,0%), var(--sheet-y,0%));
+            transform-origin: top left;
         }
         .fp-electric-orb-shot::before {
             content: "";
@@ -22141,7 +22159,7 @@
                 else showDamage(event.target, event.damage, false);
             }
             const fpSleepMs = isPassive                               ? 450
-                            : event.power.includes('sky_discharge')   ? 3800
+                            : event.power.includes('sky_discharge')   ? 2200
                             : event.power.includes('tsunami')         ? 1500
                             : event.power.includes('hydro_barrage')   ? 3300
                             : event.power.includes('fireball')        ? 2900
@@ -26484,9 +26502,9 @@
                 bolt.style.setProperty('--delay', (delay||0) + 's');
                 bolt.style.setProperty('--glow', col);
 
-                const core = createLightningCanvas(72, boltHeight, 0);
+                const core = createLightningCanvas(132, boltHeight, 0, 0.42);
                 core.className = 'fp-lightning-core';
-                const altCore = createLightningCanvas(50, boltHeight - 12, 0);
+                const altCore = createLightningCanvas(104, boltHeight - 12, 0, 0.32);
                 altCore.className = 'fp-lightning-core alt';
                 altCore.style.marginTop = '6px';
                 const ground = document.createElement('div');
@@ -26496,11 +26514,11 @@
                 bolt.appendChild(altCore);
                 bolt.appendChild(ground);
 
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 5; i++) {
                     const spark = document.createElement('i');
                     spark.className = 'fp-lightning-spark';
-                    const sx = -40 + Math.random() * 80;
-                    const ex = sx + (-14 + Math.random() * 28);
+                    const sx = -72 + Math.random() * 144;
+                    const ex = sx + (-26 + Math.random() * 52);
                     spark.style.setProperty('--sx', sx + 'px');
                     spark.style.setProperty('--ex', ex + 'px');
                     spark.style.setProperty('--sy', (-30 + Math.random() * 58) + 'px');
@@ -26518,8 +26536,8 @@
                 let redrawStartTimer = null;
                 const startRedraw = () => {
                     redrawTimer = setInterval(() => {
-                        redrawLightningCanvas(core, 72, boltHeight);
-                        redrawLightningCanvas(altCore, 50, boltHeight - 12);
+                        redrawLightningCanvas(core, 132, boltHeight, 0.42);
+                        redrawLightningCanvas(altCore, 104, boltHeight - 12, 0.32);
                         redraws++;
                         if (redraws >= 9) {
                             clearInterval(redrawTimer);
@@ -26777,17 +26795,27 @@
                         orb.style.setProperty('--dur', '0.78s');
                         orb.style.setProperty('--glow', glowColor);
 
+                        const frameBox = document.createElement('div');
+                        frameBox.className = 'fp-electric-orb-frame';
                         const img = document.createElement('img');
-                        const frames = FURY_ORB_FRAMES.length > 0 ? FURY_ORB_FRAMES : [FURY_ORB_SRC];
-                        img.src = frames[0];
+                        const frames = FURY_ORB_FRAMES.filter(src => src && src !== FURY_ORB_SRC);
+                        const useSheetCrop = frames.length === 0;
+                        if (useSheetCrop) orb.classList.add('sheet-mode');
+                        img.src = useSheetCrop ? FURY_ORB_SRC : frames[0];
                         img.style.filter = hueFilter;
-                        orb.appendChild(img);
+                        frameBox.appendChild(img);
+                        orb.appendChild(frameBox);
                         arena.appendChild(orb);
 
                         let frame = 0;
                         const frameTimer = setInterval(() => {
-                            frame = (frame + 1) % frames.length;
-                            img.src = frames[frame];
+                            frame = (frame + 1) % (useSheetCrop ? 10 : frames.length);
+                            if (useSheetCrop) {
+                                img.style.setProperty('--sheet-x', (-(frame % 5) * 20) + '%');
+                                img.style.setProperty('--sheet-y', (-Math.floor(frame / 5) * 50) + '%');
+                            } else {
+                                img.src = frames[frame];
+                            }
                         }, 50);
                         orb.addEventListener('animationend', () => {
                             clearInterval(frameTimer);
@@ -26828,7 +26856,7 @@
                             showHitEffect(target, 'normal');
                         }, 780);
                     } else if (power.includes('sky_discharge')) {
-                        [-45, 0, 45].forEach((offset, i) => {
+                        [-24, 24].forEach((offset, i) => {
                             setTimeout(() => {
                                 const strikeX = tp.x + offset;
                                 spawnLightningV(strikeX, tp.y, color);
@@ -26838,7 +26866,7 @@
                                     spawnParticles(strikeX, tp.y, 10, color, 82);
                                     if (i === 0) showHitEffect(target, 'normal');
                                 }, 150);
-                            }, i * 1500);
+                            }, i * 900);
                         });
                     } else if (power.includes('orb_active')) {
                         spawnRing(cp.x, cp.y, 55, color);
@@ -27508,11 +27536,17 @@
                             sphere.style.top = startY + 'px';
                             sphere.style.setProperty('--dx', (endX - startX) + 'px');
                             sphere.style.setProperty('--dy', (endY - startY) + 'px');
-                            sphere.style.setProperty('--dx60', ((endX - startX) * 0.5) + 'px');
-                            sphere.style.setProperty('--dy60', ((endY - startY) * 0.5) + 'px');
-                            sphere.style.setProperty('--dx84', ((endX - startX) * 0.8) + 'px');
-                            sphere.style.setProperty('--dy84', ((endY - startY) * 0.8) + 'px');
-                            sphere.style.setProperty('--dur', '0.96s');
+                            sphere.style.setProperty('--dx34', ((endX - startX) * 0.22) + 'px');
+                            sphere.style.setProperty('--dy34', ((endY - startY) * 0.22) + 'px');
+                            sphere.style.setProperty('--dx48', ((endX - startX) * 0.38) + 'px');
+                            sphere.style.setProperty('--dy48', ((endY - startY) * 0.38) + 'px');
+                            sphere.style.setProperty('--dx62', ((endX - startX) * 0.55) + 'px');
+                            sphere.style.setProperty('--dy62', ((endY - startY) * 0.55) + 'px');
+                            sphere.style.setProperty('--dx76', ((endX - startX) * 0.72) + 'px');
+                            sphere.style.setProperty('--dy76', ((endY - startY) * 0.72) + 'px');
+                            sphere.style.setProperty('--dx90', ((endX - startX) * 0.88) + 'px');
+                            sphere.style.setProperty('--dy90', ((endY - startY) * 0.88) + 'px');
+                            sphere.style.setProperty('--dur', '1.08s');
                             arena.appendChild(sphere);
                             sphere.addEventListener('animationend', () => sphere.remove(), { once: true });
                         }
@@ -27524,20 +27558,6 @@
                             impact.style.animationDelay = (targetImpactDelay / 1000) + 's';
                             arena.appendChild(impact);
                             impact.addEventListener('animationend', () => impact.remove(), { once: true });
-
-                            const slashCount = impactPhase ? 9 : 7;
-                            const slashBaseDelay = targetImpactDelay / 1000 + 0.12;
-                            for (let i = 0; i < slashCount; i++) {
-                                const slash = document.createElement('div');
-                                slash.className = 'fp-wind-slash';
-                                slash.style.left = (endX + (Math.random() - 0.5) * 92) + 'px';
-                                slash.style.top = (endY - 64 + Math.random() * 128) + 'px';
-                                slash.style.setProperty('--rot', (-26 + Math.random() * 52) + 'deg');
-                                slash.style.setProperty('--drift', (fromLeft ? 28 : -28) + 'px');
-                                slash.style.setProperty('--delay', (slashBaseDelay + i * 0.055) + 's');
-                                arena.appendChild(slash);
-                                slash.addEventListener('animationend', () => slash.remove(), { once: true });
-                            }
 
                             if (targetEl) {
                                 const pushPx = impactPhase ? 78 : 48;
@@ -29080,10 +29100,11 @@
             }
         }
 
-        function redrawLightningCanvas(canvas, width, height) {
+        function redrawLightningCanvas(canvas, width, height, spreadRatio = 0.24) {
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
             ctx.clearRect(0, 0, width, height);
             const centerX = width / 2;
+            const forkX = width * spreadRatio;
             const startY = 10;
             const endY = height - 10;
 
@@ -29094,6 +29115,8 @@
             ctx.lineWidth = 8;
             ctx.lineCap = 'round';
             drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
+            drawLightningBolt(ctx, centerX, startY + height * 0.12, centerX - forkX * 0.42, endY * 0.78, 3);
+            drawLightningBolt(ctx, centerX, startY + height * 0.18, centerX + forkX * 0.38, endY * 0.72, 3);
 
             // Main bolt - bright yellow
             ctx.shadowBlur = 20;
@@ -29101,6 +29124,8 @@
             ctx.strokeStyle = '#ffee00';
             ctx.lineWidth = 4;
             drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
+            drawLightningBolt(ctx, centerX, startY + height * 0.14, centerX - forkX * 0.34, endY * 0.74, 3);
+            drawLightningBolt(ctx, centerX, startY + height * 0.2, centerX + forkX * 0.28, endY * 0.7, 3);
 
             // Core (bright center) - white/yellow
             ctx.shadowBlur = 15;
@@ -29110,11 +29135,11 @@
             drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
         }
 
-        function createLightningCanvas(width, height, angle) {
+        function createLightningCanvas(width, height, angle, spreadRatio = 0.24) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            redrawLightningCanvas(canvas, width, height);
+            redrawLightningCanvas(canvas, width, height, spreadRatio);
 
             return canvas;
         }
