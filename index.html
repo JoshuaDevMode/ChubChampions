@@ -15797,7 +15797,8 @@
                     <option value="MON">MON</option>
                     <option value="AUSD">AUSD</option>
                     <option value="SOL">SOL</option>
-                    <option value="USDC">USDC</option>
+                    <option value="USDC:solana">USDC SOL</option>
+                    <option value="USDC:monad">USDC MON</option>
                 </select>
                 <button class="market-sell-btn" id="market-sell-btn">LIST SELECTED</button>
             </div>
@@ -15809,6 +15810,12 @@
                     <option value="AUSD">AUSD</option>
                     <option value="SOL">SOL</option>
                     <option value="USDC">USDC</option>
+                </select>
+                <select class="market-control" id="market-filter-chain">
+                    <option value="">ALL CHAINS</option>
+                    <option value="game">GAME</option>
+                    <option value="monad">MONAD</option>
+                    <option value="solana">SOLANA</option>
                 </select>
                 <select class="market-control" id="market-filter-element">
                     <option value="">ALL ELEMENTS</option>
@@ -34336,6 +34343,25 @@
                 : 'CHUB';
         }
 
+        function parseMarketplaceCurrencySelection(value) {
+            const [rawCurrency, rawChain] = String(value || 'CHUB').split(':');
+            const currency = MARKETPLACE_CURRENCIES.includes(String(rawCurrency).toUpperCase())
+                ? String(rawCurrency).toUpperCase()
+                : 'CHUB';
+            let paymentChain = rawChain || '';
+            if (!paymentChain) {
+                paymentChain = currency === 'CHUB' ? 'game'
+                    : (currency === 'MON' || currency === 'AUSD') ? 'monad'
+                    : 'solana';
+            }
+            return { currency, paymentChain };
+        }
+
+        function marketPaymentChain(listing) {
+            const currency = marketCurrency(listing);
+            return String(listing?.paymentChain || parseMarketplaceCurrencySelection(currency).paymentChain).toLowerCase();
+        }
+
         function marketPriceAmount(listing) {
             return Number(listing?.priceAmount ?? listing?.priceTokens ?? 0);
         }
@@ -34492,11 +34518,13 @@
             try {
                 const params = new URLSearchParams({ limit: '80' });
                 const currency = document.getElementById('market-filter-currency')?.value || '';
+                const chain = document.getElementById('market-filter-chain')?.value || '';
                 const element = document.getElementById('market-filter-element')?.value || '';
                 const sort = document.getElementById('market-filter-sort')?.value || 'newest';
                 const minLevel = document.getElementById('market-filter-min-level')?.value || '';
                 const minBp = document.getElementById('market-filter-min-bp')?.value || '';
                 if (currency) params.set('currency', currency);
+                if (chain) params.set('chain', chain);
                 if (element) params.set('element', element);
                 if (sort) params.set('sort', sort);
                 if (minLevel) params.set('minLevel', minLevel);
@@ -34541,7 +34569,9 @@
             const character = getSelectedCharacter();
             if (!playerSession) { showNotice('Log in to list a fighter.'); return; }
             if (!character) { showNotice('Select a fighter first.'); return; }
-            const currency = document.getElementById('market-sell-currency')?.value || 'CHUB';
+            const selection = parseMarketplaceCurrencySelection(document.getElementById('market-sell-currency')?.value || 'CHUB');
+            const currency = selection.currency;
+            const paymentChain = selection.paymentChain;
             const defaultPrice = currency === 'CHUB' ? String(MARKETPLACE_MIN_PRICE) : '1';
             showInputModal('MARKET PRICE ' + currency, defaultPrice, (value) => {
                 const price = Number(value);
@@ -34562,7 +34592,7 @@
                         const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/create', {
                             method: 'POST',
                             headers: await getAuthHeaders(),
-                            body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, priceAmount: price, currency }),
+                            body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, priceAmount: price, currency, paymentChain }),
                         });
                         const data = await resp.json().catch(() => ({}));
                         if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
@@ -34683,15 +34713,15 @@
             document.getElementById('market-history-overlay')?.classList.remove('active');
         }
 
-        async function getMarketplaceWalletAddress(currency) {
-            if (currency === 'MON' || currency === 'AUSD') {
+        async function getMarketplaceWalletAddress(currency, paymentChain) {
+            if (paymentChain === 'monad' || currency === 'MON' || currency === 'AUSD') {
                 if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
                 const provider = new window.ethers.BrowserProvider(window.ethereum);
                 await provider.send('eth_requestAccounts', []);
                 const signer = await provider.getSigner();
                 return signer.getAddress();
             }
-            if (currency === 'SOL' || currency === 'USDC') {
+            if (paymentChain === 'solana' || currency === 'SOL' || currency === 'USDC') {
                 const solProvider = window.solana || window.phantom?.solana;
                 if (!solProvider) throw new Error('No Solana wallet detected.');
                 const connected = solProvider.publicKey ? solProvider : await solProvider.connect();
@@ -34837,7 +34867,8 @@
 
         async function buyMarketplaceListingOnchain(listing) {
             const currency = marketCurrency(listing);
-            const walletAddress = await getMarketplaceWalletAddress(currency);
+            const paymentChain = marketPaymentChain(listing);
+            const walletAddress = await getMarketplaceWalletAddress(currency, paymentChain);
             showNotice('Creating escrow payment...');
             const intentResp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/escrow-intent', {
                 method: 'POST',
@@ -37839,7 +37870,7 @@
         document.getElementById('market-history-btn').addEventListener('click', () => {
             openTradingHistory();
         });
-        ['market-filter-currency', 'market-filter-element', 'market-filter-sort', 'market-filter-min-level', 'market-filter-min-bp']
+        ['market-filter-currency', 'market-filter-chain', 'market-filter-element', 'market-filter-sort', 'market-filter-min-level', 'market-filter-min-bp']
             .forEach(id => {
                 document.getElementById(id)?.addEventListener('change', () => {
                     selectedMarketplaceListingId = null;
