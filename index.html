@@ -1275,32 +1275,39 @@
             content: "";
             position: absolute;
             left: 50%;
-            top: 0;
-            width: 188px;
+            top: 7%;
+            width: 210px;
             height: 100%;
-            transform: translateX(-50%) scaleY(0);
+            transform: translateX(-50%) scale(0.75, 0);
             transform-origin: top center;
             background:
-                radial-gradient(ellipse at center, rgba(255,255,255,0.52) 0 9%, rgba(255,244,145,0.24) 30%, rgba(255,215,64,0.08) 54%, transparent 76%),
-                linear-gradient(180deg, rgba(255,255,255,0), rgba(255,244,145,0.24) 22%, rgba(255,255,255,0.48) 58%, rgba(255,215,64,0.14) 84%, transparent);
-            filter: blur(13px) drop-shadow(0 0 18px var(--glow,#ffd740));
+                radial-gradient(ellipse at 48% 42%, rgba(255,255,255,0.34) 0 8%, rgba(255,215,64,0.18) 24%, transparent 58%),
+                radial-gradient(ellipse at 36% 64%, rgba(255,255,255,0.18) 0 7%, rgba(255,215,64,0.11) 22%, transparent 54%),
+                radial-gradient(ellipse at 66% 57%, rgba(255,255,255,0.16) 0 6%, rgba(255,215,64,0.1) 21%, transparent 52%);
+            filter: blur(18px) drop-shadow(0 0 20px var(--glow,#ffd740));
             animation: fp-lightning-shaft var(--dur,0.56s) cubic-bezier(0.12,0.88,0.26,1) var(--delay,0s) both;
         }
         .fp-lightning-core {
             position: absolute;
             left: 50%;
             top: 0;
-            width: 132px;
+            width: 190px;
             height: 100%;
             transform: translateX(-50%);
             opacity: 0;
-            filter: drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 24px var(--glow,#ffd740));
+            filter: drop-shadow(0 0 12px var(--glow,#ffd740)) drop-shadow(0 0 28px var(--glow,#ffd740));
             animation: fp-lightning-core-flicker var(--dur,0.56s) steps(2,end) var(--delay,0s) both;
         }
         .fp-lightning-core.alt {
-            width: 104px;
+            width: 166px;
             animation-delay: calc(var(--delay,0s) + 0.05s);
-            opacity: 0.75;
+            opacity: 0.56;
+        }
+        .fp-lightning-core.faint {
+            width: 210px;
+            animation-delay: calc(var(--delay,0s) + 0.08s);
+            opacity: 0.36;
+            filter: blur(0.5px) drop-shadow(0 0 16px var(--glow,#ffd740));
         }
         .fp-lightning-ground {
             position: absolute;
@@ -1334,10 +1341,10 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(0) scaleY(1.02); }
         }
         @keyframes fp-lightning-shaft {
-            0%   { opacity: 0; transform: translateX(-50%) scaleY(0); }
-            18%  { opacity: 0.95; transform: translateX(-50%) scaleY(1); }
-            58%  { opacity: 0.7; transform: translateX(-50%) scaleY(1); }
-            100% { opacity: 0; transform: translateX(-50%) scaleY(1); }
+            0%   { opacity: 0; transform: translateX(-50%) scale(0.6, 0); }
+            18%  { opacity: 0.72; transform: translateX(-50%) scale(1, 1); }
+            58%  { opacity: 0.38; transform: translateX(-50%) scale(1.06, 1); }
+            100% { opacity: 0; transform: translateX(-50%) scale(1.12, 1); }
         }
         @keyframes fp-lightning-core-flicker {
             0%   { opacity: 0; clip-path: inset(0 0 100% 0); }
@@ -26530,16 +26537,20 @@
                 bolt.style.setProperty('--delay', (delay||0) + 's');
                 bolt.style.setProperty('--glow', col);
 
-                const core = createLightningCanvas(132, boltHeight, 0, 0.42);
+                const core = createLightningCanvas(190, boltHeight, 0, 0.46, 1);
                 core.className = 'fp-lightning-core';
-                const altCore = createLightningCanvas(104, boltHeight - 12, 0, 0.32);
+                const altCore = createLightningCanvas(166, boltHeight - 12, 0, 0.38, 0.66);
                 altCore.className = 'fp-lightning-core alt';
                 altCore.style.marginTop = '6px';
+                const faintCore = createLightningCanvas(210, boltHeight - 24, 0, 0.52, 0.42);
+                faintCore.className = 'fp-lightning-core faint';
+                faintCore.style.marginTop = '14px';
                 const ground = document.createElement('div');
                 ground.className = 'fp-lightning-ground';
 
                 bolt.appendChild(core);
                 bolt.appendChild(altCore);
+                bolt.appendChild(faintCore);
                 bolt.appendChild(ground);
 
                 for (let i = 0; i < 5; i++) {
@@ -26564,8 +26575,9 @@
                 let redrawStartTimer = null;
                 const startRedraw = () => {
                     redrawTimer = setInterval(() => {
-                        redrawLightningCanvas(core, 132, boltHeight, 0.42);
-                        redrawLightningCanvas(altCore, 104, boltHeight - 12, 0.32);
+                        redrawLightningCanvas(core, 190, boltHeight, 0.46, 1);
+                        redrawLightningCanvas(altCore, 166, boltHeight - 12, 0.38, 0.66);
+                        redrawLightningCanvas(faintCore, 210, boltHeight - 24, 0.52, 0.42);
                         redraws++;
                         if (redraws >= 9) {
                             clearInterval(redrawTimer);
@@ -29136,46 +29148,56 @@
             }
         }
 
-        function redrawLightningCanvas(canvas, width, height, spreadRatio = 0.24) {
+        function redrawLightningCanvas(canvas, width, height, spreadRatio = 0.24, strength = 1) {
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
             ctx.clearRect(0, 0, width, height);
             const centerX = width / 2;
             const forkX = width * spreadRatio;
             const startY = 10;
             const endY = height - 10;
+            const mainStartX = centerX + (Math.random() - 0.5) * width * 0.16;
+            const mainEndX = centerX + (Math.random() - 0.5) * width * 0.26;
+            const leftEndX = centerX - forkX * (0.42 + Math.random() * 0.16);
+            const rightEndX = centerX + forkX * (0.34 + Math.random() * 0.16);
 
-            // Glow effect (outer) - yellow
-            ctx.shadowColor = '#ffdd00';
-            ctx.shadowBlur = 25;
+            ctx.globalAlpha = 0.62 * strength;
+            ctx.shadowColor = '#ffd740';
+            ctx.shadowBlur = 34;
             ctx.strokeStyle = '#ffcc00';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 16;
             ctx.lineCap = 'round';
-            drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
-            drawLightningBolt(ctx, centerX, startY + height * 0.12, centerX - forkX * 0.42, endY * 0.78, 3);
-            drawLightningBolt(ctx, centerX, startY + height * 0.18, centerX + forkX * 0.38, endY * 0.72, 3);
+            drawLightningBolt(ctx, mainStartX, startY, mainEndX, endY, 4);
 
-            // Main bolt - bright yellow
-            ctx.shadowBlur = 20;
+            ctx.globalAlpha = 0.5 * strength;
+            ctx.lineWidth = 11;
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.08, leftEndX, endY * 0.78, 3);
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.14, rightEndX, endY * 0.72, 3);
+
+            ctx.globalAlpha = 0.92 * strength;
+            ctx.shadowBlur = 22;
             ctx.shadowColor = '#ffff00';
             ctx.strokeStyle = '#ffee00';
-            ctx.lineWidth = 4;
-            drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
-            drawLightningBolt(ctx, centerX, startY + height * 0.14, centerX - forkX * 0.34, endY * 0.74, 3);
-            drawLightningBolt(ctx, centerX, startY + height * 0.2, centerX + forkX * 0.28, endY * 0.7, 3);
+            ctx.lineWidth = 7;
+            drawLightningBolt(ctx, mainStartX, startY, mainEndX, endY, 4);
+            ctx.globalAlpha = 0.58 * strength;
+            ctx.lineWidth = 5;
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.16, leftEndX * 0.98 + centerX * 0.02, endY * 0.73, 3);
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.22, rightEndX * 0.96 + centerX * 0.04, endY * 0.67, 3);
 
-            // Core (bright center) - white/yellow
-            ctx.shadowBlur = 15;
+            ctx.globalAlpha = strength;
+            ctx.shadowBlur = 14;
             ctx.shadowColor = '#ffffcc';
             ctx.strokeStyle = '#ffffdd';
-            ctx.lineWidth = 2;
-            drawLightningBolt(ctx, centerX, startY, centerX, endY, 4);
+            ctx.lineWidth = 3;
+            drawLightningBolt(ctx, mainStartX, startY, mainEndX, endY, 4);
+            ctx.globalAlpha = 1;
         }
 
-        function createLightningCanvas(width, height, angle, spreadRatio = 0.24) {
+        function createLightningCanvas(width, height, angle, spreadRatio = 0.24, strength = 1) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            redrawLightningCanvas(canvas, width, height, spreadRatio);
+            redrawLightningCanvas(canvas, width, height, spreadRatio, strength);
 
             return canvas;
         }
