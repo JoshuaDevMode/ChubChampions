@@ -1089,13 +1089,16 @@
         .fp-wind-loop:nth-child(5) { --w: 160px; --h: 30px; --rot: -8deg;  --spin: 0.28s; --thick: 2px; opacity: 0.58; }
         @keyframes fp-wind-sphere-flight {
             0%   { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.18); filter: blur(1.6px); }
-            12%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.86); filter: blur(0.25px); }
-            20%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1.03); filter: blur(0); }
+            8%   { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.66); filter: blur(0.45px); }
+            16%  { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(0.98); filter: blur(0); }
+            25%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx25), var(--dy25)) scale(1.025); }
             34%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34), var(--dy34)) scale(1.04); }
-            48%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx48), var(--dy48)) scale(1.05); }
-            62%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx62), var(--dy62)) scale(1.06); }
-            76%  { opacity: 0.99; transform: translate(-50%, -50%) translate(var(--dx76), var(--dy76)) scale(1.07); }
-            90%  { opacity: 0.94; transform: translate(-50%, -50%) translate(var(--dx90), var(--dy90)) scale(1.09); }
+            43%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx43), var(--dy43)) scale(1.045); }
+            52%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx52), var(--dy52)) scale(1.05); }
+            61%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx61), var(--dy61)) scale(1.06); }
+            70%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx70), var(--dy70)) scale(1.065); }
+            79%  { opacity: 0.99; transform: translate(-50%, -50%) translate(var(--dx79), var(--dy79)) scale(1.075); }
+            88%  { opacity: 0.96; transform: translate(-50%, -50%) translate(var(--dx88), var(--dy88)) scale(1.085); }
             100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.28); filter: blur(0.8px); }
         }
         @keyframes fp-wind-trail-drag {
@@ -1162,6 +1165,20 @@
             filter: blur(0.25px) drop-shadow(0 0 20px rgba(195,244,255,0.84));
             animation: fp-wind-lance-shimmer 0.16s linear infinite;
         }
+        .fp-wind-column .fp-wind-lance-speed {
+            position: absolute;
+            left: 50%;
+            top: -92px;
+            width: 126px;
+            height: 180px;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background: linear-gradient(180deg, transparent 0%, rgba(226,250,255,0.1) 18%, rgba(255,255,255,0.38) 58%, transparent 100%);
+            filter: blur(10px) drop-shadow(0 0 18px rgba(205,245,255,0.62));
+            opacity: 0.58;
+            clip-path: polygon(40% 0%, 60% 0%, 82% 100%, 18% 100%);
+            animation: fp-wind-lance-speed-fade 0.68s linear var(--delay,0s) both;
+        }
         .fp-wind-column::after {
             content: "";
             position: absolute;
@@ -1203,6 +1220,12 @@
             0%   { opacity: 0; transform: scaleX(0.25); }
             35%  { opacity: 1; transform: scaleX(1); }
             100% { opacity: 0; transform: scaleX(1.35); }
+        }
+        @keyframes fp-wind-lance-speed-fade {
+            0%   { opacity: 0; transform: translateX(-50%) translateY(-40px) scaleY(1.18); }
+            18%  { opacity: 0.58; transform: translateX(-50%) translateY(-10px) scaleY(1.05); }
+            70%  { opacity: 0.42; transform: translateX(-50%) translateY(64px) scaleY(0.94); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(98px) scaleY(0.86); }
         }
 
         .fp-wind-slash {
@@ -1344,7 +1367,7 @@
             height: 94px;
             transform: translate(-50%, -50%) scale(0.44);
             opacity: 0;
-            animation: fp-electric-orb-flight var(--dur,0.78s) cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fp-electric-orb-flight var(--dur,1.16s) cubic-bezier(0.16,1,0.3,1) forwards;
             mix-blend-mode: screen;
         }
         .fp-electric-orb-frame {
@@ -1404,15 +1427,19 @@
             animation: fp-electric-burst-pop 0.52s ease-out forwards;
         }
         @keyframes fp-electric-orb-flight {
-            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.38); filter: blur(1px); }
-            14%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.98); filter: blur(0); }
-            58%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.05); }
-            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.18); filter: blur(0.8px); }
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.14) rotate(0deg); filter: blur(1.4px); }
+            12%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.36) rotate(70deg); filter: blur(0.7px); }
+            26%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.74) rotate(155deg); filter: blur(0.25px); }
+            36%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(1.02) rotate(230deg); filter: blur(0); }
+            50%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34),var(--dy34)) scale(1.05) rotate(360deg); }
+            66%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.08) rotate(540deg); }
+            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84),var(--dy84)) scale(1.12) rotate(720deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.2) rotate(900deg); filter: blur(0.8px); }
         }
         @keyframes fp-electric-orb-trail {
             0%   { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
-            16%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
-            32%  { opacity: 0.9; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.58); }
+            38%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            52%  { opacity: 0.9; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.58); }
             82%  { opacity: 0.78; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1); }
             100% { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1.12); }
         }
@@ -22151,7 +22178,7 @@
                                  : event.power.includes('earth_spike') ? 650
                                  : event.power.includes('tsunami')      ? 460
                                  : event.power.includes('sky_discharge') ? 180
-                                 : event.power.includes('lightning_bolt') ? 820
+                                 : event.power.includes('lightning_bolt') ? 1190
                                  : fpVisualPower.includes('wind_sphere_launch') ? 1000
                                  : fpVisualPower.includes('wind_sphere_impact') ? 140
                                  : 0;
@@ -22159,13 +22186,13 @@
                 else showDamage(event.target, event.damage, false);
             }
             const fpSleepMs = isPassive                               ? 450
-                            : event.power.includes('sky_discharge')   ? 2200
+                            : event.power.includes('sky_discharge')   ? 950
                             : event.power.includes('tsunami')         ? 1500
                             : event.power.includes('hydro_barrage')   ? 3300
                             : event.power.includes('fireball')        ? 2900
                             : event.power.includes('giant_rock')      ? 3700
                             : event.power.includes('earth_spike')     ? 3400
-                            : event.power.includes('lightning_bolt')  ? 1250
+                            : event.power.includes('lightning_bolt')  ? 1640
                             : fpVisualPower.includes('wind_sphere_launch')  ? 1040
                             : fpVisualPower.includes('wind_sphere_impact')  ? 1200
                             : 980;
@@ -26789,10 +26816,14 @@
                         orb.style.top = startY + 'px';
                         orb.style.setProperty('--dx', lbDx + 'px');
                         orb.style.setProperty('--dy', lbDy + 'px');
+                        orb.style.setProperty('--dx34', (lbDx * 0.18) + 'px');
+                        orb.style.setProperty('--dy34', (lbDy * 0.18) + 'px');
                         orb.style.setProperty('--dx58', (lbDx * 0.56) + 'px');
                         orb.style.setProperty('--dy58', (lbDy * 0.56) + 'px');
+                        orb.style.setProperty('--dx84', (lbDx * 0.84) + 'px');
+                        orb.style.setProperty('--dy84', (lbDy * 0.84) + 'px');
                         orb.style.setProperty('--back-angle', (lbAngle + 180) + 'deg');
-                        orb.style.setProperty('--dur', '0.78s');
+                        orb.style.setProperty('--dur', '1.16s');
                         orb.style.setProperty('--glow', glowColor);
 
                         const frameBox = document.createElement('div');
@@ -26854,20 +26885,15 @@
                             spawnRing(endX, endY, 58, glowColor);
                             spawnParticles(endX, endY, 18, glowColor, 105);
                             showHitEffect(target, 'normal');
-                        }, 780);
+                        }, 1160);
                     } else if (power.includes('sky_discharge')) {
-                        [-24, 24].forEach((offset, i) => {
-                            setTimeout(() => {
-                                const strikeX = tp.x + offset;
-                                spawnLightningV(strikeX, tp.y, color);
-                                setTimeout(() => {
-                                    spawnImpact(strikeX, tp.y, 52, color);
-                                    spawnRing(strikeX, tp.y, 42, color, 0.12);
-                                    spawnParticles(strikeX, tp.y, 10, color, 82);
-                                    if (i === 0) showHitEffect(target, 'normal');
-                                }, 150);
-                            }, i * 900);
-                        });
+                        spawnLightningV(tp.x, tp.y, color);
+                        setTimeout(() => {
+                            spawnImpact(tp.x, tp.y, 58, color);
+                            spawnRing(tp.x, tp.y, 48, color, 0.12);
+                            spawnParticles(tp.x, tp.y, 12, color, 86);
+                            showHitEffect(target, 'normal');
+                        }, 150);
                     } else if (power.includes('orb_active')) {
                         spawnRing(cp.x, cp.y, 55, color);
                         spawnRing(cp.x, cp.y, 85, color, 0.12);
@@ -27536,16 +27562,22 @@
                             sphere.style.top = startY + 'px';
                             sphere.style.setProperty('--dx', (endX - startX) + 'px');
                             sphere.style.setProperty('--dy', (endY - startY) + 'px');
+                            sphere.style.setProperty('--dx25', ((endX - startX) * 0.12) + 'px');
+                            sphere.style.setProperty('--dy25', ((endY - startY) * 0.12) + 'px');
                             sphere.style.setProperty('--dx34', ((endX - startX) * 0.22) + 'px');
                             sphere.style.setProperty('--dy34', ((endY - startY) * 0.22) + 'px');
-                            sphere.style.setProperty('--dx48', ((endX - startX) * 0.38) + 'px');
-                            sphere.style.setProperty('--dy48', ((endY - startY) * 0.38) + 'px');
-                            sphere.style.setProperty('--dx62', ((endX - startX) * 0.55) + 'px');
-                            sphere.style.setProperty('--dy62', ((endY - startY) * 0.55) + 'px');
-                            sphere.style.setProperty('--dx76', ((endX - startX) * 0.72) + 'px');
-                            sphere.style.setProperty('--dy76', ((endY - startY) * 0.72) + 'px');
-                            sphere.style.setProperty('--dx90', ((endX - startX) * 0.88) + 'px');
-                            sphere.style.setProperty('--dy90', ((endY - startY) * 0.88) + 'px');
+                            sphere.style.setProperty('--dx43', ((endX - startX) * 0.32) + 'px');
+                            sphere.style.setProperty('--dy43', ((endY - startY) * 0.32) + 'px');
+                            sphere.style.setProperty('--dx52', ((endX - startX) * 0.43) + 'px');
+                            sphere.style.setProperty('--dy52', ((endY - startY) * 0.43) + 'px');
+                            sphere.style.setProperty('--dx61', ((endX - startX) * 0.55) + 'px');
+                            sphere.style.setProperty('--dy61', ((endY - startY) * 0.55) + 'px');
+                            sphere.style.setProperty('--dx70', ((endX - startX) * 0.66) + 'px');
+                            sphere.style.setProperty('--dy70', ((endY - startY) * 0.66) + 'px');
+                            sphere.style.setProperty('--dx79', ((endX - startX) * 0.77) + 'px');
+                            sphere.style.setProperty('--dy79', ((endY - startY) * 0.77) + 'px');
+                            sphere.style.setProperty('--dx88', ((endX - startX) * 0.88) + 'px');
+                            sphere.style.setProperty('--dy88', ((endY - startY) * 0.88) + 'px');
                             sphere.style.setProperty('--dur', '1.08s');
                             arena.appendChild(sphere);
                             sphere.addEventListener('animationend', () => sphere.remove(), { once: true });
@@ -27619,8 +27651,11 @@
                         col.className = 'fp-wind-column';
                         col.style.left = x + 'px';
                         col.style.top = groundY + 'px';
+                        const speed = document.createElement('div');
+                        speed.className = 'fp-wind-lance-speed';
                         const core = document.createElement('div');
                         core.className = 'fp-wind-lance-core';
+                        col.appendChild(speed);
                         col.appendChild(core);
                         arena.appendChild(col);
                         col.addEventListener('animationend', () => col.remove(), { once: true });
