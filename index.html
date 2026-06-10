@@ -1024,7 +1024,7 @@
             transform: translate(-50%, -50%) scale(0.24);
             transform-origin: center center;
             opacity: 0;
-            animation: fp-wind-sphere-flight var(--dur, 1.08s) cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fp-wind-sphere-flight var(--dur, 1.08s) linear forwards;
             mix-blend-mode: screen;
         }
         .fp-wind-sphere-shot .fp-wind-trail {
@@ -1352,7 +1352,7 @@
             height: 94px;
             transform: translate(-50%, -50%) scale(0.44);
             opacity: 0;
-            animation: fp-electric-orb-flight var(--dur,1.16s) cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fp-electric-orb-flight var(--dur,1.16s) linear forwards;
             mix-blend-mode: screen;
         }
         .fp-electric-orb-frame {
@@ -26788,9 +26788,9 @@
                     if (power.includes('lightning_bolt')) {
                         const fromLeft = caster === 'player';
                         const startX = cp.x + (fromLeft ? 72 : -72);
-                        const startY = cp.y - 10;
+                        const startY = cp.y - 88;
                         const endX = tp.x + (fromLeft ? -26 : 26);
-                        const endY = tp.y - 12;
+                        const endY = tp.y - 84;
                         const lbDx = endX - startX;
                         const lbDy = endY - startY;
                         const lbAngle = Math.atan2(lbDy, lbDx) * 180 / Math.PI;
@@ -27520,9 +27520,9 @@
                         const targetImg = targetEl?.querySelector('img');
                         const isCpuTarget = target === 'cpu';
                         const startX = cp.x + (fromLeft ? 96 : -96);
-                        const startY = cp.y - 14;
+                        const startY = cp.y - 92;
                         const endX = tp.x + (fromLeft ? -28 : 28);
-                        const endY = tp.y - 16;
+                        const endY = tp.y - 88;
 
                         function buildWindSphereEl(className) {
                             const sphere = document.createElement('div');
