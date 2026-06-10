@@ -5007,6 +5007,13 @@
             text-transform: uppercase;
             margin-bottom: 2px;
         }
+        .instinct-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
         .instinct-bar-label {
             display: flex;
             justify-content: space-between;
@@ -5038,23 +5045,25 @@
             line-height: 1.3;
         }
         .instinct-details-btn {
-            margin-top: 5px;
-            width: 100%;
-            border: 1px solid #5b21b6;
+            margin-top: 0;
+            width: auto;
+            flex: 0 0 auto;
+            border: 1px solid #9a3412;
             border-radius: 6px;
-            background: linear-gradient(180deg, #ede9fe, #c4b5fd);
-            color: #2e1065;
+            background: linear-gradient(180deg, #fed7aa, #fb923c);
+            color: #431407;
             font-family: 'Fredoka', sans-serif;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 800;
             letter-spacing: 0.04em;
             text-transform: uppercase;
             cursor: pointer;
-            padding: 4px 7px;
-            box-shadow: 0 2px 0 #4c1d95;
+            padding: 3px 7px;
+            box-shadow: 0 2px 0 #7c2d12;
+            white-space: nowrap;
         }
         .instinct-details-btn:hover { filter: brightness(1.04); transform: translateY(-1px); }
-        .instinct-details-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #4c1d95; }
+        .instinct-details-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #7c2d12; }
 
         .instinct-panel-overlay {
             position: fixed;
@@ -6049,6 +6058,332 @@
             color: #ffddcc;
             box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,120,100,0.12);
             text-shadow: 0 0 10px rgba(255,140,100,0.5), 0 1px 0 #000;
+        }
+
+        .market-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: min(1040px, 100%);
+            height: 100%;
+            box-sizing: border-box;
+            background: none;
+            border: 40px solid transparent;
+            border-image-source: url('/ChubChampions/assets/window-frame-oxBsLhjF.png');
+            border-image-slice: 15% fill;
+            border-image-width: 40px;
+            border-image-repeat: stretch;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            transform: translateX(-1080px);
+            transition: transform 0.5s ease;
+            font-size: 18px;
+        }
+        .market-panel.active { transform: translateX(0); }
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .market-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.15em;
+            color: #fbbf24;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .market-close {
+            font-size: 2em;
+            color: #fff;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .market-close:hover { color: #fbbf24; }
+        .market-summary {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(0,0,0,0.28);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 8px;
+            font-family: 'Fredoka', sans-serif;
+        }
+        .market-balance {
+            color: #fbbf24;
+            font-size: 0.72em;
+        }
+        .market-fee {
+            color: #cbd5e1;
+            font-size: 0.58em;
+            margin-top: 4px;
+        }
+        .market-sell-btn, .market-card-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.12);
+            color: #fde68a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .market-sell-btn:hover, .market-card-btn:hover:not(:disabled) {
+            background: #fbbf24;
+            color: #111;
+        }
+        .market-card-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .market-list {
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-rows: minmax(104px, auto);
+            gap: 10px;
+            padding-right: 5px;
+            min-height: 0;
+            max-height: 238px;
+        }
+        .market-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto minmax(280px, 1fr);
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+        .market-card {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            align-items: stretch;
+            padding: 10px;
+            background: rgba(0,0,0,0.35);
+            border: 2px solid rgba(255,255,255,0.16);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .market-card.selected {
+            border-color: #fbbf24;
+            box-shadow: 0 0 16px rgba(251,191,36,0.22);
+        }
+        .market-card-name {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.68em;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .market-card-meta {
+            margin-top: 5px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.5em;
+            color: #cbd5e1;
+            line-height: 1.45;
+        }
+        .market-card-stats {
+            margin-top: 5px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.48em;
+            color: #93c5fd;
+        }
+        .market-card-price {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.66em;
+            color: #fbbf24;
+            text-align: left;
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+        .market-empty {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.72em;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 28px 14px;
+            background: rgba(0,0,0,0.22);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+        }
+        .market-preview {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: rgba(0,0,0,0.28);
+            border: 2px solid rgba(251,191,36,0.22);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .market-preview-stage {
+            position: relative;
+            height: 210px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(17,24,39,0.15), rgba(0,0,0,0.35));
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .market-preview-stage::after {
+            content: "";
+            position: absolute;
+            bottom: 20px;
+            width: 150px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.35);
+            filter: blur(2px);
+        }
+        .market-preview-img {
+            position: relative;
+            z-index: 1;
+            height: 230px;
+            width: auto;
+            object-fit: contain;
+            image-rendering: auto;
+            transform: translateY(24px);
+        }
+        .market-preview-name {
+            margin-top: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.95em;
+            color: #fff;
+            text-align: center;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .market-preview-meta {
+            margin-top: 4px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.58em;
+            color: #cbd5e1;
+            text-align: center;
+        }
+        .market-preview-stats {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+        }
+        .market-preview-stat {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.11);
+            border-radius: 6px;
+            padding: 7px 5px;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+        }
+        .market-preview-stat span {
+            display: block;
+            font-size: 0.52em;
+            color: #94a3b8;
+        }
+        .market-preview-stat strong {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.78em;
+            color: #f8fafc;
+        }
+        .market-preview-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .market-detail-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            border: 2px solid #60a5fa;
+            background: rgba(96,165,250,0.12);
+            color: #bfdbfe;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .market-detail-btn:hover { background: #60a5fa; color: #111; }
+        .market-detail-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2500;
+            background: rgba(0,0,0,0.78);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+        }
+        .market-detail-overlay.active { display: flex; }
+        .market-detail-box {
+            width: min(720px, 96vw);
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #101018;
+            border: 3px solid #fbbf24;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 0 28px rgba(0,0,0,0.65);
+        }
+        .market-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .market-detail-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.15em;
+            color: #fbbf24;
+        }
+        .market-detail-close {
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+        .market-detail-grid {
+            display: grid;
+            grid-template-columns: 210px 1fr;
+            gap: 14px;
+        }
+        .market-detail-sprite {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 260px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .market-detail-sprite img {
+            height: 285px;
+            transform: translateY(28px);
+        }
+        .market-detail-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .market-detail-line {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.7em;
+            color: #e5e7eb;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 9px;
+        }
+        @media (max-width: 760px) {
+            .market-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 360px; }
+            .market-body, .market-detail-grid { grid-template-columns: 1fr; }
+            .market-preview-stage { height: 180px; }
+            .market-preview-img { height: 205px; }
         }
         .aon-mode-grid {
             display: grid;
@@ -11890,6 +12225,7 @@
         }
         .main-menu #menu-history-btn::before    { content: "📜"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-shop-btn::before       { content: "🏪"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-market-btn::before     { content: "⚖"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
@@ -13613,6 +13949,22 @@
             letter-spacing: 0.08em;
             margin-bottom: 0;
         }
+        .main-menu .instinct-title-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+        }
+        .main-menu .instinct-details-btn {
+            width: auto !important;
+            margin: 0 !important;
+            padding: 3px 8px !important;
+            font-size: 0.5em !important;
+            color: #431407 !important;
+            border-color: #9a3412 !important;
+            background: linear-gradient(180deg, #fed7aa, #fb923c) !important;
+            box-shadow: 0 2px 0 #7c2d12 !important;
+        }
         .main-menu .instinct-bar-label::before { content: none !important; }
 
         /* CARE button: compact, aligned right next to the bar row */
@@ -14946,6 +15298,7 @@
             <div class="top-nav-group">
                 <button class="top-nav-btn" id="menu-history-btn">HISTORY</button>
                 <button class="top-nav-btn" id="menu-shop-btn">SHOP</button>
+                <button class="top-nav-btn" id="menu-market-btn">MARKET</button>
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
@@ -15118,7 +15471,10 @@
                             <button class="care-icon-btn btn-shine" id="menu-care-btn">CARE</button>
                         </div>
                         <div class="instinct-bar-container" id="instinct-bar-container" style="display:none;">
-                            <div class="instinct-section-title">🧠 Battle Instinct</div>
+                            <div class="instinct-title-row">
+                                <div class="instinct-section-title">🧠 Battle Instinct</div>
+                                <button class="instinct-details-btn" id="instinct-details-btn" type="button">LEARNING REPORT</button>
+                            </div>
                             <div class="instinct-bar-label">
                                 <span class="instinct-status-text" id="instinct-status-text">Rookie</span>
                                 <span id="instinct-value-text">0 BP</span>
@@ -15127,7 +15483,6 @@
                                 <div class="instinct-bar-fill" id="instinct-bar-fill" style="width:0%;"></div>
                             </div>
                             <div class="instinct-hint">BP = Battle Points · Earn by fighting · Higher = sharper AI in combat</div>
-                            <button class="instinct-details-btn" id="instinct-details-btn" type="button">LEARNING REPORT</button>
                         </div>
                     </div><!-- /menu-stats-panel -->
                     <div class="stats-side-ext stats-side-right" id="winrate-side-ext"></div>
@@ -15340,6 +15695,38 @@
             <div class="shop-tab active" id="shop-tab-potions" data-tab="potions">POTIONS</div>
         </div>
         <div class="shop-grid" id="shop-grid"></div>
+    </div>
+
+    <div class="market-panel" id="market-panel">
+        <div class="market-header">
+            <div class="market-title">⚖ MARKET</div>
+            <span class="market-close" id="market-close">&times;</span>
+        </div>
+        <div class="market-summary">
+            <div>
+                <div class="market-balance" id="market-balance">🪙 0</div>
+                <div class="market-fee" id="market-fee">Fee 4% · minimum 100 tokens</div>
+            </div>
+            <button class="market-sell-btn" id="market-sell-btn">LIST SELECTED</button>
+        </div>
+        <div class="market-body">
+            <div class="market-list" id="market-list">
+                <div class="market-empty">Loading market...</div>
+            </div>
+            <div class="market-preview" id="market-preview">
+                <div class="market-empty">Select a listed fighter.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="market-detail-overlay" id="market-detail-overlay">
+        <div class="market-detail-box">
+            <div class="market-detail-header">
+                <div class="market-detail-title" id="market-detail-title">Fighter Details</div>
+                <button class="market-detail-close" id="market-detail-close">&times;</button>
+            </div>
+            <div id="market-detail-content"></div>
+        </div>
     </div>
 
     <!-- Vault Panel (deposit/withdraw CHUB) -->
@@ -33796,6 +34183,7 @@
                 showNotice('Shop unlocks at Level ' + CONSUMABLE_MIN_LEVEL + '!');
                 return;
             }
+            closeMarketplace();
             closeVaultPanel(); // close vault if open
             renderShop();
             document.getElementById('shop-panel').classList.add('active');
@@ -33803,6 +34191,309 @@
 
         function closeShop() {
             document.getElementById('shop-panel').classList.remove('active');
+        }
+
+        const MARKETPLACE_MIN_PRICE = 100;
+        const MARKETPLACE_FEE_BPS = 400;
+        let marketplaceListings = [];
+        let marketplaceLoading = false;
+        let selectedMarketplaceListingId = null;
+
+        function marketStat(character, key) {
+            const stats = character?.stats || {};
+            return Number(stats[key] ?? 0);
+        }
+
+        function marketHp(character) {
+            const stats = character?.stats || {};
+            return Number(character?.maxHp ?? stats.hp ?? stats.health ?? 1000);
+        }
+
+        function marketInstinctBp(character) {
+            return Math.round(Number(character?.adaptability ?? 0));
+        }
+
+        function marketInstinctTier(character) {
+            return typeof instinctTier === 'function' ? instinctTier(marketInstinctBp(character)) : 'Rookie';
+        }
+
+        function selectedMarketplaceListing() {
+            return marketplaceListings.find(l => Number(l.id) === Number(selectedMarketplaceListingId)) || marketplaceListings[0] || null;
+        }
+
+        function marketplaceButtonState(listing) {
+            const isMine = playerSession && listing.sellerId === playerSession.playerId;
+            const canAfford = globalTokens >= listing.priceTokens;
+            const rosterFull = characters.length >= MAX_CHARACTERS;
+            return {
+                isMine,
+                text: isMine ? 'CANCEL' : (rosterFull ? 'ROSTER FULL' : (canAfford ? 'BUY' : 'NOT ENOUGH')),
+                disabled: !isMine && (!canAfford || rosterFull),
+                action: isMine ? 'cancel' : 'buy',
+            };
+        }
+
+        function renderMarketplacePreview() {
+            const previewEl = document.getElementById('market-preview');
+            if (!previewEl) return;
+            const listing = selectedMarketplaceListing();
+            if (!listing) {
+                previewEl.innerHTML = '<div class="market-empty">Select a listed fighter.</div>';
+                return;
+            }
+            selectedMarketplaceListingId = Number(listing.id);
+            const c = listing.character || {};
+            const state = marketplaceButtonState(listing);
+            const element = c.element ? String(c.element).toUpperCase() : 'NEUTRAL';
+            const instinctBp = marketInstinctBp(c);
+            previewEl.innerHTML = `
+                <div class="market-preview-stage" data-market-detail="${listing.id}">
+                    <img class="market-preview-img" src="Assets/Player/Movement/Character.png" alt="Fighter">
+                </div>
+                <div class="market-preview-name">${escapeHTML(c.name || 'Fighter')}</div>
+                <div class="market-preview-meta">LVL ${Number(c.level || 1)} · ${escapeHTML(element)} · ${escapeHTML(marketInstinctTier(c))} ${instinctBp} BP · 🪙 ${Number(listing.priceTokens || 0)}</div>
+                <div class="market-preview-stats">
+                    <div class="market-preview-stat"><span>HP</span><strong>${marketHp(c)}</strong></div>
+                    <div class="market-preview-stat"><span>ATK</span><strong>${marketStat(c, 'attack')}</strong></div>
+                    <div class="market-preview-stat"><span>STR</span><strong>${marketStat(c, 'strength')}</strong></div>
+                    <div class="market-preview-stat"><span>AGI</span><strong>${marketStat(c, 'agility')}</strong></div>
+                    <div class="market-preview-stat"><span>DEF</span><strong>${marketStat(c, 'defense')}</strong></div>
+                    <div class="market-preview-stat"><span>ENE</span><strong>${marketStat(c, 'energy')}</strong></div>
+                </div>
+                <div class="market-preview-actions">
+                    <button class="market-detail-btn" id="market-preview-detail">DETAILS</button>
+                    <button class="market-card-btn" id="market-preview-action" ${state.disabled ? 'disabled' : ''}>${state.text}</button>
+                </div>
+            `;
+            previewEl.querySelector('#market-preview-detail')?.addEventListener('click', () => openMarketplaceDetail(listing.id));
+            previewEl.querySelector('[data-market-detail]')?.addEventListener('click', () => openMarketplaceDetail(listing.id));
+            previewEl.querySelector('#market-preview-action')?.addEventListener('click', () => {
+                if (state.action === 'cancel') cancelMarketplaceListing(Number(listing.id));
+                if (state.action === 'buy') buyMarketplaceListing(Number(listing.id));
+            });
+        }
+
+        function renderMarketplace() {
+            const listEl = document.getElementById('market-list');
+            const balanceEl = document.getElementById('market-balance');
+            const feeEl = document.getElementById('market-fee');
+            if (balanceEl) balanceEl.textContent = '🪙 ' + globalTokens;
+            if (feeEl) feeEl.textContent = 'Fee 4% · minimum ' + MARKETPLACE_MIN_PRICE + ' tokens';
+            if (!listEl) return;
+
+            if (marketplaceLoading) {
+                listEl.innerHTML = '<div class="market-empty">Loading market...</div>';
+                renderMarketplacePreview();
+                return;
+            }
+            if (!marketplaceListings.length) {
+                listEl.innerHTML = '<div class="market-empty">No fighters listed right now.</div>';
+                selectedMarketplaceListingId = null;
+                renderMarketplacePreview();
+                return;
+            }
+            if (!selectedMarketplaceListing()) selectedMarketplaceListingId = Number(marketplaceListings[0].id);
+
+            listEl.innerHTML = marketplaceListings.map(listing => {
+                const c = listing.character || {};
+                const state = marketplaceButtonState(listing);
+                const element = c.element ? String(c.element).toUpperCase() : 'NEUTRAL';
+                const seller = state.isMine ? 'You' : (listing.sellerName || 'Unknown');
+                const selectedClass = Number(listing.id) === Number(selectedMarketplaceListingId) ? ' selected' : '';
+                const instinctBp = marketInstinctBp(c);
+                return `
+                    <div class="market-card${selectedClass}" data-listing-id="${listing.id}">
+                        <div>
+                            <div class="market-card-name">${escapeHTML(c.name || 'Fighter')}</div>
+                            <div class="market-card-meta">LVL ${Number(c.level || 1)} · ${escapeHTML(element)} · ${instinctBp} BP · Seller: ${escapeHTML(seller)}</div>
+                            <div class="market-card-stats">ATK ${marketStat(c, 'attack')} · STR ${marketStat(c, 'strength')} · AGI ${marketStat(c, 'agility')} · DEF ${marketStat(c, 'defense')}</div>
+                        </div>
+                        <div>
+                            <div class="market-card-price">🪙 ${Number(listing.priceTokens || 0)}</div>
+                            <button class="market-card-btn" data-market-action="${state.action}" data-listing-id="${listing.id}" ${state.disabled ? 'disabled' : ''}>${state.text}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            listEl.querySelectorAll('.market-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    selectedMarketplaceListingId = Number(card.dataset.listingId);
+                    renderMarketplace();
+                    openMarketplaceDetail(selectedMarketplaceListingId);
+                });
+            });
+            listEl.querySelectorAll('[data-market-action]').forEach(btn => {
+                btn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const listingId = Number(btn.dataset.listingId);
+                    const action = btn.dataset.marketAction;
+                    if (action === 'cancel') cancelMarketplaceListing(listingId);
+                    if (action === 'buy') buyMarketplaceListing(listingId);
+                });
+            });
+            renderMarketplacePreview();
+        }
+
+        async function loadMarketplace() {
+            marketplaceLoading = true;
+            renderMarketplace();
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/list?limit=80');
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    showNotice(data.error || 'Could not load marketplace');
+                    marketplaceListings = [];
+                } else {
+                    marketplaceListings = Array.isArray(data.listings) ? data.listings : [];
+                    if (!marketplaceListings.some(l => Number(l.id) === Number(selectedMarketplaceListingId))) {
+                        selectedMarketplaceListingId = marketplaceListings[0] ? Number(marketplaceListings[0].id) : null;
+                    }
+                }
+            } catch (e) {
+                marketplaceListings = [];
+                showNotice('Could not connect to marketplace');
+            } finally {
+                marketplaceLoading = false;
+                renderMarketplace();
+            }
+        }
+
+        function openMarketplace() {
+            if (!playerSession) {
+                showNotice('Log in to use the marketplace.');
+                return;
+            }
+            closeShop();
+            closeVaultPanel();
+            document.getElementById('market-panel').classList.add('active');
+            loadMarketplace();
+        }
+
+        function closeMarketplace() {
+            document.getElementById('market-panel').classList.remove('active');
+            closeMarketplaceDetail();
+        }
+
+        function listSelectedCharacter() {
+            const character = getSelectedCharacter();
+            if (!playerSession) { showNotice('Log in to list a fighter.'); return; }
+            if (!character) { showNotice('Select a fighter first.'); return; }
+            showInputModal('MARKET PRICE', String(MARKETPLACE_MIN_PRICE), (value) => {
+                const price = Number(value);
+                if (!Number.isInteger(price) || price < MARKETPLACE_MIN_PRICE) {
+                    showNotice('Minimum listing price is ' + MARKETPLACE_MIN_PRICE + ' tokens.');
+                    return;
+                }
+                const fee = Math.floor(price * MARKETPLACE_FEE_BPS / 10000);
+                showConfirm('LIST FIGHTER', 'List "' + character.name + '" for 🪙 ' + price + '?\nMarketplace fee: 🪙 ' + fee, async () => {
+                    try {
+                        const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/create', {
+                            method: 'POST',
+                            headers: await getAuthHeaders(),
+                            body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, priceTokens: price }),
+                        });
+                        const data = await resp.json().catch(() => ({}));
+                        if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                        if (!resp.ok) { showNotice(data.error || 'Could not list fighter'); return; }
+                        showNotice('Fighter listed on the market.');
+                        await loadMarketplace();
+                    } catch (e) {
+                        showNotice('Could not connect to marketplace');
+                    }
+                });
+            });
+        }
+
+        function openMarketplaceDetail(listingId) {
+            const listing = marketplaceListings.find(l => Number(l.id) === Number(listingId));
+            if (!listing) return;
+            selectedMarketplaceListingId = Number(listing.id);
+            const c = listing.character || {};
+            const seller = listing.sellerId === playerSession?.playerId ? 'You' : (listing.sellerName || 'Unknown');
+            const fee = Math.floor(Number(listing.priceTokens || 0) * Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 10000);
+            const sellerGets = Number(listing.priceTokens || 0) - fee;
+            const element = c.element ? String(c.element).toUpperCase() : 'NEUTRAL';
+            const instinctBp = marketInstinctBp(c);
+            const title = document.getElementById('market-detail-title');
+            const content = document.getElementById('market-detail-content');
+            if (title) title.textContent = c.name || 'Fighter Details';
+            if (!content) return;
+            content.innerHTML = `
+                <div class="market-detail-grid">
+                    <div class="market-detail-sprite">
+                        <img src="Assets/Player/Movement/Character.png" alt="Fighter">
+                    </div>
+                    <div>
+                        <div class="market-detail-stats">
+                            <div class="market-detail-line">Level: ${Number(c.level || 1)}</div>
+                            <div class="market-detail-line">Element: ${escapeHTML(element)}</div>
+                            <div class="market-detail-line">Battle Instinct: ${escapeHTML(marketInstinctTier(c))} · ${instinctBp} BP</div>
+                            <div class="market-detail-line">Known Q-states: ${Number(c.qTableStateCount || 0)}</div>
+                            <div class="market-detail-line">Price: 🪙 ${Number(listing.priceTokens || 0)}</div>
+                            <div class="market-detail-line">Seller: ${escapeHTML(seller)}</div>
+                            <div class="market-detail-line">Ranking: ${Number(c.rankingPoints || 0)} PTS</div>
+                            <div class="market-detail-line">Fee: 🪙 ${fee} (${Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 100}%)</div>
+                            <div class="market-detail-line">Seller receives: 🪙 ${sellerGets}</div>
+                            <div class="market-detail-line">HP: ${marketHp(c)}</div>
+                            <div class="market-detail-line">Attack: ${marketStat(c, 'attack')}</div>
+                            <div class="market-detail-line">Strength: ${marketStat(c, 'strength')}</div>
+                            <div class="market-detail-line">Agility: ${marketStat(c, 'agility')}</div>
+                            <div class="market-detail-line">Defense: ${marketStat(c, 'defense')}</div>
+                            <div class="market-detail-line">Energy: ${marketStat(c, 'energy')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('market-detail-overlay').classList.add('active');
+            renderMarketplace();
+        }
+
+        function closeMarketplaceDetail() {
+            document.getElementById('market-detail-overlay').classList.remove('active');
+        }
+
+        function buyMarketplaceListing(listingId) {
+            const listing = marketplaceListings.find(l => Number(l.id) === listingId);
+            if (!listing) return;
+            showConfirm('BUY FIGHTER', 'Buy "' + (listing.character?.name || 'Fighter') + '" for 🪙 ' + listing.priceTokens + '?', async () => {
+                try {
+                    const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/buy', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({ playerId: playerSession.playerId, listingId }),
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                    if (!resp.ok) { showNotice(data.error || 'Could not buy fighter'); await loadMarketplace(); return; }
+                    if (data.buyerTokens !== undefined) globalTokens = data.buyerTokens;
+                    updateCurrencyUI();
+                    await fetchCharactersFromServer();
+                    await loadMarketplace();
+                    showNotice('Fighter purchased.');
+                } catch (e) {
+                    showNotice('Could not connect to marketplace');
+                }
+            });
+        }
+
+        function cancelMarketplaceListing(listingId) {
+            showConfirm('CANCEL LISTING', 'Remove this fighter from the market?', async () => {
+                try {
+                    const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/cancel', {
+                        method: 'POST',
+                        headers: await getAuthHeaders(),
+                        body: JSON.stringify({ playerId: playerSession.playerId, listingId }),
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                    if (!resp.ok) { showNotice(data.error || 'Could not cancel listing'); return; }
+                    await loadMarketplace();
+                    showNotice('Listing cancelled.');
+                } catch (e) {
+                    showNotice('Could not connect to marketplace');
+                }
+            });
         }
 
         // ===== INSTINCT (Q-LEARNING) DISPLAY =====
@@ -36715,6 +37406,21 @@
         document.getElementById('shop-close').addEventListener('click', () => {
             closeShop();
         });
+        document.getElementById('menu-market-btn').addEventListener('click', () => {
+            openMarketplace();
+        });
+        document.getElementById('market-close').addEventListener('click', () => {
+            closeMarketplace();
+        });
+        document.getElementById('market-sell-btn').addEventListener('click', () => {
+            listSelectedCharacter();
+        });
+        document.getElementById('market-detail-close').addEventListener('click', () => {
+            closeMarketplaceDetail();
+        });
+        document.getElementById('market-detail-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'market-detail-overlay') closeMarketplaceDetail();
+        });
 
         // Shop tab switching
         document.querySelectorAll('.shop-tab').forEach(tab => {
@@ -36727,6 +37433,7 @@
         // Vault button + panel
         document.getElementById('menu-vault-btn')?.addEventListener('click', () => {
             closeShop(); // close shop if open
+            closeMarketplace();
             openVaultPanel();
         });
         document.getElementById('vault-close').addEventListener('click', () => {
