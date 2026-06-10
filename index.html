@@ -6088,6 +6088,11 @@
             align-items: center;
             margin-bottom: 12px;
         }
+        .market-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         .market-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.15em;
@@ -6157,6 +6162,20 @@
         }
         .market-sell-btn:hover, .market-card-btn:hover:not(:disabled) {
             background: #fbbf24;
+            color: #111;
+        }
+        .market-history-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.58em;
+            border: 2px solid #34d399;
+            background: rgba(52,211,153,0.12);
+            color: #bbf7d0;
+            border-radius: 6px;
+            padding: 7px 10px;
+            cursor: pointer;
+        }
+        .market-history-btn:hover {
+            background: #34d399;
             color: #111;
         }
         .market-card-btn:disabled {
@@ -6401,11 +6420,50 @@
             border-radius: 6px;
             padding: 9px;
         }
+        .market-history-list {
+            display: grid;
+            gap: 8px;
+        }
+        .market-history-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px;
+            gap: 8px;
+            align-items: center;
+            padding: 9px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.11);
+            border-radius: 6px;
+            font-family: 'Fredoka', sans-serif;
+            color: #e5e7eb;
+        }
+        .market-history-role {
+            font-size: 0.62em;
+            color: #bbf7d0;
+        }
+        .market-history-main {
+            min-width: 0;
+        }
+        .market-history-name {
+            font-size: 0.72em;
+            color: #fff;
+        }
+        .market-history-meta {
+            margin-top: 3px;
+            font-size: 0.52em;
+            color: #94a3b8;
+        }
+        .market-history-price {
+            font-size: 0.62em;
+            color: #fbbf24;
+            text-align: right;
+        }
         @media (max-width: 760px) {
             .market-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .market-sell-row { grid-template-columns: 1fr; }
             .market-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 360px; }
             .market-body, .market-detail-grid { grid-template-columns: 1fr; }
+            .market-history-row { grid-template-columns: 1fr; }
+            .market-history-price { text-align: left; }
             .market-preview-stage { height: 180px; }
             .market-preview-img { height: 205px; }
         }
@@ -15724,7 +15782,10 @@
     <div class="market-panel" id="market-panel">
         <div class="market-header">
             <div class="market-title">⚖ MARKET</div>
-            <span class="market-close" id="market-close">&times;</span>
+            <div class="market-header-actions">
+                <button class="market-history-btn" id="market-history-btn">TRADING HISTORY</button>
+                <span class="market-close" id="market-close">&times;</span>
+            </div>
         </div>
         <div class="market-summary">
             <div>
@@ -15784,6 +15845,18 @@
                 <button class="market-detail-close" id="market-detail-close">&times;</button>
             </div>
             <div id="market-detail-content"></div>
+        </div>
+    </div>
+
+    <div class="market-detail-overlay" id="market-history-overlay">
+        <div class="market-detail-box">
+            <div class="market-detail-header">
+                <div class="market-detail-title">Trading History</div>
+                <button class="market-detail-close" id="market-history-close">&times;</button>
+            </div>
+            <div id="market-history-content">
+                <div class="market-empty">Loading trades...</div>
+            </div>
         </div>
     </div>
 
@@ -34556,6 +34629,61 @@
             document.getElementById('market-detail-overlay').classList.remove('active');
         }
 
+        function formatTradeDate(value) {
+            if (!value) return 'Pending';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return 'Pending';
+            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+                date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function openTradingHistory() {
+            const overlay = document.getElementById('market-history-overlay');
+            const content = document.getElementById('market-history-content');
+            if (!playerSession) { showNotice('Log in to view trading history.'); return; }
+            if (!overlay || !content) return;
+            overlay.classList.add('active');
+            content.innerHTML = '<div class="market-empty">Loading trades...</div>';
+            try {
+                const params = new URLSearchParams({ playerId: playerSession.playerId });
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/history?' + params.toString(), {
+                    headers: await getAuthHeaders(),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                if (!resp.ok) { content.innerHTML = '<div class="market-empty">' + escapeHTML(data.error || 'Could not load trading history') + '</div>'; return; }
+                const rows = Array.isArray(data.history) ? data.history : [];
+                if (!rows.length) {
+                    content.innerHTML = '<div class="market-empty">No trades yet.</div>';
+                    return;
+                }
+                content.innerHTML = '<div class="market-history-list">' + rows.map((trade) => {
+                    const role = trade.role === 'sell' ? 'SOLD' : 'BOUGHT';
+                    const status = String(trade.status || '').toUpperCase();
+                    const payout = trade.role === 'sell' && trade.payoutStatus
+                        ? ' · Payout ' + String(trade.payoutStatus).toUpperCase()
+                        : '';
+                    const dateText = formatTradeDate(trade.soldAt || trade.createdAt);
+                    return `
+                        <div class="market-history-row">
+                            <div class="market-history-role">${escapeHTML(role)}</div>
+                            <div class="market-history-main">
+                                <div class="market-history-name">${escapeHTML(trade.characterName || 'Fighter')}</div>
+                                <div class="market-history-meta">${escapeHTML(status)} · ${escapeHTML(dateText)}${escapeHTML(payout)}</div>
+                            </div>
+                            <div class="market-history-price">${escapeHTML(formatMarketPrice(trade.priceAmount, trade.priceCurrency))}</div>
+                        </div>
+                    `;
+                }).join('') + '</div>';
+            } catch (e) {
+                content.innerHTML = '<div class="market-empty">Could not connect to trading history.</div>';
+            }
+        }
+
+        function closeTradingHistory() {
+            document.getElementById('market-history-overlay')?.classList.remove('active');
+        }
+
         async function getMarketplaceWalletAddress(currency) {
             if (currency === 'MON' || currency === 'AUSD') {
                 if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
@@ -34578,6 +34706,45 @@
             const provider = new window.ethers.BrowserProvider(window.ethereum);
             await provider.send('eth_requestAccounts', []);
             const signer = await provider.getSigner();
+            if (intent.escrowContract) {
+                const escrow = new window.ethers.Contract(intent.escrowContract, [
+                    'function lockNative(uint256 listingId,address seller,uint16 feeBps,uint64 deadline,uint64 refundAfter,bytes backendSig) external payable',
+                    'function lockToken(uint256 listingId,address seller,address token,uint256 amount,uint16 feeBps,uint64 deadline,uint64 refundAfter,bytes backendSig) external',
+                ], signer);
+                if (intent.currency === 'MON') {
+                    const tx = await escrow.lockNative(
+                        BigInt(intent.listingId),
+                        intent.sellerWallet,
+                        Number(intent.feeBps),
+                        BigInt(intent.deadline),
+                        BigInt(intent.refundAfter),
+                        intent.backendSig,
+                        { value: BigInt(intent.amountRaw) },
+                    );
+                    const receipt = await tx.wait();
+                    return receipt.hash;
+                }
+                const tokenAddr = intent.tokenMint || AUSD_ADDRESS_MONAD;
+                if (!tokenAddr) throw new Error(intent.currency + ' token is not configured.');
+                const rawAmount = BigInt(intent.amountRaw);
+                const token = new window.ethers.Contract(tokenAddr, [
+                    'function approve(address spender, uint256 amount) external returns (bool)',
+                ], signer);
+                const approveTx = await token.approve(intent.escrowContract, rawAmount);
+                await approveTx.wait();
+                const tx = await escrow.lockToken(
+                    BigInt(intent.listingId),
+                    intent.sellerWallet,
+                    tokenAddr,
+                    rawAmount,
+                    Number(intent.feeBps),
+                    BigInt(intent.deadline),
+                    BigInt(intent.refundAfter),
+                    intent.backendSig,
+                );
+                const receipt = await tx.wait();
+                return receipt.hash;
+            }
             if (intent.currency === 'MON') {
                 const tx = await signer.sendTransaction({
                     to: intent.escrowWallet,
@@ -37670,6 +37837,9 @@
         document.getElementById('market-sell-btn').addEventListener('click', () => {
             listSelectedCharacter();
         });
+        document.getElementById('market-history-btn').addEventListener('click', () => {
+            openTradingHistory();
+        });
         ['market-filter-currency', 'market-filter-element', 'market-filter-sort', 'market-filter-min-level', 'market-filter-min-bp']
             .forEach(id => {
                 document.getElementById(id)?.addEventListener('change', () => {
@@ -37682,6 +37852,12 @@
         });
         document.getElementById('market-detail-overlay').addEventListener('click', (e) => {
             if (e.target.id === 'market-detail-overlay') closeMarketplaceDetail();
+        });
+        document.getElementById('market-history-close').addEventListener('click', () => {
+            closeTradingHistory();
+        });
+        document.getElementById('market-history-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'market-history-overlay') closeTradingHistory();
         });
 
         // Shop tab switching
