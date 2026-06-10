@@ -6122,6 +6122,28 @@
             font-size: 0.58em;
             margin-top: 4px;
         }
+        .market-controls {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 6px;
+        }
+        .market-control, .market-sell-currency {
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.55em;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.38);
+            color: #f8fafc;
+            padding: 6px 7px;
+        }
+        .market-sell-row {
+            display: grid;
+            grid-template-columns: 86px auto;
+            gap: 6px;
+        }
         .market-sell-btn, .market-card-btn {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.62em;
@@ -6380,6 +6402,8 @@
             padding: 9px;
         }
         @media (max-width: 760px) {
+            .market-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .market-sell-row { grid-template-columns: 1fr; }
             .market-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 360px; }
             .market-body, .market-detail-grid { grid-template-columns: 1fr; }
             .market-preview-stage { height: 180px; }
@@ -15704,9 +15728,43 @@
         <div class="market-summary">
             <div>
                 <div class="market-balance" id="market-balance">🪙 0</div>
-                <div class="market-fee" id="market-fee">Fee 4% · minimum 100 tokens</div>
+                <div class="market-fee" id="market-fee">Fee 4% · CHUB, MON, AUSD, SOL, USDC</div>
             </div>
-            <button class="market-sell-btn" id="market-sell-btn">LIST SELECTED</button>
+            <div class="market-sell-row">
+                <select class="market-sell-currency" id="market-sell-currency">
+                    <option value="CHUB">CHUB</option>
+                    <option value="MON">MON</option>
+                    <option value="AUSD">AUSD</option>
+                    <option value="SOL">SOL</option>
+                    <option value="USDC">USDC</option>
+                </select>
+                <button class="market-sell-btn" id="market-sell-btn">LIST SELECTED</button>
+            </div>
+            <div class="market-controls">
+                <select class="market-control" id="market-filter-currency">
+                    <option value="">ALL CURRENCIES</option>
+                    <option value="CHUB">CHUB</option>
+                    <option value="MON">MON</option>
+                    <option value="AUSD">AUSD</option>
+                    <option value="SOL">SOL</option>
+                    <option value="USDC">USDC</option>
+                </select>
+                <select class="market-control" id="market-filter-element">
+                    <option value="">ALL ELEMENTS</option>
+                    <option value="fire">FIRE</option>
+                    <option value="water">WATER</option>
+                    <option value="earth">EARTH</option>
+                    <option value="wind">WIND</option>
+                    <option value="lightning">LIGHTNING</option>
+                </select>
+                <select class="market-control" id="market-filter-sort">
+                    <option value="newest">NEWEST</option>
+                    <option value="price_asc">PRICE LOW</option>
+                    <option value="price_desc">PRICE HIGH</option>
+                </select>
+                <input class="market-control" id="market-filter-min-level" type="number" min="1" max="100" placeholder="MIN LVL">
+                <input class="market-control" id="market-filter-min-bp" type="number" min="0" max="500" placeholder="MIN BP">
+            </div>
         </div>
         <div class="market-body">
             <div class="market-list" id="market-list">
@@ -34194,9 +34252,29 @@
 
         const MARKETPLACE_MIN_PRICE = 100;
         const MARKETPLACE_FEE_BPS = 400;
+        const MARKETPLACE_CURRENCIES = ['CHUB', 'MON', 'AUSD', 'SOL', 'USDC'];
         let marketplaceListings = [];
         let marketplaceLoading = false;
         let selectedMarketplaceListingId = null;
+
+        function marketCurrency(listing) {
+            return MARKETPLACE_CURRENCIES.includes(String(listing?.priceCurrency || '').toUpperCase())
+                ? String(listing.priceCurrency).toUpperCase()
+                : 'CHUB';
+        }
+
+        function marketPriceAmount(listing) {
+            return Number(listing?.priceAmount ?? listing?.priceTokens ?? 0);
+        }
+
+        function formatMarketPrice(listingOrAmount, maybeCurrency) {
+            const amount = typeof listingOrAmount === 'object' ? marketPriceAmount(listingOrAmount) : Number(listingOrAmount || 0);
+            const currency = typeof listingOrAmount === 'object' ? marketCurrency(listingOrAmount) : String(maybeCurrency || 'CHUB').toUpperCase();
+            const display = currency === 'CHUB'
+                ? Math.round(amount).toLocaleString()
+                : amount.toLocaleString(undefined, { maximumFractionDigits: 6 });
+            return display + ' ' + currency;
+        }
 
         function marketStat(character, key) {
             const stats = character?.stats || {};
@@ -34222,11 +34300,12 @@
 
         function marketplaceButtonState(listing) {
             const isMine = playerSession && listing.sellerId === playerSession.playerId;
-            const canAfford = globalTokens >= listing.priceTokens;
+            const currency = marketCurrency(listing);
+            const canAfford = currency !== 'CHUB' || globalTokens >= marketPriceAmount(listing);
             const rosterFull = characters.length >= MAX_CHARACTERS;
             return {
                 isMine,
-                text: isMine ? 'CANCEL' : (rosterFull ? 'ROSTER FULL' : (canAfford ? 'BUY' : 'NOT ENOUGH')),
+                text: isMine ? 'CANCEL' : (rosterFull ? 'ROSTER FULL' : (canAfford ? (currency === 'CHUB' ? 'BUY' : 'WALLET PAY') : 'NOT ENOUGH')),
                 disabled: !isMine && (!canAfford || rosterFull),
                 action: isMine ? 'cancel' : 'buy',
             };
@@ -34250,7 +34329,7 @@
                     <img class="market-preview-img" src="Assets/Player/Movement/Character.png" alt="Fighter">
                 </div>
                 <div class="market-preview-name">${escapeHTML(c.name || 'Fighter')}</div>
-                <div class="market-preview-meta">LVL ${Number(c.level || 1)} · ${escapeHTML(element)} · ${escapeHTML(marketInstinctTier(c))} ${instinctBp} BP · 🪙 ${Number(listing.priceTokens || 0)}</div>
+                <div class="market-preview-meta">LVL ${Number(c.level || 1)} · ${escapeHTML(element)} · ${escapeHTML(marketInstinctTier(c))} ${instinctBp} BP · ${escapeHTML(formatMarketPrice(listing))}</div>
                 <div class="market-preview-stats">
                     <div class="market-preview-stat"><span>HP</span><strong>${marketHp(c)}</strong></div>
                     <div class="market-preview-stat"><span>ATK</span><strong>${marketStat(c, 'attack')}</strong></div>
@@ -34308,7 +34387,7 @@
                             <div class="market-card-stats">ATK ${marketStat(c, 'attack')} · STR ${marketStat(c, 'strength')} · AGI ${marketStat(c, 'agility')} · DEF ${marketStat(c, 'defense')}</div>
                         </div>
                         <div>
-                            <div class="market-card-price">🪙 ${Number(listing.priceTokens || 0)}</div>
+                            <div class="market-card-price">${escapeHTML(formatMarketPrice(listing))}</div>
                             <button class="market-card-btn" data-market-action="${state.action}" data-listing-id="${listing.id}" ${state.disabled ? 'disabled' : ''}>${state.text}</button>
                         </div>
                     </div>
@@ -34338,7 +34417,18 @@
             marketplaceLoading = true;
             renderMarketplace();
             try {
-                const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/list?limit=80');
+                const params = new URLSearchParams({ limit: '80' });
+                const currency = document.getElementById('market-filter-currency')?.value || '';
+                const element = document.getElementById('market-filter-element')?.value || '';
+                const sort = document.getElementById('market-filter-sort')?.value || 'newest';
+                const minLevel = document.getElementById('market-filter-min-level')?.value || '';
+                const minBp = document.getElementById('market-filter-min-bp')?.value || '';
+                if (currency) params.set('currency', currency);
+                if (element) params.set('element', element);
+                if (sort) params.set('sort', sort);
+                if (minLevel) params.set('minLevel', minLevel);
+                if (minBp) params.set('minBp', minBp);
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/list?' + params.toString());
                 const data = await resp.json().catch(() => ({}));
                 if (!resp.ok) {
                     showNotice(data.error || 'Could not load marketplace');
@@ -34378,19 +34468,28 @@
             const character = getSelectedCharacter();
             if (!playerSession) { showNotice('Log in to list a fighter.'); return; }
             if (!character) { showNotice('Select a fighter first.'); return; }
-            showInputModal('MARKET PRICE', String(MARKETPLACE_MIN_PRICE), (value) => {
+            const currency = document.getElementById('market-sell-currency')?.value || 'CHUB';
+            const defaultPrice = currency === 'CHUB' ? String(MARKETPLACE_MIN_PRICE) : '1';
+            showInputModal('MARKET PRICE ' + currency, defaultPrice, (value) => {
                 const price = Number(value);
-                if (!Number.isInteger(price) || price < MARKETPLACE_MIN_PRICE) {
+                if (currency === 'CHUB' && (!Number.isInteger(price) || price < MARKETPLACE_MIN_PRICE)) {
                     showNotice('Minimum listing price is ' + MARKETPLACE_MIN_PRICE + ' tokens.');
                     return;
                 }
+                if (currency !== 'CHUB' && (!Number.isFinite(price) || price <= 0)) {
+                    showNotice('Enter a valid ' + currency + ' price.');
+                    return;
+                }
                 const fee = Math.floor(price * MARKETPLACE_FEE_BPS / 10000);
-                showConfirm('LIST FIGHTER', 'List "' + character.name + '" for 🪙 ' + price + '?\nMarketplace fee: 🪙 ' + fee, async () => {
+                const feeText = currency === 'CHUB'
+                    ? Math.floor(fee) + ' CHUB'
+                    : (price * MARKETPLACE_FEE_BPS / 10000).toFixed(6).replace(/\.?0+$/, '') + ' ' + currency;
+                showConfirm('LIST FIGHTER', 'List "' + character.name + '" for ' + formatMarketPrice(price, currency) + '?\nMarketplace fee: ' + feeText, async () => {
                     try {
                         const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/create', {
                             method: 'POST',
                             headers: await getAuthHeaders(),
-                            body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, priceTokens: price }),
+                            body: JSON.stringify({ playerId: playerSession.playerId, characterId: character.id, priceAmount: price, currency }),
                         });
                         const data = await resp.json().catch(() => ({}));
                         if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
@@ -34410,8 +34509,11 @@
             selectedMarketplaceListingId = Number(listing.id);
             const c = listing.character || {};
             const seller = listing.sellerId === playerSession?.playerId ? 'You' : (listing.sellerName || 'Unknown');
-            const fee = Math.floor(Number(listing.priceTokens || 0) * Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 10000);
-            const sellerGets = Number(listing.priceTokens || 0) - fee;
+            const currency = marketCurrency(listing);
+            const amount = marketPriceAmount(listing);
+            const rawFee = amount * Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 10000;
+            const fee = currency === 'CHUB' ? Math.floor(rawFee) : rawFee;
+            const sellerGets = amount - fee;
             const element = c.element ? String(c.element).toUpperCase() : 'NEUTRAL';
             const instinctBp = marketInstinctBp(c);
             const title = document.getElementById('market-detail-title');
@@ -34429,11 +34531,12 @@
                             <div class="market-detail-line">Element: ${escapeHTML(element)}</div>
                             <div class="market-detail-line">Battle Instinct: ${escapeHTML(marketInstinctTier(c))} · ${instinctBp} BP</div>
                             <div class="market-detail-line">Known Q-states: ${Number(c.qTableStateCount || 0)}</div>
-                            <div class="market-detail-line">Price: 🪙 ${Number(listing.priceTokens || 0)}</div>
+                            <div class="market-detail-line">Price: ${escapeHTML(formatMarketPrice(listing))}</div>
+                            <div class="market-detail-line">Payment: ${escapeHTML(currency)} · ${escapeHTML(String(listing.paymentChain || 'game'))}</div>
                             <div class="market-detail-line">Seller: ${escapeHTML(seller)}</div>
                             <div class="market-detail-line">Ranking: ${Number(c.rankingPoints || 0)} PTS</div>
-                            <div class="market-detail-line">Fee: 🪙 ${fee} (${Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 100}%)</div>
-                            <div class="market-detail-line">Seller receives: 🪙 ${sellerGets}</div>
+                            <div class="market-detail-line">Fee: ${escapeHTML(formatMarketPrice(fee, currency))} (${Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 100}%)</div>
+                            <div class="market-detail-line">Seller receives: ${escapeHTML(formatMarketPrice(sellerGets, currency))}</div>
                             <div class="market-detail-line">HP: ${marketHp(c)}</div>
                             <div class="market-detail-line">Attack: ${marketStat(c, 'attack')}</div>
                             <div class="market-detail-line">Strength: ${marketStat(c, 'strength')}</div>
@@ -34452,11 +34555,163 @@
             document.getElementById('market-detail-overlay').classList.remove('active');
         }
 
+        async function getMarketplaceWalletAddress(currency) {
+            if (currency === 'MON' || currency === 'AUSD') {
+                if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
+                const provider = new window.ethers.BrowserProvider(window.ethereum);
+                await provider.send('eth_requestAccounts', []);
+                const signer = await provider.getSigner();
+                return signer.getAddress();
+            }
+            if (currency === 'SOL' || currency === 'USDC') {
+                const solProvider = window.solana || window.phantom?.solana;
+                if (!solProvider) throw new Error('No Solana wallet detected.');
+                const connected = solProvider.publicKey ? solProvider : await solProvider.connect();
+                return String((connected.publicKey || solProvider.publicKey).toString());
+            }
+            return playerSession?.wallet || '';
+        }
+
+        async function sendMarketplaceMonadPayment(intent) {
+            if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
+            const provider = new window.ethers.BrowserProvider(window.ethereum);
+            await provider.send('eth_requestAccounts', []);
+            const signer = await provider.getSigner();
+            if (intent.currency === 'MON') {
+                const tx = await signer.sendTransaction({
+                    to: intent.escrowWallet,
+                    value: window.ethers.parseEther(String(intent.amount)),
+                });
+                const receipt = await tx.wait();
+                return receipt.hash;
+            }
+            const tokenAddr = intent.tokenMint || AUSD_ADDRESS_MONAD;
+            if (!tokenAddr) throw new Error(intent.currency + ' token is not configured.');
+            const token = new window.ethers.Contract(tokenAddr, [
+                'function transfer(address to, uint256 amount) external returns (bool)',
+            ], signer);
+            const rawAmount = window.ethers.parseUnits(String(intent.amount), 6);
+            const tx = await token.transfer(intent.escrowWallet, rawAmount);
+            const receipt = await tx.wait();
+            return receipt.hash;
+        }
+
+        async function sendMarketplaceSolanaPayment(intent) {
+            if (!window.solanaWeb3) throw new Error('Solana Web3 not loaded.');
+            const solProvider = window.solana || window.phantom?.solana;
+            if (!solProvider) throw new Error('No Solana wallet detected.');
+            if (!solProvider.publicKey) await solProvider.connect();
+
+            const conn = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
+            const fromPubkey = solProvider.publicKey;
+            const tx = new solanaWeb3.Transaction();
+
+            if (intent.currency === 'SOL') {
+                tx.add(solanaWeb3.SystemProgram.transfer({
+                    fromPubkey,
+                    toPubkey: new solanaWeb3.PublicKey(intent.escrowWallet),
+                    lamports: Math.round(Number(intent.amount) * 1e9),
+                }));
+            } else {
+                const mint = intent.tokenMint || USDC_MINT_SOLANA;
+                if (!mint) throw new Error('USDC mint is not configured.');
+                const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+                const ATA_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+                const mintPubkey = new solanaWeb3.PublicKey(mint);
+                const escrowPubkey = new solanaWeb3.PublicKey(intent.escrowWallet);
+                const deriveATA = (owner, tokenMint) => solanaWeb3.PublicKey.findProgramAddressSync(
+                    [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), tokenMint.toBuffer()],
+                    ATA_PROGRAM_ID,
+                )[0];
+                const fromAta = deriveATA(fromPubkey, mintPubkey);
+                const toAta = intent.tokenAccount ? new solanaWeb3.PublicKey(intent.tokenAccount) : deriveATA(escrowPubkey, mintPubkey);
+                const toAtaInfo = await conn.getAccountInfo(toAta);
+                if (!toAtaInfo && !intent.tokenAccount) {
+                    tx.add(new solanaWeb3.TransactionInstruction({
+                        keys: [
+                            { pubkey: fromPubkey, isSigner: true, isWritable: true },
+                            { pubkey: toAta, isSigner: false, isWritable: true },
+                            { pubkey: escrowPubkey, isSigner: false, isWritable: false },
+                            { pubkey: mintPubkey, isSigner: false, isWritable: false },
+                            { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                        ],
+                        programId: ATA_PROGRAM_ID,
+                        data: new Uint8Array([]),
+                    }));
+                }
+
+                const rawAmount = BigInt(Math.round(Number(intent.amount) * 1e6));
+                const dataBuffer = new ArrayBuffer(10);
+                const view = new DataView(dataBuffer);
+                view.setUint8(0, 12);
+                view.setUint32(1, Number(rawAmount & 0xFFFFFFFFn), true);
+                view.setUint32(5, Number((rawAmount >> 32n) & 0xFFFFFFFFn), true);
+                view.setUint8(9, 6);
+                tx.add(new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: fromAta, isSigner: false, isWritable: true },
+                        { pubkey: mintPubkey, isSigner: false, isWritable: false },
+                        { pubkey: toAta, isSigner: false, isWritable: true },
+                        { pubkey: fromPubkey, isSigner: true, isWritable: false },
+                    ],
+                    programId: TOKEN_PROGRAM_ID,
+                    data: new Uint8Array(dataBuffer),
+                }));
+            }
+
+            tx.feePayer = fromPubkey;
+            tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+            const signed = await solProvider.signTransaction(tx);
+            const sig = await conn.sendRawTransaction(signed.serialize());
+            await conn.confirmTransaction(sig, 'confirmed');
+            return sig;
+        }
+
+        async function buyMarketplaceListingOnchain(listing) {
+            const currency = marketCurrency(listing);
+            const walletAddress = await getMarketplaceWalletAddress(currency);
+            showNotice('Creating escrow payment...');
+            const intentResp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/escrow-intent', {
+                method: 'POST',
+                headers: await getAuthHeaders(),
+                body: JSON.stringify({ playerId: playerSession.playerId, listingId: listing.id, walletAddress }),
+            });
+            const intent = await intentResp.json().catch(() => ({}));
+            if (intentResp.status === 401 || intentResp.status === 403) { handleUnauthorized(); return; }
+            if (!intentResp.ok) throw new Error(intent.error || 'Could not create escrow payment');
+
+            showNotice('Confirm ' + formatMarketPrice(intent.amount, intent.currency) + ' payment in your wallet.');
+            const txHash = intent.chain === 'monad'
+                ? await sendMarketplaceMonadPayment(intent)
+                : await sendMarketplaceSolanaPayment(intent);
+
+            showNotice('Verifying escrow payment...');
+            const verifyResp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/verify-payment', {
+                method: 'POST',
+                headers: await getAuthHeaders(),
+                body: JSON.stringify({ playerId: playerSession.playerId, intentId: intent.intentId, txHash }),
+            }, 30000);
+            const data = await verifyResp.json().catch(() => ({}));
+            if (verifyResp.status === 401 || verifyResp.status === 403) { handleUnauthorized(); return; }
+            if (!verifyResp.ok) throw new Error(data.error || 'Payment verification failed');
+
+            await fetchCharactersFromServer();
+            await loadMarketplace();
+            showNotice('Fighter purchased with ' + currency + '.');
+        }
+
         function buyMarketplaceListing(listingId) {
             const listing = marketplaceListings.find(l => Number(l.id) === listingId);
             if (!listing) return;
-            showConfirm('BUY FIGHTER', 'Buy "' + (listing.character?.name || 'Fighter') + '" for 🪙 ' + listing.priceTokens + '?', async () => {
+            const currency = marketCurrency(listing);
+            const verb = currency === 'CHUB' ? 'Buy' : 'Start wallet payment for';
+            showConfirm('BUY FIGHTER', verb + ' "' + (listing.character?.name || 'Fighter') + '" for ' + formatMarketPrice(listing) + '?', async () => {
                 try {
+                    if (currency !== 'CHUB') {
+                        await buyMarketplaceListingOnchain(listing);
+                        return;
+                    }
                     const resp = await fetchWithTimeout(BACKEND_URL + '/api/marketplace/buy', {
                         method: 'POST',
                         headers: await getAuthHeaders(),
@@ -37414,6 +37669,13 @@
         document.getElementById('market-sell-btn').addEventListener('click', () => {
             listSelectedCharacter();
         });
+        ['market-filter-currency', 'market-filter-element', 'market-filter-sort', 'market-filter-min-level', 'market-filter-min-bp']
+            .forEach(id => {
+                document.getElementById(id)?.addEventListener('change', () => {
+                    selectedMarketplaceListingId = null;
+                    loadMarketplace();
+                });
+            });
         document.getElementById('market-detail-close').addEventListener('click', () => {
             closeMarketplaceDetail();
         });
