@@ -1271,22 +1271,6 @@
             animation: fp-lightning-v-anim var(--dur,0.56s) linear var(--delay,0s) both;
             mix-blend-mode: screen;
         }
-        .fp-lightning-v::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 7%;
-            width: 210px;
-            height: 100%;
-            transform: translateX(-50%) scale(0.75, 0);
-            transform-origin: top center;
-            background:
-                radial-gradient(ellipse at 48% 42%, rgba(255,255,255,0.34) 0 8%, rgba(255,215,64,0.18) 24%, transparent 58%),
-                radial-gradient(ellipse at 36% 64%, rgba(255,255,255,0.18) 0 7%, rgba(255,215,64,0.11) 22%, transparent 54%),
-                radial-gradient(ellipse at 66% 57%, rgba(255,255,255,0.16) 0 6%, rgba(255,215,64,0.1) 21%, transparent 52%);
-            filter: blur(18px) drop-shadow(0 0 20px var(--glow,#ffd740));
-            animation: fp-lightning-shaft var(--dur,0.56s) cubic-bezier(0.12,0.88,0.26,1) var(--delay,0s) both;
-        }
         .fp-lightning-core {
             position: absolute;
             left: 50%;
@@ -1295,7 +1279,7 @@
             height: 100%;
             transform: translateX(-50%);
             opacity: 0;
-            filter: drop-shadow(0 0 12px var(--glow,#ffd740)) drop-shadow(0 0 28px var(--glow,#ffd740));
+            filter: drop-shadow(0 0 8px var(--glow,#ffd740)) drop-shadow(0 0 18px var(--glow,#ffd740));
             animation: fp-lightning-core-flicker var(--dur,0.56s) steps(2,end) var(--delay,0s) both;
         }
         .fp-lightning-core.alt {
@@ -1307,7 +1291,7 @@
             width: 210px;
             animation-delay: calc(var(--delay,0s) + 0.08s);
             opacity: 0.36;
-            filter: blur(0.5px) drop-shadow(0 0 16px var(--glow,#ffd740));
+            filter: blur(0.35px) drop-shadow(0 0 12px var(--glow,#ffd740));
         }
         .fp-lightning-ground {
             position: absolute;
@@ -1339,12 +1323,6 @@
             8%   { opacity: 1; transform: translateX(-50%) translateY(-8px) scaleY(1); }
             42%  { opacity: 1; transform: translateX(-50%) translateY(0) scaleY(1); }
             100% { opacity: 0; transform: translateX(-50%) translateY(0) scaleY(1.02); }
-        }
-        @keyframes fp-lightning-shaft {
-            0%   { opacity: 0; transform: translateX(-50%) scale(0.6, 0); }
-            18%  { opacity: 0.72; transform: translateX(-50%) scale(1, 1); }
-            58%  { opacity: 0.38; transform: translateX(-50%) scale(1.06, 1); }
-            100% { opacity: 0; transform: translateX(-50%) scale(1.12, 1); }
         }
         @keyframes fp-lightning-core-flicker {
             0%   { opacity: 0; clip-path: inset(0 0 100% 0); }
