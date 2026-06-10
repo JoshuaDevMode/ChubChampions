@@ -1263,7 +1263,7 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 220px;
+            width: 340px;
             height: var(--h,360px);
             overflow: visible;
             opacity: 0;
@@ -1275,23 +1275,25 @@
             position: absolute;
             left: 50%;
             top: 0;
-            width: 190px;
+            width: 284px;
             height: 100%;
             transform: translateX(-50%);
             opacity: 0;
-            filter: drop-shadow(0 0 8px var(--glow,#ffd740)) drop-shadow(0 0 18px var(--glow,#ffd740));
+            filter: drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 24px rgba(255,215,64,0.48));
+            -webkit-mask-image: radial-gradient(ellipse at center, #000 0 50%, rgba(0,0,0,0.72) 62%, transparent 84%);
+            mask-image: radial-gradient(ellipse at center, #000 0 50%, rgba(0,0,0,0.72) 62%, transparent 84%);
             animation: fp-lightning-core-flicker var(--dur,0.56s) steps(2,end) var(--delay,0s) both;
         }
         .fp-lightning-core.alt {
-            width: 166px;
+            width: 250px;
             animation-delay: calc(var(--delay,0s) + 0.05s);
-            opacity: 0.56;
+            opacity: 0.36;
         }
         .fp-lightning-core.faint {
-            width: 210px;
+            width: 326px;
             animation-delay: calc(var(--delay,0s) + 0.08s);
-            opacity: 0.36;
-            filter: blur(0.35px) drop-shadow(0 0 12px var(--glow,#ffd740));
+            opacity: 0.22;
+            filter: blur(0.8px) drop-shadow(0 0 18px var(--glow,#ffd740));
         }
         .fp-lightning-ground {
             position: absolute;
@@ -1360,6 +1362,7 @@
             inset: 0;
             border-radius: 50%;
             overflow: hidden;
+            animation: fp-electric-orb-spin var(--dur,1.16s) linear forwards;
         }
         .fp-electric-orb-shot img {
             width: 100%;
@@ -1412,14 +1415,20 @@
             animation: fp-electric-burst-pop 0.52s ease-out forwards;
         }
         @keyframes fp-electric-orb-flight {
-            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.14) rotate(0deg); filter: blur(1.4px); }
-            12%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.36) rotate(70deg); filter: blur(0.7px); }
-            26%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.74) rotate(155deg); filter: blur(0.25px); }
-            36%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(1.02) rotate(230deg); filter: blur(0); }
-            50%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34),var(--dy34)) scale(1.05) rotate(360deg); }
-            66%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.08) rotate(540deg); }
-            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84),var(--dy84)) scale(1.12) rotate(720deg); }
-            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.2) rotate(900deg); filter: blur(0.8px); }
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.14); filter: blur(1.4px); }
+            12%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.36); filter: blur(0.7px); }
+            26%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.74); filter: blur(0.25px); }
+            36%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(1.02); filter: blur(0); }
+            50%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34),var(--dy34)) scale(1.05); }
+            66%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.08); }
+            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84),var(--dy84)) scale(1.12); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.2); filter: blur(0.8px); }
+        }
+        @keyframes fp-electric-orb-spin {
+            0%   { transform: rotate(0deg); }
+            36%  { transform: rotate(230deg); }
+            66%  { transform: rotate(540deg); }
+            100% { transform: rotate(900deg); }
         }
         @keyframes fp-electric-orb-trail {
             0%   { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
@@ -27039,12 +27048,12 @@
                 bolt.style.setProperty('--delay', (delay||0) + 's');
                 bolt.style.setProperty('--glow', col);
 
-                const core = createLightningCanvas(190, boltHeight, 0, 0.46, 1);
+                const core = createLightningCanvas(284, boltHeight, 0, 0.34, 0.88);
                 core.className = 'fp-lightning-core';
-                const altCore = createLightningCanvas(166, boltHeight - 12, 0, 0.38, 0.66);
+                const altCore = createLightningCanvas(250, boltHeight - 12, 0, 0.3, 0.42);
                 altCore.className = 'fp-lightning-core alt';
                 altCore.style.marginTop = '6px';
-                const faintCore = createLightningCanvas(210, boltHeight - 24, 0, 0.52, 0.42);
+                const faintCore = createLightningCanvas(326, boltHeight - 24, 0, 0.4, 0.26);
                 faintCore.className = 'fp-lightning-core faint';
                 faintCore.style.marginTop = '14px';
                 const ground = document.createElement('div');
@@ -27055,11 +27064,11 @@
                 bolt.appendChild(faintCore);
                 bolt.appendChild(ground);
 
-                for (let i = 0; i < 5; i++) {
+                for (let i = 0; i < 3; i++) {
                     const spark = document.createElement('i');
                     spark.className = 'fp-lightning-spark';
-                    const sx = -72 + Math.random() * 144;
-                    const ex = sx + (-26 + Math.random() * 52);
+                    const sx = -108 + Math.random() * 216;
+                    const ex = sx + (-42 + Math.random() * 84);
                     spark.style.setProperty('--sx', sx + 'px');
                     spark.style.setProperty('--ex', ex + 'px');
                     spark.style.setProperty('--sy', (-30 + Math.random() * 58) + 'px');
@@ -27077,9 +27086,9 @@
                 let redrawStartTimer = null;
                 const startRedraw = () => {
                     redrawTimer = setInterval(() => {
-                        redrawLightningCanvas(core, 190, boltHeight, 0.46, 1);
-                        redrawLightningCanvas(altCore, 166, boltHeight - 12, 0.38, 0.66);
-                        redrawLightningCanvas(faintCore, 210, boltHeight - 24, 0.52, 0.42);
+                        redrawLightningCanvas(core, 284, boltHeight, 0.34, 0.88);
+                        redrawLightningCanvas(altCore, 250, boltHeight - 12, 0.3, 0.42);
+                        redrawLightningCanvas(faintCore, 326, boltHeight - 24, 0.4, 0.26);
                         redraws++;
                         if (redraws >= 9) {
                             clearInterval(redrawTimer);
@@ -27312,9 +27321,9 @@
                     if (power.includes('lightning_bolt')) {
                         const fromLeft = caster === 'player';
                         const startX = cp.x + (fromLeft ? 72 : -72);
-                        const startY = cp.y - 88;
+                        const startY = cp.y - 18;
                         const endX = tp.x + (fromLeft ? -26 : 26);
-                        const endY = tp.y - 84;
+                        const endY = tp.y - 18;
                         const lbDx = endX - startX;
                         const lbDy = endY - startY;
                         const lbAngle = Math.atan2(lbDy, lbDx) * 180 / Math.PI;
@@ -28044,9 +28053,9 @@
                         const targetImg = targetEl?.querySelector('img');
                         const isCpuTarget = target === 'cpu';
                         const startX = cp.x + (fromLeft ? 96 : -96);
-                        const startY = cp.y - 92;
+                        const startY = cp.y - 20;
                         const endX = tp.x + (fromLeft ? -28 : 28);
-                        const endY = tp.y - 88;
+                        const endY = tp.y - 20;
 
                         function buildWindSphereEl(className) {
                             const sphere = document.createElement('div');
@@ -29628,7 +29637,7 @@
             const midX = (x1 + x2) / 2;
             const midY = (y1 + y2) / 2;
             const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-            const offset = (Math.random() - 0.5) * len * 0.4;
+            const offset = (Math.random() - 0.5) * len * 0.28;
 
             const perpX = -(y2 - y1) / len;
             const perpY = (x2 - x1) / len;
@@ -29640,9 +29649,9 @@
             drawLightningBolt(ctx, newMidX, newMidY, x2, y2, depth - 1);
 
             // Random branches
-            if (depth > 1 && Math.random() < 0.4) {
-                const branchLen = len * 0.4;
-                const branchAngle = Math.atan2(y2 - y1, x2 - x1) + (Math.random() - 0.5) * 1.5;
+            if (depth > 2 && Math.random() < 0.22) {
+                const branchLen = len * 0.32;
+                const branchAngle = Math.atan2(y2 - y1, x2 - x1) + (Math.random() - 0.5) * 1.15;
                 const branchX = newMidX + Math.cos(branchAngle) * branchLen;
                 const branchY = newMidY + Math.sin(branchAngle) * branchLen;
                 ctx.lineWidth = ctx.lineWidth * 0.6;
@@ -29657,34 +29666,40 @@
             const forkX = width * spreadRatio;
             const startY = 10;
             const endY = height - 10;
-            const mainStartX = centerX + (Math.random() - 0.5) * width * 0.16;
-            const mainEndX = centerX + (Math.random() - 0.5) * width * 0.26;
-            const leftEndX = centerX - forkX * (0.42 + Math.random() * 0.16);
-            const rightEndX = centerX + forkX * (0.34 + Math.random() * 0.16);
+            const mainStartX = centerX + (Math.random() - 0.5) * width * 0.1;
+            const mainEndX = centerX + (Math.random() - 0.5) * width * 0.18;
+            const leftEndX = centerX - forkX * (0.34 + Math.random() * 0.16);
+            const rightEndX = centerX + forkX * (0.3 + Math.random() * 0.16);
 
-            ctx.globalAlpha = 0.62 * strength;
+            const edgeGlow = ctx.createRadialGradient(centerX, height * 0.5, width * 0.08, centerX, height * 0.5, width * 0.46);
+            edgeGlow.addColorStop(0, `rgba(255,248,145,${0.22 * strength})`);
+            edgeGlow.addColorStop(0.48, `rgba(255,215,64,${0.09 * strength})`);
+            edgeGlow.addColorStop(1, 'rgba(255,215,64,0)');
+            ctx.fillStyle = edgeGlow;
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.globalAlpha = 0.48 * strength;
             ctx.shadowColor = '#ffd740';
-            ctx.shadowBlur = 34;
+            ctx.shadowBlur = 30;
             ctx.strokeStyle = '#ffcc00';
-            ctx.lineWidth = 16;
+            ctx.lineWidth = 15;
             ctx.lineCap = 'round';
             drawLightningBolt(ctx, mainStartX, startY, mainEndX, endY, 4);
 
-            ctx.globalAlpha = 0.5 * strength;
-            ctx.lineWidth = 11;
-            drawLightningBolt(ctx, mainStartX, startY + height * 0.08, leftEndX, endY * 0.78, 3);
-            drawLightningBolt(ctx, mainStartX, startY + height * 0.14, rightEndX, endY * 0.72, 3);
+            ctx.globalAlpha = 0.28 * strength;
+            ctx.lineWidth = 9;
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.1, leftEndX, endY * 0.76, 3);
+            if (Math.random() > 0.35) drawLightningBolt(ctx, mainStartX, startY + height * 0.16, rightEndX, endY * 0.7, 3);
 
-            ctx.globalAlpha = 0.92 * strength;
+            ctx.globalAlpha = 0.82 * strength;
             ctx.shadowBlur = 22;
             ctx.shadowColor = '#ffff00';
             ctx.strokeStyle = '#ffee00';
-            ctx.lineWidth = 7;
+            ctx.lineWidth = 6;
             drawLightningBolt(ctx, mainStartX, startY, mainEndX, endY, 4);
-            ctx.globalAlpha = 0.58 * strength;
-            ctx.lineWidth = 5;
-            drawLightningBolt(ctx, mainStartX, startY + height * 0.16, leftEndX * 0.98 + centerX * 0.02, endY * 0.73, 3);
-            drawLightningBolt(ctx, mainStartX, startY + height * 0.22, rightEndX * 0.96 + centerX * 0.04, endY * 0.67, 3);
+            ctx.globalAlpha = 0.34 * strength;
+            ctx.lineWidth = 4;
+            drawLightningBolt(ctx, mainStartX, startY + height * 0.18, leftEndX * 0.98 + centerX * 0.02, endY * 0.72, 3);
 
             ctx.globalAlpha = strength;
             ctx.shadowBlur = 14;
