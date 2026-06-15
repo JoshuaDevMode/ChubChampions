@@ -720,6 +720,135 @@
         }
 
         /* Fire passive aura — overlay on fire fighter, flame body effect per turn */
+        .element-passive-overlay {
+            position: absolute;
+            pointer-events: none;
+            inset: -26px -22px -14px;
+            z-index: 24;
+            mix-blend-mode: screen;
+            overflow: visible;
+        }
+        .element-passive-overlay::before,
+        .element-passive-overlay::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+        }
+        .element-passive-fire::before {
+            left: 18%;
+            right: 18%;
+            bottom: 8%;
+            height: 86%;
+            border-radius: 48% 48% 40% 40% / 72% 72% 28% 28%;
+            background:
+                radial-gradient(ellipse at 50% 88%, rgba(255,255,255,0.7), transparent 14%),
+                radial-gradient(ellipse at 38% 68%, rgba(255,214,83,0.52), transparent 28%),
+                radial-gradient(ellipse at 62% 54%, rgba(255,93,12,0.54), transparent 36%),
+                linear-gradient(0deg, rgba(255,48,0,0.62), rgba(255,154,36,0.26) 48%, transparent 86%);
+            filter: blur(5px) drop-shadow(0 0 15px rgba(255,94,0,0.8));
+            animation: elementPassiveFire 1.05s ease-out forwards;
+        }
+        .element-passive-fire::after {
+            left: 10%;
+            right: 10%;
+            bottom: 0;
+            height: 36%;
+            background:
+                repeating-linear-gradient(82deg,
+                    transparent 0 13px,
+                    rgba(255,224,122,0.56) 14px 17px,
+                    rgba(255,82,0,0.32) 18px 27px,
+                    transparent 28px 42px);
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: elementPassiveRise 1.05s ease-out forwards;
+        }
+        @keyframes elementPassiveFire {
+            0% { opacity: 0; transform: scaleY(0.4) translateY(22px); }
+            18% { opacity: 1; transform: scaleY(1.08) translateY(0); }
+            100% { opacity: 0; transform: scaleY(1.28) translateY(-22px); }
+        }
+        @keyframes elementPassiveRise {
+            0% { opacity: 0; transform: translateY(22px) scaleX(0.72); }
+            26% { opacity: 0.9; }
+            100% { opacity: 0; transform: translateY(-42px) scaleX(1.08); }
+        }
+
+        .element-passive-water::before {
+            inset: 12% 8% 4%;
+            border-radius: 50%;
+            background:
+                radial-gradient(ellipse at 50% 78%, rgba(255,255,255,0.6), transparent 18%),
+                radial-gradient(ellipse at 50% 52%, rgba(101,218,255,0.36), rgba(0,121,255,0.16) 46%, transparent 72%);
+            border: 2px solid rgba(142,232,255,0.5);
+            box-shadow: 0 0 18px rgba(79,195,247,0.58), inset 0 0 22px rgba(255,255,255,0.2);
+            animation: elementPassiveWaterPulse 1.1s ease-out forwards;
+        }
+        .element-passive-water::after {
+            left: 4%;
+            right: 4%;
+            top: 46%;
+            height: 28%;
+            border-radius: 50%;
+            border-top: 3px solid rgba(226,250,255,0.78);
+            border-bottom: 2px solid rgba(79,195,247,0.38);
+            box-shadow: 0 0 14px rgba(79,195,247,0.58);
+            animation: elementPassiveWaterRing 1.1s ease-out forwards;
+        }
+        @keyframes elementPassiveWaterPulse {
+            0% { opacity: 0; transform: scale(0.62); filter: blur(4px); }
+            22% { opacity: 1; transform: scale(1.04); filter: blur(0); }
+            100% { opacity: 0; transform: scale(1.32); filter: blur(3px); }
+        }
+        @keyframes elementPassiveWaterRing {
+            0% { opacity: 0; transform: scaleX(0.2) rotateX(66deg); }
+            24% { opacity: 1; }
+            100% { opacity: 0; transform: scaleX(1.25) rotateX(66deg); }
+        }
+
+        .element-passive-earth::before {
+            left: 4%;
+            right: 4%;
+            bottom: -2%;
+            height: 34%;
+            border-radius: 50%;
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(216,170,78,0.54), transparent 46%),
+                repeating-linear-gradient(18deg,
+                    transparent 0 16px,
+                    rgba(156,116,44,0.55) 17px 21px,
+                    rgba(91,71,35,0.38) 22px 30px,
+                    transparent 31px 48px);
+            box-shadow: 0 0 18px rgba(139,195,74,0.45);
+            animation: elementPassiveEarthGround 1.15s ease-out forwards;
+        }
+        .element-passive-earth::after {
+            left: 18%;
+            right: 18%;
+            bottom: 8%;
+            height: 72%;
+            border-radius: 44% 44% 28% 28%;
+            background:
+                linear-gradient(90deg, transparent, rgba(212,170,64,0.28), transparent),
+                repeating-linear-gradient(100deg,
+                    transparent 0 18px,
+                    rgba(210,168,78,0.62) 19px 23px,
+                    rgba(98,78,38,0.34) 24px 34px,
+                    transparent 35px 52px);
+            clip-path: polygon(50% 0%, 68% 18%, 78% 100%, 22% 100%, 32% 18%);
+            filter: blur(1.2px) drop-shadow(0 0 12px rgba(139,195,74,0.55));
+            animation: elementPassiveEarthArmor 1.15s ease-out forwards;
+        }
+        @keyframes elementPassiveEarthGround {
+            0% { opacity: 0; transform: scaleX(0.45); }
+            18% { opacity: 1; transform: scaleX(1.05); }
+            100% { opacity: 0; transform: scaleX(1.35) translateY(6px); }
+        }
+        @keyframes elementPassiveEarthArmor {
+            0% { opacity: 0; transform: scaleY(0.2) translateY(24px); }
+            22% { opacity: 0.92; transform: scaleY(1); }
+            100% { opacity: 0; transform: scaleY(1.08) translateY(-14px); }
+        }
 
         /* Wind passive sphere — gyroscope ring effect, pulses once per turn */
         .wind-sphere-overlay {
@@ -791,6 +920,41 @@
             40%  { transform: rotate(45deg) scaleX(0.22) scaleY(0.08); }
             80%  { transform: rotate(45deg) scaleX(0.22) scaleY(1.0); }
             100% { transform: rotate(45deg) scaleX(0.22) scaleY(0.08); }
+        }
+        .element-passive-wind::before {
+            left: -4%;
+            right: -4%;
+            top: 16%;
+            height: 70%;
+            border-radius: 50%;
+            background:
+                repeating-linear-gradient(172deg,
+                    transparent 0 18px,
+                    rgba(229,250,255,0.55) 19px 22px,
+                    rgba(176,235,255,0.26) 23px 32px,
+                    transparent 33px 54px);
+            filter: blur(1px) drop-shadow(0 0 12px rgba(210,248,255,0.56));
+            animation: elementPassiveWindSweep 1.25s ease-out forwards;
+        }
+        .element-passive-wind::after {
+            left: 3%;
+            right: 3%;
+            top: 22%;
+            height: 54%;
+            border-radius: 50%;
+            border-top: 3px solid rgba(235,252,255,0.78);
+            border-bottom: 2px solid rgba(176,235,255,0.34);
+            animation: elementPassiveWindRing 1.25s ease-out forwards;
+        }
+        @keyframes elementPassiveWindSweep {
+            0% { opacity: 0; transform: translateX(-28px) skewX(-16deg) scaleX(0.72); }
+            20% { opacity: 0.95; }
+            100% { opacity: 0; transform: translateX(34px) skewX(-16deg) scaleX(1.12); }
+        }
+        @keyframes elementPassiveWindRing {
+            0% { opacity: 0; transform: rotateX(64deg) scaleX(0.18); }
+            28% { opacity: 0.9; }
+            100% { opacity: 0; transform: rotateX(64deg) scaleX(1.24); }
         }
 
         /* Water regen aura — overlay on fighter container, pulses once per regen tick */
@@ -1137,9 +1301,9 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 148px;
-            height: 360px;
-            transform: translate(-50%, -132%);
+            width: 164px;
+            height: 390px;
+            transform: translate(-50%, -100%);
             opacity: 0;
             animation: fp-wind-lance-drop 0.68s linear var(--delay,0s) both;
             mix-blend-mode: screen;
@@ -1149,7 +1313,7 @@
             position: absolute;
             left: 50%;
             top: 0;
-            width: 108px;
+            width: 124px;
             height: 100%;
             transform: translateX(-50%);
             border-radius: 50% 50% 24% 24% / 8% 8% 92% 92%;
@@ -1161,16 +1325,16 @@
                     rgba(255,255,255,0.7) 13px 15px,
                     rgba(151,229,255,0.34) 16px 22px,
                     transparent 23px 38px);
-            clip-path: polygon(50% 0%, 76% 18%, 68% 70%, 50% 100%, 32% 70%, 24% 18%);
+            clip-path: polygon(50% 0%, 80% 15%, 70% 72%, 50% 100%, 30% 72%, 20% 15%);
             filter: blur(0.25px) drop-shadow(0 0 20px rgba(195,244,255,0.84));
             animation: fp-wind-lance-shimmer 0.16s linear infinite;
         }
         .fp-wind-column .fp-wind-lance-speed {
             position: absolute;
             left: 50%;
-            top: -92px;
-            width: 126px;
-            height: 180px;
+            top: -154px;
+            width: 142px;
+            height: 250px;
             transform: translateX(-50%);
             border-radius: 50%;
             background: linear-gradient(180deg, transparent 0%, rgba(226,250,255,0.1) 18%, rgba(255,255,255,0.38) 58%, transparent 100%);
@@ -1184,7 +1348,7 @@
             position: absolute;
             left: 0;
             right: 0;
-            bottom: -14px;
+            bottom: -20px;
             height: 40px;
             border-radius: 50%;
             border-top: 3px solid rgba(225,250,255,0.74);
@@ -1195,9 +1359,9 @@
         .fp-wind-lance-core {
             position: absolute;
             left: 50%;
-            top: 12px;
-            width: 36px;
-            height: 282px;
+            top: 22px;
+            width: 46px;
+            height: 318px;
             transform: translateX(-50%);
             border-radius: 999px;
             background: linear-gradient(180deg, transparent, rgba(255,255,255,0.96) 34%, rgba(185,241,255,0.7) 72%, transparent);
@@ -1205,11 +1369,11 @@
             clip-path: polygon(50% 0%, 100% 22%, 74% 84%, 50% 100%, 26% 84%, 0% 22%);
         }
         @keyframes fp-wind-lance-drop {
-            0%   { opacity: 0; transform: translate(-50%, -210%) scale(0.72, 0.88); filter: blur(1.4px); }
-            12%  { opacity: 1; transform: translate(-50%, -178%) scale(0.94, 1); filter: blur(0.3px); }
-            72%  { opacity: 1; transform: translate(-50%, -96%) scale(1.04, 1.04); filter: blur(0); }
-            88%  { opacity: 0.9; transform: translate(-50%, -91%) scale(0.98, 1); }
-            100% { opacity: 0; transform: translate(-50%, -86%) scale(0.82, 0.84); filter: blur(0.8px); }
+            0%   { opacity: 0; transform: translate(-50%, -212%) scale(0.72, 0.9); filter: blur(1.6px); }
+            10%  { opacity: 1; transform: translate(-50%, -182%) scale(0.96, 1.04); filter: blur(0.35px); }
+            68%  { opacity: 1; transform: translate(-50%, -104%) scale(1.06, 1.04); filter: blur(0); }
+            86%  { opacity: 0.94; transform: translate(-50%, -100%) scale(1, 1); }
+            100% { opacity: 0; transform: translate(-50%, -98%) scale(0.84, 0.86); filter: blur(0.8px); }
         }
         @keyframes fp-wind-lance-shimmer {
             0%   { transform: translateX(-50%) skewX(-4deg) translateX(-1px); }
@@ -1222,10 +1386,10 @@
             100% { opacity: 0; transform: scaleX(1.35); }
         }
         @keyframes fp-wind-lance-speed-fade {
-            0%   { opacity: 0; transform: translateX(-50%) translateY(-40px) scaleY(1.18); }
-            18%  { opacity: 0.58; transform: translateX(-50%) translateY(-10px) scaleY(1.05); }
-            70%  { opacity: 0.42; transform: translateX(-50%) translateY(64px) scaleY(0.94); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(98px) scaleY(0.86); }
+            0%   { opacity: 0; transform: translateX(-50%) translateY(-96px) scaleY(1.24); }
+            18%  { opacity: 0.62; transform: translateX(-50%) translateY(-42px) scaleY(1.08); }
+            70%  { opacity: 0.42; transform: translateX(-50%) translateY(62px) scaleY(0.94); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(114px) scaleY(0.86); }
         }
 
         .fp-wind-slash {
@@ -23156,6 +23320,7 @@
                         }
                         // Water regen aura flash
                         if (event.effect === 'hot') {
+                            spawnElementPassiveOverlay(event.fighter, 'water');
                             const _wrBody = game[event.fighter]?.element?.querySelector('.fighter-body');
                             if (_wrBody) {
                                 _wrBody.animate([
@@ -23167,6 +23332,7 @@
                         }
                         // Fire passive aura flash
                         if (event.effect === 'fire_passive') {
+                            spawnElementPassiveOverlay(event.fighter, 'fire');
                             const _frBody = game[event.fighter]?.element?.querySelector('.fighter-body');
                             if (_frBody) {
                                 _frBody.animate([
@@ -23180,6 +23346,7 @@
                         }
                         // Wind passive sphere — gyroscope rings (split front/back for depth)
                         if (event.effect === 'wind_passive') {
+                            spawnElementPassiveOverlay(event.fighter, 'wind');
                             const _wndFighter = game[event.fighter]?.element;
                             if (_wndFighter) {
                                 const _rings =
@@ -26722,6 +26889,15 @@
             el.addEventListener('animationend', () => el.remove(), { once: true });
         }
 
+        function spawnElementPassiveOverlay(fighter, element) {
+            const fighterEl = game[fighter]?.element;
+            if (!fighterEl) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'element-passive-overlay element-passive-' + element;
+            fighterEl.appendChild(overlay);
+            setTimeout(() => overlay.remove(), element === 'wind' ? 1300 : 1200);
+        }
+
         // Returns hue-rotate degrees to shift from yellow (60°) to the target hex color
         function getHueRotateForColor(hex) {
             if (!hex || hex.length < 7) return 0;
@@ -27745,6 +27921,7 @@
                         }
                         requestAnimationFrame(animPillarRise);
                     } else if (power.includes('stone_skin') && !power.includes('break')) {
+                        spawnElementPassiveOverlay(caster, 'earth');
                         spawnRing(cp.x, cp.y, 55, color);
                         spawnRing(cp.x, cp.y, 80, color, 0.14);
                         spawnParticles(cp.x, cp.y, 10, '#a0826d');
@@ -28171,10 +28348,13 @@
                     } else if (power.includes('air_columns')) {
                         const x = tp.x;
                         const groundY = (_fighterGroundY[target] ?? getCharacterFeetY(target)) - 4;
+                        const isMiss = power.includes('miss');
+                        const headY = Math.max(60, groundY - 258);
+                        const impactY = isMiss ? groundY : headY;
                         const col = document.createElement('div');
                         col.className = 'fp-wind-column';
                         col.style.left = x + 'px';
-                        col.style.top = groundY + 'px';
+                        col.style.top = impactY + 'px';
                         const speed = document.createElement('div');
                         speed.className = 'fp-wind-lance-speed';
                         const core = document.createElement('div');
@@ -28185,10 +28365,10 @@
                         col.addEventListener('animationend', () => col.remove(), { once: true });
 
                         setTimeout(() => {
-                            spawnImpact(x, tp.y, 72, '#dff8ff');
-                            spawnRing(x, tp.y, 44, color);
-                            spawnParticles(x, tp.y, 14, color, 90);
-                            showHitEffect(target, 'normal');
+                            spawnImpact(x, impactY, isMiss ? 62 : 72, '#dff8ff');
+                            spawnRing(x, impactY, isMiss ? 38 : 44, color);
+                            spawnParticles(x, impactY, isMiss ? 10 : 14, color, isMiss ? 70 : 90);
+                            if (!isMiss) showHitEffect(target, 'normal');
                         }, 480);
                     }
                     break;
@@ -30796,7 +30976,7 @@
             // Clear arena overlays
             const arena = document.getElementById('arena');
             // Note: DO NOT remove countdown-overlay as it's a permanent HTML element
-                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-charge, .fp-wind-sphere-shot, .fp-wind-sphere-impact, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-electric-orb-shot, .fp-electric-burst, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
+                arena.querySelectorAll('.results-overlay, .loading-overlay, .fury-saturator, .fury-grayscale-overlay, .fury-darkness, .damage-text, .skill-scroll-pop, .combo-text, .win-text, .draw-text, .vs-overlay, .punch-effect, .fury-lightning, .weapon-throw, .weapon-attack-text, .fury-orb, .aon-round-overlay, .consumable-pop, .fury-power-flash, .fury-power-screen-flash, .element-passive-overlay, .fp-projectile, .fp-impact, .fp-ring, .fp-wave, .fp-wind-stream, .fp-wind-charge, .fp-wind-sphere-shot, .fp-wind-sphere-impact, .fp-wind-column, .fp-wind-slash, .fp-ground-crack, .fp-lightning-v, .fp-electric-orb-shot, .fp-electric-burst, .fp-particle, .tsunami-canvas, .fp-drop-bullet').forEach(el => el.remove());
             arena.classList.remove('fp-arena-shake');
 
             // Clear any fury intervals
@@ -38989,6 +39169,7 @@
 
         function dbgSkillEffect(fighter, effect) {
             if (effect === 'hot') {
+                spawnElementPassiveOverlay(fighter, 'water');
                 const _wrBody = game[fighter]?.element?.querySelector('.fighter-body');
                 if (_wrBody) {
                     _wrBody.animate([
@@ -38999,6 +39180,7 @@
                 }
             }
             if (effect === 'fire_passive') {
+                spawnElementPassiveOverlay(fighter, 'fire');
                 const _frBody = game[fighter]?.element?.querySelector('.fighter-body');
                 if (_frBody) {
                     _frBody.animate([
@@ -39011,6 +39193,7 @@
                 }
             }
             if (effect === 'wind_passive') {
+                spawnElementPassiveOverlay(fighter, 'wind');
                 const _wndFighter = game[fighter]?.element;
                 if (_wndFighter) {
                     const _rings =
