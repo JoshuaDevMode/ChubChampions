@@ -723,10 +723,11 @@
         .element-passive-overlay {
             position: absolute;
             pointer-events: none;
-            inset: -26px -22px -14px;
+            inset: -40px -34px -16px;
             z-index: 24;
             mix-blend-mode: screen;
             overflow: visible;
+            transform-origin: center bottom;
         }
         .element-passive-overlay::before,
         .element-passive-overlay::after {
@@ -735,31 +736,32 @@
             pointer-events: none;
         }
         .element-passive-fire::before {
-            left: 18%;
-            right: 18%;
-            bottom: 8%;
-            height: 86%;
-            border-radius: 48% 48% 40% 40% / 72% 72% 28% 28%;
+            left: 13%;
+            right: 13%;
+            bottom: 4%;
+            height: 96%;
+            border-radius: 42% 42% 36% 36% / 30% 30% 70% 70%;
+            clip-path: polygon(48% 0%, 62% 8%, 70% 23%, 82% 38%, 73% 98%, 27% 98%, 18% 38%, 30% 23%, 38% 8%);
             background:
-                radial-gradient(ellipse at 50% 88%, rgba(255,255,255,0.7), transparent 14%),
-                radial-gradient(ellipse at 38% 68%, rgba(255,214,83,0.52), transparent 28%),
-                radial-gradient(ellipse at 62% 54%, rgba(255,93,12,0.54), transparent 36%),
-                linear-gradient(0deg, rgba(255,48,0,0.62), rgba(255,154,36,0.26) 48%, transparent 86%);
-            filter: blur(5px) drop-shadow(0 0 15px rgba(255,94,0,0.8));
+                radial-gradient(ellipse at 50% 82%, rgba(255,255,255,0.58), transparent 13%),
+                radial-gradient(ellipse at 36% 62%, rgba(255,214,83,0.5), transparent 28%),
+                radial-gradient(ellipse at 64% 48%, rgba(255,82,12,0.56), transparent 35%),
+                linear-gradient(0deg, rgba(255,48,0,0.66), rgba(255,154,36,0.32) 50%, transparent 88%);
+            filter: blur(4px) drop-shadow(0 0 18px rgba(255,94,0,0.9));
             animation: elementPassiveFire 1.05s ease-out forwards;
         }
         .element-passive-fire::after {
-            left: 10%;
-            right: 10%;
+            left: 6%;
+            right: 6%;
             bottom: 0;
-            height: 36%;
+            height: 94%;
             background:
-                repeating-linear-gradient(82deg,
-                    transparent 0 13px,
-                    rgba(255,224,122,0.56) 14px 17px,
-                    rgba(255,82,0,0.32) 18px 27px,
-                    transparent 28px 42px);
-            border-radius: 50%;
+                repeating-linear-gradient(104deg,
+                    transparent 0 19px,
+                    rgba(255,230,120,0.66) 20px 23px,
+                    rgba(255,82,0,0.42) 24px 33px,
+                    transparent 34px 58px);
+            clip-path: polygon(8% 100%, 28% 28%, 42% 100%, 56% 20%, 72% 100%, 92% 32%, 100% 100%);
             filter: blur(2px);
             animation: elementPassiveRise 1.05s ease-out forwards;
         }
@@ -775,23 +777,28 @@
         }
 
         .element-passive-water::before {
-            inset: 12% 8% 4%;
-            border-radius: 50%;
+            inset: 6% 8% 2%;
+            border-radius: 42% 42% 36% 36% / 28% 28% 72% 72%;
+            clip-path: polygon(50% 0%, 67% 10%, 78% 34%, 72% 98%, 28% 98%, 22% 34%, 33% 10%);
             background:
-                radial-gradient(ellipse at 50% 78%, rgba(255,255,255,0.6), transparent 18%),
-                radial-gradient(ellipse at 50% 52%, rgba(101,218,255,0.36), rgba(0,121,255,0.16) 46%, transparent 72%);
+                radial-gradient(ellipse at 50% 76%, rgba(255,255,255,0.55), transparent 16%),
+                radial-gradient(ellipse at 50% 48%, rgba(101,218,255,0.38), rgba(0,121,255,0.2) 48%, transparent 76%);
             border: 2px solid rgba(142,232,255,0.5);
             box-shadow: 0 0 18px rgba(79,195,247,0.58), inset 0 0 22px rgba(255,255,255,0.2);
             animation: elementPassiveWaterPulse 1.1s ease-out forwards;
         }
         .element-passive-water::after {
-            left: 4%;
-            right: 4%;
-            top: 46%;
-            height: 28%;
-            border-radius: 50%;
-            border-top: 3px solid rgba(226,250,255,0.78);
-            border-bottom: 2px solid rgba(79,195,247,0.38);
+            left: 5%;
+            right: 5%;
+            top: 6%;
+            height: 86%;
+            border-radius: 44%;
+            background:
+                repeating-linear-gradient(168deg,
+                    transparent 0 22px,
+                    rgba(226,250,255,0.78) 23px 26px,
+                    rgba(79,195,247,0.34) 27px 39px,
+                    transparent 40px 62px);
             box-shadow: 0 0 14px rgba(79,195,247,0.58);
             animation: elementPassiveWaterRing 1.1s ease-out forwards;
         }
@@ -807,11 +814,11 @@
         }
 
         .element-passive-earth::before {
-            left: 4%;
-            right: 4%;
-            bottom: -2%;
-            height: 34%;
-            border-radius: 50%;
+            left: 0;
+            right: 0;
+            bottom: -3%;
+            height: 40%;
+            border-radius: 42%;
             background:
                 radial-gradient(ellipse at 50% 50%, rgba(216,170,78,0.54), transparent 46%),
                 repeating-linear-gradient(18deg,
@@ -823,10 +830,10 @@
             animation: elementPassiveEarthGround 1.15s ease-out forwards;
         }
         .element-passive-earth::after {
-            left: 18%;
-            right: 18%;
-            bottom: 8%;
-            height: 72%;
+            left: 11%;
+            right: 11%;
+            bottom: 4%;
+            height: 94%;
             border-radius: 44% 44% 28% 28%;
             background:
                 linear-gradient(90deg, transparent, rgba(212,170,64,0.28), transparent),
@@ -835,7 +842,7 @@
                     rgba(210,168,78,0.62) 19px 23px,
                     rgba(98,78,38,0.34) 24px 34px,
                     transparent 35px 52px);
-            clip-path: polygon(50% 0%, 68% 18%, 78% 100%, 22% 100%, 32% 18%);
+            clip-path: polygon(50% 0%, 66% 13%, 78% 34%, 72% 100%, 28% 100%, 22% 34%, 34% 13%);
             filter: blur(1.2px) drop-shadow(0 0 12px rgba(139,195,74,0.55));
             animation: elementPassiveEarthArmor 1.15s ease-out forwards;
         }
@@ -922,11 +929,12 @@
             100% { transform: rotate(45deg) scaleX(0.22) scaleY(0.08); }
         }
         .element-passive-wind::before {
-            left: -4%;
-            right: -4%;
-            top: 16%;
-            height: 70%;
-            border-radius: 50%;
+            left: -8%;
+            right: -8%;
+            top: 4%;
+            height: 92%;
+            border-radius: 42%;
+            clip-path: polygon(6% 55%, 24% 15%, 50% 4%, 76% 15%, 94% 55%, 76% 96%, 50% 88%, 24% 96%);
             background:
                 repeating-linear-gradient(172deg,
                     transparent 0 18px,
@@ -937,10 +945,10 @@
             animation: elementPassiveWindSweep 1.25s ease-out forwards;
         }
         .element-passive-wind::after {
-            left: 3%;
-            right: 3%;
-            top: 22%;
-            height: 54%;
+            left: -3%;
+            right: -3%;
+            top: 13%;
+            height: 72%;
             border-radius: 50%;
             border-top: 3px solid rgba(235,252,255,0.78);
             border-bottom: 2px solid rgba(176,235,255,0.34);
@@ -1514,8 +1522,8 @@
             position: absolute;
             pointer-events: none;
             z-index: 116;
-            width: 94px;
-            height: 94px;
+            width: 88px;
+            height: 88px;
             transform: translate(-50%, -50%) scale(0.44);
             opacity: 0;
             animation: fp-electric-orb-flight var(--dur,1.16s) linear forwards;
@@ -1532,14 +1540,24 @@
             width: 100%;
             height: 100%;
             display: block;
+            object-fit: cover;
             filter: saturate(1.55) brightness(1.22) drop-shadow(0 0 10px var(--glow,#ffd740)) drop-shadow(0 0 22px var(--glow,#ffd740));
         }
         .fp-electric-orb-shot.sheet-mode img {
-            width: 500%;
-            height: 200%;
+            width: 440px;
+            height: auto;
             max-width: none;
-            transform: translate(var(--sheet-x,0%), var(--sheet-y,0%));
+            transform: translate(var(--sheet-x,0px), var(--sheet-y,0px));
             transform-origin: top left;
+        }
+        .fp-electric-orb-shot::after {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.28), rgba(var(--orb-rgb,255,215,64),0.16) 34%, transparent 68%);
+            filter: blur(2px) drop-shadow(0 0 16px var(--glow,#ffd740));
+            pointer-events: none;
         }
         .fp-electric-orb-shot::before {
             content: "";
@@ -1550,12 +1568,8 @@
             height: 34px;
             border-radius: 50%;
             background:
-                repeating-linear-gradient(0deg,
-                    transparent 0 7px,
-                    rgba(255,255,255,0.78) 8px 10px,
-                    rgba(255,215,64,0.45) 11px 14px,
-                    transparent 15px 24px),
-                linear-gradient(90deg, rgba(255,236,116,0.72), rgba(255,255,255,0.18), transparent);
+                radial-gradient(ellipse at 8% 50%, rgba(255,255,255,0.72), transparent 12%),
+                linear-gradient(90deg, rgba(var(--orb-rgb,255,215,64),0.62), rgba(255,255,255,0.16) 46%, transparent 100%);
             transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0);
             transform-origin: left center;
             filter: blur(0.35px) drop-shadow(0 0 9px var(--glow,#ffd740));
@@ -1579,25 +1593,25 @@
             animation: fp-electric-burst-pop 0.52s ease-out forwards;
         }
         @keyframes fp-electric-orb-flight {
-            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.14); filter: blur(1.4px); }
-            12%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.36); filter: blur(0.7px); }
-            26%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.74); filter: blur(0.25px); }
-            36%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(1.02); filter: blur(0); }
-            50%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34),var(--dy34)) scale(1.05); }
-            66%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.08); }
-            84%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84),var(--dy84)) scale(1.12); }
+            0%   { opacity: 0; transform: translate(-50%, -50%) translate(0,0) scale(0.12); filter: blur(1.4px); }
+            18%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.42); filter: blur(0.65px); }
+            32%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(0.78); filter: blur(0.25px); }
+            42%  { opacity: 1; transform: translate(-50%, -50%) translate(0,0) scale(1.02); filter: blur(0); }
+            56%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx34),var(--dy34)) scale(1.05); }
+            70%  { opacity: 1; transform: translate(-50%, -50%) translate(var(--dx58),var(--dy58)) scale(1.08); }
+            86%  { opacity: 0.98; transform: translate(-50%, -50%) translate(var(--dx84),var(--dy84)) scale(1.12); }
             100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(1.2); filter: blur(0.8px); }
         }
         @keyframes fp-electric-orb-spin {
             0%   { transform: rotate(0deg); }
-            36%  { transform: rotate(230deg); }
-            66%  { transform: rotate(540deg); }
+            42%  { transform: rotate(230deg); }
+            70%  { transform: rotate(540deg); }
             100% { transform: rotate(900deg); }
         }
         @keyframes fp-electric-orb-trail {
             0%   { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
-            38%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
-            52%  { opacity: 0.9; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.58); }
+            44%  { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0); }
+            58%  { opacity: 0.72; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(0.58); }
             82%  { opacity: 0.78; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1); }
             100% { opacity: 0; transform: translate(0, -50%) rotate(var(--back-angle,180deg)) scaleX(1.12); }
         }
@@ -4183,16 +4197,21 @@
 
         /* Center the create button in the middle of the screen */
         .main-menu.lobby-empty .menu-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative !important;
+            display: block !important;
         }
         .main-menu.lobby-empty .menu-character-section {
-            display: flex;
+            position: absolute !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            display: flex !important;
             align-items: center;
             justify-content: center;
-            flex: 1;
-            height: 100%;
+            width: auto !important;
+            height: auto !important;
+            margin: 0 !important;
+            pointer-events: auto !important;
         }
         .main-menu.lobby-empty .menu-character-wrapper {
             display: flex;
@@ -9715,8 +9734,9 @@
             align-items: center;
             gap: 20px;
             padding: 15px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.58);
             border-radius: 12px;
+            border: 1px solid rgba(255,236,180,0.22);
         }
 
         .levelup-stats-col {
@@ -9726,14 +9746,15 @@
 
         .levelup-stats-title {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.7em;
-            color: #888;
+            font-size: 0.82em;
+            color: #f5e6c8;
             text-align: center;
             margin-bottom: 12px;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
         }
 
-        .levelup-stats-current .levelup-stats-title { color: #aaa; }
-        .levelup-stats-preview .levelup-stats-title { color: #4ecdc4; }
+        .levelup-stats-current .levelup-stats-title { color: #f5e6c8; }
+        .levelup-stats-preview .levelup-stats-title { color: #7ff5e8; }
 
         .levelup-stat-row {
             display: flex;
@@ -9741,20 +9762,23 @@
             align-items: center;
             padding: 6px 10px;
             margin: 4px 0;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.44);
             border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .levelup-stat-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.6em;
-            color: #888;
+            font-size: 0.72em;
+            color: #f2d99b;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
         }
 
         .levelup-stat-value {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.75em;
+            font-size: 0.9em;
             color: #fff;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
         }
 
         .levelup-stats-preview .levelup-stat-value {
@@ -9763,8 +9787,9 @@
 
         .levelup-stat-diff {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.55em;
+            font-size: 0.72em;
             margin-left: 5px;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
         }
 
         .levelup-stat-diff.positive { color: #22c55e; }
@@ -9778,9 +9803,87 @@
 
         .levelup-options-label {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.7em;
-            color: #aaa;
+            font-size: 0.86em;
+            color: #f5e6c8;
             text-align: center;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
+        }
+
+        .levelup-options-heading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .levelup-stat-info-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,211,90,0.85);
+            background: radial-gradient(circle at 35% 25%, #fff1a8, #b8741a 72%);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.78em;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 0 #4a2c12, 0 0 10px rgba(255,191,36,0.35);
+        }
+
+        .levelup-stat-info-btn:hover,
+        .levelup-stat-info-btn.active {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+        }
+
+        .levelup-stat-info-panel {
+            display: none;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 10px;
+            margin-top: -8px;
+            background: rgba(24,14,7,0.88);
+            border: 1px solid rgba(255,226,164,0.34);
+            border-radius: 10px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 18px rgba(0,0,0,0.22);
+        }
+
+        .levelup-stat-info-panel.active {
+            display: grid;
+        }
+
+        .levelup-stat-info-item {
+            background: rgba(255,245,210,0.08);
+            border: 1px solid rgba(255,245,210,0.12);
+            border-radius: 8px;
+            padding: 8px 9px;
+            color: #fff1c9;
+            font-size: 0.74em;
+            line-height: 1.34;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.75);
+        }
+
+        .levelup-stat-info-item strong {
+            display: block;
+            color: #ffd35a;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.02em;
+            margin-bottom: 3px;
+            letter-spacing: 0.06em;
+        }
+
+        @media (max-width: 720px) {
+            .levelup-stat-info-panel {
+                grid-template-columns: 1fr;
+                max-height: 180px;
+                overflow-y: auto;
+            }
         }
 
         .levelup-options {
@@ -9790,8 +9893,8 @@
         }
 
         .levelup-option {
-            background: rgba(0,0,0,0.4);
-            border: 3px solid #555;
+            background: rgba(0,0,0,0.62);
+            border: 3px solid rgba(245,230,200,0.35);
             border-radius: 12px;
             padding: 15px 20px;
             cursor: pointer;
@@ -9811,14 +9914,17 @@
 
         .levelup-option-name {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.8em;
-            color: #fbbf24;
+            font-size: 0.96em;
+            color: #ffd35a;
             margin-bottom: 8px;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.8);
         }
 
         .levelup-option-desc {
-            font-size: 0.85em;
-            color: #aaa;
+            font-size: 0.95em;
+            color: #fff1c9;
+            line-height: 1.35;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.75);
         }
 
         .levelup-apply-btn {
@@ -13648,7 +13754,15 @@
             pointer-events: auto;
         }
         .main-menu .menu-character-name {
-            margin-bottom: 4px !important;
+            position: absolute !important;
+            left: 50% !important;
+            top: -26px !important;
+            bottom: auto !important;
+            width: max-content !important;
+            max-width: 420px !important;
+            transform: translateX(-50%) !important;
+            margin: 0 !important;
+            z-index: 28 !important;
         }
         .main-menu .menu-character-wrapper {
             justify-content: center !important;
@@ -13659,6 +13773,22 @@
             height: auto !important;
             width: auto !important;
             object-fit: contain;
+        }
+
+        .main-menu.lobby-empty .menu-content {
+            display: block !important;
+            position: relative !important;
+            padding: 0 !important;
+        }
+        .main-menu.lobby-empty .menu-character-section {
+            position: absolute !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: auto !important;
+            margin: 0 !important;
+            z-index: 30 !important;
+            pointer-events: auto !important;
         }
 
         /* Tighter top padding so stats panel fits within the 720px lobby */
@@ -13714,6 +13844,87 @@
             font-size: 1.05em !important;
             font-weight: 700 !important;
             color: #2b1a0e !important;
+        }
+        .main-menu .menu-character-stat[data-stat-tip] {
+            position: relative !important;
+            cursor: help;
+            border-radius: 8px !important;
+        }
+        .main-menu .menu-character-stat[data-stat-tip]:hover {
+            background: rgba(43,26,14,0.08) !important;
+        }
+        .main-menu .menu-character-stat[data-stat-tip]::after {
+            content: attr(data-stat-tip);
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 10px);
+            width: 220px;
+            max-width: 42vw;
+            transform: translateX(-50%) translateY(4px);
+            padding: 9px 11px;
+            border-radius: 8px;
+            background: rgba(24,14,7,0.96);
+            border: 1px solid rgba(255,226,164,0.45);
+            color: #fff1c9;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.35;
+            letter-spacing: 0;
+            text-align: left;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.12s ease, transform 0.12s ease;
+            z-index: 5000;
+        }
+        .main-menu .menu-character-stat[data-stat-tip]::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 4px);
+            width: 10px;
+            height: 10px;
+            background: rgba(24,14,7,0.96);
+            border-right: 1px solid rgba(255,226,164,0.45);
+            border-bottom: 1px solid rgba(255,226,164,0.45);
+            transform: translateX(-50%) rotate(45deg);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.12s ease;
+            z-index: 5001;
+        }
+        .main-menu .menu-character-stat[data-stat-tip]:hover::after,
+        .main-menu .menu-character-stat[data-stat-tip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+        .stat-info-popover {
+            position: fixed;
+            z-index: 6000;
+            width: 240px;
+            max-width: calc(100vw - 24px);
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(24,14,7,0.97);
+            border: 1px solid rgba(255,226,164,0.48);
+            color: #fff1c9;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.38;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .stat-info-popover strong {
+            display: block;
+            color: #ffd35a;
+            font-size: 12px;
+            margin-bottom: 4px;
+            letter-spacing: 0.08em;
         }
         .main-menu .menu-character-stats {
             display: flex !important;
@@ -15277,12 +15488,12 @@
             border-color: rgba(245,230,200,0.3) !important;
         }
         .skills-panel .snd-branch  { color: #d8b878 !important; font-size: 11px !important; opacity: 0.95 !important; }
-        .skills-panel .snd-name    { font-size: 18px !important; text-shadow: 0 1px 0 rgba(0,0,0,0.55) !important; }
-        .skills-panel .snd-desc    { color: #f0e0bb !important; font-size: 12px !important; opacity: 1 !important; }
+        .skills-panel .snd-name    { font-size: 20px !important; text-shadow: 0 2px 0 rgba(0,0,0,0.75), 0 0 8px rgba(0,0,0,0.5) !important; }
+        .skills-panel .snd-desc    { color: #fff1c9 !important; font-size: 13.5px !important; line-height: 1.45 !important; opacity: 1 !important; }
         .skills-panel .snd-val-box { background: rgba(255,245,210,0.10) !important; }
         .skills-panel .snd-val-cur { color: rgba(245,230,200,0.7) !important; font-size: 11.5px !important; }
         .skills-panel .snd-val-row { font-size: 11.5px !important; }
-        .skills-panel .snd-cost    { color: #f0e0bb !important; font-size: 11px !important; }
+        .skills-panel .snd-cost    { color: #f0e0bb !important; font-size: 12px !important; }
         .skills-panel .snd-lock    { color: #ff9a85 !important; font-size: 11px !important; background: rgba(255,40,20,0.16) !important; }
         .skills-panel .snd-conflict { color: #ffb060 !important; font-size: 11px !important; background: rgba(255,140,40,0.16) !important; }
         .skills-panel .snd-maxed   { color: #ffd700 !important; font-size: 13px !important; }
@@ -15339,12 +15550,12 @@
         .skills-panel .skill-node-name {
             color: #fff5c4 !important;
             text-shadow: 0 1px 0 rgba(0,0,0,0.55) !important;
-            font-size: 0.75em !important;
+            font-size: 0.88em !important;
         }
-        .skills-panel .skill-node-rank { color: #d8b878 !important; font-size: 0.65em !important; }
-        .skills-panel .skill-node-desc { color: #e6d6b0 !important; font-size: 0.78em !important; line-height: 1.45 !important; }
-        .skills-panel .skill-node-value { color: #fff5c4 !important; font-size: 0.78em !important; }
-        .skills-panel .skill-node-cost { font-size: 0.72em !important; }
+        .skills-panel .skill-node-rank { color: #f0d89c !important; font-size: 0.74em !important; }
+        .skills-panel .skill-node-desc { color: #fff1c9 !important; font-size: 0.86em !important; line-height: 1.48 !important; }
+        .skills-panel .skill-node-value { color: #fff9d8 !important; font-size: 0.86em !important; }
+        .skills-panel .skill-node-cost { font-size: 0.8em !important; }
         .skills-panel .skill-node-value span.current-val { color: #7fc !important; }
         .skills-panel .skill-node-value span.next-val { color: #ffd700 !important; }
         .skills-panel .skill-node-cost { color: #ffd700 !important; }
@@ -15354,7 +15565,7 @@
             background: rgba(43,26,14,0.7) !important;
             border-color: rgba(245,230,200,0.35) !important;
             text-shadow: 0 1px 0 rgba(0,0,0,0.55) !important;
-            font-size: 0.65em !important;
+            font-size: 0.78em !important;
             padding: 7px 12px !important;
         }
         .skills-panel .skill-branch-tab.active {
@@ -16493,7 +16704,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="levelup-options-label">Choose your upgrade:</div>
+                <div class="levelup-options-heading">
+                    <div class="levelup-options-label">Choose your upgrade:</div>
+                    <button class="levelup-stat-info-btn" id="levelup-stat-info-btn" type="button" aria-expanded="false" aria-controls="levelup-stat-info-panel" title="Stat info">i</button>
+                </div>
+                <div class="levelup-stat-info-panel" id="levelup-stat-info-panel"></div>
                 <div class="levelup-options" id="levelup-options">
                     <!-- Options will be populated by JavaScript -->
                 </div>
@@ -17618,10 +17833,10 @@
             parent:'berserker',      exclusiveWith:'attack_bloodrage',
             desc:'Below 25% HP: massively amplify damage, ignore your own defense.',
             values:[0,0.18,0.30,0.46,0.66,0.90], unit:'% dmg boost' },
-          { tree:'attack',  id:'hemorrhage',     name:'Hemorrhage',     depth:3, x:272, y:418,
+          { tree:'attack',  id:'hemorrhage',     name:'Deep Wound',     depth:3, x:272, y:418,
             parent:'bleed',          exclusiveWith:'attack_rend',
-            desc:'Bleed stacks multiply — each new stack doubles the last tick.',
-            values:[0,1,2,3,4,5], unit:'max stacks' },
+            desc:'Hits against bleeding enemies have a low chance to add base true damage without crit scaling.',
+            values:[0,0.02,0.03,0.04,0.055,0.07], unit:'% true dmg chance' },
           { tree:'attack',  id:'rend',           name:'Rend',           depth:3, x:324, y:418,
             parent:'bleed',          exclusiveWith:'attack_hemorrhage',
             desc:'Bleed also reduces enemy attack power.',
@@ -17630,10 +17845,11 @@
             parent:'expose',         exclusiveWith:'attack_predator',
             desc:'Crits against Exposed enemies deal extra damage.',
             values:[0,0.14,0.25,0.38,0.55,0.76], unit:'% crit bonus' },
-          { tree:'attack',  id:'predator',       name:'Predator',       depth:3, x:428, y:418,
+          { tree:'attack',  id:'predator',       name:'Marked Prey',    depth:3, x:428, y:418,
             parent:'expose',         exclusiveWith:'attack_rupture',
-            desc:'Hits against Exposed enemies gain a massive crit chance bonus — R5 guarantees crit.',
-            values:[0,0.20,0.40,0.60,0.80,1.00], unit:'% crit chance vs Exposed' },
+            desc:'Damaging an Exposed enemy marks them: defenses cost more stamina and stamina regen is reduced. Has an internal cooldown.',
+            values:[0,0.15,0.22,0.30,0.40,0.55], unit:'% defense ST cost',
+            values2:[0,0.10,0.15,0.20,0.30,0.40], unit2:'% ST regen reduce' },
 
           // ── DEFENSE TREE ─────────────────────────────────────────────────────────────
           // Layout: 3 L1 columns (fortify | shield_mastery | vitality), each spawning
@@ -17809,10 +18025,10 @@
           'attack_execute':       '☠️',
           'attack_bloodrage':     '🔴',
           'attack_death_wish':    '💀',
-          'attack_hemorrhage':    '🫀',
+          'attack_hemorrhage':    '🩸',
           'attack_rend':          '🗡️',
           'attack_rupture':       '⚡',
-          'attack_predator':      '🐺',
+          'attack_predator':      '◎',
           'defense_iron_hide':    '🛡️',
           'defense_shield_mastery':'⚔️🛡️',
           'defense_fortify':      '🏰',
@@ -19657,6 +19873,19 @@
                 .replace(/[^A-Za-z0-9áéíóúüñÁÉÍÓÚÜÑ \-_!@$']/g, '')
                 .trim()
                 .slice(0, 14);
+        }
+
+        const STAT_HELP_TEXT = {
+            HP:  'Health pool. More HP lets your fighter survive longer, absorb bad trades, and get more value from healing, shields, and low-HP defense skills.',
+            ATK: 'Raw offensive power. Increases most direct damage, basic attacks, offensive skills, and true-damage effects that use base damage.',
+            STR: 'Physical force. Boosts weapon damage, heavy attacks, kicks, jump impact, knockback-style moves, and actions that scale from body power.',
+            AGI: 'Speed and control. Improves movement speed, attack tempo, dodge chances, jump evasion, and how quickly your fighter closes distance.',
+            DEF: 'Damage resistance. Reduces incoming damage, makes defensive actions stronger, improves shield value, and helps stamina-based defense survive pressure.',
+            ENE: 'Elemental energy. Improves elemental power scaling, Fury-related effects, special abilities, and builds that rely on magic-style burst or utility.'
+        };
+
+        function getStatHelpText(label) {
+            return STAT_HELP_TEXT[label] || '';
         }
 
         // ===== CHARACTER SYSTEM =====
@@ -25560,12 +25789,13 @@
                     ['🍃', 'AGI', character.stats.agility  || 0],
                     ['🛡️', 'DEF', character.stats.defense],
                     ['⚡', 'ENE', character.stats.energy   || 0],
-                ].map(([icon, label, val]) =>
-                    `<div class="menu-character-stat">
+                ].map(([icon, label, val]) => {
+                    const tip = getStatHelpText(label);
+                    return `<div class="menu-character-stat" data-stat="${label}" data-stat-tip="${escapeHTML(tip)}" title="${escapeHTML(tip)}" tabindex="0" role="button" aria-label="${label}: ${escapeHTML(tip)}">
                         <span class="menu-character-stat-label"><span class="stat-icon">${icon}</span> ${label}</span>
                         <span class="menu-character-stat-value">${val}</span>
-                    </div>`
-                ).join('');
+                    </div>`;
+                }).join('');
 
                 // ── Right extension: win rate ring ───────────────────────────────────
                 if (wrExt) {
@@ -25688,10 +25918,32 @@
         let currentLevelUpCharacter = null;
         let currentLevelUpOptions = null;
 
+        function renderLevelUpStatInfoPanel() {
+            const panel = document.getElementById('levelup-stat-info-panel');
+            if (!panel) return;
+            panel.innerHTML = ['ATK', 'STR', 'AGI', 'DEF', 'HP', 'ENE'].map(label => `
+                <div class="levelup-stat-info-item">
+                    <strong>${label}</strong>
+                    ${escapeHTML(getStatHelpText(label))}
+                </div>
+            `).join('');
+        }
+
+        function setLevelUpStatInfoOpen(open) {
+            const panel = document.getElementById('levelup-stat-info-panel');
+            const btn = document.getElementById('levelup-stat-info-btn');
+            if (!panel || !btn) return;
+            panel.classList.toggle('active', open);
+            btn.classList.toggle('active', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
         function showLevelUpModal(character, options) {
             currentLevelUpCharacter = character;
             currentLevelUpOptions = options;
             selectedLevelUpOption = null;
+            renderLevelUpStatInfoPanel();
+            setLevelUpStatInfoOpen(false);
 
             // Update subtitle
             document.getElementById('levelup-subtitle').innerHTML = `Level ${character.level}`;
@@ -25717,11 +25969,13 @@
             document.getElementById('levelup-preview-agi').textContent = '--';
             document.getElementById('levelup-preview-def').textContent = '--';
             document.getElementById('levelup-preview-hp').textContent = '--';
+            document.getElementById('levelup-preview-ene').textContent = '--';
             document.getElementById('levelup-diff-atk').textContent = '';
             document.getElementById('levelup-diff-str').textContent = '';
             document.getElementById('levelup-diff-agi').textContent = '';
             document.getElementById('levelup-diff-def').textContent = '';
             document.getElementById('levelup-diff-hp').textContent = '';
+            document.getElementById('levelup-diff-ene').textContent = '';
 
             // Reset apply button
             const applyBtn = document.getElementById('levelup-apply-btn');
@@ -25944,6 +26198,7 @@
 
         function closeLevelUpModal() {
             document.getElementById('levelup-modal').classList.remove('active');
+            setLevelUpStatInfoOpen(false);
         }
 
         // Level up confirmation button handlers
@@ -25951,6 +26206,10 @@
         document.getElementById('levelup-confirm-yes').addEventListener('click', confirmLevelUpApply);
         document.getElementById('levelup-confirm-no').addEventListener('click', closeLevelUpConfirmation);
         document.getElementById('levelup-close').addEventListener('click', closeLevelUpModal);
+        document.getElementById('levelup-stat-info-btn')?.addEventListener('click', () => {
+            const panel = document.getElementById('levelup-stat-info-panel');
+            setLevelUpStatInfoOpen(!panel?.classList.contains('active'));
+        });
 
         // Character Selection Panel Handlers
         document.getElementById('character-select-close').addEventListener('click', closeCharacterSelection);
@@ -26514,10 +26773,10 @@
                 executeBonus:           sv('attack',  'execute'),
                 bloodrageLifesteal:     sv('attack',  'bloodrage'),
                 deathWishBonus:         sv('attack',  'death_wish'),
-                hemorrhageMax:          sv('attack',  'hemorrhage'),
+                deepWoundTrueChance:    sv('attack',  'hemorrhage'),
                 rendAtkReduce:          sv('attack',  'rend'),
                 ruptureCritBonus:       sv('attack',  'rupture'),
-                predatorCritBonus:      sv('attack',  'predator'),
+                markedPreyDefCostIncrease: sv('attack',  'predator'),
                 // DEFENSE TREE
                 ironHideDmgReduce:      sv('defense', 'iron_hide'),
                 fortifyReduce:          sv('defense', 'fortify'),
@@ -26699,6 +26958,64 @@
             });
             cpuInfo.addEventListener('mousemove', positionSkillTooltip);
             cpuInfo.addEventListener('mouseleave', hideSkillTooltip);
+        }
+
+        let _statHelpHideTimer = null;
+        function hideStatInfoPopover() {
+            const pop = document.getElementById('stat-info-popover');
+            if (pop) pop.remove();
+            if (_statHelpHideTimer) {
+                clearTimeout(_statHelpHideTimer);
+                _statHelpHideTimer = null;
+            }
+        }
+
+        function showStatInfoPopover(statEl) {
+            if (!statEl) return;
+            const label = statEl.dataset.stat || '';
+            const text = statEl.dataset.statTip || getStatHelpText(label);
+            if (!text) return;
+
+            hideStatInfoPopover();
+            const pop = document.createElement('div');
+            pop.id = 'stat-info-popover';
+            pop.className = 'stat-info-popover';
+            pop.innerHTML = `<strong>${escapeHTML(label)}</strong>${escapeHTML(text)}`;
+            document.body.appendChild(pop);
+
+            const rect = statEl.getBoundingClientRect();
+            const popRect = pop.getBoundingClientRect();
+            const gap = 10;
+            let left = rect.left + rect.width / 2 - popRect.width / 2;
+            let top = rect.top - popRect.height - gap;
+
+            left = Math.max(12, Math.min(left, window.innerWidth - popRect.width - 12));
+            if (top < 12) top = Math.min(window.innerHeight - popRect.height - 12, rect.bottom + gap);
+
+            pop.style.left = left + 'px';
+            pop.style.top = top + 'px';
+            _statHelpHideTimer = setTimeout(hideStatInfoPopover, 4200);
+        }
+
+        function initStatInfoListeners() {
+            document.addEventListener('click', e => {
+                const statEl = e.target.closest?.('.menu-character-stat[data-stat-tip]');
+                if (statEl) {
+                    e.stopPropagation();
+                    showStatInfoPopover(statEl);
+                } else {
+                    hideStatInfoPopover();
+                }
+            });
+
+            document.addEventListener('keydown', e => {
+                const statEl = e.target.closest?.('.menu-character-stat[data-stat-tip]');
+                if (!statEl) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    showStatInfoPopover(statEl);
+                }
+            });
         }
 
         function updateConsumableDisplay(fighter) {
@@ -27498,9 +27815,9 @@
                     if (power.includes('lightning_bolt')) {
                         const fromLeft = caster === 'player';
                         const startX = cp.x + (fromLeft ? 72 : -72);
-                        const startY = cp.y - 18;
+                        const startY = cp.y + 10;
                         const endX = tp.x + (fromLeft ? -26 : 26);
-                        const endY = tp.y - 18;
+                        const endY = tp.y + 10;
                         const lbDx = endX - startX;
                         const lbDy = endY - startY;
                         const lbAngle = Math.atan2(lbDy, lbDx) * 180 / Math.PI;
@@ -27526,6 +27843,7 @@
                         orb.style.setProperty('--back-angle', (lbAngle + 180) + 'deg');
                         orb.style.setProperty('--dur', '1.16s');
                         orb.style.setProperty('--glow', glowColor);
+                        orb.style.setProperty('--orb-rgb', hexToRgb(glowColor));
 
                         const frameBox = document.createElement('div');
                         frameBox.className = 'fp-electric-orb-frame';
@@ -27535,6 +27853,10 @@
                         if (useSheetCrop) orb.classList.add('sheet-mode');
                         img.src = useSheetCrop ? FURY_ORB_SRC : frames[0];
                         img.style.filter = hueFilter;
+                        if (useSheetCrop) {
+                            img.style.setProperty('--sheet-x', '0px');
+                            img.style.setProperty('--sheet-y', '0px');
+                        }
                         frameBox.appendChild(img);
                         orb.appendChild(frameBox);
                         arena.appendChild(orb);
@@ -27543,8 +27865,8 @@
                         const frameTimer = setInterval(() => {
                             frame = (frame + 1) % (useSheetCrop ? 10 : frames.length);
                             if (useSheetCrop) {
-                                img.style.setProperty('--sheet-x', (-(frame % 5) * 20) + '%');
-                                img.style.setProperty('--sheet-y', (-Math.floor(frame / 5) * 50) + '%');
+                                img.style.setProperty('--sheet-x', (-(frame % 5) * 88) + 'px');
+                                img.style.setProperty('--sheet-y', (-Math.floor(frame / 5) * 88) + 'px');
                             } else {
                                 img.src = frames[frame];
                             }
@@ -28231,9 +28553,9 @@
                         const targetImg = targetEl?.querySelector('img');
                         const isCpuTarget = target === 'cpu';
                         const startX = cp.x + (fromLeft ? 96 : -96);
-                        const startY = cp.y - 20;
+                        const startY = cp.y + 10;
                         const endX = tp.x + (fromLeft ? -28 : 28);
-                        const endY = tp.y - 20;
+                        const endY = tp.y + 10;
 
                         function buildWindSphereEl(className) {
                             const sphere = document.createElement('div');
@@ -28312,29 +28634,31 @@
                                 }, pushDelay);
 
                                 if (targetImg) {
-                                    if (targetImg._hurtFrames && targetImg._hurtFrames.length > 0) {
-                                        targetImg.style.width = '';
-                                        targetImg.style.height = '';
-                                        targetImg._hurtActive = true;
-                                        targetImg.src = targetImg._hurtFrames[Math.floor(Math.random() * targetImg._hurtFrames.length)];
-                                    }
-                                    targetImg.style.transformOrigin = 'center center';
-                                    targetImg.style.transition = 'transform 0.16s cubic-bezier(0.16,1,0.3,1)';
-                                    targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -10 : 10}deg)`;
                                     setTimeout(() => {
-                                        targetImg.style.transition = 'transform 0.34s ease-out';
-                                        targetImg.style.transform = '';
-                                        targetImg._hurtActive = false;
-                                        if (targetImg._idleSrc) {
-                                            targetImg.src = targetImg._idleSrc;
-                                            targetImg.style.width = targetImg._armedIdleW || '';
-                                            targetImg.style.height = targetImg._armedIdleH || '';
+                                        if (targetImg._hurtFrames && targetImg._hurtFrames.length > 0) {
+                                            targetImg.style.width = '';
+                                            targetImg.style.height = '';
+                                            targetImg._hurtActive = true;
+                                            targetImg.src = targetImg._hurtFrames[Math.floor(Math.random() * targetImg._hurtFrames.length)];
                                         }
+                                        targetImg.style.transformOrigin = 'center center';
+                                        targetImg.style.transition = 'transform 0.16s cubic-bezier(0.16,1,0.3,1)';
+                                        targetImg.style.transform = `scaleX(${isCpuTarget ? -1 : 1}) rotate(${fromLeft ? -10 : 10}deg)`;
                                         setTimeout(() => {
-                                            targetImg.style.transition = '';
-                                            targetImg.style.transformOrigin = '';
-                                        }, 360);
-                                    }, pushDelay + 170);
+                                            targetImg.style.transition = 'transform 0.34s ease-out';
+                                            targetImg.style.transform = '';
+                                            targetImg._hurtActive = false;
+                                            if (targetImg._idleSrc) {
+                                                targetImg.src = targetImg._idleSrc;
+                                                targetImg.style.width = targetImg._armedIdleW || '';
+                                                targetImg.style.height = targetImg._armedIdleH || '';
+                                            }
+                                            setTimeout(() => {
+                                                targetImg.style.transition = '';
+                                                targetImg.style.transformOrigin = '';
+                                            }, 360);
+                                        }, 170);
+                                    }, pushDelay);
                                 }
                             }
 
@@ -28350,7 +28674,11 @@
                         const x = tp.x;
                         const groundY = (_fighterGroundY[target] ?? getCharacterFeetY(target)) - 4;
                         const isMiss = power.includes('miss');
-                        const headY = Math.max(60, groundY - 258);
+                        const targetRect = game[target]?.element?.getBoundingClientRect();
+                        const arenaRect = arena.getBoundingClientRect();
+                        const headY = targetRect
+                            ? Math.max(42, targetRect.top - arenaRect.top + targetRect.height * 0.22)
+                            : Math.max(60, groundY - 210);
                         const impactY = isMiss ? groundY : headY;
                         const col = document.createElement('div');
                         col.className = 'fp-wind-column';
@@ -38082,6 +38410,7 @@
 
         // Init battle skill tooltip hover
         initSkillTooltipListeners();
+        initStatInfoListeners();
 
         // Initialize inventory on page load
         populateInventoryPanel();
