@@ -94,14 +94,16 @@ ROW 2:
 ROW 3:
 11. DEATH WISH — chibi grim reaper skull (cute, not scary) with big empty
     eye-sockets glowing soft red, tiny scythe blade peeking behind.
-12. HEMORRHAGE — fountain of stylized blood-drops bursting upward, splash pool
-    at the bottom of the cell.
+12. DEEP WOUND — cute torn red bandage wrapped around a chunky cartoon slash
+    mark, glowing crimson cut line in the center, a few tiny red droplets, not
+    scary or realistic.
 13. REND — three parallel curved claw-scratch marks slashing across a torn
     cartoon banner.
 14. RUPTURE — cartoon explosion starburst with concentric shockwave rings,
     comic-style POW vibe but no text.
-15. PREDATOR — cute fanged wolf head silhouette in 3/4 profile, single glowing
-    yellow eye, prowling intent but cuddly proportions.
+15. MARKED PREY — bright target reticle stamped over a small cracked shield
+    and warning tag, glowing red focus ring, clear "marked target" feeling with
+    no text or letters.
 
 Render at high resolution, sharp painterly brushwork, every cell distinct yet
 visually unified.
