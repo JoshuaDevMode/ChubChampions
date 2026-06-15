@@ -1,0 +1,188 @@
+ChubChampions - Solana Marketplace Escrow Deploy Notes
+
+Objetivo
+--------
+Activar el smart contract escrow Solana para marketplace usando SOL y USDC.
+El frontend y backend ya estan cableados para usar el programa cuando el backend tenga
+MARKETPLACE_ESCROW_PROGRAM_SOLANA configurado.
+
+
+1. Resolver Anchor build
+------------------------
+El contrato compila con:
+
+  cargo check -p marketplace-escrow
+
+Pero para deploy se necesita generar el build SBF con Anchor:
+
+  cd C:\Users\joshu\OneDrive\Escritorio\ChubChampions\contracts\solana-aon
+  anchor build --program-name marketplace_escrow
+
+Si Windows falla por permisos de symlink/platform-tools:
+
+  Opcion A:
+  - Abrir PowerShell como Administrador.
+  - Ejecutar:
+      anchor build --program-name marketplace_escrow
+
+  Opcion B:
+  - Usar WSL/Linux.
+  - Instalar Solana CLI, Rust y Anchor.
+  - Ejecutar el mismo build desde contracts/solana-aon.
+
+
+2. Deploy del programa Solana
+-----------------------------
+Cuando anchor build funcione:
+
+  anchor deploy --program-name marketplace_escrow --provider.cluster devnet
+
+Luego tomar el program id real generado/desplegado.
+
+Actualizar:
+
+  contracts/solana-aon/Anchor.toml
+  contracts/solana-aon/programs/marketplace-escrow/src/lib.rs
+
+Si hace falta sincronizar IDs:
+
+  anchor keys sync
+
+Volver a correr:
+
+  anchor build --program-name marketplace_escrow
+
+
+3. Inicializar config del programa
+----------------------------------
+El programa necesita una config PDA con:
+
+  release_authority = wallet/backend que libera pagos
+  fee_recipient = wallet que recibe el fee del 4%
+
+Hay que ejecutar la instruccion initialize del programa marketplace_escrow.
+
+Parametros:
+
+  initialize(release_authority, fee_recipient)
+
+Notas:
+
+  - release_authority debe corresponder al private key configurado en backend:
+      MARKETPLACE_ESCROW_RELEASE_PRIVATE_KEY_SOLANA
+
+  - fee_recipient debe ser:
+      MARKETPLACE_ESCROW_FEE_RECIPIENT_SOLANA
+
+
+4. Env vars necesarias
+----------------------
+Backend:
+
+  MARKETPLACE_ESCROW_PROGRAM_SOLANA=<program id real del escrow Solana>
+  MARKETPLACE_ESCROW_RELEASE_PRIVATE_KEY_SOLANA=<keypair base58 o JSON array>
+  MARKETPLACE_ESCROW_FEE_RECIPIENT_SOLANA=<wallet fee recipient Solana>
+  USDC_MINT_SOLANA=<mint de USDC en la red usada>
+
+Monad:
+
+  MARKETPLACE_ESCROW_CONTRACT_MONAD=<escrow contract Monad>
+  MARKETPLACE_ESCROW_RELEASE_PRIVATE_KEY=<private key release authority EVM>
+  MARKETPLACE_ESCROW_SIGNER_PRIVATE_KEY=<private key signer EIP-712>
+  USDC_TOKEN_MONAD=<USDC token address en Monad>
+
+Opcionales / legacy:
+
+  MARKETPLACE_ESCROW_WALLET_SOLANA=<wallet legacy para transfer directo>
+  MARKETPLACE_ESCROW_USDC_ACCOUNT_SOLANA=<ATA legacy para USDC>
+
+Cuando MARKETPLACE_ESCROW_PROGRAM_SOLANA esta configurado, el flujo Solana usa smart contract escrow.
+
+
+5. Pruebas end-to-end devnet
+----------------------------
+Probar SOL:
+
+  1. Crear listing con SOL.
+  2. Comprar desde otra wallet.
+  3. Confirmar que el frontend llama lock_native.
+  4. Confirmar que se crea PDA escrow.
+  5. Confirmar que backend verifica:
+       buyer
+       seller
+       amount
+       mint = default pubkey
+       state = Locked
+  6. Confirmar transferencia del personaje.
+  7. Confirmar release_native:
+       seller recibe 96%
+       fee_recipient recibe 4%
+
+Probar USDC SOL:
+
+  1. Crear listing con USDC SOL.
+  2. Comprar desde otra wallet con USDC.
+  3. Confirmar que el frontend llama lock_token.
+  4. Confirmar que se crea vault token account.
+  5. Confirmar que backend verifica:
+       buyer
+       seller
+       amount
+       mint = USDC_MINT_SOLANA
+       state = Locked
+  6. Confirmar transferencia del personaje.
+  7. Confirmar release_token:
+       seller recibe 96%
+       fee_recipient recibe 4%
+
+Probar USDC MON:
+
+  1. Crear listing con USDC MON.
+  2. Comprar desde wallet EVM.
+  3. Confirmar approve + lockToken en Monad.
+  4. Confirmar PaymentLocked.
+  5. Confirmar transferencia del personaje.
+  6. Confirmar release del escrow EVM.
+
+
+6. Auditoria de edge cases
+--------------------------
+Antes de mainnet, probar:
+
+  - Intent expirado no debe completar compra.
+  - Reuso de tx hash debe fallar.
+  - Buyer no puede comprar su propio listing.
+  - Listing cancelado no debe aceptar pago.
+  - Listing ya vendido no debe aceptar segundo pago.
+  - Wallet buyer distinta debe fallar.
+  - Seller wallet distinta debe fallar.
+  - USDC wrong mint debe fallar.
+  - USDC wrong chain debe fallar.
+  - Amount menor al precio debe fallar.
+  - Refund despues de refund_after debe funcionar.
+  - Refund antes de refund_after debe fallar.
+  - Release con authority incorrecta debe fallar.
+  - Fee debe ser 4%.
+  - Seller debe recibir 96%.
+
+
+7. Estado actual
+----------------
+Ya hecho:
+
+  - Contrato Anchor marketplace_escrow creado.
+  - lock_native / lock_token implementados.
+  - release_native / release_token implementados.
+  - refund_native / refund_token implementados.
+  - Backend verifica escrow Solana leyendo PDA.
+  - Backend libera escrow Solana automaticamente.
+  - Frontend llama instrucciones Anchor manuales para SOL/USDC.
+  - USDC Monad soportado por el escrow EVM.
+
+Pendiente:
+
+  - Resolver anchor build en entorno con permisos correctos.
+  - Deploy devnet.
+  - Inicializar config.
+  - Configurar env vars.
+  - Correr pruebas end-to-end.

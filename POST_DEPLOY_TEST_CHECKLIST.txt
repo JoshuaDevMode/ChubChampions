@@ -1,0 +1,165 @@
+CHUBCHAMPIONS - POST DEPLOY TEST CHECKLIST
+
+Prerequisite:
+- Supabase migration already executed:
+  ALTER TABLE aon_matches
+    ADD COLUMN IF NOT EXISTS resolved_seed bigint,
+    ADD COLUMN IF NOT EXISTS p1_snapshot jsonb,
+    ADD COLUMN IF NOT EXISTS p2_snapshot jsonb,
+    ADD COLUMN IF NOT EXISTS battle_result jsonb;
+
+1) Verify deployments
+
+- In Vercel, confirm frontend deploy is successful.
+- In Vercel, confirm backend deploy is successful.
+- If Vercel shows:
+  "There was a permanent problem cloning the repo... HTTP 500"
+  click Redeploy. This is usually a temporary GitHub/Vercel clone issue.
+
+2) Frontend Vault access
+
+- Open the deployed game.
+- Go to Lobby.
+- Confirm the old top nav VAULT button is gone.
+- Click the + button next to coins in the top-right currency bar.
+- Expected:
+  - CHUB VAULT panel opens.
+  - Shop does not open from the coins + button.
+- Also check:
+  - fragments + still opens Forge/chest flow.
+  - crystals + still opens Shop.
+
+3) PvE Battle Instinct learning
+
+- Start a normal battle vs CPU.
+- Finish the battle.
+- Expected:
+  - Battle Instinct can increase.
+  - Increase should be smaller than PvP because PvE uses 50% learning.
+  - If the battle is a true draw by equal final HP, expected:
+    - result is saved as draw.
+    - EXP is 20% of a normal win.
+    - Q-table/adaptability gain is 20%.
+    - no chest, no coins, no win-streak increase, no ranking.
+- In Vercel backend logs, look for:
+  [battle/run] learning controllers player=human cpu=cpu qMultPlayer=0.5 qMultCpu=0 bpMultPlayer=0.5 bpMultCpu=0
+  [battle/run] QL-stats
+- Expected meaning:
+  - player learns at 0.5x
+  - true CPU does not learn
+
+4) PvP with a friend
+
+- Have another user join with a different account/wallet.
+- Both players select characters.
+- Run normal PvP matchmaking.
+- Finish the battle.
+- Expected:
+  - both players receive rewards.
+  - both players' Battle Instinct updates after the result.
+  - after refresh, both characters keep the new adaptability/Q-table from Supabase.
+- In Vercel backend logs, look for:
+  [matchmaking/join] PvP run ... controllers=human/human learning=1/1
+  [matchmaking/join] PvP Q persisted ... p2Q=true ... p1Q=true
+- Expected meaning:
+  - both fighters are treated as human controllers.
+  - both sides persisted Q-learning.
+
+5) AoN replay snapshot
+
+- Open an AoN replay once.
+- In Vercel backend logs, look for one of:
+  [aon/replay] Created battle snapshot ...
+  [aon/replay] Using stored snapshot ...
+- Expected:
+  - first replay creates the snapshot.
+  - later replays use the stored snapshot.
+- Open the same replay again.
+- Expected:
+  - same winner, turns, events, and HP result.
+  - logs should say "Using stored snapshot".
+
+6) AoN PvP series accept flow
+
+- Create an AoN PvP challenge.
+- Have another user accept it.
+- Expected:
+  - only Best of 3 is available.
+  - series resolves when one player reaches 2 wins.
+  - both players get correct result/payout.
+  - Q-learning/adaptability is persisted for both characters if there is a winner.
+  - learning/adaptability scale depends on wager:
+    - 10-24 CHUB: 25%
+    - 25-49 CHUB: 40%
+    - 50-99 CHUB: 65%
+    - 100+ CHUB: 100%
+  - EXP is unchanged by wager amount.
+- If a round is a draw:
+  - it does not add a point to either player.
+  - up to 2 extra rounds can be played.
+- If nobody reaches 2 wins after max 5 rounds:
+  - match status becomes refunded.
+  - both wagers are returned.
+  - no Q-table/adaptability, EXP, ranking, chest, or win/loss result is persisted.
+- In Vercel backend logs, look for:
+  [aon/accept] Series run ... controllers=human/human qMult=... bpMult=... entryFee=...
+  [aon/accept] Series result ... qSaved=true
+  or, for refund:
+  [aon/accept] Series result ... winner=draw/refund ... qSaved=false
+
+7) Level 100 Q-learning cap
+
+- Use or inspect a level 100 character after battle.
+- Expected:
+  - no more BP/adaptability growth is saved.
+  - Q-table can still update at 10% of the normal route multiplier.
+  - This should be reversible later if the design changes, because stats/BP are not raised past level cap.
+
+8) Supabase spot checks
+
+Use Supabase Table Editor or SQL Editor.
+
+Check AoN snapshot fields:
+  SELECT id, resolved_seed, p1_snapshot IS NOT NULL AS has_p1_snapshot,
+         p2_snapshot IS NOT NULL AS has_p2_snapshot,
+         battle_result IS NOT NULL AS has_battle_result
+  FROM aon_matches
+  ORDER BY created_at DESC
+  LIMIT 10;
+
+Expected:
+- resolved_seed is filled after replay/accept flow.
+- snapshots and battle_result become true after the flow creates them.
+
+Check character learning fields:
+  SELECT id, name, adaptability, jsonb_object_length(q_table) AS q_states
+  FROM characters
+  ORDER BY updated_at DESC
+  LIMIT 10;
+
+Expected:
+- adaptability changes after battles.
+- q_states should be greater than 0 for trained characters.
+
+9) If something looks wrong
+
+- If PvE works but PvP does not update Battle Instinct:
+  check backend logs for "PvP Q persisted".
+
+- If AoN replay changes between views:
+  check whether battle_result exists in aon_matches.
+
+- If backend deploy fails after this change:
+  confirm the Supabase migration was executed before deploy.
+
+- If frontend Vault button behavior is wrong:
+  verify the deployed frontend commit includes:
+  "Move vault access to coins button".
+
+- If AoN still shows Best of 5:
+  verify frontend commit includes:
+  "Limit AoN challenges to best of 3".
+
+- If low-stake AoN learns as fast as high-stake AoN:
+  verify backend commit includes:
+  "Scale AoN learning and handle draw rewards".

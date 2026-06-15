@@ -1,0 +1,306 @@
+================================================================================
+ CHUBCHAMPIONS — SKILL TREE ICON GENERATION PROMPTS
+================================================================================
+
+Three prompts for generating sprite-sheet images of skill icons matching the
+ChubChampions UI style (whimsical, hand-painted mobile RPG icons — Supercell /
+Cookie Run / Pet Simulator vibe).
+
+WORKFLOW:
+  1. Pick an image AI (Midjourney v6/v7 recommended; Flux 1.1 Pro also great;
+     DALL-E 3 works for smaller grids).
+  2. For each tree, paste the STYLE BLOCK (below) followed by that tree's
+     prompt. They are designed to be combined — the STYLE BLOCK is identical
+     across all three so the three sprite sheets feel like one set.
+  3. Generate at the recommended resolution.
+  4. Crop into individual cells, save as
+     attack_<id>.png / defense_<id>.png / alchemist_<id>.png.
+
+================================================================================
+ STYLE BLOCK — paste this identically at the top of EACH of the three prompts
+================================================================================
+
+STYLE — apply identically to every cell:
+- Whimsical mobile RPG icon style: cute, painterly, hand-shaded cartoon — think
+  Supercell, Cookie Run Kingdom, Pet Simulator, Kingdom Rush, Disney Magical
+  World.
+- Each subject is a chunky 3D-looking object/creature with a bold black outline
+  (~1.5px), simplified bouncy proportions, and visible painterly brush shading
+  (not flat vector, not photoreal).
+- Lighting is consistent across all cells: warm rim-light from upper-left, soft
+  shadow on lower-right, faint bottom contact-shadow.
+- Subject is centered, fills ~80% of the cell, slightly angled (not flat
+  front-facing) to feel dimensional.
+- Per-cell background: soft warm cream-to-pale-peach radial gradient
+  (#fdf2dc -> #f0d9b0), subtle inner glow tinted with the tree's accent color.
+- Each cell has a 1px hairline frame in warm brown (#8b6f47) separating it from
+  neighbors — clean grid, no bleeding between cells.
+- Highlights are bright but not blown out; whites and pale tints to give pop.
+  Local colors are saturated but cheerful.
+
+LAYOUT:
+- Single image, perfect uniform grid, all cells identical square aspect.
+- Read order: top-to-bottom, left-to-right (English reading order).
+- No labels, no text, no numbers, no watermarks, no signatures — visuals only.
+
+NEGATIVE / AVOID:
+- No dark fantasy, no Diablo, no horror, no realistic photography, no anime.
+- No human faces in close-up realism (chibi/cartoon faces OK, profile
+  silhouettes OK).
+- No gore, no scary imagery — keep it cute even for "death" themed icons
+  (chibi reaper, sparkle skull, etc.).
+- No drift in style between cells; every icon must clearly belong to the same
+  set.
+
+================================================================================
+ PROMPT 1 — ATTACK TREE (5 columns x 3 rows = 15 icons, ~2048x1228)
+================================================================================
+
+A sprite sheet of 15 cute mobile RPG game icons in a 5-column x 3-row grid
+(5:3 aspect ratio, target resolution ~2048x1228).
+
+[paste STYLE BLOCK here]
+
+ACCENT COLOR for this sheet: warm crimson red with orange-gold highlights,
+ember sparkles. Cell background stays cream but with a subtle warm-red inner
+glow.
+
+ICON LIST (left to right, top to bottom):
+
+ROW 1:
+1. POWER STRIKE — cute chunky armored fist mid-punch, golden starburst behind
+   it, a few star sparkles popping out.
+2. HEAVY BLOW — oversized cartoon warhammer with chunky wooden handle, head
+   slamming down with cartoon impact stars and dust puff.
+3. GAZE — single big focused cartoon eye with bright iris and crosshair pupil,
+   soft sparkle in the corner.
+4. CRUSHER — cute clenched gauntleted fist crushing a tiny dented shield,
+   little metal flakes flying off.
+5. BERSERKER — chibi warrior face front-view with horned helmet, red round
+   cheeks, steam puffs above the head, fierce grin.
+
+ROW 2:
+6. BLEED — three plump stylized red blood-drops falling, glossy white highlight
+   on each.
+7. EXPOSE — cute cracked round shield with a glowing red zigzag fissure across
+   it, tiny X mark.
+8. SHATTER — chunky armor pauldron exploding into geometric shards mid-air,
+   red impact flash.
+9. EXECUTE — small cartoon dagger plunging into a stone tile, red glow on the
+   blade.
+10. BLOODRAGE — pair of plump cartoon vampire fangs floating, single red drop
+    hanging, tiny sparkle.
+
+ROW 3:
+11. DEATH WISH — chibi grim reaper skull (cute, not scary) with big empty
+    eye-sockets glowing soft red, tiny scythe blade peeking behind.
+12. HEMORRHAGE — fountain of stylized blood-drops bursting upward, splash pool
+    at the bottom of the cell.
+13. REND — three parallel curved claw-scratch marks slashing across a torn
+    cartoon banner.
+14. RUPTURE — cartoon explosion starburst with concentric shockwave rings,
+    comic-style POW vibe but no text.
+15. PREDATOR — cute fanged wolf head silhouette in 3/4 profile, single glowing
+    yellow eye, prowling intent but cuddly proportions.
+
+Render at high resolution, sharp painterly brushwork, every cell distinct yet
+visually unified.
+
+================================================================================
+ PROMPT 2 — DEFENSE TREE (6 columns x 4 rows = 24 cells, 22 icons + 2 fillers,
+            ~2400x1600)
+================================================================================
+
+A sprite sheet of 22 cute mobile RPG game icons + 2 filler emblems, in a
+6-column x 4-row grid (3:2 aspect ratio, target resolution ~2400x1600).
+
+[paste STYLE BLOCK here]
+
+ACCENT COLOR for this sheet: cool sky blue with silver highlights and soft cyan
+glow. Cell background stays cream but with a subtle blue inner glow.
+
+ICON LIST (left to right, top to bottom):
+
+ROW 1:
+1. IRON HIDE — chunky cute steel breastplate front-view, layered shoulder
+   plates, riveted, blue rim-light catching on the edges.
+2. FORTIFY — chibi castle wall block with crenellated battlements, weathered
+   stones, cute proportions.
+3. SHIELD MASTERY — heroic round shield with golden cross emblem, wooden trim,
+   raised proudly.
+4. VITALITY — plump cartoon heart shape, glossy red, a soft blue heartbeat
+   pulse line through it.
+5. BULWARK — massive towering kite shield embedded vertically into the ground,
+   ornate trim.
+6. COUNTER — two cute cartoon swords crossed mid-parry, single bright sparkle
+   at the contact point.
+
+ROW 2:
+7. BASH — round shield slamming forward, comic-style motion lines streaking
+   from the rim, tiny stars.
+8. BASTION — heraldic crest with a chibi castle tower silhouette, two tiny
+   banners on the sides.
+9. REGENERATION — bright green leaf with a sparkle, soft green glow around it.
+10. LIFESTEAL — cute cartoon heart with a translucent essence-stream curling
+    into it, tiny droplets.
+11. UNBREAKABLE — perfectly cut blue diamond gem floating, faceted, light
+    refraction sparkles.
+12. THORNS — wreath of curved iron thorns forming a circular crown, sharp tips
+    outward, dark green leaves.
+
+ROW 3:
+13. RIPOSTE — slim cute rapier blade flashing diagonally, single bright
+    slice-trail behind it.
+14. COUNTER STRIKE — chunky longsword cleaving downward in an arc, blue energy
+    trail.
+15. AEGIS — radiant cartoon shield emanating golden-white holy light, tiny
+    rune marks on the rim.
+16. RETALIATION — concussive shockwave bursting outward in concentric rings,
+    blue energy bursts.
+17. PHALANX — three small interlocked shields in a tight formation, viewed
+    from front.
+18. GUARDIAN STANCE — chibi knight in profile, low crouched defensive pose,
+    big shield raised, determined face.
+
+ROW 4:
+19. SECOND WIND — stylized phoenix-feather upward gust in pale blue and white,
+    swooping curve.
+20. ENDURANCE — chibi muscly arm flexed with gritted-teeth determined face
+    peeking, tiny sweat drop.
+21. VAMPIRIC — cute cartoon bat silhouette with wings spread, single red
+    eye-pinpoint, tiny fangs.
+22. SANGUINE WARD — circular protective rune scroll, red painted sigil glowing
+    softly, parchment edges.
+23. (FILLER) decorative defensive heraldic crest — small chibi tower icon
+    centered, simple shield frame.
+24. (FILLER) decorative defensive heraldic crest — two crossed mini-shields
+    centered, simple frame.
+
+Render at high resolution, sharp painterly brushwork, every cell distinct yet
+visually unified.
+
+================================================================================
+ PROMPT 3 — ALCHEMIST TREE (5 columns x 3 rows = 15 icons, ~2048x1228)
+================================================================================
+
+A sprite sheet of 15 cute mobile RPG game icons in a 5-column x 3-row grid
+(5:3 aspect ratio, target resolution ~2048x1228).
+
+[paste STYLE BLOCK here]
+
+ACCENT COLOR for this sheet: vibrant emerald green with chartreuse highlights,
+gentle bioluminescent glow. Cell background stays cream but with a subtle
+green inner glow.
+
+ICON LIST (left to right, top to bottom):
+
+ROW 1:
+1. BREW MASTER — chunky cartoon black-iron cauldron with three legs, bubbling
+   glowing green liquid, wisps of vapor.
+2. POTENCY — round potion flask with brilliant glowing green liquid inside,
+   cork on top, single bubble rising.
+3. DURATION — antique brass hourglass with green sparkly sand pouring slowly,
+   thin glow stream.
+4. AMPLIFY — potion vial bursting outward with green starlight and shards,
+   comic explosion vibe.
+5. QUICK DOSE — angled flask mid-pour, fast streaks of green liquid frozen
+   mid-motion, tiny droplets.
+
+ROW 2:
+6. EXTENDED — long luminous green stream with a comet-tail effect stretching
+   diagonally across cell.
+7. COMPOUND — three small potion vials stacked in a triangle pyramid, all
+   glowing green, shared sparkle.
+8. MIXOLOGY — two streams of green and amber liquid splashing together mid-air,
+   swirling vortex.
+9. RESERVOIR — leather alchemist bandolier strap with six tiny vials in a row,
+   all glowing softly.
+10. RAPID REFLEX — chibi gloved hand caught mid-flick of a vial, fast comic
+    motion lines.
+
+ROW 3:
+11. STIM PACK — cartoon medical syringe with bright green serum, single
+    highlight droplet at the tip.
+12. ETERNITY — green ouroboros snake biting its own tail, glowing faintly,
+    infinity-shape coiled.
+13. CATALYST — bright green comet streaking diagonally across cell, sparkle
+    trail of small stars.
+14. STACK MASTER — stack of three ancient leather-bound spellbooks, green
+    runes etched on spines, tiny glow.
+15. SYNTHESIS — stylized molecular structure with five glowing green nodes
+    connected by bonds, alchemy circuit.
+
+Render at high resolution, sharp painterly brushwork, every cell distinct yet
+visually unified.
+
+================================================================================
+ TROUBLESHOOTING TIPS
+================================================================================
+
+1. If the AI inserts text, labels, or numbers into the icons:
+   - Midjourney: append "--no text --no labels --no captions" to the prompt.
+   - DALL-E 3 / ChatGPT image: add at the bottom "absolutely no text, letters,
+     or numbers anywhere in the image".
+   - Flux: include "clean iconography, no typography, no written language" in
+     the negative prompt.
+
+2. If the cells visually bleed into each other or subjects span multiple cells:
+   - Add: "each cell is visually isolated by a clear 1px hairline border,
+     strict grid separation, every subject is contained inside its own cell,
+     no overlap between cells".
+
+3. If the bold black outline does not appear:
+   - Reinforce: "every subject has a strong 1-2px black ink outline matching
+     Cookie Run Kingdom and Disney Magical World icon style".
+
+4. If colors are too muted or dark:
+   - Add: "bright cheerful palette, saturated local colors, soft warm
+     cream-cream-peach cell backgrounds, family-friendly mobile game look".
+
+5. Coherence test before generating the full sheet:
+   - Ask the AI to first generate a 2x2 sub-grid with 4 representative icons
+     (e.g. Power Strike, Vitality, Brew Master, plus one more) using the same
+     STYLE block. Verify the outline thickness, shading direction, color
+     temperature, and background texture are right.
+   - Once satisfied, scale up to the full grid for that tree.
+
+6. Final asset workflow after generation:
+   - Open the sprite sheet in any image editor (Photoshop, GIMP, Photopea web).
+   - Slice into individual cells (the visible 1px hairline frame helps mark
+     the cuts).
+   - Save each as PNG named:
+       attack_power_strike.png  ... attack_predator.png        (15 files)
+       defense_iron_hide.png    ... defense_sanguine_ward.png  (22 files)
+       alchemist_brew_master.png ... alchemist_synthesis.png   (15 files)
+   - Drop them into Assets/UI/skill-icons/ in the ChubChampions repo.
+   - Ask Claude to swap SKILL_ICONS in index.html from emojis to <img> tags
+     pointing at the new files. ~20-line edit.
+
+================================================================================
+ NODE INVENTORY (full canonical list — 52 nodes total)
+================================================================================
+
+ATTACK (15):
+  attack_power_strike, attack_heavy_blow, attack_gaze, attack_crusher,
+  attack_berserker, attack_bleed, attack_expose, attack_shatter,
+  attack_execute, attack_bloodrage, attack_death_wish, attack_hemorrhage,
+  attack_rend, attack_rupture, attack_predator
+
+DEFENSE (22):
+  defense_iron_hide, defense_fortify, defense_shield_mastery, defense_vitality,
+  defense_bulwark, defense_counter, defense_bash, defense_bastion,
+  defense_regeneration, defense_lifesteal, defense_unbreakable, defense_thorns,
+  defense_riposte, defense_counter_strike, defense_aegis, defense_retaliation,
+  defense_phalanx, defense_guardian_stance, defense_second_wind,
+  defense_endurance, defense_vampiric, defense_sanguine_ward
+
+ALCHEMIST (15):
+  alchemist_brew_master, alchemist_potency, alchemist_duration,
+  alchemist_amplify, alchemist_quick_dose, alchemist_extended,
+  alchemist_compound, alchemist_mixology, alchemist_reservoir,
+  alchemist_rapid_reflex, alchemist_stim_pack, alchemist_eternity,
+  alchemist_catalyst, alchemist_stack_master, alchemist_synthesis
+
+================================================================================
+ END OF FILE
+================================================================================
