@@ -15675,7 +15675,7 @@
         /* Win Rate side widget: keep equal margin on every side of the iron
            frame, so it doesn't lean against the panel's divider line. */
         .main-menu .stats-top-row {
-            --stats-top-row-height: 124px;
+            --stats-top-row-height: 92px;
             height: var(--stats-top-row-height) !important;
             min-height: var(--stats-top-row-height) !important;
             max-height: var(--stats-top-row-height) !important;
@@ -15692,7 +15692,7 @@
             /* Larger left padding compensates for the divider sitting closer
                than the panel's own right edge — without it the box reads as
                shifted left even though it's centered in the column */
-            padding: 8px 8px 8px 18px !important;
+            padding: 4px 7px 4px 14px !important;
             align-items: stretch !important;
             justify-content: center !important;
         }
@@ -15700,18 +15700,28 @@
         .main-menu .stats-side-ext.stats-side-right {
             width: 100% !important;
             min-width: 0 !important;
-            padding: 6px 6px !important;
-            border-width: 12px !important;
-            border-image-width: 12px !important;
+            padding: 4px 5px !important;
+            border-width: 10px !important;
+            border-image-width: 10px !important;
             align-items: center !important;
             justify-content: center !important;
             margin: 0 auto !important;
             height: 100% !important;
             box-sizing: border-box !important;
         }
+        .main-menu #winrate-side-ext > span:first-child {
+            font-size: 8px !important;
+            line-height: 1 !important;
+        }
         .main-menu #winrate-side-ext svg {
-            width: 64px !important;
-            height: 64px !important;
+            width: 48px !important;
+            height: 48px !important;
+            margin: -1px 0 !important;
+        }
+        .main-menu #winrate-side-ext > span:last-child {
+            font-size: 8px !important;
+            line-height: 1.05 !important;
+            gap: 8px !important;
         }
 
         /* Pull left column (Forge / Equipment / Consumables) up so the
