@@ -8253,6 +8253,87 @@
         }
         .inventory-weapon-card[draggable="true"] { cursor: grab; }
         .inventory-weapon-card.inv-dragging { opacity: 0.3 !important; transform: none !important; cursor: grabbing; }
+
+        .inventory-pets-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+        }
+        .inventory-pet-card {
+            background: rgba(255,248,225,0.62);
+            border: 2px solid rgba(120,80,30,0.32);
+            border-radius: 12px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            gap: 10px;
+            align-items: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+        }
+        .inventory-pet-card.active {
+            border-color: #b45309;
+            background: linear-gradient(180deg, rgba(254,243,199,0.85), rgba(251,191,36,0.18));
+        }
+        .inventory-pet-card img {
+            width: 70px;
+            height: 62px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
+        }
+        .inventory-pet-info {
+            min-width: 0;
+            font-family: 'Fredoka', sans-serif;
+            color: #2b1a0e;
+        }
+        .inventory-pet-name {
+            font-weight: 900;
+            font-size: 0.95em;
+            line-height: 1.05;
+        }
+        .inventory-pet-role {
+            color: #6b4820;
+            font-size: 0.72em;
+            font-weight: 800;
+            margin: 2px 0 6px;
+        }
+        .inventory-pet-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 4px;
+            font-size: 0.72em;
+            font-weight: 800;
+        }
+        .inventory-pet-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            margin-top: 2px;
+        }
+        .inventory-pet-actions button,
+        .inventory-pet-actions select {
+            height: 28px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .inventory-pet-actions select {
+            background: #fff7df;
+            max-width: 130px;
+        }
+        .inventory-pet-adopt {
+            border-style: dashed;
+            opacity: 0.88;
+        }
         .inv-equipment-slot[draggable="true"] { cursor: grab; }
         .inv-equipment-slot.inv-dragging { opacity: 0.3; cursor: grabbing; }
         .inv-equipment-slot.inv-drop-over {
@@ -13850,7 +13931,7 @@
         .main-menu .menu-character-section {
             position: absolute !important;
             left: 50% !important;
-            top: 134px !important;
+            top: 200px !important;
             transform: translateX(-50%) !important;
             margin: 0 !important;
             grid-area: unset !important;
@@ -15444,7 +15525,7 @@
 
         /* ── Smooth movement of the character between lobby ↔ care/inventory ── */
         .main-menu:not(.inventory-mode):not(.care-mode) .menu-character-section {
-            top: 148px !important;
+            top: 200px !important;
         }
         .main-menu .menu-character-section {
             transition: top 0.4s ease, transform 0.4s ease !important;
@@ -16376,6 +16457,7 @@
             <div class="inv-filter-tabs">
                 <button class="inv-filter-tab active" data-filter="weapons">⚔️ Weapons</button>
                 <button class="inv-filter-tab" data-filter="consumables">🍎 Consumables</button>
+                <button class="inv-filter-tab" data-filter="pets">Pets</button>
             </div>
             <!-- Weapons Grid (default visible) -->
             <div class="inventory-weapons-grid" id="inventory-weapons-grid">
@@ -16384,6 +16466,10 @@
             <!-- Consumables Grid (hidden by default) -->
             <div class="inventory-consumables-grid" id="inventory-consumables-grid" style="display:none;">
                 <!-- Consumable cards populated by JS -->
+            </div>
+            <!-- Pets Grid (hidden by default) -->
+            <div class="inventory-pets-grid" id="inventory-pets-grid" style="display:none;">
+                <!-- Pet cards populated by JS -->
             </div>
         </div>
     </div>
@@ -25896,13 +25982,82 @@
             showNotice(character.pet.name + ' trained.');
         }
 
+        async function petInventoryAction(petId, action, value) {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            normalizeClientPetCollection(character);
+            if (petId && character.activePetId !== petId) await setActivePet(petId);
+            if (action === 'tactic') await setPetTactic(value);
+            if (action === 'heal') await healPet();
+            if (action === 'train') await trainPet();
+            renderInventoryPets();
+        }
+
+        function renderInventoryPets() {
+            const grid = document.getElementById('inventory-pets-grid');
+            if (!grid) return;
+            const character = getSelectedCharacter();
+            grid.innerHTML = '';
+            if (!character) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#7a5a35;font-family:\'Fredoka\',sans-serif;font-weight:800;padding:20px;">Select a fighter first.</div>';
+                return;
+            }
+
+            const { pets, activePet } = normalizeClientPetCollection(character);
+            pets.forEach(pet => {
+                const def = PET_DEFS[pet.species];
+                const nextXp = getPetExpForNextLevel(pet.level);
+                const xpText = pet.level >= 20 ? 'MAX' : `${pet.xp}/${nextXp}`;
+                const isActive = activePet && pet.id === activePet.id;
+                const card = document.createElement('div');
+                card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
+                card.innerHTML = `
+                    <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                    <div class="inventory-pet-info">
+                        <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
+                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · ACTIVE' : ''}</div>
+                        <div class="inventory-pet-stats">
+                            <span>HP ${pet.hp}/${pet.maxHp}</span>
+                            <span>XP ${xpText}</span>
+                            <span>${escapeHTML(PET_TACTICS[pet.tactic] || 'Balanced')}</span>
+                            <span>${escapeHTML(def.name)}</span>
+                        </div>
+                    </div>
+                    <div class="inventory-pet-actions">
+                        ${!isActive ? `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">ACTIVE</button>` : ''}
+                        <select data-pet-action="tactic" data-pet-id="${escapeHTML(pet.id)}">
+                            ${Object.entries(PET_TACTICS).map(([id, label]) => `<option value="${id}" ${pet.tactic === id ? 'selected' : ''}>${label}</option>`).join('')}
+                        </select>
+                        <button type="button" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">HEAL</button>
+                        <button type="button" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">TRAIN</button>
+                    </div>`;
+                grid.appendChild(card);
+            });
+
+            Object.entries(PET_DEFS).forEach(([species, def]) => {
+                const card = document.createElement('div');
+                card.className = 'inventory-pet-card inventory-pet-adopt';
+                card.innerHTML = `
+                    <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                    <div class="inventory-pet-info">
+                        <div class="inventory-pet-name">Adopt ${escapeHTML(def.name)}</div>
+                        <div class="inventory-pet-role">${escapeHTML(def.role)}</div>
+                    </div>
+                    <div class="inventory-pet-actions">
+                        <button type="button" data-pet-action="adopt" data-species="${species}">ADOPT</button>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+
         function renderPetPanel(character) {
             const panel = document.getElementById('menu-pet-panel');
             const lobbyPet = document.getElementById('menu-lobby-pet');
-            if (!panel) return;
-            if (!character) {
+            if (panel) {
                 panel.hidden = true;
                 panel.innerHTML = '';
+            }
+            if (!character) {
                 if (lobbyPet) {
                     lobbyPet.hidden = true;
                     lobbyPet.removeAttribute('src');
@@ -25917,70 +26072,15 @@
                     lobbyPet.hidden = true;
                     lobbyPet.removeAttribute('src');
                 }
-                panel.hidden = false;
-                panel.innerHTML = `
-                    <div class="pet-adopt-grid">
-                        ${Object.entries(PET_DEFS).map(([species, def]) => `
-                            <button class="pet-adopt-card" type="button" onclick="adoptPet('${species}')">
-                                <img src="${def.asset}" alt="${def.name}">
-                                <span>${def.name}<small>${def.role}</small></span>
-                            </button>
-                        `).join('')}
-                    </div>`;
                 return;
             }
 
             const def = PET_DEFS[pet.species];
-            const adoptGrid = `
-                <div class="pet-adopt-grid">
-                    ${Object.entries(PET_DEFS).map(([species, def]) => `
-                        <button class="pet-adopt-card" type="button" onclick="adoptPet('${species}')">
-                            <img src="${def.asset}" alt="${def.name}">
-                            <span>${def.name}<small>${def.role}</small></span>
-                        </button>
-                    `).join('')}
-                </div>`;
-            const roster = petCollection.pets.length > 1 ? `
-                <div class="pet-roster">
-                    ${petCollection.pets.map(p => {
-                        const pDef = PET_DEFS[p.species];
-                        return `<button class="pet-roster-btn ${p.id === pet.id ? 'active' : ''}" type="button" title="${escapeHTML(p.name)} LV ${p.level}" onclick="setActivePet(decodeURIComponent('${encodeURIComponent(p.id)}'))">
-                            <img src="${pDef.asset}" alt="${pDef.name}">
-                        </button>`;
-                    }).join('')}
-                </div>` : '';
             if (lobbyPet) {
                 lobbyPet.src = def.asset;
                 lobbyPet.alt = pet.name || def.name;
                 lobbyPet.hidden = false;
             }
-            const hpPct = pet.maxHp > 0 ? Math.round((pet.hp / pet.maxHp) * 100) : 0;
-            const nextXp = getPetExpForNextLevel(pet.level);
-            const xpPct = pet.level >= 20 ? 100 : Math.min(100, Math.round((pet.xp / nextXp) * 100));
-            panel.hidden = false;
-            panel.innerHTML = `
-                <div class="pet-summary">
-                    <img class="pet-portrait" src="${def.asset}" alt="${def.name}">
-                    <div>
-                        <div class="pet-name-row">
-                            <span>${pet.name.toUpperCase()} · LV ${pet.level}</span>
-                            <span class="pet-role">${def.role}</span>
-                        </div>
-                        <div class="pet-bars">
-                            <div class="pet-bar"><div class="pet-bar-fill" style="width:${hpPct}%"></div><span>HP ${pet.hp}/${pet.maxHp}</span></div>
-                            <div class="pet-bar pet-xp"><div class="pet-bar-fill" style="width:${xpPct}%"></div><span>${pet.level >= 20 ? 'MAX LEVEL' : `XP ${pet.xp}/${nextXp}`}</span></div>
-                        </div>
-                    </div>
-                    <div class="pet-actions">
-                        <select class="pet-tactic-select" onchange="setPetTactic(this.value)">
-                            ${Object.entries(PET_TACTICS).map(([id, label]) => `<option value="${id}" ${pet.tactic === id ? 'selected' : ''}>${label}</option>`).join('')}
-                        </select>
-                        <button class="pet-action-btn" type="button" onclick="healPet()">HEAL</button>
-                        <button class="pet-action-btn" type="button" onclick="trainPet()">TRAIN</button>
-                    </div>
-                    ${roster}
-                    ${adoptGrid}
-                </div>`;
         }
 
         function selectCharacter(id) {
@@ -38270,6 +38370,7 @@
                 `;
                 grid.appendChild(placeholder);
                 populateConsumableInventory();
+                renderInventoryPets();
                 return;
             }
 
@@ -38369,6 +38470,7 @@
 
             // Populate consumable section
             populateConsumableInventory();
+            renderInventoryPets();
         }
 
         function populateConsumableInventory() {
@@ -39457,6 +39559,7 @@
             document.querySelector('.inv-filter-tab[data-filter="weapons"]').classList.add('active');
             document.getElementById('inventory-weapons-grid').style.display = '';
             document.getElementById('inventory-consumables-grid').style.display = 'none';
+            document.getElementById('inventory-pets-grid').style.display = 'none';
             _syncInvSectionsToTab('weapons');
             document.getElementById('inventory-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('inventory-mode');
@@ -39586,8 +39689,33 @@
                 const filter = tab.dataset.filter;
                 document.getElementById('inventory-weapons-grid').style.display = filter === 'weapons' ? '' : 'none';
                 document.getElementById('inventory-consumables-grid').style.display = filter === 'consumables' ? 'grid' : 'none';
+                document.getElementById('inventory-pets-grid').style.display = filter === 'pets' ? 'grid' : 'none';
+                if (filter === 'pets') renderInventoryPets();
                 _syncInvSectionsToTab(filter);
             });
+        });
+
+        document.getElementById('inventory-pets-grid').addEventListener('click', async e => {
+            const btn = e.target.closest('button[data-pet-action]');
+            if (!btn) return;
+            const action = btn.dataset.petAction;
+            if (action === 'adopt') {
+                await adoptPet(btn.dataset.species);
+                renderInventoryPets();
+                return;
+            }
+            if (action === 'active') {
+                await setActivePet(btn.dataset.petId);
+                renderInventoryPets();
+                return;
+            }
+            await petInventoryAction(btn.dataset.petId, action);
+        });
+
+        document.getElementById('inventory-pets-grid').addEventListener('change', async e => {
+            const select = e.target.closest('select[data-pet-action="tactic"]');
+            if (!select) return;
+            await petInventoryAction(select.dataset.petId, 'tactic', select.value);
         });
 
         // PvP button handler (coming soon)
