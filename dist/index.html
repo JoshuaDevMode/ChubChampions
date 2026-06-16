@@ -18024,16 +18024,21 @@
 
             const dir = owner === 'player' ? 1 : -1;
             const targetDelta = getBattlePetAttackDelta(event, dir);
+            const attackDistance = Math.abs(targetDelta);
+            const attackDuration = Math.max(980, Math.min(1400, 780 + attackDistance * 0.9));
+            const midDelta = Math.round(targetDelta * 0.52);
+            const impactDelay = Math.round(attackDuration * 0.72);
             pet.el.classList.remove('defeated');
             pet.el.animate([
                 { transform: 'translate(0, 0) scale(1)' },
-                { transform: `translate(${-dir * 18}px, 0) scale(0.96)`, offset: 0.16 },
-                { transform: `translate(${targetDelta}px, -18px) scale(1.1)`, offset: 0.58 },
-                { transform: `translate(${targetDelta}px, -18px) scale(1.16)`, offset: 0.68 },
+                { transform: `translate(${-dir * 14}px, 0) scale(0.97)`, offset: 0.14 },
+                { transform: `translate(${midDelta}px, -8px) scale(1.04)`, offset: 0.43 },
+                { transform: `translate(${targetDelta}px, -14px) scale(1.09)`, offset: 0.72 },
+                { transform: `translate(${targetDelta}px, -14px) scale(1.15)`, offset: 0.8 },
                 { transform: 'translate(0, 0) scale(1)' },
-            ], { duration: 760, easing: 'cubic-bezier(.18,.82,.22,1)' });
+            ], { duration: attackDuration, easing: 'cubic-bezier(.22,.72,.24,1)' });
 
-            await sleep(500);
+            await sleep(impactDelay);
             if (event.targetType === 'pet') {
                 if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp);
                 showDamage(targetOwner, event.damage, false);
@@ -18043,7 +18048,7 @@
                 updateBothFighters();
                 showDamage(targetOwner, event.damage, false);
             }
-            await sleep(260);
+            await sleep(Math.max(220, attackDuration - impactDelay));
         }
 
         function getBattlePetAttackDelta(event, dir) {
