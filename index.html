@@ -15028,6 +15028,34 @@
             grid-column: 1 / -1;
             margin-top: 6px;
         }
+        .main-menu .pet-roster {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            grid-column: 1 / -1;
+        }
+        .main-menu .pet-roster-btn {
+            width: 42px;
+            height: 38px;
+            border: 2px solid rgba(92,54,20,0.45);
+            border-radius: 6px;
+            background: rgba(255,247,214,0.62);
+            padding: 2px;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .main-menu .pet-roster-btn.active {
+            border-color: #b45309;
+            background: rgba(251,191,36,0.38);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55);
+        }
+        .main-menu .pet-roster-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         .main-menu .pet-action-btn,
         .main-menu .pet-tactic-select {
             height: 28px;
@@ -18204,8 +18232,27 @@
             };
         }
 
+        function normalizeClientPetCollection(character) {
+            if (!character) return { pets: [], activePetId: null, activePet: null };
+            const byId = new Map();
+            const addPet = (raw) => {
+                const pet = normalizeClientPet(raw);
+                if (!pet) return;
+                const id = pet.id || ('pet_' + pet.species + '_' + (byId.size + 1));
+                byId.set(id, { ...pet, id });
+            };
+            if (Array.isArray(character.pets)) character.pets.forEach(addPet);
+            addPet(character.pet);
+            const pets = Array.from(byId.values()).slice(0, 12);
+            const activePet = (character.activePetId ? pets.find(p => p.id === character.activePetId) : null) || pets[0] || null;
+            character.pets = pets;
+            character.pet = activePet;
+            character.activePetId = activePet?.id || null;
+            return { pets, activePetId: character.activePetId, activePet };
+        }
+
         function petForBattle(character) {
-            const pet = normalizeClientPet(character?.pet);
+            const pet = normalizeClientPetCollection(character).activePet;
             if (!pet) return null;
             return {
                 id: pet.id,
@@ -22630,10 +22677,10 @@
                         c.weaponDurability = {};
                         needsSave = true;
                     }
-                    if (c.pet !== undefined) {
-                        const normalizedPet = normalizeClientPet(c.pet);
-                        if (JSON.stringify(c.pet) !== JSON.stringify(normalizedPet)) {
-                            c.pet = normalizedPet;
+                    if (c.pet !== undefined || Array.isArray(c.pets)) {
+                        const beforePets = JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId });
+                        normalizeClientPetCollection(c);
+                        if (JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId }) !== beforePets) {
                             needsSave = true;
                         }
                     }
@@ -23230,6 +23277,7 @@
                 let added = 0, updated = 0;
                 for (const sc of serverChars) {
                     if (!localIds.has(sc.id)) {
+                        normalizeClientPetCollection(sc);
                         characters.push(sc);
                         added++;
                     } else {
@@ -23262,6 +23310,9 @@
                             local.minigamePurchaseDate   = sc.minigamePurchaseDate   || '';
                             local.shopFragmentDate       = sc.shopFragmentDate       || '';
                             local.pet                    = normalizeClientPet(sc.pet);
+                            local.pets                   = Array.isArray(sc.pets) ? sc.pets.map(normalizeClientPet).filter(Boolean) : (local.pet ? [local.pet] : []);
+                            local.activePetId            = sc.activePetId || local.pet?.id || null;
+                            normalizeClientPetCollection(local);
                             // Restore stat model history from server (source of truth)
                             if (sc.statModel) local.statModel = sc.statModel;
                             // Wellness & morale are server-authoritative — always sync from server
@@ -25688,7 +25739,7 @@
 
         function persistPetChange(character) {
             if (!character) return;
-            character.pet = normalizeClientPet(character.pet);
+            normalizeClientPetCollection(character);
             saveCharacters();
             updateLobbyCharacterDisplay();
         }
@@ -25716,6 +25767,8 @@
                 const data = await resp.json().catch(() => ({ ok: false, error: 'Server error' }));
                 if (data.ok) {
                     character.pet = normalizeClientPet(data.pet);
+                    character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean) : (character.pet ? [character.pet] : []);
+                    character.activePetId = data.activePetId || character.pet?.id || null;
                     if (data.newTokens !== undefined) {
                         globalTokens = data.newTokens;
                         updateCurrencyUI();
@@ -25743,21 +25796,40 @@
             }
             const def = PET_DEFS[species];
             const pet = normalizeClientPet({
-                id: 'pet_' + character.id + '_' + species,
+                id: 'pet_' + character.id + '_' + species + '_' + Date.now().toString(36),
                 name: def.name,
                 species,
                 level: 1,
                 xp: 0,
                 tactic: species === 'cat' ? 'focus_pet' : 'balanced',
             });
+            normalizeClientPetCollection(character);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
             character.pet = pet;
-            saveCharacters();
-            updateLobbyCharacterDisplay();
+            character.activePetId = pet.id;
+            persistPetChange(character);
             showNotice(def.name + ' joined your fighter!');
+        }
+
+        async function setActivePet(petId) {
+            const character = getSelectedCharacter();
+            if (!character || !petId) return;
+            normalizeClientPetCollection(character);
+            const pet = (character.pets || []).find(p => p.id === petId);
+            if (!pet) return;
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('set_active', { petId });
+                if (!data.ok) showNotice(data.error || 'Could not select pet.');
+                return;
+            }
+            character.pet = pet;
+            character.activePetId = pet.id;
+            persistPetChange(character);
         }
 
         async function setPetTactic(tactic) {
             const character = getSelectedCharacter();
+            normalizeClientPetCollection(character);
             if (!character || !character.pet || !PET_TACTICS[tactic]) return;
             if (playerSession && BACKEND_URL) {
                 const data = await petActionOnServer('set_tactic', { tactic });
@@ -25765,11 +25837,13 @@
                 return;
             }
             character.pet.tactic = tactic;
+            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
             persistPetChange(character);
         }
 
         async function healPet() {
             const character = getSelectedCharacter();
+            normalizeClientPetCollection(character);
             if (!character || !character.pet) return;
             if (playerSession && BACKEND_URL) {
                 const data = await petActionOnServer('heal');
@@ -25783,12 +25857,14 @@
             }
             character.pet = normalizeClientPet(character.pet);
             character.pet.hp = character.pet.maxHp;
+            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
             persistPetChange(character);
             showNotice(character.pet.name + ' recovered!');
         }
 
         async function trainPet() {
             const character = getSelectedCharacter();
+            normalizeClientPetCollection(character);
             if (!character || !character.pet) return;
             if (playerSession && BACKEND_URL) {
                 const data = await petActionOnServer('train');
@@ -25813,6 +25889,7 @@
                 character.pet.maxHp = getPetMaxHp(character.pet);
                 character.pet.hp = character.pet.maxHp;
             }
+            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
             persistPetChange(character);
             showNotice(character.pet.name + ' trained.');
         }
@@ -25831,7 +25908,8 @@
                 return;
             }
 
-            const pet = normalizeClientPet(character.pet);
+            const petCollection = normalizeClientPetCollection(character);
+            const pet = petCollection.activePet;
             if (!pet) {
                 if (lobbyPet) {
                     lobbyPet.hidden = true;
@@ -25850,8 +25928,25 @@
                 return;
             }
 
-            character.pet = pet;
             const def = PET_DEFS[pet.species];
+            const adoptGrid = `
+                <div class="pet-adopt-grid">
+                    ${Object.entries(PET_DEFS).map(([species, def]) => `
+                        <button class="pet-adopt-card" type="button" onclick="adoptPet('${species}')">
+                            <img src="${def.asset}" alt="${def.name}">
+                            <span>${def.name}<small>${def.role}</small></span>
+                        </button>
+                    `).join('')}
+                </div>`;
+            const roster = petCollection.pets.length > 1 ? `
+                <div class="pet-roster">
+                    ${petCollection.pets.map(p => {
+                        const pDef = PET_DEFS[p.species];
+                        return `<button class="pet-roster-btn ${p.id === pet.id ? 'active' : ''}" type="button" title="${escapeHTML(p.name)} LV ${p.level}" onclick="setActivePet(decodeURIComponent('${encodeURIComponent(p.id)}'))">
+                            <img src="${pDef.asset}" alt="${pDef.name}">
+                        </button>`;
+                    }).join('')}
+                </div>` : '';
             if (lobbyPet) {
                 lobbyPet.src = def.asset;
                 lobbyPet.alt = pet.name || def.name;
@@ -25881,6 +25976,8 @@
                         <button class="pet-action-btn" type="button" onclick="healPet()">HEAL</button>
                         <button class="pet-action-btn" type="button" onclick="trainPet()">TRAIN</button>
                     </div>
+                    ${roster}
+                    ${adoptGrid}
                 </div>`;
         }
 
