@@ -398,7 +398,7 @@
 
         .battle-pet {
             position: absolute;
-            bottom: 3px;
+            bottom: 38px;
             width: 96px;
             height: 88px;
             z-index: 4;
@@ -17962,9 +17962,9 @@
         function createBattlePet(event) {
             const owner = event.owner;
             const def = PET_DEFS[event.species];
-            const fighter = game[owner]?.element;
-            if (!fighter || !def) return;
-            fighter.querySelector('.battle-pet')?.remove();
+            const world = document.getElementById('arena-world');
+            if (!world || !def) return;
+            world.querySelector(`.battle-pet[data-owner="${owner}"]`)?.remove();
             const petEl = document.createElement('div');
             petEl.className = 'battle-pet';
             petEl.dataset.owner = owner;
@@ -17973,7 +17973,7 @@
                 <img src="${def.asset}" alt="${def.name}">
                 <div class="battle-pet-hp"><div class="battle-pet-hp-fill"></div></div>
             `;
-            fighter.appendChild(petEl);
+            world.appendChild(petEl);
             battlePets[owner] = {
                 el: petEl,
                 hp: event.hp || event.maxHp || 1,
@@ -17987,11 +17987,11 @@
         function placeBattlePet(owner, petX, playerX, cpuX) {
             const pet = battlePets[owner];
             if (!pet?.el || typeof petX !== 'number') return;
-            const ownerX = owner === 'player' ? playerX : cpuX;
             const enemyX = owner === 'player' ? cpuX : playerX;
-            if (typeof ownerX !== 'number') return;
-            const localX = Math.round(petX - ownerX);
-            pet.el.style.left = localX + 'px';
+            const arena = document.getElementById('arena');
+            const stageScale = arena ? arena.offsetWidth / 1600 : 1;
+            const visualPetX = typeof _visualPos === 'function' ? _visualPos(petX) : petX;
+            pet.el.style.left = Math.round(visualPetX * stageScale) + 'px';
             pet.el.style.right = 'auto';
             const img = pet.el.querySelector('img');
             if (img && typeof enemyX === 'number') {
