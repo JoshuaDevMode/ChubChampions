@@ -396,6 +396,56 @@
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
+        .battle-pet {
+            position: absolute;
+            bottom: 3px;
+            width: 96px;
+            height: 88px;
+            z-index: 4;
+            pointer-events: none;
+            transform-origin: 50% 100%;
+        }
+        #player .battle-pet {
+            right: -34px;
+            left: auto;
+        }
+        #cpu .battle-pet {
+            left: -34px;
+            right: auto;
+        }
+        .battle-pet img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 8px rgba(0,0,0,0.35));
+        }
+        .battle-pet-hp {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: -4px;
+            height: 7px;
+            background: rgba(30,18,8,0.82);
+            border: 1px solid #1a0f04;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .battle-pet-hp-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #22c55e, #bbf7d0);
+        }
+        .battle-pet.calm {
+            filter: drop-shadow(0 0 10px rgba(125,211,252,0.95));
+        }
+        .fighter.calm .fighter-body {
+            filter: drop-shadow(0 0 10px rgba(125,211,252,0.8)) saturate(0.86);
+        }
+        .battle-pet.defeated {
+            opacity: 0.45;
+            filter: grayscale(1);
+        }
+
         .weapon-run-overlay {
             position: absolute;
             top: 50%;
@@ -14812,6 +14862,147 @@
             gap: 12px !important;
         }
 
+        .main-menu .menu-pet-panel {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translateX(-50%);
+            width: min(560px, calc(100vw - 720px));
+            min-width: 420px;
+            background: linear-gradient(180deg, #f4eee0 0%, #e6dccb 100%);
+            border: 2px solid #2b1a0e;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.75), 0 4px 0 #2b1a0e, 0 10px 22px rgba(0,0,0,0.34);
+            padding: 8px 10px;
+            z-index: 28;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+        }
+        .main-menu .menu-pet-panel[hidden] { display: none !important; }
+        .main-menu .pet-summary {
+            display: grid;
+            grid-template-columns: 74px 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+        .main-menu .pet-portrait {
+            width: 68px;
+            height: 58px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
+        }
+        .main-menu .pet-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+        }
+        .main-menu .pet-role {
+            font-size: 10px;
+            color: #6b4820;
+            background: rgba(74,44,18,0.10);
+            border: 1px solid rgba(74,44,18,0.22);
+            border-radius: 999px;
+            padding: 3px 7px;
+            font-weight: 800;
+        }
+        .main-menu .pet-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 7px;
+        }
+        .main-menu .pet-bar {
+            height: 16px;
+            background: #2b1a0e;
+            border: 2px solid #2b1a0e;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+        }
+        .main-menu .pet-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #bbf7d0 0%, #22c55e 100%);
+        }
+        .main-menu .pet-bar.pet-xp .pet-bar-fill {
+            background: linear-gradient(180deg, #bfdbfe 0%, #3b82f6 100%);
+        }
+        .main-menu .pet-bar span {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 900;
+            color: #fff;
+            -webkit-text-stroke: 2px #1a0f04;
+            paint-order: stroke fill;
+            line-height: 1;
+        }
+        .main-menu .pet-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .main-menu .pet-action-btn,
+        .main-menu .pet-tactic-select {
+            height: 30px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 0 #2b1a0e;
+        }
+        .main-menu .pet-tactic-select {
+            background: #fff7df;
+            padding: 0 6px;
+            max-width: 116px;
+        }
+        .main-menu .pet-adopt-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .main-menu .pet-adopt-card {
+            border: 2px solid rgba(43,26,14,0.42);
+            border-radius: 10px;
+            background: rgba(255,248,230,0.72);
+            padding: 6px;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            align-items: center;
+            gap: 5px;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 900;
+            text-align: left;
+        }
+        .main-menu .pet-adopt-card:hover {
+            border-color: #b8741a;
+            filter: brightness(1.04);
+        }
+        .main-menu .pet-adopt-card img {
+            width: 42px;
+            height: 38px;
+            object-fit: contain;
+        }
+        .main-menu .pet-adopt-card small {
+            display: block;
+            color: #6b4820;
+            font-size: 9px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
         /* ── Forge bar: taller so the "X / Y" numbers aren't clipped ── */
         .main-menu .fragment-bar-outer {
             height: 20px !important;
@@ -15143,6 +15334,9 @@
         }
 
         /* ── Smooth movement of the character between lobby ↔ care/inventory ── */
+        .main-menu:not(.inventory-mode):not(.care-mode) .menu-character-section {
+            top: 148px !important;
+        }
         .main-menu .menu-character-section {
             transition: top 0.4s ease, transform 0.4s ease !important;
         }
@@ -15953,6 +16147,7 @@
                     </div><!-- /menu-stats-panel -->
                     <div class="stats-side-ext stats-side-right" id="winrate-side-ext"></div>
                     </div><!-- /stats-panel-outer -->
+                    <div class="menu-pet-panel" id="menu-pet-panel" hidden></div>
                     <div class="menu-character-actions" id="menu-character-actions" style="display:none;">
                         <button class="menu-change-name" id="menu-change-name">✏️ CHANGE NAME</button>
                         <button class="menu-delete-character" id="menu-delete-character">🗑️ DELETE</button>
@@ -17618,6 +17813,9 @@
                 cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 }
             };
             battleState.consumables = { player: [], cpu: [] };
+            battlePets.player = null;
+            battlePets.cpu = null;
+            document.querySelectorAll('.battle-pet').forEach(el => el.remove());
         }
 
         const game = {
@@ -17649,6 +17847,111 @@
             gameOverHandled: false
         };
 
+        const battlePets = { player: null, cpu: null };
+
+        function createBattlePet(event) {
+            const owner = event.owner;
+            const def = PET_DEFS[event.species];
+            const fighter = game[owner]?.element;
+            if (!fighter || !def) return;
+            fighter.querySelector('.battle-pet')?.remove();
+            const petEl = document.createElement('div');
+            petEl.className = 'battle-pet';
+            petEl.dataset.owner = owner;
+            petEl.dataset.species = event.species;
+            petEl.innerHTML = `
+                <img src="${def.asset}" alt="${def.name}">
+                <div class="battle-pet-hp"><div class="battle-pet-hp-fill"></div></div>
+            `;
+            fighter.appendChild(petEl);
+            battlePets[owner] = {
+                el: petEl,
+                hp: event.hp || event.maxHp || 1,
+                maxHp: event.maxHp || event.hp || 1,
+                species: event.species,
+            };
+            placeBattlePet(owner, event.petX, event.playerX, event.cpuX);
+            updateBattlePetHp(owner, battlePets[owner].hp, battlePets[owner].maxHp);
+        }
+
+        function placeBattlePet(owner, petX, playerX, cpuX) {
+            const pet = battlePets[owner];
+            if (!pet?.el || typeof petX !== 'number') return;
+            const ownerX = owner === 'player' ? playerX : cpuX;
+            const enemyX = owner === 'player' ? cpuX : playerX;
+            if (typeof ownerX !== 'number') return;
+            const localX = Math.round(petX - ownerX);
+            pet.el.style.left = localX + 'px';
+            pet.el.style.right = 'auto';
+            const img = pet.el.querySelector('img');
+            if (img && typeof enemyX === 'number') {
+                const petCenter = petX + 48;
+                const enemyCenter = enemyX + 110;
+                img.style.transform = petCenter > enemyCenter ? 'scaleX(-1)' : 'scaleX(1)';
+            }
+        }
+
+        function updateBattlePetHp(owner, hp, maxHp) {
+            const pet = battlePets[owner];
+            if (!pet?.el) return;
+            pet.hp = Math.max(0, Number(hp) || 0);
+            pet.maxHp = Math.max(1, Number(maxHp) || pet.maxHp || 1);
+            const fill = pet.el.querySelector('.battle-pet-hp-fill');
+            if (fill) fill.style.width = Math.max(0, Math.min(100, Math.round((pet.hp / pet.maxHp) * 100))) + '%';
+        }
+
+        async function animateBattlePetAttack(event) {
+            const owner = event.owner;
+            const targetOwner = event.targetOwner || (owner === 'player' ? 'cpu' : 'player');
+            let pet = battlePets[owner];
+            if (!pet?.el && event.species && PET_DEFS[event.species]) {
+                createBattlePet({ owner, species: event.species, hp: 1, maxHp: 1 });
+                pet = battlePets[owner];
+            }
+            if (!pet?.el) return;
+            placeBattlePet(owner, event.petX, event.playerX, event.cpuX);
+
+            const dir = owner === 'player' ? 1 : -1;
+            const targetDelta = (typeof event.targetX === 'number' && typeof event.petX === 'number')
+                ? Math.max(-190, Math.min(190, Math.round((event.targetX - event.petX) * 0.35)))
+                : dir * 118;
+            pet.el.classList.remove('defeated');
+            pet.el.animate([
+                { transform: 'translate(0, 0) scale(1)' },
+                { transform: `translate(${targetDelta || dir * 118}px, -32px) scale(1.14)`, offset: 0.56 },
+                { transform: 'translate(0, 0) scale(1)' },
+            ], { duration: 620, easing: 'cubic-bezier(.2,.8,.2,1)' });
+
+            await sleep(330);
+            if (event.targetType === 'pet') {
+                if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp);
+                showDamage(targetOwner, event.damage, false);
+            } else {
+                game.player.health = event.playerHp;
+                game.cpu.health = event.cpuHp;
+                updateBothFighters();
+                showDamage(targetOwner, event.damage, false);
+            }
+            await sleep(310);
+        }
+
+        function applyBattlePetDebuff(event) {
+            const targetOwner = event.targetOwner;
+            const target = event.targetType === 'pet'
+                ? battlePets[targetOwner]?.el
+                : game[targetOwner]?.element;
+            if (!target) return;
+            target.classList.add('calm');
+            setTimeout(() => target.classList.remove('calm'), Math.max(700, (event.turns || 2) * 900));
+        }
+
+        function markBattlePetDefeated(event) {
+            const pet = battlePets[event.owner];
+            if (!pet?.el) return;
+            pet.el.classList.add('defeated');
+            updateBattlePetHp(event.owner, 0, pet.maxHp);
+        }
+
         // matchStats → battleState.matchStats
 
         const DAMAGE = {
@@ -17671,6 +17974,61 @@
             herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 7,  icon: '🌿' },
             adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 9,  icon: '💉' },
         };
+
+        const PET_DEFS = {
+            dog:      { name: 'Dog',      role: 'Balanced striker', asset: 'Assets/Pets/Dog.png',  baseHp: 200, hpPerLevel: 30 },
+            cat:      { name: 'Cat',      role: 'Fast pet hunter',  asset: 'Assets/Pets/Cat.png',  baseHp: 190, hpPerLevel: 26 },
+            capybara: { name: 'Capybara', role: 'Calm control',     asset: 'Assets/Pets/Capy.png', baseHp: 220, hpPerLevel: 28 },
+            bear:     { name: 'Bear',     role: 'Heavy bruiser',    asset: 'Assets/Pets/Bear.png', baseHp: 280, hpPerLevel: 38 },
+        };
+        const PET_TACTICS = {
+            balanced:      'Balanced',
+            focus_owner:   'Focus Owner',
+            focus_pet:     'Focus Pet',
+            protect_owner: 'Protect Owner',
+        };
+
+        function getPetMaxHp(pet) {
+            const def = PET_DEFS[pet?.species] || PET_DEFS.dog;
+            const level = Math.max(1, Math.min(20, Number(pet?.level) || 1));
+            return def.baseHp + (level - 1) * def.hpPerLevel;
+        }
+
+        function getPetExpForNextLevel(level) {
+            const safeLevel = Math.max(1, Math.min(19, Math.floor(Number(level) || 1)));
+            return Math.round((100 + safeLevel * 45 + safeLevel * safeLevel * 8) * 2);
+        }
+
+        function normalizeClientPet(pet) {
+            if (!pet || !PET_DEFS[pet.species]) return null;
+            const level = Math.max(1, Math.min(20, Math.floor(Number(pet.level) || 1)));
+            const maxHp = getPetMaxHp({ ...pet, level });
+            return {
+                id: pet.id || ('pet_' + pet.species),
+                name: String(pet.name || PET_DEFS[pet.species].name).slice(0, 32),
+                species: pet.species,
+                level,
+                xp: Math.max(0, Math.floor(Number(pet.xp) || 0)),
+                hp: Math.max(0, Math.min(maxHp, Math.floor(Number(pet.hp ?? maxHp) || maxHp))),
+                maxHp,
+                tactic: PET_TACTICS[pet.tactic] ? pet.tactic : 'balanced',
+            };
+        }
+
+        function petForBattle(character) {
+            const pet = normalizeClientPet(character?.pet);
+            if (!pet) return null;
+            return {
+                id: pet.id,
+                name: pet.name,
+                species: pet.species,
+                level: pet.level,
+                xp: pet.xp,
+                hp: pet.hp,
+                maxHp: pet.maxHp,
+                tactic: pet.tactic,
+            };
+        }
 
         // ===== BATTLE CONSUMABLES (in-battle: potions only) =====
         const BATTLE_CONSUMABLES = {
@@ -22019,6 +22377,13 @@
                         c.weaponDurability = {};
                         needsSave = true;
                     }
+                    if (c.pet !== undefined) {
+                        const normalizedPet = normalizeClientPet(c.pet);
+                        if (JSON.stringify(c.pet) !== JSON.stringify(normalizedPet)) {
+                            c.pet = normalizedPet;
+                            needsSave = true;
+                        }
+                    }
                     // Migrate: add skill tree fields if missing
                     if (c.skills === undefined) {
                         c.skills = {};
@@ -22615,6 +22980,7 @@
                             local.minigameDailyPurchases = sc.minigameDailyPurchases || 0;
                             local.minigamePurchaseDate   = sc.minigamePurchaseDate   || '';
                             local.shopFragmentDate       = sc.shopFragmentDate       || '';
+                            local.pet                    = normalizeClientPet(sc.pet);
                             // Restore stat model history from server (source of truth)
                             if (sc.statModel) local.statModel = sc.statModel;
                             // Wellness & morale are server-authoritative — always sync from server
@@ -23625,6 +23991,29 @@
 
                     case 'stamina': {
                         updateStaminaBar(event.fighter, event.stamina, event.maxStamina);
+                        break;
+                    }
+
+                    case 'pet_join': {
+                        createBattlePet(event);
+                        await sleep(120);
+                        break;
+                    }
+
+                    case 'pet_attack': {
+                        await animateBattlePetAttack(event);
+                        break;
+                    }
+
+                    case 'pet_debuff': {
+                        applyBattlePetDebuff(event);
+                        await sleep(120);
+                        break;
+                    }
+
+                    case 'pet_defeated': {
+                        markBattlePetDefeated(event);
+                        await sleep(180);
                         break;
                     }
 
@@ -25016,6 +25405,190 @@
             return characters.find(c => c.id === selectedCharacterId) || null;
         }
 
+        function persistPetChange(character) {
+            if (!character) return;
+            character.pet = normalizeClientPet(character.pet);
+            saveCharacters();
+            updateLobbyCharacterDisplay();
+        }
+
+        async function petActionOnServer(action, payload = {}) {
+            const character = getSelectedCharacter();
+            if (!character) return { ok: false, error: 'No character selected' };
+            if (!playerSession || !BACKEND_URL) return { ok: false, error: 'Not logged in' };
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/pet', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        characterId: String(character.id),
+                        action,
+                        ...payload,
+                    }),
+                });
+                if (resp.status === 401 || resp.status === 403) {
+                    showNotice('Session expired. Please log in again.');
+                    setTimeout(() => { logoutPlayerSession(); }, 1800);
+                    return { ok: false, error: 'Session expired' };
+                }
+                const data = await resp.json().catch(() => ({ ok: false, error: 'Server error' }));
+                if (data.ok) {
+                    character.pet = normalizeClientPet(data.pet);
+                    if (data.newTokens !== undefined) {
+                        globalTokens = data.newTokens;
+                        updateCurrencyUI();
+                    }
+                    persistPetChange(character);
+                }
+                return data;
+            } catch (e) {
+                console.warn('[pet] network error:', e);
+                return { ok: false, error: 'Network error' };
+            }
+        }
+
+        async function adoptPet(species) {
+            const character = getSelectedCharacter();
+            if (!character || !PET_DEFS[species]) return;
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('adopt', { species });
+                if (!data.ok) {
+                    showNotice(data.error || 'Could not adopt pet.');
+                    return;
+                }
+                showNotice((character.pet?.name || PET_DEFS[species].name) + ' joined your fighter!');
+                return;
+            }
+            const def = PET_DEFS[species];
+            const pet = normalizeClientPet({
+                id: 'pet_' + character.id + '_' + species,
+                name: def.name,
+                species,
+                level: 1,
+                xp: 0,
+                tactic: species === 'cat' ? 'focus_pet' : 'balanced',
+            });
+            character.pet = pet;
+            saveCharacters();
+            updateLobbyCharacterDisplay();
+            showNotice(def.name + ' joined your fighter!');
+        }
+
+        async function setPetTactic(tactic) {
+            const character = getSelectedCharacter();
+            if (!character || !character.pet || !PET_TACTICS[tactic]) return;
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('set_tactic', { tactic });
+                if (!data.ok) showNotice(data.error || 'Could not update pet tactic.');
+                return;
+            }
+            character.pet.tactic = tactic;
+            persistPetChange(character);
+        }
+
+        async function healPet() {
+            const character = getSelectedCharacter();
+            if (!character || !character.pet) return;
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('heal');
+                if (!data.ok) {
+                    showNotice(data.error || 'Could not heal pet.');
+                    return;
+                }
+                const costText = data.cost ? ` (-${data.cost} tokens)` : '';
+                showNotice((character.pet?.name || 'Pet') + ' recovered!' + costText);
+                return;
+            }
+            character.pet = normalizeClientPet(character.pet);
+            character.pet.hp = character.pet.maxHp;
+            persistPetChange(character);
+            showNotice(character.pet.name + ' recovered!');
+        }
+
+        async function trainPet() {
+            const character = getSelectedCharacter();
+            if (!character || !character.pet) return;
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('train');
+                if (!data.ok) {
+                    showNotice(data.error || 'Could not train pet.');
+                    return;
+                }
+                const costText = data.cost ? ` (-${data.cost} tokens)` : '';
+                showNotice((character.pet?.name || 'Pet') + (data.leveledUp ? ' leveled up!' : ' trained.') + costText);
+                return;
+            }
+            character.pet = normalizeClientPet(character.pet);
+            if (character.pet.level >= 20) {
+                showNotice(character.pet.name + ' is already max level.');
+                return;
+            }
+            const needed = getPetExpForNextLevel(character.pet.level);
+            character.pet.xp += Math.ceil(needed * 0.25);
+            while (character.pet.level < 20 && character.pet.xp >= getPetExpForNextLevel(character.pet.level)) {
+                character.pet.xp -= getPetExpForNextLevel(character.pet.level);
+                character.pet.level++;
+                character.pet.maxHp = getPetMaxHp(character.pet);
+                character.pet.hp = character.pet.maxHp;
+            }
+            persistPetChange(character);
+            showNotice(character.pet.name + ' trained.');
+        }
+
+        function renderPetPanel(character) {
+            const panel = document.getElementById('menu-pet-panel');
+            if (!panel) return;
+            if (!character) {
+                panel.hidden = true;
+                panel.innerHTML = '';
+                return;
+            }
+
+            const pet = normalizeClientPet(character.pet);
+            if (!pet) {
+                panel.hidden = false;
+                panel.innerHTML = `
+                    <div class="pet-adopt-grid">
+                        ${Object.entries(PET_DEFS).map(([species, def]) => `
+                            <button class="pet-adopt-card" type="button" onclick="adoptPet('${species}')">
+                                <img src="${def.asset}" alt="${def.name}">
+                                <span>${def.name}<small>${def.role}</small></span>
+                            </button>
+                        `).join('')}
+                    </div>`;
+                return;
+            }
+
+            character.pet = pet;
+            const def = PET_DEFS[pet.species];
+            const hpPct = pet.maxHp > 0 ? Math.round((pet.hp / pet.maxHp) * 100) : 0;
+            const nextXp = getPetExpForNextLevel(pet.level);
+            const xpPct = pet.level >= 20 ? 100 : Math.min(100, Math.round((pet.xp / nextXp) * 100));
+            panel.hidden = false;
+            panel.innerHTML = `
+                <div class="pet-summary">
+                    <img class="pet-portrait" src="${def.asset}" alt="${def.name}">
+                    <div>
+                        <div class="pet-name-row">
+                            <span>${pet.name.toUpperCase()} · LV ${pet.level}</span>
+                            <span class="pet-role">${def.role}</span>
+                        </div>
+                        <div class="pet-bars">
+                            <div class="pet-bar"><div class="pet-bar-fill" style="width:${hpPct}%"></div><span>HP ${pet.hp}/${pet.maxHp}</span></div>
+                            <div class="pet-bar pet-xp"><div class="pet-bar-fill" style="width:${xpPct}%"></div><span>${pet.level >= 20 ? 'MAX LEVEL' : `XP ${pet.xp}/${nextXp}`}</span></div>
+                        </div>
+                    </div>
+                    <div class="pet-actions">
+                        <select class="pet-tactic-select" onchange="setPetTactic(this.value)">
+                            ${Object.entries(PET_TACTICS).map(([id, label]) => `<option value="${id}" ${pet.tactic === id ? 'selected' : ''}>${label}</option>`).join('')}
+                        </select>
+                        <button class="pet-action-btn" type="button" onclick="healPet()">HEAL</button>
+                        <button class="pet-action-btn" type="button" onclick="trainPet()">TRAIN</button>
+                    </div>
+                </div>`;
+        }
+
         function selectCharacter(id) {
             selectedCharacterId = id;
             saveCharacters();
@@ -25827,6 +26400,7 @@
 
                 // Fury power selector
                 updateFuryPowerSelector(character);
+                renderPetPanel(character);
 
                 // Wellness + Morale + Instinct bar update
                 updateWellnessDisplay(character);
@@ -25875,6 +26449,7 @@
                 upgradeBtn.style.display = 'none';
                 upgradeBtn.style.visibility = '';
                 if (wrExt) wrExt.innerHTML = '';
+                renderPetPanel(null);
             }
 
             // Update arrows
@@ -26409,6 +26984,7 @@
                                 strength: character.stats.strength || 35,
                                 agility:  character.stats.agility  || 35,
                                 defense:  character.stats.defense  || 35,
+                                energy:   character.stats.energy   || 0,
                             },
                             maxHp:               getCharacterMaxHp(character),
                             skills:              character.skills             || {},
@@ -26418,6 +26994,7 @@
                             adaptability:        character.adaptability        || 0,
                             furyPowerChoice:     getFuryPowerChoice(character),
                             furyPassiveEnabled:  getFuryPassiveEnabled(character),
+                            pet:                 petForBattle(character),
                         },
                         cpu: {
                             id: 0, name: battleState.cpuName || 'CPU', level: battleState.cpuStats.level || 1,
