@@ -1,0 +1,162 @@
+CHUBCHAMPIONS - CODEX SESSION SUMMARY
+
+Date: 2026-05-11 / updated 2026-05-12
+Scope: Frontend Vault access + backend Q-learning/AoN fixes.
+
+Repos:
+- Frontend/root repo:
+  C:\Users\joshu\OneDrive\Escritorio\ChubChampions
+  GitHub: https://github.com/JoshuaDevMode/ChubChampions.git
+
+- Backend repo:
+  C:\Users\joshu\OneDrive\Escritorio\ChubChampions\backend
+  GitHub: https://github.com/JoshuaDevMode/ChubChampionsBackend.git
+
+Frontend changes pushed:
+- Commit db761be - Move vault access to coins button
+- Removed visible VAULT top-nav button from lobby.
+- Coins + button now calls openVaultFromCurrency().
+- Vault function/panel remains intact.
+- Crystals + still opens Shop.
+- Fragments + still opens Forge/chest flow.
+
+- Commit 70dbf4c - Pin frontend npm dependencies
+- package.json dependencies/devDependencies are pinned to exact package-lock versions.
+- package-lock.json root dependency specs were updated to exact versions.
+
+- Commit 619f8c1 - Limit AoN challenges to best of 3
+- Removed Best of 5 from AoN PvP UI.
+- AoN PvP format is fixed to Best of 3 in frontend display/confirm flows.
+
+Backend changes pushed:
+
+1) c05f147 - Fix AoN Q-learning persistence and replay snapshots
+- Deserialized q_table where needed instead of using compact DB format directly.
+- Added controller separation:
+  controllers: { player: 'human'|'cpu', cpu: 'human'|'cpu' }
+- Added per-fighter learningMultiplier.
+- PvE normal:
+  controllers { player: 'human', cpu: 'cpu' }
+  learning { player: 0.5, cpu: 0 }
+- PvP/AoN:
+  controllers { player: 'human', cpu: 'human' }
+  learning { player: 1, cpu: 1 }
+- Human opponent can now use Q-learning and learn even when occupying the internal "cpu" slot.
+- Added AoN replay snapshots:
+  resolved_seed
+  p1_snapshot
+  p2_snapshot
+  battle_result
+- Added migration:
+  backend\supabase\aon_replay_snapshot_migration.sql
+- User said migration was already executed in Supabase.
+
+2) c4ca307 - Return PvP Q-learning rewards
+- matchmaking/join.ts now includes playerQTable and newAdaptability in rewards.
+- This lets frontend update Battle Instinct immediately after PvP result instead of waiting for refetch.
+
+3) ba679b7 - Add opponent aliases to battle results
+- Added aliases:
+  opponentQTable
+  opponentAdaptabilityDelta
+  newOpponentAdaptability
+  finalOpponentHp
+- Kept old cpu* fields for frontend/replay compatibility.
+- Updated new backend code to prefer opponent* fields and fallback to cpu*.
+
+4) 4bf6857 - Preserve opponent HP when flipping battle results
+- flip-battle-result.ts now preserves finalOpponentHp when flipping P2 result for P1.
+
+5) 881570c - Add battle learning diagnostics
+- Added production logs:
+  [battle/run] learning controllers player=human cpu=cpu multPlayer=0.5 multCpu=0
+  [matchmaking/join] PvP run ... controllers=human/human learning=1/1
+  [matchmaking/join] PvP Q persisted ...
+  [aon/replay] Created battle snapshot ...
+  [aon/replay] Using stored snapshot ...
+  [aon/accept] Series run ...
+  [aon/accept] Series result ... qSaved=true
+
+6) 5dfe6b5 - Pin backend npm dependencies
+- package.json dependencies/devDependencies are pinned to exact package-lock versions.
+- package-lock.json root dependency specs were updated to exact versions.
+
+7) da8e11d - Scale AoN learning and handle draw rewards
+- Added lib/aon/learning-scale.ts.
+- AoN wager now scales Q-learning/adaptability, but not EXP:
+  10-24 CHUB: 25%
+  25-49 CHUB: 40%
+  50-99 CHUB: 65%
+  100+ CHUB: 100%
+- AoN PvP create endpoint is BO3 only and minimum entry is 10 CHUB.
+- AoN series draw handling:
+  draw rounds do not award points.
+  max total rounds is BO3 base 3 + 2 extra = 5.
+  if nobody reaches 2 wins, match status becomes refunded.
+  refund returns wagers and does not persist Q-table/adaptability/ranking/win-loss.
+- Normal battle draw handling:
+  if final player HP equals final opponent HP, result is stored/responded as draw.
+  draw gets 20% win EXP.
+  draw saves 20% of Q-table/adaptability delta.
+  draw gives no chest, no coins, no win streak increase, no ranking, and morale delta 0.
+- Level 100 learning cap:
+  level 100 keeps Q-table learning at 10% of route multiplier.
+  level 100 does not save further BP/adaptability growth.
+
+Important local-only files:
+- POST_DEPLOY_TEST_CHECKLIST.txt
+  Contains manual test plan and Supabase SQL checks.
+- CODEX_SESSION_SUMMARY.txt
+  This file.
+- skill-icons-prompts.txt
+  Existing untracked file; do not commit unless user asks.
+- backend/scripts/simulate-q-learning-pace.ts
+  Local-only Q-learning pace simulator; not committed.
+
+Verification already run:
+- In backend:
+  npx tsc --noEmit
+  npm run test:battle
+- Both passed after relevant changes.
+- Frontend npm run build failed locally because node_modules/jose appears incomplete
+  (missing dist/browser/index.js / dist/node/esm/index.js). This looks local to node_modules;
+  Vercel should install cleanly from package-lock.json.
+
+Deployment notes:
+- User executed Supabase migration already.
+- Backend and frontend commits were pushed.
+- One Vercel/GitHub clone failure happened with HTTP 500. It was likely a temporary Git provider issue.
+
+What remains to test manually:
+- Vault:
+  Lobby coins + opens CHUB VAULT.
+  VAULT top-nav button is gone.
+- PvE:
+  Battle Instinct increases at reduced PvE rate.
+  Vercel logs show player=0.5 cpu=0.
+- PvP:
+  Needs another real user/friend.
+  Confirm both players get Q-learning/adaptability updates.
+  Logs should show controllers=human/human and PvP Q persisted.
+- AoN replay:
+  First view should create snapshot.
+  Later views should use stored snapshot.
+  Replay should not drift.
+- AoN series:
+  Logs should show Series run/result and qSaved=true for winner.
+  Refund path should show qSaved=false if too many draw rounds.
+- AoN wager scaling:
+  Confirm low-stake AoN gives less Q-learning than high-stake AoN.
+- Normal battle draw:
+  Hard to trigger naturally; if it happens, verify 20% EXP/learning and no chest/coins/streak.
+
+Do not rush:
+- Deep rename of internal "cpu" event/frontend labels is not done.
+- Current behavior is corrected functionally via controllers and aliases.
+- A deeper rename would touch frontend animations/replay/history:
+  fighter: 'cpu'
+  cpuHp
+  finalCpuHp
+  game.cpu
+  battleState.matchStats.cpu
+- Treat that as a separate refactor.

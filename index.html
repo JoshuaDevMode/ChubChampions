@@ -8981,6 +8981,63 @@
             padding: 12px 0;
         }
 
+        .player-profile-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            color: #5b3a1d;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 900;
+            font-size: 0.75em;
+            margin-bottom: 10px;
+        }
+        .player-profile-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 2px;
+        }
+        .player-profile-card {
+            border: 2px solid rgba(43,26,14,0.38);
+            border-radius: 8px;
+            background: rgba(255,248,230,0.76);
+            padding: 9px;
+            cursor: pointer;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+        }
+        .player-profile-card:hover {
+            border-color: #b8741a;
+            background: rgba(255,248,230,0.94);
+        }
+        .player-profile-card-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            font-weight: 900;
+            font-size: 0.82em;
+            margin-bottom: 6px;
+        }
+        .player-profile-card-sub {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.68em;
+            color: #6b4820;
+            margin-bottom: 7px;
+        }
+        .player-profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            font-size: 0.62em;
+            font-weight: 900;
+            color: #3b2414;
+        }
+
         /* Clickable names in leaderboard */
         .lb-row-name-link {
             cursor: pointer;
@@ -12051,14 +12108,15 @@
             position: absolute;
             top: 28%;
             right: 10px;
-            width: 280px;
-            background: rgba(0,0,0,0.9);
-            border: 2px solid #555;
+            width: 320px;
+            background: rgba(18, 13, 8, 0.94);
+            border: 2px solid #2b1a0e;
             border-radius: 8px;
             z-index: 25;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 12px 26px rgba(0,0,0,0.38);
         }
         .chat-panel.hidden {
             display: none;
@@ -12066,10 +12124,10 @@
         .chat-header {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.6em;
-            color: #4ecdc4;
+            color: #f8d48a;
             padding: 8px 12px;
-            background: rgba(0,0,0,0.5);
-            border-bottom: 1px solid #444;
+            background: rgba(43,26,14,0.74);
+            border-bottom: 1px solid rgba(255,226,164,0.22);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -12084,7 +12142,7 @@
             color: #fff;
         }
         .chat-messages {
-            height: 180px;
+            height: 210px;
             overflow-y: auto;
             padding: 8px;
             display: flex;
@@ -12095,37 +12153,49 @@
             font-size: 0.75em;
             padding: 6px 8px;
             border-radius: 6px;
-            max-width: 90%;
+            max-width: 92%;
             word-wrap: break-word;
         }
         .chat-message.player {
-            background: #2a4a6a;
+            background: #28455f;
             color: #fff;
             align-self: flex-end;
             border-bottom-right-radius: 2px;
         }
         .chat-message.cpu {
-            background: #4a3a5a;
+            background: #4b3724;
             color: #fff;
             align-self: flex-start;
             border-bottom-left-radius: 2px;
         }
         .chat-message .msg-author {
             font-size: 0.8em;
-            color: #4ecdc4;
+            color: #f8d48a;
             margin-bottom: 3px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .chat-message .msg-author:hover {
+            color: #fff2bd;
+        }
+        .chat-empty {
+            color: rgba(255,255,255,0.55);
+            font-size: 0.7em;
+            text-align: center;
+            padding: 18px 8px;
         }
         .chat-input-row {
             display: flex;
             padding: 8px;
             gap: 6px;
-            border-top: 1px solid #444;
-            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,226,164,0.22);
+            background: rgba(0,0,0,0.18);
         }
         .chat-input {
             flex: 1;
             background: #222;
-            border: 1px solid #444;
+            border: 1px solid rgba(255,226,164,0.25);
             border-radius: 4px;
             padding: 6px 10px;
             color: #fff;
@@ -12133,7 +12203,7 @@
             outline: none;
         }
         .chat-input:focus {
-            border-color: #4ecdc4;
+            border-color: #f8d48a;
         }
         .chat-send {
             background: linear-gradient(to bottom, #4ecdc4, #3ab0a8);
@@ -15604,6 +15674,20 @@
 
         /* Win Rate side widget: keep equal margin on every side of the iron
            frame, so it doesn't lean against the panel's divider line. */
+        .main-menu .stats-top-row {
+            --stats-top-row-height: 124px;
+            height: var(--stats-top-row-height) !important;
+            min-height: var(--stats-top-row-height) !important;
+            max-height: var(--stats-top-row-height) !important;
+            align-items: stretch !important;
+        }
+        .main-menu .stats-top-left,
+        .main-menu .stats-top-center,
+        .main-menu .stats-top-right {
+            min-height: 0 !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
+        }
         .main-menu .stats-top-right {
             /* Larger left padding compensates for the divider sitting closer
                than the panel's own right edge — without it the box reads as
@@ -15622,6 +15706,8 @@
             align-items: center !important;
             justify-content: center !important;
             margin: 0 auto !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
         }
         .main-menu #winrate-side-ext svg {
             width: 64px !important;
@@ -16703,6 +16789,20 @@
         </div>
     </div>
 
+    <!-- Player Profile Modal -->
+    <div class="char-profile-overlay" id="player-profile-overlay">
+        <div class="char-profile-modal">
+            <div class="char-profile-header">
+                <div class="char-profile-title" id="pp-title">Player Profile</div>
+                <button class="char-profile-close" id="player-profile-close">&times;</button>
+            </div>
+            <div class="char-profile-stats-frame">
+                <div class="player-profile-meta" id="pp-meta">Loading...</div>
+                <div class="player-profile-list" id="pp-character-list"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Character Selection Panel -->
     <div class="character-select-panel" id="character-select-panel">
         <div class="character-select-container">
@@ -17185,7 +17285,7 @@
                 </div>
                 <div class="chat-messages" id="chat-messages"></div>
                 <div class="chat-input-row">
-                    <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." maxlength="100">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Global message..." maxlength="20">
                     <button class="chat-send" id="chat-send">&#10148;</button>
                 </div>
             </div>
@@ -21174,6 +21274,70 @@
                     <span class="cpb-turns">${b.turns} turns${cpuInfo}</span>
                     <span class="cpb-mode">${modeText}</span>
                     <span class="cpb-date">${date}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function openPlayerProfile(playerId) {
+            if (!playerId) return;
+            const overlay = document.getElementById('player-profile-overlay');
+            overlay.classList.add('active');
+            document.getElementById('pp-title').textContent = 'Player Profile';
+            document.getElementById('pp-meta').textContent = 'Loading...';
+            document.getElementById('pp-character-list').innerHTML = '';
+            fetchPlayerProfile(playerId);
+        }
+
+        async function fetchPlayerProfile(playerId) {
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/player/profile?id=' + encodeURIComponent(playerId));
+                if (!resp.ok) { renderPlayerProfileError(); return; }
+                const data = await resp.json();
+                renderPlayerProfile(data);
+            } catch (e) {
+                renderPlayerProfileError();
+            }
+        }
+
+        function renderPlayerProfileError() {
+            document.getElementById('pp-meta').textContent = 'Could not load player.';
+            document.getElementById('pp-character-list').innerHTML = '';
+        }
+
+        function renderPlayerProfile(data) {
+            const chars = Array.isArray(data.characters) ? data.characters : [];
+            document.getElementById('pp-title').textContent = data.displayName || 'Player';
+            document.getElementById('pp-meta').innerHTML = `
+                <span>${escapeHTML(data.rankTier || 'Brawler')}</span>
+                <span>${Number(data.rankingPoints || 0).toLocaleString()} PTS</span>
+                <span>${chars.length} fighter${chars.length === 1 ? '' : 's'}</span>
+            `;
+            const list = document.getElementById('pp-character-list');
+            if (!chars.length) {
+                list.innerHTML = '<div class="char-profile-no-history">No fighters found.</div>';
+                return;
+            }
+            list.innerHTML = chars.map(char => {
+                const s = char.stats || {};
+                const elem = ELEMENT_DATA[char.element];
+                const pet = char.pet ? ` · ${escapeHTML(char.pet.name || char.pet.species)} pet` : '';
+                return `<div class="player-profile-card" data-char-id="${escapeHTML(char.id)}">
+                    <div class="player-profile-card-head">
+                        <span>${escapeHTML(char.name || 'Fighter')}</span>
+                        <span>LV ${Number(char.level || 1)}</span>
+                    </div>
+                    <div class="player-profile-card-sub">
+                        <span>${elem ? `${elem.icon} ${elem.label}` : 'No element'}${pet}</span>
+                        <span>${escapeHTML(char.qTier || 'Novice')}</span>
+                    </div>
+                    <div class="player-profile-stats">
+                        <span>HP ${Number(s.hp || 0)}</span>
+                        <span>ATK ${Number(s.atk || 0)}</span>
+                        <span>STR ${Number(s.str || 0)}</span>
+                        <span>AGI ${Number(s.agi || 0)}</span>
+                        <span>DEF ${Number(s.def || 0)}</span>
+                        <span>${Number(char.rankingPoints || 0).toLocaleString()} PTS</span>
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -26009,6 +26173,20 @@
             if (e.target.id === 'char-profile-overlay') {
                 document.getElementById('char-profile-overlay').classList.remove('active');
             }
+        });
+        document.getElementById('player-profile-close').addEventListener('click', () => {
+            document.getElementById('player-profile-overlay').classList.remove('active');
+        });
+        document.getElementById('player-profile-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'player-profile-overlay') {
+                document.getElementById('player-profile-overlay').classList.remove('active');
+            }
+        });
+        document.getElementById('pp-character-list').addEventListener('click', (e) => {
+            const card = e.target.closest?.('.player-profile-card[data-char-id]');
+            if (!card) return;
+            document.getElementById('player-profile-overlay').classList.remove('active');
+            openCharProfile(card.dataset.charId);
         });
 
         // ===== CHARACTER UI FUNCTIONS =====
@@ -34905,63 +35083,93 @@
             }
         }
 
-        // Mini Chat
-        const CPU_CHAT_MESSAGES = [
-            "You can't beat me!",
-            "Is that all you got?",
-            "Get ready to lose!",
-            "I'm invincible!",
-            "Nice hit... for a rookie",
-            "Ha! Too slow!",
-            "Tired already?",
-            "This will be easy",
-            "Fight for real!",
-            "I underestimated you... a bit",
-            "Ouch! That hurt!",
-            "Not bad...",
-            "My turn now!",
-            "Ready to give up?",
-            "You're going down!",
-            "Bring it on!",
-            "Is that your best shot?",
-            "I've seen better fighters",
-            "Keep trying, loser!",
-            "You call that a punch?"
-        ];
+        // Global Lobby Chat
+        let chatPollTimer = null;
+        let chatLastMessageId = null;
 
-        function addChatMessage(author, text) {
+        function renderGlobalChat(messages = []) {
             const messagesEl = document.getElementById('chat-messages');
-            const msgEl = document.createElement('div');
-            msgEl.className = 'chat-message ' + (author === 'player' ? 'player' : 'cpu');
-            msgEl.innerHTML = '<div class="msg-author">' + (author === 'player' ? 'You' : battleState.cpuName) + '</div>' + text;
-            messagesEl.appendChild(msgEl);
+            if (!messagesEl) return;
+            if (!messages.length) {
+                messagesEl.innerHTML = '<div class="chat-empty">No messages yet.</div>';
+                chatLastMessageId = null;
+                return;
+            }
+            const shouldNotify = chatLastMessageId !== null && messages[messages.length - 1]?.id !== chatLastMessageId;
+            chatLastMessageId = messages[messages.length - 1]?.id ?? chatLastMessageId;
+            messagesEl.innerHTML = messages.map(msg => {
+                const mine = playerSession && msg.playerId === playerSession.playerId;
+                return `<div class="chat-message ${mine ? 'player' : 'cpu'}">
+                    <div class="msg-author" data-player-id="${escapeHTML(msg.playerId)}">${escapeHTML(mine ? 'You' : msg.displayName)}</div>
+                    ${escapeHTML(msg.message)}
+                </div>`;
+            }).join('');
             messagesEl.scrollTop = messagesEl.scrollHeight;
-
-            // Notification if chat is closed
             const chatPanel = document.getElementById('chat-panel');
-            if (chatPanel.classList.contains('hidden') && author === 'cpu') {
-                document.getElementById('chat-btn').classList.add('has-notification');
+            if (shouldNotify && chatPanel?.classList.contains('hidden')) {
+                document.getElementById('chat-btn')?.classList.add('has-notification');
             }
         }
 
-        function cpuAutoReply() {
-            if (game.gameOver) return;
-            const delay = 1000 + Math.random() * 2000;
-            setTimeout(() => {
-                if (!game.gameOver) {
-                    const msg = CPU_CHAT_MESSAGES[Math.floor(Math.random() * CPU_CHAT_MESSAGES.length)];
-                    addChatMessage('cpu', msg);
-                }
-            }, delay);
+        async function loadGlobalChat() {
+            if (!BACKEND_URL) return;
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/chat', { method: 'GET' }, 10000);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                renderGlobalChat(data.messages || []);
+            } catch (e) {
+                console.warn('[chat] load failed:', e);
+            }
         }
 
-        function sendPlayerMessage() {
+        function startChatPolling() {
+            if (chatPollTimer) return;
+            loadGlobalChat();
+            chatPollTimer = setInterval(loadGlobalChat, 8000);
+        }
+
+        function stopChatPolling() {
+            if (!chatPollTimer) return;
+            clearInterval(chatPollTimer);
+            chatPollTimer = null;
+        }
+
+        async function sendPlayerMessage() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
+            const text = input.value.trim().slice(0, 20);
             if (text === '') return;
-            addChatMessage('player', text);
+            if (!playerSession) {
+                showNotice('Login to use global chat.');
+                return;
+            }
+            const previous = input.value;
+            input.disabled = true;
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/chat', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        message: text,
+                    }),
+                }, 10000);
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    showNotice(data.error || 'Could not send message.');
+                    input.value = previous;
+                    return;
+                }
+                renderGlobalChat(data.messages || []);
+            } catch (e) {
+                console.warn('[chat] send failed:', e);
+                showNotice('Could not send message.');
+                input.value = previous;
+                return;
+            } finally {
+                input.disabled = false;
+            }
             input.value = '';
-            cpuAutoReply();
         }
 
         document.getElementById('chat-btn').addEventListener('click', () => {
@@ -34969,15 +35177,24 @@
             panel.classList.toggle('hidden');
             document.getElementById('chat-btn').classList.remove('has-notification');
             if (!panel.classList.contains('hidden')) {
+                startChatPolling();
                 document.getElementById('chat-input').focus();
+            } else {
+                stopChatPolling();
             }
         });
 
         document.getElementById('chat-close').addEventListener('click', () => {
             document.getElementById('chat-panel').classList.add('hidden');
+            stopChatPolling();
         });
 
         document.getElementById('chat-send').addEventListener('click', sendPlayerMessage);
+        document.getElementById('chat-messages').addEventListener('click', e => {
+            const author = e.target.closest?.('.msg-author[data-player-id]');
+            if (!author) return;
+            openPlayerProfile(author.dataset.playerId);
+        });
 
         // Combat Log toggle
         document.getElementById('log-btn').addEventListener('click', () => {
