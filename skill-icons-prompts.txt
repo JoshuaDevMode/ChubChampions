@@ -3,8 +3,8 @@
 ================================================================================
 
 Three prompts for generating sprite-sheet images of skill icons matching the
-ChubChampions UI style (whimsical, hand-painted mobile RPG icons — Supercell /
-Cookie Run / Pet Simulator vibe).
+ChubChampions UI style: readable hand-painted game icons with a rough fantasy
+UI feel. Avoid the glossy "AI mobile ad" look.
 
 WORKFLOW:
   1. Pick an image AI (Midjourney v6/v7 recommended; Flux 1.1 Pro also great;
@@ -21,22 +21,27 @@ WORKFLOW:
 ================================================================================
 
 STYLE — apply identically to every cell:
-- Whimsical mobile RPG icon style: cute, painterly, hand-shaded cartoon — think
-  Supercell, Cookie Run Kingdom, Pet Simulator, Kingdom Rush, Disney Magical
-  World.
-- Each subject is a chunky 3D-looking object/creature with a bold black outline
-  (~1.5px), simplified bouncy proportions, and visible painterly brush shading
-  (not flat vector, not photoreal).
-- Lighting is consistent across all cells: warm rim-light from upper-left, soft
-  shadow on lower-right, faint bottom contact-shadow.
-- Subject is centered, fills ~80% of the cell, slightly angled (not flat
-  front-facing) to feel dimensional.
-- Per-cell background: soft warm cream-to-pale-peach radial gradient
-  (#fdf2dc -> #f0d9b0), subtle inner glow tinted with the tree's accent color.
-- Each cell has a 1px hairline frame in warm brown (#8b6f47) separating it from
-  neighbors — clean grid, no bleeding between cells.
-- Highlights are bright but not blown out; whites and pale tints to give pop.
-  Local colors are saturated but cheerful.
+- Hand-painted 2D fantasy game icon style with visible brush texture, slightly
+  imperfect edges, and controlled shape language. It should feel made by a game
+  artist, not like a glossy AI-generated mobile ad.
+- Use simple readable silhouettes first. Each icon must be recognizable at small
+  size without relying on tiny details, text, symbols, or over-rendered effects.
+- Painterly shading with 3 to 5 clear value steps, mild ambient occlusion, and
+  a restrained rim light. Avoid plastic shine, chrome highlights, excessive
+  bloom, lens flare, glitter, and over-saturated neon.
+- Use a dark warm-brown ink outline, not pure black. Outline thickness should be
+  consistent and slightly uneven, like hand-inked game UI art.
+- Subject is centered, fills about 72-78% of the cell, slightly angled only when
+  useful for readability. No extreme perspective, no cinematic lighting.
+- Per-cell background: muted parchment/stone tile, warm cream to tan
+  (#ead6aa -> #b99056), with subtle paper grain and a very soft tint from the
+  tree accent color. No radial glow blobs, no glossy button backgrounds.
+- Each cell has a simple 1px carved frame in warm dark brown (#6f4c28) separating
+  it from neighbors. Clean grid, no bleeding between cells.
+- Palette should be cohesive and earthy: warm browns, muted reds/blues/greens,
+  small bright accents only where needed for gameplay readability.
+- Add tiny hand-painted chips, scratches, dust, or cloth texture when appropriate,
+  but keep the composition clean and iconic.
 
 LAYOUT:
 - Single image, perfect uniform grid, all cells identical square aspect.
@@ -44,11 +49,13 @@ LAYOUT:
 - No labels, no text, no numbers, no watermarks, no signatures — visuals only.
 
 NEGATIVE / AVOID:
+- No glossy AI look, no plastic 3D, no mobile ad render, no smooth airbrushed
+  gradients, no excessive bloom, no generic fantasy stock-icon style.
 - No dark fantasy, no Diablo, no horror, no realistic photography, no anime.
 - No human faces in close-up realism (chibi/cartoon faces OK, profile
   silhouettes OK).
 - No gore, no scary imagery — keep it cute even for "death" themed icons
-  (chibi reaper, sparkle skull, etc.).
+  (small stylized skull, soft red eye glow, etc.).
 - No drift in style between cells; every icon must clearly belong to the same
   set.
 
@@ -56,54 +63,54 @@ NEGATIVE / AVOID:
  PROMPT 1 — ATTACK TREE (5 columns x 3 rows = 15 icons, ~2048x1228)
 ================================================================================
 
-A sprite sheet of 15 cute mobile RPG game icons in a 5-column x 3-row grid
+A sprite sheet of 15 hand-painted fantasy RPG skill icons in a 5-column x
+3-row grid
 (5:3 aspect ratio, target resolution ~2048x1228).
 
 [paste STYLE BLOCK here]
 
-ACCENT COLOR for this sheet: warm crimson red with orange-gold highlights,
-ember sparkles. Cell background stays cream but with a subtle warm-red inner
-glow.
+ACCENT COLOR for this sheet: warm crimson red with muted orange highlights.
+Cell background stays parchment-tan with a subtle warm-red tint.
 
 ICON LIST (left to right, top to bottom):
 
 ROW 1:
-1. POWER STRIKE — cute chunky armored fist mid-punch, golden starburst behind
-   it, a few star sparkles popping out.
-2. HEAVY BLOW — oversized cartoon warhammer with chunky wooden handle, head
-   slamming down with cartoon impact stars and dust puff.
-3. GAZE — single big focused cartoon eye with bright iris and crosshair pupil,
-   soft sparkle in the corner.
-4. CRUSHER — cute clenched gauntleted fist crushing a tiny dented shield,
-   little metal flakes flying off.
-5. BERSERKER — chibi warrior face front-view with horned helmet, red round
-   cheeks, steam puffs above the head, fierce grin.
+1. POWER STRIKE — armored fist mid-punch, compact impact burst behind it,
+   rough painted dust marks.
+2. HEAVY BLOW — oversized warhammer with chunky wooden handle, head slamming
+   down with dust cracks and muted impact chips.
+3. GAZE — single focused stylized eye with a clear iris and crosshair pupil,
+   restrained highlight.
+4. CRUSHER — clenched gauntleted fist crushing a small dented shield, little
+   metal flakes flying off.
+5. BERSERKER — small stylized warrior head with horned helmet, red cheeks,
+   steam puffs above the head, fierce grin.
 
 ROW 2:
-6. BLEED — three plump stylized red blood-drops falling, glossy white highlight
-   on each.
-7. EXPOSE — cute cracked round shield with a glowing red zigzag fissure across
-   it, tiny X mark.
+6. BLEED — three plump stylized red blood-drops falling, simple painted
+   highlights.
+7. EXPOSE — cracked round shield with a red zigzag fissure across it, tiny X
+   mark.
 8. SHATTER — chunky armor pauldron exploding into geometric shards mid-air,
    red impact flash.
-9. EXECUTE — small cartoon dagger plunging into a stone tile, red glow on the
-   blade.
-10. BLOODRAGE — pair of plump cartoon vampire fangs floating, single red drop
-    hanging, tiny sparkle.
+9. EXECUTE — small cartoon dagger plunging into a stone tile, muted red edge
+   light on the blade.
+10. BLOODRAGE — pair of plump cartoon fangs floating, single red drop hanging,
+    rough painted edge marks.
 
 ROW 3:
-11. DEATH WISH — chibi grim reaper skull (cute, not scary) with big empty
-    eye-sockets glowing soft red, tiny scythe blade peeking behind.
-12. DEEP WOUND — cute torn red bandage wrapped around a chunky cartoon slash
-    mark, glowing crimson cut line in the center, a few tiny red droplets, not
-    scary or realistic.
+11. DEATH WISH — small stylized reaper skull, not scary, with empty eye sockets
+    lit by a soft red tint, tiny scythe blade peeking behind.
+12. DEEP WOUND — torn red bandage wrapped around a chunky painted slash mark,
+    crimson cut line in the center, a few tiny red droplets, not scary or
+    realistic.
 13. REND — three parallel curved claw-scratch marks slashing across a torn
     cartoon banner.
-14. RUPTURE — cartoon explosion starburst with concentric shockwave rings,
-    comic-style POW vibe but no text.
-15. MARKED PREY — bright target reticle stamped over a small cracked shield
-    and warning tag, glowing red focus ring, clear "marked target" feeling with
-    no text or letters.
+14. RUPTURE — painted explosion starburst with concentric shockwave rings,
+    clear impact icon with no text.
+15. MARKED PREY — target reticle stamped over a small cracked shield and
+    warning tag, muted red focus ring, clear "marked target" feeling with no
+    text or letters.
 
 Render at high resolution, sharp painterly brushwork, every cell distinct yet
 visually unified.
@@ -113,13 +120,13 @@ visually unified.
             ~2400x1600)
 ================================================================================
 
-A sprite sheet of 22 cute mobile RPG game icons + 2 filler emblems, in a
+A sprite sheet of 22 hand-painted fantasy RPG skill icons + 2 filler emblems, in a
 6-column x 4-row grid (3:2 aspect ratio, target resolution ~2400x1600).
 
 [paste STYLE BLOCK here]
 
-ACCENT COLOR for this sheet: cool sky blue with silver highlights and soft cyan
-glow. Cell background stays cream but with a subtle blue inner glow.
+ACCENT COLOR for this sheet: cool steel blue with silver highlights and a
+subtle cyan tint. Cell background stays parchment-tan.
 
 ICON LIST (left to right, top to bottom):
 
@@ -130,7 +137,7 @@ ROW 1:
    stones, cute proportions.
 3. SHIELD MASTERY — heroic round shield with golden cross emblem, wooden trim,
    raised proudly.
-4. VITALITY — plump cartoon heart shape, glossy red, a soft blue heartbeat
+4. VITALITY — plump cartoon heart shape, painted red, a soft blue heartbeat
    pulse line through it.
 5. BULWARK — massive towering kite shield embedded vertically into the ground,
    ornate trim.
@@ -185,14 +192,14 @@ visually unified.
  PROMPT 3 — ALCHEMIST TREE (5 columns x 3 rows = 15 icons, ~2048x1228)
 ================================================================================
 
-A sprite sheet of 15 cute mobile RPG game icons in a 5-column x 3-row grid
+A sprite sheet of 15 hand-painted fantasy RPG skill icons in a 5-column x
+3-row grid
 (5:3 aspect ratio, target resolution ~2048x1228).
 
 [paste STYLE BLOCK here]
 
-ACCENT COLOR for this sheet: vibrant emerald green with chartreuse highlights,
-gentle bioluminescent glow. Cell background stays cream but with a subtle
-green inner glow.
+ACCENT COLOR for this sheet: emerald green with muted chartreuse highlights.
+Cell background stays parchment-tan with a subtle green tint.
 
 ICON LIST (left to right, top to bottom):
 
@@ -203,8 +210,8 @@ ROW 1:
    cork on top, single bubble rising.
 3. DURATION — antique brass hourglass with green sparkly sand pouring slowly,
    thin glow stream.
-4. AMPLIFY — potion vial bursting outward with green starlight and shards,
-   comic explosion vibe.
+4. AMPLIFY — potion vial bursting outward with green light shards and liquid
+   chips, restrained impact shape.
 5. QUICK DOSE — angled flask mid-pour, fast streaks of green liquid frozen
    mid-motion, tiny droplets.
 
