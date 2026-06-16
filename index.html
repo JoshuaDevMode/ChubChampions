@@ -18022,17 +18022,17 @@
             placeBattlePet(owner, event.petX, event.playerX, event.cpuX);
 
             const dir = owner === 'player' ? 1 : -1;
-            const targetDelta = (typeof event.targetX === 'number' && typeof event.petX === 'number')
-                ? Math.max(-190, Math.min(190, Math.round((event.targetX - event.petX) * 0.35)))
-                : dir * 118;
+            const targetDelta = getBattlePetAttackDelta(event, dir);
             pet.el.classList.remove('defeated');
             pet.el.animate([
                 { transform: 'translate(0, 0) scale(1)' },
-                { transform: `translate(${targetDelta || dir * 118}px, -32px) scale(1.14)`, offset: 0.56 },
+                { transform: `translate(${-dir * 18}px, 0) scale(0.96)`, offset: 0.16 },
+                { transform: `translate(${targetDelta}px, -18px) scale(1.1)`, offset: 0.58 },
+                { transform: `translate(${targetDelta}px, -18px) scale(1.16)`, offset: 0.68 },
                 { transform: 'translate(0, 0) scale(1)' },
-            ], { duration: 620, easing: 'cubic-bezier(.2,.8,.2,1)' });
+            ], { duration: 760, easing: 'cubic-bezier(.18,.82,.22,1)' });
 
-            await sleep(330);
+            await sleep(500);
             if (event.targetType === 'pet') {
                 if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp);
                 showDamage(targetOwner, event.damage, false);
@@ -18042,7 +18042,18 @@
                 updateBothFighters();
                 showDamage(targetOwner, event.damage, false);
             }
-            await sleep(310);
+            await sleep(260);
+        }
+
+        function getBattlePetAttackDelta(event, dir) {
+            if (typeof event.targetX !== 'number' || typeof event.petX !== 'number') return dir * 220;
+            const petCenter = event.petX + 48;
+            const targetCenter = event.targetType === 'pet'
+                ? event.targetX + 48
+                : event.targetX + 110;
+            const approachGap = event.targetType === 'pet' ? 52 : 76;
+            const rawDelta = targetCenter - petCenter - Math.sign(targetCenter - petCenter || dir) * approachGap;
+            return Math.max(-760, Math.min(760, Math.round(rawDelta)));
         }
 
         function applyBattlePetDebuff(event) {
