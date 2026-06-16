@@ -15692,7 +15692,7 @@
             /* Larger left padding compensates for the divider sitting closer
                than the panel's own right edge — without it the box reads as
                shifted left even though it's centered in the column */
-            padding: 4px 7px 4px 14px !important;
+            padding: 0 0 0 8px !important;
             align-items: stretch !important;
             justify-content: center !important;
         }
@@ -15700,7 +15700,7 @@
         .main-menu .stats-side-ext.stats-side-right {
             width: 100% !important;
             min-width: 0 !important;
-            padding: 4px 5px !important;
+            padding: 4px 6px !important;
             border-width: 10px !important;
             border-image-width: 10px !important;
             align-items: center !important;
@@ -15710,18 +15710,25 @@
             box-sizing: border-box !important;
         }
         .main-menu #winrate-side-ext > span:first-child {
-            font-size: 8px !important;
+            font-size: 9px !important;
             line-height: 1 !important;
         }
         .main-menu #winrate-side-ext svg {
-            width: 48px !important;
-            height: 48px !important;
+            width: 54px !important;
+            height: 54px !important;
             margin: -1px 0 !important;
         }
         .main-menu #winrate-side-ext > span:last-child {
-            font-size: 8px !important;
+            font-size: 9px !important;
             line-height: 1.05 !important;
-            gap: 8px !important;
+            gap: 9px !important;
+        }
+        .main-menu #winrate-side-ext .winrate-won {
+            color: #0f7a3b !important;
+            text-shadow: 0 1px 0 rgba(255, 248, 220, 0.65) !important;
+        }
+        .main-menu #winrate-side-ext .winrate-won-label {
+            color: #15803d !important;
         }
 
         /* Pull left column (Forge / Equipment / Consumables) up so the
@@ -26643,7 +26650,7 @@
                         </svg>
                         <span>
                             <span style="font-family:'Fredoka',sans-serif;font-size:12px;font-weight:700;color:#6b4820;">${played}<br><span style="font-weight:500;color:#8a6b3e;">played</span></span>
-                            <span style="font-family:'Fredoka',sans-serif;font-size:12px;font-weight:700;color:#16a34a;">${won}<br><span style="font-weight:500;color:#4ade80;">won</span></span>
+                            <span class="winrate-won" style="font-family:'Fredoka',sans-serif;font-size:12px;font-weight:700;">${won}<br><span class="winrate-won-label" style="font-weight:500;">won</span></span>
                         </span>`;
                 }
 
