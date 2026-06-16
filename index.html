@@ -8268,7 +8268,7 @@
             border-radius: 12px;
             padding: 10px;
             display: grid;
-            grid-template-columns: 70px 1fr;
+            grid-template-columns: 88px 1fr;
             gap: 10px;
             align-items: center;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
@@ -8281,6 +8281,8 @@
             width: 70px;
             height: 62px;
             object-fit: contain;
+            justify-self: center;
+            align-self: end;
             filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
         }
         .inventory-pet-info {
@@ -18114,7 +18116,7 @@
             const enemyX = owner === 'player' ? cpuX : playerX;
             const img = pet.el.querySelector('img');
             if (img && typeof enemyX === 'number') {
-                const petCenter = petX + 48;
+                const petCenter = petX + getBattlePetHalfWidth(pet);
                 const enemyCenter = enemyX + 110;
                 img.style.transform = petCenter > enemyCenter ? 'scaleX(-1)' : 'scaleX(1)';
             }
@@ -18159,6 +18161,7 @@
             petEl.className = 'battle-pet';
             petEl.dataset.owner = owner;
             petEl.dataset.species = event.species;
+            const visualSize = applyPetVisualSize(petEl, event.species, 'battle');
             petEl.innerHTML = `
                 <img src="${def.asset}" alt="${def.name}">
                 <div class="battle-pet-hp"><div class="battle-pet-hp-fill"></div></div>
@@ -18169,6 +18172,8 @@
                 hp: event.hp || event.maxHp || 1,
                 maxHp: event.maxHp || event.hp || 1,
                 species: event.species,
+                visualWidth: visualSize.width,
+                visualHeight: visualSize.height,
                 worldX: typeof event.petX === 'number' ? event.petX : 0,
             };
             placeBattlePet(owner, event.petX, event.playerX, event.cpuX);
@@ -18205,7 +18210,7 @@
                 ? event.petX
                 : (typeof pet.worldX === 'number' ? pet.worldX : (owner === 'player' ? 72 : 1432));
             const startX = typeof pet.worldX === 'number' ? pet.worldX : homeX;
-            const targetX = getBattlePetAttackX(event, dir, startX);
+            const targetX = getBattlePetAttackX(event, dir, startX, pet);
             pet.el.classList.remove('defeated');
             await animateBattlePetTo(owner, targetX, event.playerX, event.cpuX, 1);
             pet.el.animate([
@@ -18228,13 +18233,17 @@
             await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.72);
         }
 
-        function getBattlePetAttackX(event, dir, startX) {
+        function getBattlePetAttackX(event, dir, startX, pet) {
             if (typeof event.targetX !== 'number') return startX + dir * 220;
-            const petCenter = startX + 48;
+            const petHalf = getBattlePetHalfWidth(pet);
+            const targetPetHalf = getBattlePetHalfWidth(battlePets[event.targetOwner]);
+            const petCenter = startX + petHalf;
             const targetCenter = event.targetType === 'pet'
-                ? event.targetX + 48
+                ? event.targetX + targetPetHalf
                 : event.targetX + 110;
-            const approachGap = event.targetType === 'pet' ? 52 : 76;
+            const approachGap = event.targetType === 'pet'
+                ? Math.round(52 * ((petHalf + targetPetHalf) / 96))
+                : Math.round(76 * (petHalf / 48));
             const rawDelta = targetCenter - petCenter - Math.sign(targetCenter - petCenter || dir) * approachGap;
             return Math.max(0, Math.min(1504, Math.round(startX + rawDelta)));
         }
@@ -18280,10 +18289,54 @@
         };
 
         const PET_DEFS = {
-            dog:      { name: 'Dog',      role: 'Balanced striker', asset: 'Assets/Pets/Dog.png',  baseHp: 200, hpPerLevel: 30 },
-            cat:      { name: 'Cat',      role: 'Fast pet hunter',  asset: 'Assets/Pets/Cat.png',  baseHp: 190, hpPerLevel: 26 },
-            capybara: { name: 'Capybara', role: 'Calm control',     asset: 'Assets/Pets/Capy.png', baseHp: 220, hpPerLevel: 28 },
-            bear:     { name: 'Bear',     role: 'Heavy bruiser',    asset: 'Assets/Pets/Bear.png', baseHp: 280, hpPerLevel: 38 },
+            dog: {
+                name: 'Dog',
+                role: 'Balanced striker',
+                asset: 'Assets/Pets/Dog.png',
+                baseHp: 200,
+                hpPerLevel: 30,
+                visual: {
+                    lobby: { width: 119, height: 99 },
+                    battle: { width: 96, height: 88 },
+                    inventory: { width: 70, height: 62 },
+                },
+            },
+            cat: {
+                name: 'Cat',
+                role: 'Fast pet hunter',
+                asset: 'Assets/Pets/Cat.png',
+                baseHp: 190,
+                hpPerLevel: 26,
+                visual: {
+                    lobby: { width: 106, height: 92 },
+                    battle: { width: 88, height: 80 },
+                    inventory: { width: 64, height: 58 },
+                },
+            },
+            capybara: {
+                name: 'Capybara',
+                role: 'Calm control',
+                asset: 'Assets/Pets/Capy.png',
+                baseHp: 220,
+                hpPerLevel: 28,
+                visual: {
+                    lobby: { width: 132, height: 96 },
+                    battle: { width: 112, height: 86 },
+                    inventory: { width: 80, height: 60 },
+                },
+            },
+            bear: {
+                name: 'Bear',
+                role: 'Heavy bruiser',
+                asset: 'Assets/Pets/Bear.png',
+                baseHp: 280,
+                hpPerLevel: 38,
+                visual: {
+                    lobby: { width: 154, height: 124 },
+                    battle: { width: 132, height: 106 },
+                    inventory: { width: 88, height: 72 },
+                },
+            },
         };
         const PET_TACTICS = {
             balanced:      'Balanced',
@@ -18291,6 +18344,28 @@
             focus_pet:     'Focus Pet',
             protect_owner: 'Protect Owner',
         };
+
+        function getPetVisualSize(species, context) {
+            const def = PET_DEFS[species] || PET_DEFS.dog;
+            return def.visual?.[context] || PET_DEFS.dog.visual[context] || PET_DEFS.dog.visual.battle;
+        }
+
+        function applyPetVisualSize(el, species, context) {
+            if (!el) return { width: 0, height: 0 };
+            const size = getPetVisualSize(species, context);
+            el.style.width = `${size.width}px`;
+            el.style.height = `${size.height}px`;
+            return size;
+        }
+
+        function petImageStyle(species, context) {
+            const size = getPetVisualSize(species, context);
+            return `width:${size.width}px;height:${size.height}px;`;
+        }
+
+        function getBattlePetHalfWidth(pet) {
+            return Math.max(1, Number(pet?.visualWidth) || getPetVisualSize(pet?.species || 'dog', 'battle').width) / 2;
+        }
 
         function getPetMaxHp(pet) {
             const def = PET_DEFS[pet?.species] || PET_DEFS.dog;
@@ -26011,7 +26086,7 @@
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
                 card.innerHTML = `
-                    <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                    <img src="${def.asset}" alt="${escapeHTML(def.name)}" style="${petImageStyle(pet.species, 'inventory')}">
                     <div class="inventory-pet-info">
                         <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
                         <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · ACTIVE' : ''}</div>
@@ -26037,7 +26112,7 @@
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card inventory-pet-adopt';
                 card.innerHTML = `
-                    <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                    <img src="${def.asset}" alt="${escapeHTML(def.name)}" style="${petImageStyle(species, 'inventory')}">
                     <div class="inventory-pet-info">
                         <div class="inventory-pet-name">Adopt ${escapeHTML(def.name)}</div>
                         <div class="inventory-pet-role">${escapeHTML(def.role)}</div>
@@ -26078,6 +26153,7 @@
             if (lobbyPet) {
                 lobbyPet.src = def.asset;
                 lobbyPet.alt = pet.name || def.name;
+                applyPetVisualSize(lobbyPet, pet.species, 'lobby');
                 lobbyPet.hidden = false;
             }
         }
