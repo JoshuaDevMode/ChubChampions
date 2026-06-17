@@ -18667,6 +18667,29 @@
         }
 
         function getPetPassiveText(pet) {
+            const rarity = PET_RARITIES[pet?.rarity] ? pet.rarity : 'common';
+            const pct = value => Math.round(value * 100) + '%';
+            if (pet?.species === 'cat') {
+                const second = { common: 0, rare: 0.06, epic: 0.12, legendary: 0.20 }[rarity] || 0;
+                const third = { common: 0, rare: 0.04, epic: 0.09, legendary: 0.16 }[rarity] || 0;
+                return `Combo Strike: ${pct(0.25 + second)} owner / ${pct(0.40 + second)} pet chance for 2 hits; then ${pct(0.12 + third)} owner / ${pct(0.22 + third)} pet chance for 3 hits.`;
+            }
+            if (pet?.species === 'dog') {
+                const guard = { common: 0, rare: 0.06, epic: 0.12, legendary: 0.20 }[rarity] || 0;
+                const counter = { common: 0, rare: 0.05, epic: 0.12, legendary: 0.20 }[rarity] || 0;
+                return `Guardian: ${pct(0.24 + guard)} chance to protect owner; ${pct(0.35 + counter)} of triggers counter instead of intercept.`;
+            }
+            if (pet?.species === 'capybara') {
+                const turns = { common: 2, rare: 2, epic: 3, legendary: 3 }[rarity] || 2;
+                const ownerDr = { common: 0.05, rare: 0.06, epic: 0.08, legendary: 0.10 }[rarity] || 0.05;
+                const petDr = { common: 0.20, rare: 0.24, epic: 0.29, legendary: 0.35 }[rarity] || 0.20;
+                return `Calm: ${turns} turns. Reduces owner damage ${pct(ownerDr)} or pet damage ${pct(petDr)}; also cuts owner fury gain.`;
+            }
+            if (pet?.species === 'bear') {
+                const chance = { common: 0.20, rare: 0.25, epic: 0.31, legendary: 0.38 }[rarity] || 0.20;
+                const mult = { common: 1.60, rare: 1.75, epic: 1.90, legendary: 2.10 }[rarity] || 1.60;
+                return `Critical Bite: ${pct(chance)} crit chance for x${mult.toFixed(2)} damage.`;
+            }
             return (PET_DEFS[pet?.species] || PET_DEFS.dog).passive || 'Battle companion.';
         }
 
