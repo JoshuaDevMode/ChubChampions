@@ -18230,16 +18230,58 @@
             await sleep(120);
             if (event.targetType === 'pet') {
                 if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp);
-                showDamage(targetOwner, event.damage, false);
+                showDamage(targetOwner, event.damage, !!event.isCrit);
             } else {
                 game.player.health = event.playerHp;
                 game.cpu.health = event.cpuHp;
                 updateBothFighters();
-                showDamage(targetOwner, event.damage, false);
+                showDamage(targetOwner, event.damage, !!event.isCrit);
             }
             await sleep(120);
             faceBattlePet(owner, homeX, event.playerX, event.cpuX);
             await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.72, 0);
+        }
+
+        async function animateBattlePetGuardian(event) {
+            const owner = event.owner;
+            let pet = battlePets[owner];
+            if (!pet?.el && event.species && PET_DEFS[event.species]) {
+                createBattlePet({ owner, species: event.species, hp: event.petHp || 1, maxHp: event.petMaxHp || 1, petX: event.petX, playerX: event.playerX, cpuX: event.cpuX });
+                pet = battlePets[owner];
+            }
+            if (!pet?.el) return;
+
+            const homeX = typeof event.petX === 'number'
+                ? event.petX
+                : (typeof pet.worldX === 'number' ? pet.worldX : (owner === 'player' ? 72 : 1432));
+            const ownerX = owner === 'player' ? event.playerX : event.cpuX;
+            const guardX = Math.round(ownerX + (owner === 'player' ? 74 : 28));
+            pet.el.classList.remove('defeated');
+            await animateBattlePetTo(owner, guardX, event.playerX, event.cpuX, 0.85, -28);
+            pet.el.animate([
+                { transform: 'translateY(-28px) scale(1)' },
+                { transform: 'translateY(-34px) scale(1.22)' },
+                { transform: 'translateY(-28px) scale(1)' },
+            ], { duration: 220, easing: 'cubic-bezier(.18,.8,.24,1)' });
+            await sleep(120);
+
+            if (event.mode === 'intercept') {
+                updateBattlePetHp(owner, event.petHp, event.petMaxHp);
+                pet.el.animate([
+                    { filter: 'brightness(1)' },
+                    { filter: 'brightness(1.85)' },
+                    { filter: 'brightness(1)' },
+                ], { duration: 260, easing: 'ease-out' });
+            } else if (event.mode === 'counter') {
+                game.player.health = event.playerHp;
+                game.cpu.health = event.cpuHp;
+                updateBothFighters();
+                if (event.counterDamage > 0) showDamage(event.attacker, event.counterDamage, false);
+            }
+
+            await sleep(160);
+            faceBattlePet(owner, homeX, event.playerX, event.cpuX);
+            await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.8, 0);
         }
 
         function getBattlePetAttackX(event, dir, startX, pet) {
@@ -24505,6 +24547,11 @@
 
                     case 'pet_attack': {
                         await animateBattlePetAttack(event);
+                        break;
+                    }
+
+                    case 'pet_guardian': {
+                        await animateBattlePetGuardian(event);
                         break;
                     }
 
