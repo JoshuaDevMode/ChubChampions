@@ -15140,8 +15140,7 @@
             height: 100%;
             object-fit: contain;
         }
-        .main-menu .pet-action-btn,
-        .main-menu .pet-tactic-select {
+        .main-menu .pet-action-btn {
             height: 28px;
             border: 2px solid #2b1a0e;
             border-radius: 8px;
@@ -15152,11 +15151,6 @@
             font-weight: 900;
             cursor: pointer;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 0 #2b1a0e;
-        }
-        .main-menu .pet-tactic-select {
-            background: #fff7df;
-            padding: 0 6px;
-            max-width: 128px;
         }
         .main-menu .pet-adopt-grid {
             display: grid;
@@ -26045,20 +26039,6 @@
             persistPetChange(character);
         }
 
-        async function setPetTactic(tactic) {
-            const character = getSelectedCharacter();
-            normalizeClientPetCollection(character);
-            if (!character || !character.pet || !PET_TACTICS[tactic]) return;
-            if (playerSession && BACKEND_URL) {
-                const data = await petActionOnServer('set_tactic', { tactic });
-                if (!data.ok) showNotice(data.error || 'Could not update pet tactic.');
-                return;
-            }
-            character.pet.tactic = tactic;
-            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
-            persistPetChange(character);
-        }
-
         async function healPet() {
             const character = getSelectedCharacter();
             normalizeClientPetCollection(character);
@@ -26117,7 +26097,6 @@
             if (!character) return;
             normalizeClientPetCollection(character);
             if (petId && character.activePetId !== petId) await setActivePet(petId);
-            if (action === 'tactic') await setPetTactic(value);
             if (action === 'heal') await healPet();
             if (action === 'train') await trainPet();
             renderInventoryPets();
@@ -26149,15 +26128,11 @@
                         <div class="inventory-pet-stats">
                             <span>HP ${pet.hp}/${pet.maxHp}</span>
                             <span>XP ${xpText}</span>
-                            <span>${escapeHTML(PET_TACTICS[pet.tactic] || 'Balanced')}</span>
                             <span>${escapeHTML(def.name)}</span>
                         </div>
                     </div>
                     <div class="inventory-pet-actions">
                         ${!isActive ? `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">ACTIVE</button>` : ''}
-                        <select data-pet-action="tactic" data-pet-id="${escapeHTML(pet.id)}">
-                            ${Object.entries(PET_TACTICS).map(([id, label]) => `<option value="${id}" ${pet.tactic === id ? 'selected' : ''}>${label}</option>`).join('')}
-                        </select>
                         <button type="button" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">HEAL</button>
                         <button type="button" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">TRAIN</button>
                     </div>`;
@@ -39888,12 +39863,6 @@
                 return;
             }
             await petInventoryAction(btn.dataset.petId, action);
-        });
-
-        document.getElementById('inventory-pets-grid').addEventListener('change', async e => {
-            const select = e.target.closest('select[data-pet-action="tactic"]');
-            if (!select) return;
-            await petInventoryAction(select.dataset.petId, 'tactic', select.value);
         });
 
         // PvP button handler (coming soon)
