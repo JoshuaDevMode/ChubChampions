@@ -26895,6 +26895,51 @@
             updateLobbyCharacterDisplay();
         }
 
+        let lobbyIdleTimer = null;
+        let lobbyIdleAnim = null;
+
+        function stopLobbyIdle() {
+            if (lobbyIdleTimer) { clearTimeout(lobbyIdleTimer); lobbyIdleTimer = null; }
+            if (lobbyIdleAnim) { clearInterval(lobbyIdleAnim); lobbyIdleAnim = null; }
+        }
+
+        function getLobbyIdleFrames() {
+            const playerImg = document.getElementById('player')?.querySelector('img.character-png');
+            const idle = playerImg?._idleSrc || playerImg?.src || 'Assets/Player/Movement/Character.png';
+            const blink = Array.isArray(playerImg?._idleBlinkFrames) ? playerImg._idleBlinkFrames.filter(Boolean) : [];
+            return { idle, blink };
+        }
+
+        function startLobbyIdle() {
+            const img = document.getElementById('menu-character-img');
+            if (!img || img.style.visibility === 'hidden') return;
+            stopLobbyIdle();
+
+            const { idle, blink } = getLobbyIdleFrames();
+            img.src = idle;
+            if (!blink.length) return;
+
+            const scheduleBlink = () => {
+                lobbyIdleTimer = setTimeout(() => {
+                    let frame = 0;
+                    img.src = blink[0];
+                    lobbyIdleAnim = setInterval(() => {
+                        frame++;
+                        if (frame < blink.length) {
+                            img.src = blink[frame];
+                            return;
+                        }
+                        clearInterval(lobbyIdleAnim);
+                        lobbyIdleAnim = null;
+                        img.src = idle;
+                        scheduleBlink();
+                    }, 120);
+                }, 900 + Math.random() * 1700);
+            };
+
+            scheduleBlink();
+        }
+
         // Update lobby character display
         function updateLobbyCharacterDisplay() {
             syncGlobalsFromChar(getSelectedCharacter());
@@ -26928,6 +26973,7 @@
                 statsPanel.style.display = ''; // Show wooden panel
                 if (charImg) charImg.style.visibility = '';
                 if (charBg) charBg.style.visibility = '';
+                startLobbyIdle();
                 const played = character.gamesPlayed || 0;
                 const won = character.gamesWon || 0;
                 const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
@@ -27030,6 +27076,7 @@
                 statsPanel.style.display = 'none'; // Hide wooden panel
                 if (charImg) charImg.style.visibility = 'hidden';
                 if (charBg) charBg.style.visibility = 'hidden';
+                stopLobbyIdle();
                 levelEl.textContent = '';
                 statsEl.innerHTML = '';
                 const _col = document.getElementById('elem-powers-col');
