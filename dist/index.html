@@ -18427,7 +18427,7 @@
                 : (typeof pet.worldX === 'number' ? pet.worldX : (owner === 'player' ? 72 : 1432));
             const startX = typeof pet.worldX === 'number' ? pet.worldX : homeX;
             const targetX = getBattlePetAttackX(event, dir, startX, pet);
-            const attackY = event.targetType === 'pet' ? -14 : -54;
+            const attackY = event.targetType === 'pet' ? -38 : -54;
             pet.el.classList.remove('defeated');
             await animateBattlePetTo(owner, targetX, event.playerX, event.cpuX, 1, attackY);
             pet.el.animate([
