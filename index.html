@@ -8257,30 +8257,75 @@
         .inventory-pets-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 12px;
             overflow-y: auto;
             flex: 1;
             padding-right: 5px;
         }
         .pet-fusion-panel {
             display: none;
-            grid-template-columns: 1fr 64px 1fr 1fr;
-            gap: 10px;
-            align-items: stretch;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 2px solid rgba(120,80,30,0.34);
-            border-radius: 10px;
-            background: rgba(255,248,225,0.68);
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1200;
+            width: min(980px, calc(100vw - 56px));
+            max-height: min(620px, calc(100vh - 72px));
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 12px;
+            padding: 14px;
+            border: 4px solid #7c4a1e;
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255,249,229,0.98), rgba(238,210,158,0.96));
             font-family: 'Fredoka', sans-serif;
             color: #2b1a0e;
+            box-shadow: 0 18px 42px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.7);
         }
         .pet-fusion-panel.active { display: grid; }
+        .pet-fusion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 2px solid rgba(120,80,30,0.25);
+            padding-bottom: 8px;
+        }
+        .pet-fusion-title {
+            font-size: 1.08em;
+            font-weight: 900;
+            letter-spacing: 0;
+        }
+        .pet-fusion-close {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: #fff7df;
+            color: #2b1a0e;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 24px;
+            cursor: pointer;
+        }
+        .pet-fusion-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(250px, 0.75fr);
+            gap: 14px;
+            min-height: 0;
+        }
+        .pet-fusion-workbench {
+            display: grid;
+            grid-template-columns: minmax(120px, 1fr) 64px minmax(120px, 1fr);
+            gap: 10px;
+            align-items: center;
+        }
         .pet-fusion-slot,
         .pet-fusion-result {
-            min-height: 112px;
+            width: 126px;
+            min-height: 126px;
+            aspect-ratio: 1 / 1;
             border: 2px dashed rgba(43,26,14,0.42);
-            border-radius: 10px;
+            border-radius: 12px;
             background: rgba(255,255,255,0.36);
             display: flex;
             flex-direction: column;
@@ -8290,6 +8335,7 @@
             padding: 8px;
             font-size: 0.76em;
             font-weight: 800;
+            justify-self: center;
         }
         .pet-fusion-slot.drop-over {
             border-color: #b45309;
@@ -8311,12 +8357,15 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            align-items: center;
+            justify-content: center;
         }
         .pet-fusion-rules {
             font-size: 0.72em;
             font-weight: 800;
             line-height: 1.25;
             color: #6b4820;
+            text-align: center;
         }
         .pet-fusion-actions {
             display: flex;
@@ -8347,13 +8396,57 @@
             font-weight: 900;
             margin-top: 3px;
         }
-        .inventory-pet-card {
+        .pet-fusion-inventory {
+            min-height: 0;
+            border-left: 2px solid rgba(120,80,30,0.22);
+            padding-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .pet-fusion-inventory-title {
+            font-size: 0.84em;
+            font-weight: 900;
+            color: #5a3517;
+        }
+        .pet-fusion-inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            overflow-y: auto;
+            min-height: 0;
+            padding-right: 4px;
+        }
+        .pet-fusion-inventory-item {
             background: rgba(255,248,225,0.62);
             border: 2px solid rgba(120,80,30,0.32);
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 8px;
             display: grid;
-            grid-template-columns: 104px 1fr;
+            grid-template-columns: 66px 1fr;
+            gap: 7px;
+            align-items: center;
+            font-family: 'Fredoka', sans-serif;
+            color: #2b1a0e;
+        }
+        .pet-fusion-inventory-item.active {
+            border-color: #b45309;
+            background: linear-gradient(180deg, rgba(254,243,199,0.9), rgba(251,191,36,0.18));
+        }
+        .pet-fusion-inventory-item img {
+            width: 62px;
+            height: 54px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
+        }
+        .pet-fusion-inventory-item[draggable="true"] { cursor: grab; }
+        .inventory-pet-card {
+            background: rgba(255,248,225,0.46);
+            border: 2px solid rgba(120,80,30,0.26);
+            border-radius: 10px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 132px 1fr;
             gap: 10px;
             align-items: center;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
@@ -8363,8 +8456,8 @@
             background: linear-gradient(180deg, rgba(254,243,199,0.85), rgba(251,191,36,0.18));
         }
         .inventory-pet-card img {
-            width: 70px;
-            height: 62px;
+            width: 118px;
+            height: 102px;
             object-fit: contain;
             justify-self: center;
             align-self: end;
@@ -8377,12 +8470,12 @@
         }
         .inventory-pet-name {
             font-weight: 900;
-            font-size: 0.95em;
+            font-size: 1.02em;
             line-height: 1.05;
         }
         .inventory-pet-role {
             color: #6b4820;
-            font-size: 0.72em;
+            font-size: 0.78em;
             font-weight: 800;
             margin: 2px 0 6px;
         }
@@ -8390,7 +8483,7 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 4px;
-            font-size: 0.72em;
+            font-size: 0.78em;
             font-weight: 800;
         }
         .inventory-pet-actions {
@@ -8422,7 +8515,8 @@
             opacity: 0.88;
         }
         .inventory-pet-card[draggable="true"] { cursor: grab; }
-        .inventory-pet-card.pet-dragging { opacity: 0.35; }
+        .inventory-pet-card.pet-dragging,
+        .pet-fusion-inventory-item.pet-dragging { opacity: 0.35; }
         .inv-equipment-slot[draggable="true"] { cursor: grab; }
         .inv-equipment-slot.inv-dragging { opacity: 0.3; cursor: grabbing; }
         .inv-equipment-slot.inv-drop-over {
@@ -12879,6 +12973,7 @@
         .main-menu #menu-shop-btn::before       { content: "🏪"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-market-btn::before     { content: "⚖"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-pets-btn::before       { content: "🐾"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
         .main-menu .top-nav-btn:hover {
@@ -16280,6 +16375,7 @@
                 <button class="top-nav-btn" id="menu-shop-btn">SHOP</button>
                 <button class="top-nav-btn" id="menu-market-btn">MARKET</button>
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
+                <button class="top-nav-btn" id="menu-pets-btn">PETS</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
                 <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
@@ -16564,10 +16660,26 @@
             <div class="inventory-consumables-grid" id="inventory-consumables-grid" style="display:none;">
                 <!-- Consumable cards populated by JS -->
             </div>
-            <div class="pet-fusion-panel" id="pet-fusion-panel">
-                <div class="pet-fusion-slot" data-fusion-slot="0">Drop pet here</div>
-                <div class="pet-fusion-plus"><canvas id="pet-fusion-plus-canvas" width="56" height="56"></canvas></div>
-                <div class="pet-fusion-slot" data-fusion-slot="1">Drop pet here</div>
+            <!-- Pets Grid (hidden by default) -->
+            <div class="inventory-pets-grid" id="inventory-pets-grid" style="display:none;">
+                <!-- Pet cards populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pet Fusion Panel -->
+    <div class="pet-fusion-panel" id="pet-fusion-panel">
+        <div class="pet-fusion-header">
+            <div class="pet-fusion-title">PET FUSION</div>
+            <button class="pet-fusion-close" id="pet-fusion-close" type="button">&times;</button>
+        </div>
+        <div class="pet-fusion-body">
+            <div>
+                <div class="pet-fusion-workbench">
+                    <div class="pet-fusion-slot" data-fusion-slot="0">Drop pet here</div>
+                    <div class="pet-fusion-plus"><canvas id="pet-fusion-plus-canvas" width="56" height="56"></canvas></div>
+                    <div class="pet-fusion-slot" data-fusion-slot="1">Drop pet here</div>
+                </div>
                 <div class="pet-fusion-side">
                     <div class="pet-fusion-result" id="pet-fusion-result">Result preview</div>
                     <div class="pet-fusion-rules" id="pet-fusion-rules">
@@ -16579,9 +16691,9 @@
                     </div>
                 </div>
             </div>
-            <!-- Pets Grid (hidden by default) -->
-            <div class="inventory-pets-grid" id="inventory-pets-grid" style="display:none;">
-                <!-- Pet cards populated by JS -->
+            <div class="pet-fusion-inventory">
+                <div class="pet-fusion-inventory-title">Owned Pets</div>
+                <div class="pet-fusion-inventory-grid" id="pet-fusion-inventory-grid"></div>
             </div>
         </div>
     </div>
@@ -18442,6 +18554,9 @@
                 asset: 'Assets/Pets/Dog.png',
                 baseHp: 200,
                 hpPerLevel: 30,
+                minDamage: 28,
+                maxDamage: 38,
+                passive: 'Guardian: can intercept or counter attacks aimed at the owner.',
                 visual: {
                     lobby: { width: 132, height: 110 },
                     battle: { width: 108, height: 99 },
@@ -18454,6 +18569,9 @@
                 asset: 'Assets/Pets/Cat.png',
                 baseHp: 190,
                 hpPerLevel: 26,
+                minDamage: 14,
+                maxDamage: 22,
+                passive: 'Double Strike: chance to hit twice, especially against pets.',
                 visual: {
                     lobby: { width: 118, height: 102 },
                     battle: { width: 99, height: 90 },
@@ -18466,6 +18584,9 @@
                 asset: 'Assets/Pets/Capy.png',
                 baseHp: 220,
                 hpPerLevel: 28,
+                minDamage: 24,
+                maxDamage: 34,
+                passive: 'Calm: reduces enemy damage and fury gain for a short time.',
                 visual: {
                     lobby: { width: 148, height: 108 },
                     battle: { width: 126, height: 97 },
@@ -18478,6 +18599,9 @@
                 asset: 'Assets/Pets/Bear.png',
                 baseHp: 280,
                 hpPerLevel: 38,
+                minDamage: 55,
+                maxDamage: 75,
+                passive: 'Critical Bite: heavy hits with a chance to crit.',
                 visual: {
                     lobby: { width: 173, height: 139 },
                     battle: { width: 148, height: 119 },
@@ -18528,6 +18652,22 @@
             const rarity = PET_RARITIES[pet?.rarity] ? pet.rarity : 'common';
             const level = Math.max(1, Math.min(PET_RARITIES[rarity].cap, Number(pet?.level) || 1));
             return Math.round((def.baseHp + (level - 1) * def.hpPerLevel) * PET_RARITIES[rarity].mult);
+        }
+
+        function getPetDamageRange(pet) {
+            const def = PET_DEFS[pet?.species] || PET_DEFS.dog;
+            const rarity = PET_RARITIES[pet?.rarity] ? pet.rarity : 'common';
+            const level = Math.max(1, Math.min(PET_RARITIES[rarity].cap, Number(pet?.level) || 1));
+            const levelMult = 1 + (level - 1) * 0.055;
+            const rarityMult = PET_RARITIES[rarity].mult;
+            return {
+                min: Math.max(1, Math.round((def.minDamage || 1) * levelMult * rarityMult)),
+                max: Math.max(1, Math.round((def.maxDamage || 1) * levelMult * rarityMult)),
+            };
+        }
+
+        function getPetPassiveText(pet) {
+            return (PET_DEFS[pet?.species] || PET_DEFS.dog).passive || 'Battle companion.';
         }
 
         function getPetExpForNextLevel(level, rarity = 'common') {
@@ -26244,11 +26384,26 @@
         function petCardMiniHtml(pet) {
             if (!pet) return 'Drop pet here';
             const def = PET_DEFS[pet.species] || PET_DEFS.dog;
+            const dmg = getPetDamageRange(pet);
             return `
                 <img src="${def.asset}" alt="${escapeHTML(def.name)}">
                 <div>${escapeHTML(pet.name)}</div>
-                <div>LV ${pet.level}</div>
+                <div>LV ${pet.level} · DMG ${dmg.min}-${dmg.max}</div>
                 ${petRarityChip(pet.rarity)}
+            `;
+        }
+
+        function petFusionInventoryItemHtml(pet, activePet) {
+            const def = PET_DEFS[pet.species] || PET_DEFS.dog;
+            const dmg = getPetDamageRange(pet);
+            const isActive = activePet && pet.id === activePet.id;
+            return `
+                <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                <div>
+                    <div class="inventory-pet-name">${escapeHTML(pet.name)}</div>
+                    <div class="inventory-pet-role">LV ${pet.level} · DMG ${dmg.min}-${dmg.max}${isActive ? ' · Companion' : ''}</div>
+                    ${petRarityChip(pet.rarity)}
+                </div>
             `;
         }
 
@@ -26297,7 +26452,11 @@
             const panel = document.getElementById('pet-fusion-panel');
             if (!panel) return;
             const character = getSelectedCharacter();
-            const pets = normalizeClientPetCollection(character).pets;
+            if (!character) {
+                document.getElementById('pet-fusion-inventory-grid').innerHTML = '<div class="inventory-pet-role" style="grid-column:1/-1;text-align:center;">Select a fighter first.</div>';
+                return;
+            }
+            const { pets, activePet } = normalizeClientPetCollection(character);
             petFusionState.slots = petFusionState.slots.map(id => pets.some(p => p.id === id) ? id : null);
             const selected = petFusionState.slots.map(id => pets.find(p => p.id === id) || null);
             document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
@@ -26325,7 +26484,31 @@
                 chestBtn.textContent = `OPEN PET CHEST (${count})`;
                 chestBtn.disabled = count <= 0;
             }
+            const sideGrid = document.getElementById('pet-fusion-inventory-grid');
+            if (sideGrid) {
+                sideGrid.innerHTML = '';
+                pets.forEach(pet => {
+                    const item = document.createElement('div');
+                    item.className = 'pet-fusion-inventory-item' + (activePet && pet.id === activePet.id ? ' active' : '');
+                    item.draggable = true;
+                    item.dataset.petId = pet.id;
+                    item.innerHTML = petFusionInventoryItemHtml(pet, activePet);
+                    sideGrid.appendChild(item);
+                });
+                if (!pets.length) {
+                    sideGrid.innerHTML = '<div class="inventory-pet-role" style="grid-column:1/-1;text-align:center;">No pets owned.</div>';
+                }
+            }
             drawPetFusionPlus();
+        }
+
+        function openPetFusionPanel() {
+            renderPetFusionPanel();
+            document.getElementById('pet-fusion-panel')?.classList.add('active');
+        }
+
+        function closePetFusionPanel() {
+            document.getElementById('pet-fusion-panel')?.classList.remove('active');
         }
 
         function randomPetChestRarity() {
@@ -26351,6 +26534,7 @@
                 if (!data.ok) showNotice(data.error || 'Could not open Pet Chest.');
                 else showNotice((data.openedPet?.name || character.pet?.name || 'Pet') + ' joined your fighter!');
                 renderInventoryPets();
+                renderPetFusionPanel();
                 return;
             }
             if ((character.pets || []).length >= 12) {
@@ -26375,6 +26559,7 @@
             persistPetChange(character);
             showNotice(pet.name + ' joined your fighter!');
             renderInventoryPets();
+            renderPetFusionPanel();
         }
 
         async function fuseSelectedPets() {
@@ -26393,6 +26578,7 @@
                 else showNotice((data.fusedPet?.name || character.pet?.name || 'Pet') + ' evolved!');
                 petFusionState.slots = [null, null];
                 renderInventoryPets();
+                renderPetFusionPanel();
                 return;
             }
             const fused = normalizeClientPet({ ...result, id: 'pet_' + character.id + '_' + result.species + '_' + result.rarity + '_' + Date.now().toString(36) });
@@ -26403,6 +26589,7 @@
             persistPetChange(character);
             showNotice(fused.name + ' evolved!');
             renderInventoryPets();
+            renderPetFusionPanel();
         }
 
         function renderInventoryPets() {
@@ -26416,30 +26603,32 @@
             }
 
             const { pets, activePet } = normalizeClientPetCollection(character);
-            renderPetFusionPanel();
             pets.forEach(pet => {
                 const def = PET_DEFS[pet.species];
                 const cap = PET_RARITIES[pet.rarity]?.cap || 20;
                 const nextXp = getPetExpForNextLevel(pet.level, pet.rarity);
                 const xpText = pet.level >= cap ? 'MAX' : `${pet.xp}/${nextXp}`;
+                const dmg = getPetDamageRange(pet);
                 const isActive = activePet && pet.id === activePet.id;
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
                 card.draggable = true;
                 card.dataset.petId = pet.id;
                 card.innerHTML = `
-                    <img src="${def.asset}" alt="${escapeHTML(def.name)}" style="${petImageStyle(pet.species, 'inventory')}">
+                    <img src="${def.asset}" alt="${escapeHTML(def.name)}">
                     <div class="inventory-pet-info">
                         <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
-                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · ACTIVE' : ''}<br>${petRarityChip(pet.rarity)}</div>
+                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · Companion' : ''}<br>${petRarityChip(pet.rarity)}</div>
                         <div class="inventory-pet-stats">
                             <span>HP ${pet.hp}/${pet.maxHp}</span>
+                            <span>DMG ${dmg.min}-${dmg.max}</span>
                             <span>XP ${xpText}</span>
-                            <span>${escapeHTML(def.name)}</span>
+                            <span>Cap ${cap}</span>
+                            <span style="grid-column:1/-1;">${escapeHTML(getPetPassiveText(pet))}</span>
                         </div>
                     </div>
                     <div class="inventory-pet-actions">
-                        ${!isActive ? `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">ACTIVE</button>` : ''}
+                        ${!isActive ? `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">SET COMPANION</button>` : '<button type="button" disabled>COMPANION</button>'}
                         <button type="button" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">HEAL</button>
                         <button type="button" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">TRAIN</button>
                     </div>`;
@@ -40009,6 +40198,7 @@
 
         // Inventory button handler
         document.getElementById('menu-inventory-btn').addEventListener('click', () => {
+            closePetFusionPanel();
             populateInventoryPanel();
             updateInvEquipmentSlots();
             // Reset filter to weapons tab
@@ -40038,6 +40228,11 @@
         document.getElementById('menu-market-btn').addEventListener('click', () => {
             openMarketplace();
         });
+        document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
+            closeMarketplace();
+            openPetFusionPanel();
+        });
+        document.getElementById('pet-fusion-close')?.addEventListener('click', closePetFusionPanel);
         document.getElementById('market-close').addEventListener('click', () => {
             closeMarketplace();
         });
@@ -40147,7 +40342,6 @@
                 document.getElementById('inventory-weapons-grid').style.display = filter === 'weapons' ? '' : 'none';
                 document.getElementById('inventory-consumables-grid').style.display = filter === 'consumables' ? 'grid' : 'none';
                 document.getElementById('inventory-pets-grid').style.display = filter === 'pets' ? 'grid' : 'none';
-                document.getElementById('pet-fusion-panel')?.classList.toggle('active', filter === 'pets');
                 if (filter === 'pets') renderInventoryPets();
                 _syncInvSectionsToTab(filter);
             });
@@ -40180,6 +40374,18 @@
 
         document.getElementById('inventory-pets-grid').addEventListener('dragend', e => {
             e.target.closest('.inventory-pet-card')?.classList.remove('pet-dragging');
+        });
+
+        document.getElementById('pet-fusion-inventory-grid')?.addEventListener('dragstart', e => {
+            const card = e.target.closest('.pet-fusion-inventory-item[data-pet-id]');
+            if (!card) return;
+            card.classList.add('pet-dragging');
+            e.dataTransfer.setData('text/plain', card.dataset.petId);
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        document.getElementById('pet-fusion-inventory-grid')?.addEventListener('dragend', e => {
+            e.target.closest('.pet-fusion-inventory-item')?.classList.remove('pet-dragging');
         });
 
         document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
