@@ -8262,6 +8262,91 @@
             flex: 1;
             padding-right: 5px;
         }
+        .pet-fusion-panel {
+            display: none;
+            grid-template-columns: 1fr 64px 1fr 1fr;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid rgba(120,80,30,0.34);
+            border-radius: 10px;
+            background: rgba(255,248,225,0.68);
+            font-family: 'Fredoka', sans-serif;
+            color: #2b1a0e;
+        }
+        .pet-fusion-panel.active { display: grid; }
+        .pet-fusion-slot,
+        .pet-fusion-result {
+            min-height: 112px;
+            border: 2px dashed rgba(43,26,14,0.42);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.36);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.76em;
+            font-weight: 800;
+        }
+        .pet-fusion-slot.drop-over {
+            border-color: #b45309;
+            background: rgba(251,191,36,0.20);
+        }
+        .pet-fusion-slot img,
+        .pet-fusion-result img {
+            width: 72px;
+            height: 58px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
+        }
+        .pet-fusion-plus {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pet-fusion-side {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .pet-fusion-rules {
+            font-size: 0.72em;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #6b4820;
+        }
+        .pet-fusion-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .pet-fusion-actions button {
+            height: 30px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .pet-fusion-actions button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .pet-rarity-chip {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 0.72em;
+            font-weight: 900;
+            margin-top: 3px;
+        }
         .inventory-pet-card {
             background: rgba(255,248,225,0.62);
             border: 2px solid rgba(120,80,30,0.32);
@@ -8336,6 +8421,8 @@
             border-style: dashed;
             opacity: 0.88;
         }
+        .inventory-pet-card[draggable="true"] { cursor: grab; }
+        .inventory-pet-card.pet-dragging { opacity: 0.35; }
         .inv-equipment-slot[draggable="true"] { cursor: grab; }
         .inv-equipment-slot.inv-dragging { opacity: 0.3; cursor: grabbing; }
         .inv-equipment-slot.inv-drop-over {
@@ -16477,6 +16564,21 @@
             <div class="inventory-consumables-grid" id="inventory-consumables-grid" style="display:none;">
                 <!-- Consumable cards populated by JS -->
             </div>
+            <div class="pet-fusion-panel" id="pet-fusion-panel">
+                <div class="pet-fusion-slot" data-fusion-slot="0">Drop pet here</div>
+                <div class="pet-fusion-plus"><canvas id="pet-fusion-plus-canvas" width="56" height="56"></canvas></div>
+                <div class="pet-fusion-slot" data-fusion-slot="1">Drop pet here</div>
+                <div class="pet-fusion-side">
+                    <div class="pet-fusion-result" id="pet-fusion-result">Result preview</div>
+                    <div class="pet-fusion-rules" id="pet-fusion-rules">
+                        Requires 2 pets with same species, rarity, and level. The result becomes lvl 1 of the next rarity.
+                    </div>
+                    <div class="pet-fusion-actions">
+                        <button type="button" id="pet-fusion-button" disabled>FUSE</button>
+                        <button type="button" id="pet-open-chest-button">OPEN PET CHEST (0)</button>
+                    </div>
+                </div>
+            </div>
             <!-- Pets Grid (hidden by default) -->
             <div class="inventory-pets-grid" id="inventory-pets-grid" style="display:none;">
                 <!-- Pet cards populated by JS -->
@@ -18389,6 +18491,15 @@
             focus_pet:     'Focus Pet',
             protect_owner: 'Protect Owner',
         };
+        const PET_RARITIES = {
+            common:    { label: 'Common',    cap: 20, mult: 1.00, color: '#6b7280' },
+            rare:      { label: 'Rare',      cap: 30, mult: 1.20, color: '#2563eb' },
+            epic:      { label: 'Epic',      cap: 40, mult: 1.45, color: '#9333ea' },
+            legendary: { label: 'Legendary', cap: 50, mult: 1.80, color: '#d97706' },
+        };
+        const PET_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
+        const PET_RARITY_NEXT = { common: 'rare', rare: 'epic', epic: 'legendary' };
+        const PET_CHEST_RARITY_WEIGHTS = { common: 70, rare: 23, epic: 6, legendary: 1 };
 
         function getPetVisualSize(species, context) {
             const def = PET_DEFS[species] || PET_DEFS.dog;
@@ -18414,23 +18525,27 @@
 
         function getPetMaxHp(pet) {
             const def = PET_DEFS[pet?.species] || PET_DEFS.dog;
-            const level = Math.max(1, Math.min(20, Number(pet?.level) || 1));
-            return def.baseHp + (level - 1) * def.hpPerLevel;
+            const rarity = PET_RARITIES[pet?.rarity] ? pet.rarity : 'common';
+            const level = Math.max(1, Math.min(PET_RARITIES[rarity].cap, Number(pet?.level) || 1));
+            return Math.round((def.baseHp + (level - 1) * def.hpPerLevel) * PET_RARITIES[rarity].mult);
         }
 
-        function getPetExpForNextLevel(level) {
-            const safeLevel = Math.max(1, Math.min(19, Math.floor(Number(level) || 1)));
+        function getPetExpForNextLevel(level, rarity = 'common') {
+            const cap = PET_RARITIES[rarity]?.cap || 20;
+            const safeLevel = Math.max(1, Math.min(cap - 1, Math.floor(Number(level) || 1)));
             return Math.round((100 + safeLevel * 45 + safeLevel * safeLevel * 8) * 2);
         }
 
         function normalizeClientPet(pet) {
             if (!pet || !PET_DEFS[pet.species]) return null;
-            const level = Math.max(1, Math.min(20, Math.floor(Number(pet.level) || 1)));
-            const maxHp = getPetMaxHp({ ...pet, level });
+            const rarity = PET_RARITIES[pet.rarity] ? pet.rarity : 'common';
+            const level = Math.max(1, Math.min(PET_RARITIES[rarity].cap, Math.floor(Number(pet.level) || 1)));
+            const maxHp = getPetMaxHp({ ...pet, rarity, level });
             return {
                 id: pet.id || ('pet_' + pet.species),
                 name: String(pet.name || PET_DEFS[pet.species].name).slice(0, 32),
                 species: pet.species,
+                rarity,
                 level,
                 xp: Math.max(0, Math.floor(Number(pet.xp) || 0)),
                 hp: Math.max(0, Math.min(maxHp, Math.floor(Number(pet.hp ?? maxHp) || maxHp))),
@@ -18455,6 +18570,7 @@
             character.pets = pets;
             character.pet = activePet;
             character.activePetId = activePet?.id || null;
+            character.petChests = Math.max(0, Math.floor(Number(character.petChests) || 0));
             return { pets, activePetId: character.activePetId, activePet };
         }
 
@@ -18465,6 +18581,7 @@
                 id: pet.id,
                 name: pet.name,
                 species: pet.species,
+                rarity: pet.rarity,
                 level: pet.level,
                 xp: pet.xp,
                 hp: pet.hp,
@@ -19505,6 +19622,7 @@
             minigameDailyPurchases = char.minigameDailyPurchases || 0;
             minigamePurchaseDate   = char.minigamePurchaseDate   || '';
             shopFragmentDate       = char.shopFragmentDate       || '';
+            char.petChests         = Math.max(0, Math.floor(Number(char.petChests) || 0));
             shopFragmentBoughtToday = (char.shopFragmentDate === new Date().toDateString());
         }
 
@@ -20014,6 +20132,15 @@
             if (serverReward.tokens > 0)    rewardLines.push('+' + serverReward.tokens + ' 🪙');
             if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
             if (serverReward.crystal)       rewardLines.push('💎 +1 CRYSTAL!');
+            if (serverReward.pet && character) {
+                character.pet = normalizeClientPet(serverReward.pet);
+                character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean) : [...(character.pets || []), character.pet].filter(Boolean);
+                character.activePetId = serverReward.activePetId || character.pet?.id || null;
+                normalizeClientPetCollection(character);
+                const petLabel = PET_RARITIES[character.pet?.rarity]?.label || 'Common';
+                rewardLines.push(petLabel + ' ' + (PET_DEFS[character.pet?.species]?.name || 'Pet') + ' joined!');
+                saveCharacters();
+            }
             if (serverReward.xpBoost) {
                 pendingXpBoosts.push({ mult: serverReward.xpBoost.mult, battles: serverReward.xpBoost.battles });
                 const _chestXpChar = getSelectedCharacter();
@@ -23446,6 +23573,7 @@
                         morale: character.morale ?? 100,
                         lastMoraleTimestamp: character.lastMoraleTimestamp || null,
                     },
+                    petChests: character.petChests || 0,
                     stat_model: character.statModel || null,
                 }),
             }).then(r => {
@@ -23519,6 +23647,7 @@
                             local.pet                    = normalizeClientPet(sc.pet);
                             local.pets                   = Array.isArray(sc.pets) ? sc.pets.map(normalizeClientPet).filter(Boolean) : (local.pet ? [local.pet] : []);
                             local.activePetId            = sc.activePetId || local.pet?.id || null;
+                            local.petChests              = Math.max(0, Math.floor(Number(sc.petChests) || 0));
                             normalizeClientPetCollection(local);
                             // Restore stat model history from server (source of truth)
                             if (sc.statModel) local.statModel = sc.statModel;
@@ -25981,6 +26110,7 @@
                     character.pet = normalizeClientPet(data.pet);
                     character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean) : (character.pet ? [character.pet] : []);
                     character.activePetId = data.activePetId || character.pet?.id || null;
+                    if (data.petChests !== undefined) character.petChests = Math.max(0, Math.floor(Number(data.petChests) || 0));
                     if (data.newTokens !== undefined) {
                         globalTokens = data.newTokens;
                         updateCurrencyUI();
@@ -26011,6 +26141,7 @@
                 id: 'pet_' + character.id + '_' + species + '_' + Date.now().toString(36),
                 name: def.name,
                 species,
+                rarity: 'common',
                 level: 1,
                 xp: 0,
                 tactic: species === 'cat' ? 'focus_pet' : 'balanced',
@@ -26075,14 +26206,15 @@
                 return;
             }
             character.pet = normalizeClientPet(character.pet);
-            if (character.pet.level >= 20) {
+            const cap = PET_RARITIES[character.pet.rarity]?.cap || 20;
+            if (character.pet.level >= cap) {
                 showNotice(character.pet.name + ' is already max level.');
                 return;
             }
-            const needed = getPetExpForNextLevel(character.pet.level);
+            const needed = getPetExpForNextLevel(character.pet.level, character.pet.rarity);
             character.pet.xp += Math.ceil(needed * 0.25);
-            while (character.pet.level < 20 && character.pet.xp >= getPetExpForNextLevel(character.pet.level)) {
-                character.pet.xp -= getPetExpForNextLevel(character.pet.level);
+            while (character.pet.level < cap && character.pet.xp >= getPetExpForNextLevel(character.pet.level, character.pet.rarity)) {
+                character.pet.xp -= getPetExpForNextLevel(character.pet.level, character.pet.rarity);
                 character.pet.level++;
                 character.pet.maxHp = getPetMaxHp(character.pet);
                 character.pet.hp = character.pet.maxHp;
@@ -26102,6 +26234,177 @@
             renderInventoryPets();
         }
 
+        const petFusionState = { slots: [null, null] };
+
+        function petRarityChip(rarity) {
+            const meta = PET_RARITIES[rarity] || PET_RARITIES.common;
+            return `<span class="pet-rarity-chip" style="background:${meta.color};">${escapeHTML(meta.label)}</span>`;
+        }
+
+        function petCardMiniHtml(pet) {
+            if (!pet) return 'Drop pet here';
+            const def = PET_DEFS[pet.species] || PET_DEFS.dog;
+            return `
+                <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                <div>${escapeHTML(pet.name)}</div>
+                <div>LV ${pet.level}</div>
+                ${petRarityChip(pet.rarity)}
+            `;
+        }
+
+        function getFusionResultPet(petA, petB) {
+            if (!petA || !petB || petA.id === petB.id) return null;
+            if (petA.species !== petB.species || petA.rarity !== petB.rarity || petA.level !== petB.level) return null;
+            const nextRarity = PET_RARITY_NEXT[petA.rarity];
+            if (!nextRarity) return null;
+            const def = PET_DEFS[petA.species] || PET_DEFS.dog;
+            return normalizeClientPet({
+                id: 'preview_' + petA.species + '_' + nextRarity,
+                name: (nextRarity === 'common' ? '' : PET_RARITIES[nextRarity].label + ' ') + def.name,
+                species: petA.species,
+                rarity: nextRarity,
+                level: 1,
+                xp: 0,
+            });
+        }
+
+        function drawPetFusionPlus() {
+            const canvas = document.getElementById('pet-fusion-plus-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#2b1a0e';
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.moveTo(28, 12);
+            ctx.lineTo(28, 44);
+            ctx.moveTo(12, 28);
+            ctx.lineTo(44, 28);
+            ctx.stroke();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(28, 12);
+            ctx.lineTo(28, 44);
+            ctx.moveTo(12, 28);
+            ctx.lineTo(44, 28);
+            ctx.stroke();
+        }
+
+        function renderPetFusionPanel() {
+            const panel = document.getElementById('pet-fusion-panel');
+            if (!panel) return;
+            const character = getSelectedCharacter();
+            const pets = normalizeClientPetCollection(character).pets;
+            petFusionState.slots = petFusionState.slots.map(id => pets.some(p => p.id === id) ? id : null);
+            const selected = petFusionState.slots.map(id => pets.find(p => p.id === id) || null);
+            document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
+                const index = Number(slot.dataset.fusionSlot);
+                slot.innerHTML = petCardMiniHtml(selected[index]);
+            });
+            const result = getFusionResultPet(selected[0], selected[1]);
+            const resultEl = document.getElementById('pet-fusion-result');
+            if (resultEl) {
+                resultEl.innerHTML = result
+                    ? petCardMiniHtml(result)
+                    : 'Result preview';
+            }
+            const rules = document.getElementById('pet-fusion-rules');
+            if (rules) {
+                rules.textContent = result
+                    ? `${PET_RARITIES[selected[0].rarity].label} ${PET_DEFS[selected[0].species].name} LV ${selected[0].level} + duplicate -> ${PET_RARITIES[result.rarity].label} ${PET_DEFS[result.species].name} LV 1`
+                    : 'Requires 2 pets with same species, rarity, and level. Legendary pets cannot fuse.';
+            }
+            const fuseBtn = document.getElementById('pet-fusion-button');
+            if (fuseBtn) fuseBtn.disabled = !result;
+            const chestBtn = document.getElementById('pet-open-chest-button');
+            if (chestBtn) {
+                const count = Math.max(0, Math.floor(Number(character?.petChests) || 0));
+                chestBtn.textContent = `OPEN PET CHEST (${count})`;
+                chestBtn.disabled = count <= 0;
+            }
+            drawPetFusionPlus();
+        }
+
+        function randomPetChestRarity() {
+            const total = Object.values(PET_CHEST_RARITY_WEIGHTS).reduce((sum, weight) => sum + weight, 0);
+            let roll = Math.random() * total;
+            for (const rarity of PET_RARITY_ORDER) {
+                roll -= PET_CHEST_RARITY_WEIGHTS[rarity] || 0;
+                if (roll <= 0) return rarity;
+            }
+            return 'common';
+        }
+
+        async function openPetChest() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            normalizeClientPetCollection(character);
+            if ((character.petChests || 0) <= 0) {
+                showNotice('No Pet Chest available.');
+                return;
+            }
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('open_chest');
+                if (!data.ok) showNotice(data.error || 'Could not open Pet Chest.');
+                else showNotice((data.openedPet?.name || character.pet?.name || 'Pet') + ' joined your fighter!');
+                renderInventoryPets();
+                return;
+            }
+            if ((character.pets || []).length >= 12) {
+                showNotice('Pet inventory is full.');
+                return;
+            }
+            const species = Object.keys(PET_DEFS)[Math.floor(Math.random() * Object.keys(PET_DEFS).length)];
+            const rarity = randomPetChestRarity();
+            const def = PET_DEFS[species];
+            const pet = normalizeClientPet({
+                id: 'pet_' + character.id + '_' + species + '_' + rarity + '_' + Date.now().toString(36),
+                name: (rarity === 'common' ? '' : PET_RARITIES[rarity].label + ' ') + def.name,
+                species,
+                rarity,
+                level: 1,
+                xp: 0,
+            });
+            character.petChests = Math.max(0, (character.petChests || 0) - 1);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
+            character.pet = pet;
+            character.activePetId = pet.id;
+            persistPetChange(character);
+            showNotice(pet.name + ' joined your fighter!');
+            renderInventoryPets();
+        }
+
+        async function fuseSelectedPets() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            const pets = normalizeClientPetCollection(character).pets;
+            const [petA, petB] = petFusionState.slots.map(id => pets.find(p => p.id === id) || null);
+            const result = getFusionResultPet(petA, petB);
+            if (!result) {
+                showNotice('Fusion requires 2 pets with same species, rarity, and level.');
+                return;
+            }
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('fuse', { petAId: petA.id, petBId: petB.id });
+                if (!data.ok) showNotice(data.error || 'Could not fuse pets.');
+                else showNotice((data.fusedPet?.name || character.pet?.name || 'Pet') + ' evolved!');
+                petFusionState.slots = [null, null];
+                renderInventoryPets();
+                return;
+            }
+            const fused = normalizeClientPet({ ...result, id: 'pet_' + character.id + '_' + result.species + '_' + result.rarity + '_' + Date.now().toString(36) });
+            character.pets = pets.filter(p => p.id !== petA.id && p.id !== petB.id).concat(fused);
+            character.pet = fused;
+            character.activePetId = fused.id;
+            petFusionState.slots = [null, null];
+            persistPetChange(character);
+            showNotice(fused.name + ' evolved!');
+            renderInventoryPets();
+        }
+
         function renderInventoryPets() {
             const grid = document.getElementById('inventory-pets-grid');
             if (!grid) return;
@@ -26113,18 +26416,22 @@
             }
 
             const { pets, activePet } = normalizeClientPetCollection(character);
+            renderPetFusionPanel();
             pets.forEach(pet => {
                 const def = PET_DEFS[pet.species];
-                const nextXp = getPetExpForNextLevel(pet.level);
-                const xpText = pet.level >= 20 ? 'MAX' : `${pet.xp}/${nextXp}`;
+                const cap = PET_RARITIES[pet.rarity]?.cap || 20;
+                const nextXp = getPetExpForNextLevel(pet.level, pet.rarity);
+                const xpText = pet.level >= cap ? 'MAX' : `${pet.xp}/${nextXp}`;
                 const isActive = activePet && pet.id === activePet.id;
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
+                card.draggable = true;
+                card.dataset.petId = pet.id;
                 card.innerHTML = `
                     <img src="${def.asset}" alt="${escapeHTML(def.name)}" style="${petImageStyle(pet.species, 'inventory')}">
                     <div class="inventory-pet-info">
                         <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
-                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · ACTIVE' : ''}</div>
+                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · ACTIVE' : ''}<br>${petRarityChip(pet.rarity)}</div>
                         <div class="inventory-pet-stats">
                             <span>HP ${pet.hp}/${pet.maxHp}</span>
                             <span>XP ${xpText}</span>
@@ -26139,20 +26446,17 @@
                 grid.appendChild(card);
             });
 
-            Object.entries(PET_DEFS).forEach(([species, def]) => {
-                const card = document.createElement('div');
-                card.className = 'inventory-pet-card inventory-pet-adopt';
-                card.innerHTML = `
-                    <img src="${def.asset}" alt="${escapeHTML(def.name)}" style="${petImageStyle(species, 'inventory')}">
+            if (pets.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'inventory-pet-card inventory-pet-adopt';
+                empty.style.gridColumn = '1 / -1';
+                empty.innerHTML = `
                     <div class="inventory-pet-info">
-                        <div class="inventory-pet-name">Adopt ${escapeHTML(def.name)}</div>
-                        <div class="inventory-pet-role">${escapeHTML(def.role)}</div>
-                    </div>
-                    <div class="inventory-pet-actions">
-                        <button type="button" data-pet-action="adopt" data-species="${species}">ADOPT</button>
+                        <div class="inventory-pet-name">No pets owned</div>
+                        <div class="inventory-pet-role">Pets come from Pet Chests and rare Legendary Chest drops.</div>
                     </div>`;
-                grid.appendChild(card);
-            });
+                grid.appendChild(empty);
+            }
         }
 
         function renderPetPanel(character) {
@@ -39843,6 +40147,7 @@
                 document.getElementById('inventory-weapons-grid').style.display = filter === 'weapons' ? '' : 'none';
                 document.getElementById('inventory-consumables-grid').style.display = filter === 'consumables' ? 'grid' : 'none';
                 document.getElementById('inventory-pets-grid').style.display = filter === 'pets' ? 'grid' : 'none';
+                document.getElementById('pet-fusion-panel')?.classList.toggle('active', filter === 'pets');
                 if (filter === 'pets') renderInventoryPets();
                 _syncInvSectionsToTab(filter);
             });
@@ -39864,6 +40169,45 @@
             }
             await petInventoryAction(btn.dataset.petId, action);
         });
+
+        document.getElementById('inventory-pets-grid').addEventListener('dragstart', e => {
+            const card = e.target.closest('.inventory-pet-card[data-pet-id]');
+            if (!card) return;
+            card.classList.add('pet-dragging');
+            e.dataTransfer.setData('text/plain', card.dataset.petId);
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        document.getElementById('inventory-pets-grid').addEventListener('dragend', e => {
+            e.target.closest('.inventory-pet-card')?.classList.remove('pet-dragging');
+        });
+
+        document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
+            slot.addEventListener('dragover', e => {
+                e.preventDefault();
+                slot.classList.add('drop-over');
+            });
+            slot.addEventListener('dragleave', () => slot.classList.remove('drop-over'));
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                slot.classList.remove('drop-over');
+                const petId = e.dataTransfer.getData('text/plain');
+                const index = Number(slot.dataset.fusionSlot);
+                if (!petId || !Number.isInteger(index)) return;
+                const otherIndex = index === 0 ? 1 : 0;
+                if (petFusionState.slots[otherIndex] === petId) petFusionState.slots[otherIndex] = null;
+                petFusionState.slots[index] = petId;
+                renderPetFusionPanel();
+            });
+            slot.addEventListener('click', () => {
+                const index = Number(slot.dataset.fusionSlot);
+                petFusionState.slots[index] = null;
+                renderPetFusionPanel();
+            });
+        });
+
+        document.getElementById('pet-fusion-button')?.addEventListener('click', fuseSelectedPets);
+        document.getElementById('pet-open-chest-button')?.addEventListener('click', openPetChest);
 
         // PvP button handler (coming soon)
         document.getElementById('menu-pvp-btn').addEventListener('click', () => {
