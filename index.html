@@ -25257,6 +25257,76 @@
 
             const isWeaponAnim = !!WEAPONS[attackType];
 
+            if (event.targetType === 'pet') {
+                const targetPet = battlePets[defender];
+                if (!targetPet?.el) return;
+                const arenaEl = document.getElementById('arena');
+                const scale = arenaEl.offsetWidth / 1600;
+                const petHalf = getBattlePetHalfWidth(targetPet);
+                const targetWorldX = typeof event.targetX === 'number'
+                    ? event.targetX
+                    : (typeof targetPet.worldX === 'number' ? targetPet.worldX : (defender === 'player' ? 72 : 1432));
+                const targetCenter = targetWorldX + petHalf;
+                const approachGap = isWeaponAnim && getWeaponById(attackType)?.longReach ? 150 : 78;
+                const approachSign = attacker === 'player' ? -1 : 1;
+                const attackLeftWorld = Math.max(0, Math.min(1370, targetCenter + approachSign * approachGap));
+                const attackLeftPx = Math.round((_visualPos(attackLeftWorld) || attackLeftWorld) * scale);
+                const homeWorldX = attacker === 'player' ? event.playerX : event.cpuX;
+                const homeLeftPx = Math.round((_visualPos(homeWorldX) || homeWorldX) * scale);
+                const runMs = Math.round(Math.max(260, Math.min(760, Math.abs(attackLeftWorld - homeWorldX) / 100 * 115 * atkMult)));
+                const animType = isWeaponAnim ? 'punch' : attackType;
+
+                stopIdleBlink(attackerEl);
+                attackerEl.classList.add('dashing');
+                hideWeaponIdleOverlay(attacker);
+                if (!isWeaponAnim) hideOffHandOverlay(attacker);
+                attackerEl.style.zIndex = '24';
+                targetPet.el.style.zIndex = '18';
+                attackerEl.style.setProperty('transition', `left ${runMs}ms ease-out, transform ${runMs}ms ease-out`, 'important');
+                void attackerEl.offsetWidth;
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                attackerEl.style.left = attackLeftPx + 'px';
+                attackerEl.style.right = 'auto';
+                attackerEl.style.transform = 'translateY(-28px)';
+                await sleep(runMs);
+                stopRunAnimation(attackerEl);
+                playFootstep();
+
+                animateAttack(attackerEl, animType, Math.round(300 * atkMult), isWeaponAnim ? attackType : undefined);
+                await sleep(Math.round(180 * atkMult));
+                if (!game[attacker].furyActive) {
+                    game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 1.0);
+                    updateFuryBar(attacker);
+                }
+                updateBattlePetHp(defender, event.targetPetHp, event.targetPetMaxHp);
+                showDamageAtElement(targetPet.el, damage, isCrit);
+                targetPet.el.animate([
+                    { filter: 'brightness(1)' },
+                    { filter: 'brightness(1.9)' },
+                    { filter: 'brightness(1)' },
+                ], { duration: 260, easing: 'ease-out' });
+                playHitSound(animType, isCrit, isWeaponAnim ? attackType : null);
+                battleState.matchStats[attacker].hits = (battleState.matchStats[attacker].hits || 0) + 1;
+                battleState.matchStats[attacker].totalDamage = (battleState.matchStats[attacker].totalDamage || 0) + damage;
+                if (isCrit) battleState.matchStats[attacker].criticals = (battleState.matchStats[attacker].criticals || 0) + 1;
+                await sleep(170);
+
+                attackerEl.style.setProperty('transition', `left ${Math.round(runMs * 0.72)}ms ease-out, transform ${Math.round(runMs * 0.72)}ms ease-out`, 'important');
+                void attackerEl.offsetWidth;
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                attackerEl.style.left = homeLeftPx + 'px';
+                attackerEl.style.right = 'auto';
+                attackerEl.style.transform = '';
+                await sleep(Math.round(runMs * 0.72));
+                stopRunAnimation(attackerEl);
+                attackerEl.classList.remove('dashing');
+                attackerEl.style.transition = '';
+                attackerEl.style.zIndex = '';
+                targetPet.el.style.zIndex = '';
+                _syncFacingDirection();
+                return;
+            }
+
             // Jump/hop/combo attacks replace the idle overlay immediately with their own overlays,
             // so hide early for those. Non-weapon attacks (punch/kick while armed) also hide early
             // so the character doesn't run toward the opponent visually holding a weapon.
@@ -30468,6 +30538,21 @@
             damageEl.style.left = (fighterRect.left - arenaRect.left + fighterRect.width / 2) + 'px';
             damageEl.style.transform = 'translateX(-50%)';
             damageEl.style.top = (fighterRect.top - arenaRect.top - 30) + 'px';
+            arena.appendChild(damageEl);
+            damageEl.addEventListener('animationend', () => damageEl.remove(), { once: true });
+        }
+
+        function showDamageAtElement(targetEl, damage, isCrit) {
+            if (!targetEl) return;
+            const damageEl = document.createElement('div');
+            damageEl.className = 'damage-text' + (isCrit ? ' critical' : '');
+            damageEl.textContent = `-${damage}` + (isCrit ? ' CRITICAL!' : '');
+            const arena = document.getElementById('arena');
+            const arenaRect = arena.getBoundingClientRect();
+            const targetRect = targetEl.getBoundingClientRect();
+            damageEl.style.left = (targetRect.left - arenaRect.left + targetRect.width / 2) + 'px';
+            damageEl.style.transform = 'translateX(-50%)';
+            damageEl.style.top = (targetRect.top - arenaRect.top - 22) + 'px';
             arena.appendChild(damageEl);
             damageEl.addEventListener('animationend', () => damageEl.remove(), { once: true });
         }
