@@ -18708,6 +18708,40 @@
             return Math.max(1, Number(pet?.visualWidth) || getPetVisualSize(pet?.species || 'dog', 'battle').width) / 2;
         }
 
+        function getBattlePetHalfHeight(pet) {
+            return Math.max(1, Number(pet?.visualHeight) || getPetVisualSize(pet?.species || 'dog', 'battle').height) / 2;
+        }
+
+        function getPetAttackEdgeGap(attackType, targetPet) {
+            const weapon = getWeaponById(attackType);
+            const petHalf = getBattlePetHalfWidth(targetPet);
+            if (weapon?.longReach) return Math.round(44 + petHalf * 0.20);
+            if (weapon?.heavyAttack) return Math.round(6 + petHalf * 0.10);
+            if (weapon?.reachAttack) return Math.round(-4 + petHalf * 0.08);
+            if (weapon) return Math.round(-14 + petHalf * 0.06);
+            return Math.round(-24 + petHalf * 0.05);
+        }
+
+        function getPetTargetAttackY(targetPet, attackType) {
+            const weapon = getWeaponById(attackType);
+            const petHeight = getBattlePetHalfHeight(targetPet) * 2;
+            const heightLift = Math.max(0, Math.min(20, Math.round((petHeight - 72) * 0.22)));
+            const weaponLift = weapon?.longReach ? 4 : weapon?.heavyAttack ? 8 : 0;
+            return -(14 + heightLift + weaponLift);
+        }
+
+        function getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX) {
+            const fighterWidth = 220;
+            const petHalf = getBattlePetHalfWidth(targetPet);
+            const petLeft = targetWorldX;
+            const petRight = targetWorldX + petHalf * 2;
+            const edgeGap = getPetAttackEdgeGap(attackType, targetPet);
+            const left = attacker === 'player'
+                ? petLeft - fighterWidth - edgeGap
+                : petRight + edgeGap;
+            return Math.max(0, Math.min(1370, Math.round(left)));
+        }
+
         function getPetMaxHp(pet) {
             const def = PET_DEFS[pet?.species] || PET_DEFS.dog;
             const rarity = PET_RARITIES[pet?.rarity] ? pet.rarity : 'common';
@@ -25340,18 +25374,15 @@
                 if (!targetPet?.el) return;
                 const arenaEl = document.getElementById('arena');
                 const scale = arenaEl.offsetWidth / 1600;
-                const petHalf = getBattlePetHalfWidth(targetPet);
                 const targetWorldX = typeof event.targetX === 'number'
                     ? event.targetX
                     : (typeof targetPet.worldX === 'number' ? targetPet.worldX : (defender === 'player' ? 72 : 1432));
-                const targetCenter = targetWorldX + petHalf;
-                const approachGap = isWeaponAnim && getWeaponById(attackType)?.longReach ? 150 : 78;
-                const approachSign = attacker === 'player' ? -1 : 1;
-                const attackLeftWorld = Math.max(0, Math.min(1370, targetCenter + approachSign * approachGap));
+                const attackLeftWorld = getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX);
                 const attackLeftPx = Math.round((_visualPos(attackLeftWorld) || attackLeftWorld) * scale);
                 const homeWorldX = attacker === 'player' ? event.playerX : event.cpuX;
                 const homeLeftPx = Math.round((_visualPos(homeWorldX) || homeWorldX) * scale);
                 const runMs = Math.round(Math.max(260, Math.min(760, Math.abs(attackLeftWorld - homeWorldX) / 100 * 115 * atkMult)));
+                const attackY = getPetTargetAttackY(targetPet, attackType);
                 const animType = isWeaponAnim ? 'punch' : attackType;
 
                 stopIdleBlink(attackerEl);
@@ -25365,7 +25396,7 @@
                 animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 attackerEl.style.left = attackLeftPx + 'px';
                 attackerEl.style.right = 'auto';
-                attackerEl.style.transform = 'translateY(-28px)';
+                attackerEl.style.transform = `translateY(${attackY}px)`;
                 await sleep(runMs);
                 stopRunAnimation(attackerEl);
                 playFootstep();
