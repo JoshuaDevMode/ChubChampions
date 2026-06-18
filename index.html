@@ -18265,8 +18265,8 @@
                 cpu:    { hits: 0, criticals: 0, dodges: 0, blocks: 0, totalDamage: 0, combos: 0, weaponsUsed: 0, weaponsThrown: 0 }
             };
             battleState.consumables = { player: [], cpu: [] };
-            battlePets.player = null;
-            battlePets.cpu = null;
+            battlePets.player = [];
+            battlePets.cpu = [];
             document.querySelectorAll('.battle-pet').forEach(el => el.remove());
         }
 
@@ -18299,7 +18299,7 @@
             gameOverHandled: false
         };
 
-        const battlePets = { player: null, cpu: null };
+        const battlePets = { player: [], cpu: [] };
         const BATTLE_PET_RUN_MS_PER_100PX = 230;
 
         function battlePetStageScale() {
@@ -18307,19 +18307,36 @@
             return arena ? arena.offsetWidth / 1600 : 1;
         }
 
-        function setBattlePetVisualX(owner, worldX, playerX, cpuX) {
-            const pet = battlePets[owner];
+        function battlePetSlot(eventOrSlot) {
+            const raw = typeof eventOrSlot === 'number' ? eventOrSlot : eventOrSlot?.petSlot;
+            return Math.max(0, Math.min(1, Math.floor(Number(raw) || 0)));
+        }
+
+        function battleTargetPetSlot(event) {
+            return Math.max(0, Math.min(1, Math.floor(Number(event?.targetPetSlot) || 0)));
+        }
+
+        function getBattlePet(owner, eventOrSlot = 0) {
+            return battlePets[owner]?.[battlePetSlot(eventOrSlot)] || null;
+        }
+
+        function getBattleTargetPet(owner, event) {
+            return battlePets[owner]?.[battleTargetPetSlot(event)] || battlePets[owner]?.find(p => p?.el && p.hp > 0) || null;
+        }
+
+        function setBattlePetVisualX(owner, worldX, playerX, cpuX, slot = 0) {
+            const pet = getBattlePet(owner, slot);
             if (!pet?.el || typeof worldX !== 'number') return;
             const stageScale = battlePetStageScale();
             const visualWorldX = typeof _visualPos === 'function' ? _visualPos(worldX) : worldX;
             pet.el.style.left = Math.round(visualWorldX * stageScale) + 'px';
             pet.el.style.right = 'auto';
             pet.worldX = worldX;
-            faceBattlePet(owner, worldX, playerX, cpuX);
+            faceBattlePet(owner, worldX, playerX, cpuX, slot);
         }
 
-        function faceBattlePet(owner, petX, playerX, cpuX) {
-            const pet = battlePets[owner];
+        function faceBattlePet(owner, petX, playerX, cpuX, slot = 0) {
+            const pet = getBattlePet(owner, slot);
             if (!pet?.el) return;
             const enemyX = owner === 'player' ? cpuX : playerX;
             const img = pet.el.querySelector('img');
@@ -18335,14 +18352,14 @@
             return Math.round(Math.max(360, Math.min(2400, (px / 100) * BATTLE_PET_RUN_MS_PER_100PX * multiplier)));
         }
 
-        async function animateBattlePetTo(owner, toWorldX, playerX, cpuX, multiplier = 1, toY = 0) {
-            const pet = battlePets[owner];
+        async function animateBattlePetTo(owner, toWorldX, playerX, cpuX, multiplier = 1, toY = 0, slot = 0) {
+            const pet = getBattlePet(owner, slot);
             if (!pet?.el || typeof toWorldX !== 'number') return;
             const fromWorldX = typeof pet.worldX === 'number' ? pet.worldX : toWorldX;
             const fromY = Number(pet.visualY) || 0;
             const distance = Math.abs(toWorldX - fromWorldX);
             if (distance < 4 && Math.abs(toY - fromY) < 2) {
-                setBattlePetVisualX(owner, toWorldX, playerX, cpuX);
+                setBattlePetVisualX(owner, toWorldX, playerX, cpuX, slot);
                 pet.el.style.transform = `translateY(${toY}px)`;
                 pet.visualY = toY;
                 return;
@@ -18353,27 +18370,30 @@
             const duration = battlePetRunDuration(distance, multiplier);
             const midVisualX = fromVisualX + (toVisualX - fromVisualX) * 0.5;
             const midY = fromY + (toY - fromY) * 0.62 - 6;
-            faceBattlePet(owner, toWorldX, playerX, cpuX);
+            faceBattlePet(owner, toWorldX, playerX, cpuX, slot);
             pet.el.animate([
                 { left: Math.round(fromVisualX * stageScale) + 'px', transform: `translateY(${fromY}px) scale(1)` },
                 { left: Math.round(midVisualX * stageScale) + 'px', transform: `translateY(${midY}px) scale(1.03)`, offset: 0.5 },
                 { left: Math.round(toVisualX * stageScale) + 'px', transform: `translateY(${toY}px) scale(1)` },
             ], { duration, easing: 'cubic-bezier(.25,.7,.2,1)' });
             await sleep(duration);
-            setBattlePetVisualX(owner, toWorldX, playerX, cpuX);
+            setBattlePetVisualX(owner, toWorldX, playerX, cpuX, slot);
             pet.el.style.transform = `translateY(${toY}px)`;
             pet.visualY = toY;
         }
 
         function createBattlePet(event) {
             const owner = event.owner;
+            const slot = battlePetSlot(event);
             const def = PET_DEFS[event.species];
             const world = document.getElementById('arena-world');
             if (!world || !def) return;
-            world.querySelector(`.battle-pet[data-owner="${owner}"]`)?.remove();
+            world.querySelector(`.battle-pet[data-owner="${owner}"][data-pet-slot="${slot}"]`)?.remove();
             const petEl = document.createElement('div');
             petEl.className = 'battle-pet';
             petEl.dataset.owner = owner;
+            petEl.dataset.petSlot = String(slot);
+            if (event.petId) petEl.dataset.petId = event.petId;
             petEl.dataset.species = event.species;
             const visualSize = applyPetVisualSize(petEl, event.species, 'battle');
             petEl.innerHTML = `
@@ -18381,8 +18401,10 @@
                 <div class="battle-pet-hp"><div class="battle-pet-hp-fill"></div></div>
             `;
             world.appendChild(petEl);
-            battlePets[owner] = {
+            battlePets[owner][slot] = {
                 el: petEl,
+                id: event.petId || null,
+                slot,
                 hp: event.hp || event.maxHp || 1,
                 maxHp: event.maxHp || event.hp || 1,
                 species: event.species,
@@ -18391,18 +18413,18 @@
                 visualY: 0,
                 worldX: typeof event.petX === 'number' ? event.petX : 0,
             };
-            placeBattlePet(owner, event.petX, event.playerX, event.cpuX);
-            updateBattlePetHp(owner, battlePets[owner].hp, battlePets[owner].maxHp);
+            placeBattlePet(owner, event.petX, event.playerX, event.cpuX, slot);
+            updateBattlePetHp(owner, battlePets[owner][slot].hp, battlePets[owner][slot].maxHp, slot);
         }
 
-        function placeBattlePet(owner, petX, playerX, cpuX) {
-            const pet = battlePets[owner];
+        function placeBattlePet(owner, petX, playerX, cpuX, slot = 0) {
+            const pet = getBattlePet(owner, slot);
             if (!pet?.el || typeof petX !== 'number') return;
-            setBattlePetVisualX(owner, petX, playerX, cpuX);
+            setBattlePetVisualX(owner, petX, playerX, cpuX, slot);
         }
 
-        function updateBattlePetHp(owner, hp, maxHp) {
-            const pet = battlePets[owner];
+        function updateBattlePetHp(owner, hp, maxHp, slot = 0) {
+            const pet = getBattlePet(owner, slot);
             if (!pet?.el) return;
             pet.hp = Math.max(0, Number(hp) || 0);
             pet.maxHp = Math.max(1, Number(maxHp) || pet.maxHp || 1);
@@ -18412,11 +18434,12 @@
 
         async function animateBattlePetAttack(event) {
             const owner = event.owner;
+            const slot = battlePetSlot(event);
             const targetOwner = event.targetOwner || (owner === 'player' ? 'cpu' : 'player');
-            let pet = battlePets[owner];
+            let pet = getBattlePet(owner, slot);
             if (!pet?.el && event.species && PET_DEFS[event.species]) {
-                createBattlePet({ owner, species: event.species, hp: 1, maxHp: 1 });
-                pet = battlePets[owner];
+                createBattlePet({ owner, petSlot: slot, petId: event.petId, species: event.species, hp: 1, maxHp: 1, petX: event.petX, playerX: event.playerX, cpuX: event.cpuX });
+                pet = getBattlePet(owner, slot);
             }
             if (!pet?.el) return;
 
@@ -18428,7 +18451,7 @@
             const targetX = getBattlePetAttackX(event, dir, startX, pet);
             const attackY = event.targetType === 'pet' ? -38 : -54;
             pet.el.classList.remove('defeated');
-            await animateBattlePetTo(owner, targetX, event.playerX, event.cpuX, 1, attackY);
+            await animateBattlePetTo(owner, targetX, event.playerX, event.cpuX, 1, attackY, slot);
             pet.el.animate([
                 { transform: `translateY(${attackY}px) scale(1)` },
                 { transform: `translateY(${attackY - 10}px) scale(1.16)` },
@@ -18436,8 +18459,9 @@
             ], { duration: 180, easing: 'cubic-bezier(.18,.8,.24,1)' });
             await sleep(120);
             if (event.targetType === 'pet') {
-                if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp);
-                showDamage(targetOwner, event.damage, !!event.isCrit);
+                const targetPet = getBattleTargetPet(targetOwner, event);
+                if (event.targetPetHp !== undefined) updateBattlePetHp(targetOwner, event.targetPetHp, event.targetPetMaxHp, battleTargetPetSlot(event));
+                showDamageAtElement(targetPet?.el, event.damage, !!event.isCrit);
             } else {
                 game.player.health = event.playerHp;
                 game.cpu.health = event.cpuHp;
@@ -18445,16 +18469,17 @@
                 showDamage(targetOwner, event.damage, !!event.isCrit);
             }
             await sleep(120);
-            faceBattlePet(owner, homeX, event.playerX, event.cpuX);
-            await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.72, 0);
+            faceBattlePet(owner, homeX, event.playerX, event.cpuX, slot);
+            await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.72, 0, slot);
         }
 
         async function animateBattlePetGuardian(event) {
             const owner = event.owner;
-            let pet = battlePets[owner];
+            const slot = battlePetSlot(event);
+            let pet = getBattlePet(owner, slot);
             if (!pet?.el && event.species && PET_DEFS[event.species]) {
-                createBattlePet({ owner, species: event.species, hp: event.petHp || 1, maxHp: event.petMaxHp || 1, petX: event.petX, playerX: event.playerX, cpuX: event.cpuX });
-                pet = battlePets[owner];
+                createBattlePet({ owner, petSlot: slot, petId: event.petId, species: event.species, hp: event.petHp || 1, maxHp: event.petMaxHp || 1, petX: event.petX, playerX: event.playerX, cpuX: event.cpuX });
+                pet = getBattlePet(owner, slot);
             }
             if (!pet?.el) return;
 
@@ -18464,7 +18489,7 @@
             const ownerX = owner === 'player' ? event.playerX : event.cpuX;
             const guardX = Math.round(ownerX + (owner === 'player' ? 74 : 28));
             pet.el.classList.remove('defeated');
-            await animateBattlePetTo(owner, guardX, event.playerX, event.cpuX, 0.85, -28);
+            await animateBattlePetTo(owner, guardX, event.playerX, event.cpuX, 0.85, -28, slot);
             pet.el.animate([
                 { transform: 'translateY(-28px) scale(1)' },
                 { transform: 'translateY(-34px) scale(1.22)' },
@@ -18473,7 +18498,7 @@
             await sleep(120);
 
             if (event.mode === 'intercept') {
-                updateBattlePetHp(owner, event.petHp, event.petMaxHp);
+                updateBattlePetHp(owner, event.petHp, event.petMaxHp, slot);
                 pet.el.animate([
                     { filter: 'brightness(1)' },
                     { filter: 'brightness(1.85)' },
@@ -18487,14 +18512,14 @@
             }
 
             await sleep(160);
-            faceBattlePet(owner, homeX, event.playerX, event.cpuX);
-            await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.8, 0);
+            faceBattlePet(owner, homeX, event.playerX, event.cpuX, slot);
+            await animateBattlePetTo(owner, homeX, event.playerX, event.cpuX, 0.8, 0, slot);
         }
 
         function getBattlePetAttackX(event, dir, startX, pet) {
             if (typeof event.targetX !== 'number') return startX + dir * 220;
             const petHalf = getBattlePetHalfWidth(pet);
-            const targetPetHalf = getBattlePetHalfWidth(battlePets[event.targetOwner]);
+            const targetPetHalf = getBattlePetHalfWidth(getBattleTargetPet(event.targetOwner, event));
             const petCenter = startX + petHalf;
             const targetCenter = event.targetType === 'pet'
                 ? event.targetX + targetPetHalf
@@ -18509,7 +18534,7 @@
         function applyBattlePetDebuff(event) {
             const targetOwner = event.targetOwner;
             const target = event.targetType === 'pet'
-                ? battlePets[targetOwner]?.el
+                ? getBattleTargetPet(targetOwner, event)?.el
                 : game[targetOwner]?.element;
             if (!target) return;
             target.classList.add('calm');
@@ -18517,10 +18542,10 @@
         }
 
         function markBattlePetDefeated(event) {
-            const pet = battlePets[event.owner];
+            const pet = getBattlePet(event.owner, event);
             if (!pet?.el) return;
             pet.el.classList.add('defeated');
-            updateBattlePetHp(event.owner, 0, pet.maxHp);
+            updateBattlePetHp(event.owner, 0, pet.maxHp, battlePetSlot(event));
         }
 
         // matchStats → battleState.matchStats
@@ -18745,9 +18770,10 @@
         }
 
         function petForBattle(character) {
-            const pet = normalizeClientPetCollection(character).activePet;
+            const collection = normalizeClientPetCollection(character);
+            const pet = collection.activePet;
             if (!pet) return null;
-            return {
+            const toBattlePet = pet => ({
                 id: pet.id,
                 name: pet.name,
                 species: pet.species,
@@ -18757,6 +18783,11 @@
                 hp: pet.hp,
                 maxHp: pet.maxHp,
                 tactic: pet.tactic,
+            });
+            return {
+                ...toBattlePet(pet),
+                pets: collection.activePets.map(toBattlePet),
+                activePetIds: collection.activePetIds,
             };
         }
 
@@ -25268,7 +25299,7 @@
             const isWeaponAnim = !!WEAPONS[attackType];
 
             if (event.targetType === 'pet') {
-                const targetPet = battlePets[defender];
+                const targetPet = getBattleTargetPet(defender, event);
                 if (!targetPet?.el) return;
                 const arenaEl = document.getElementById('arena');
                 const scale = arenaEl.offsetWidth / 1600;
@@ -25308,7 +25339,7 @@
                     game[attacker].fury = Math.min(game[attacker].maxFury, (game[attacker].fury || 0) + 1.0);
                     updateFuryBar(attacker);
                 }
-                updateBattlePetHp(defender, event.targetPetHp, event.targetPetMaxHp);
+                updateBattlePetHp(defender, event.targetPetHp, event.targetPetMaxHp, battleTargetPetSlot(event));
                 showDamageAtElement(targetPet.el, damage, isCrit);
                 targetPet.el.animate([
                     { filter: 'brightness(1)' },
@@ -28240,6 +28271,8 @@
             _preBattleFetch = null;
             if (!battleState.pvpResult && playerSession) {
                 const _preSeed = (Date.now() ^ (Math.random() * 0x7fffffff | 0)) >>> 0;
+                const _battlePetCollection = normalizeClientPetCollection(character);
+                const _battlePet = petForBattle(character);
                 _preBattleFetch = fetchWithTimeout(BACKEND_URL + '/api/battle/run', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
@@ -28264,7 +28297,12 @@
                             adaptability:        character.adaptability        || 0,
                             furyPowerChoice:     getFuryPowerChoice(character),
                             furyPassiveEnabled:  getFuryPassiveEnabled(character),
-                            pet:                 petForBattle(character),
+                            pet:                 _battlePet,
+                            pets:                _battlePetCollection.activePets.map(p => ({
+                                id: p.id, name: p.name, species: p.species, rarity: p.rarity,
+                                level: p.level, xp: p.xp, hp: p.hp, maxHp: p.maxHp, tactic: p.tactic,
+                            })),
+                            activePetIds:        _battlePetCollection.activePetIds,
                         },
                         cpu: {
                             id: 0, name: battleState.cpuName || 'CPU', level: battleState.cpuStats.level || 1,
