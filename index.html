@@ -709,26 +709,27 @@
 
         .skill-scroll-pop {
             position: absolute;
-            min-width: 118px;
-            max-width: 190px;
-            padding: 6px 16px 7px;
+            min-width: 168px;
+            max-width: 250px;
+            padding: 8px 18px 9px;
             box-sizing: border-box;
             font-family: 'Fredoka', sans-serif;
             font-size: 12px;
             font-weight: 800;
-            line-height: 1.05;
+            line-height: 1.12;
             text-align: center;
             color: #4a2a10;
             background:
-                linear-gradient(90deg, rgba(115,70,28,0.18), transparent 15%, transparent 85%, rgba(115,70,28,0.18)),
-                linear-gradient(180deg, #fff2c4 0%, #e8c678 54%, #bd8741 100%);
-            border: 1px solid #6f3f18;
-            border-radius: 7px;
-            box-shadow: 0 3px 0 #4a260e, 0 7px 14px rgba(0,0,0,0.28);
-            text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+                linear-gradient(90deg, rgba(91,53,18,0.20), transparent 13%, transparent 87%, rgba(91,53,18,0.20)),
+                radial-gradient(circle at 50% 18%, rgba(255,255,255,0.60), transparent 34%),
+                linear-gradient(180deg, #fff6d5 0%, #efd58e 58%, #c79249 100%);
+            border: 2px solid #6f3f18;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #4a260e, 0 10px 18px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.62);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.65);
             pointer-events: none;
             z-index: 4;
-            animation: skill-scroll-float 1.65s ease-out forwards;
+            animation: skill-scroll-float 1.9s ease-out forwards;
         }
         .skill-scroll-pop::before,
         .skill-scroll-pop::after {
@@ -736,10 +737,10 @@
             position: absolute;
             top: 50%;
             width: 11px;
-            height: 22px;
+            height: 32px;
             transform: translateY(-50%);
-            border: 1px solid #6f3f18;
-            background: linear-gradient(180deg, #ffe2a0, #b87335);
+            border: 2px solid #6f3f18;
+            background: linear-gradient(180deg, #ffe9ae, #b87335);
             box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18);
         }
         .skill-scroll-pop::before {
@@ -754,11 +755,29 @@
         .skill-scroll-pop.damage { color: #7f1d1d; }
         .skill-scroll-pop.guard { color: #1e3a8a; }
         .skill-scroll-pop.control { color: #5b21b6; }
+        .skill-scroll-title {
+            display: block;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .skill-scroll-desc {
+            display: block;
+            margin-top: 3px;
+            font-size: 10px;
+            font-weight: 800;
+            color: rgba(43,26,14,0.82);
+            text-transform: none;
+            letter-spacing: 0;
+        }
         @keyframes skill-scroll-float {
-            0%   { opacity: 0; transform: translate(-50%, 12px) scale(0.86); }
-            14%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
-            72%  { opacity: 1; transform: translate(-50%, -18px) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -42px) scale(0.96); }
+            0%   { opacity: 0; transform: translate(-50%, 14px) scale(0.84) rotate(-1deg); }
+            12%  { opacity: 1; transform: translate(-50%, 0) scale(1.04) rotate(0.6deg); }
+            22%  { opacity: 1; transform: translate(-50%, -3px) scale(1) rotate(0deg); }
+            74%  { opacity: 1; transform: translate(-50%, -18px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -46px) scale(0.96); }
         }
 
         @keyframes hot-pulse {
@@ -29070,26 +29089,32 @@
 
         function getSkillScrollInfo(effect, value) {
             const v = Math.abs(Math.round(Number(value) || 0));
+            const hp = amount => amount ? `${amount} HP` : 'HP';
+            const turns = amount => `${amount || 1} turn${(amount || 1) === 1 ? '' : 's'}`;
             const map = {
-                hot:             { text: v ? 'Regen +' + v : 'Regen', tone: 'heal' },
-                regeneration:    { text: v ? 'Regeneration +' + v : 'Regeneration', tone: 'heal' },
-                second_wind:     { text: v ? 'Second Wind +' + v : 'Second Wind', tone: 'heal' },
-                lifesteal:       { text: v ? 'Lifesteal +' + v : 'Lifesteal', tone: 'heal' },
-                bleed:           { text: v ? 'Bleed -' + v : 'Bleed', tone: 'damage' },
-                burn:            { text: v ? 'Burn -' + v : 'Burn', tone: 'damage' },
-                wind_cut:        { text: v ? 'Wind Cut -' + v : 'Wind Cut', tone: 'damage' },
-                thorns:          { text: v ? 'Thorns -' + v : 'Thorns', tone: 'damage' },
-                counterattack:   { text: v ? 'Counter -' + v : 'Counter', tone: 'damage' },
-                exposed:         { text: 'Exposed ' + (v || 1) + 'T', tone: 'control' },
-                fire_passive:    { text: 'Fire Aura', tone: 'damage' },
-                wind_passive:    { text: 'Wind Guard', tone: 'guard' },
-                sanguine_ward:   { text: 'Sanguine Ward', tone: 'guard' },
-                shield_aegis:    { text: 'Aegis Block', tone: 'guard' },
-                bash:            { text: v ? 'Bash -' + v : 'Bash', tone: 'damage' },
-                retaliation:     { text: 'Retaliation', tone: 'control' },
-                stun:            { text: 'Stunned', tone: 'control' },
+                hot:             { title: 'Regen', tone: 'heal', desc: `Restored ${hp(v)} over time` },
+                regeneration:    { title: 'Regeneration', tone: 'heal', desc: `Restored ${hp(v)}` },
+                second_wind:     { title: 'Second Wind', tone: 'heal', desc: `Recovered ${hp(v)} before falling` },
+                lifesteal:       { title: 'Lifesteal', tone: 'heal', desc: `Drained and restored ${hp(v)}` },
+                bleed:           { title: 'Bleed', tone: 'damage', desc: `Enemy lost ${hp(v)} from wounds` },
+                burn:            { title: 'Burn', tone: 'damage', desc: `Enemy took ${hp(v)} from fire` },
+                wind_cut:        { title: 'Wind Cut', tone: 'damage', desc: `Passive slash dealt ${hp(v)}` },
+                thorns:          { title: 'Thorns', tone: 'damage', desc: `Reflected ${hp(v)} back` },
+                counterattack:   { title: 'Counterattack', tone: 'damage', desc: `Punished the hit for ${hp(v)}` },
+                exposed:         { title: 'Exposed', tone: 'control', desc: `Defense broken for ${turns(v)}` },
+                fire_passive:    { title: 'Fire Aura', tone: 'damage', desc: 'Ignited passive pressure' },
+                wind_passive:    { title: 'Wind Guard', tone: 'guard', desc: 'Wind shield activated' },
+                sanguine_ward:   { title: 'Sanguine Ward', tone: 'guard', desc: 'Reduced incoming damage' },
+                shield_aegis:    { title: 'Aegis Block', tone: 'guard', desc: 'Prevented damage with a shield' },
+                bash:            { title: 'Bash', tone: 'damage', desc: `Returned ${hp(v)} after blocking` },
+                retaliation:     { title: 'Retaliation', tone: 'control', desc: 'Prepared a revenge strike' },
+                stun:            { title: 'Stunned', tone: 'control', desc: `Skipped enemy action for ${turns(v)}` },
             };
-            return map[effect] || { text: String(effect || 'Skill').replace(/_/g, ' '), tone: value > 0 ? 'heal' : value < 0 ? 'damage' : 'guard' };
+            return map[effect] || {
+                title: String(effect || 'Skill').replace(/_/g, ' '),
+                desc: value > 0 ? `Restored ${hp(v)}` : value < 0 ? `Dealt ${hp(v)}` : 'Skill effect activated',
+                tone: value > 0 ? 'heal' : value < 0 ? 'damage' : 'guard',
+            };
         }
 
         function showPlayerSkillScroll(event) {
@@ -29097,11 +29122,14 @@
             const fighterEl = game.player?.element;
             if (!arena || !fighterEl) return;
             const info = getSkillScrollInfo(event.effect, event.value);
-            if (!info.text) return;
+            if (!info.title) return;
 
             const pop = document.createElement('div');
             pop.className = 'skill-scroll-pop ' + info.tone;
-            pop.textContent = info.text;
+            pop.innerHTML = `
+                <span class="skill-scroll-title">${escapeHTML(info.title)}</span>
+                <span class="skill-scroll-desc">${escapeHTML(info.desc || '')}</span>
+            `;
 
             const arenaRect = arena.getBoundingClientRect();
             const fighterRect = fighterEl.getBoundingClientRect();
