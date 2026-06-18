@@ -18718,7 +18718,7 @@
         }
 
         function normalizeClientPetCollection(character) {
-            if (!character) return { pets: [], activePetId: null, activePet: null };
+            if (!character) return { pets: [], activePetId: null, activePetIds: [], activePet: null, activePets: [] };
             const byId = new Map();
             const addPet = (raw) => {
                 const pet = normalizeClientPet(raw);
@@ -18729,12 +18729,20 @@
             if (Array.isArray(character.pets)) character.pets.forEach(addPet);
             addPet(character.pet);
             const pets = Array.from(byId.values()).slice(0, 12);
-            const activePet = (character.activePetId ? pets.find(p => p.id === character.activePetId) : null) || pets[0] || null;
+            const requestedActiveIds = Array.isArray(character.activePetIds) ? character.activePetIds.filter(id => typeof id === 'string') : [];
+            const activePetIds = [...new Set([
+                ...requestedActiveIds,
+                ...(character.activePetId ? [character.activePetId] : []),
+            ])].filter(id => pets.some(p => p.id === id)).slice(0, 2);
+            if (!activePetIds.length && pets[0]?.id) activePetIds.push(pets[0].id);
+            const activePets = activePetIds.map(id => pets.find(p => p.id === id)).filter(Boolean);
+            const activePet = activePets[0] || null;
             character.pets = pets;
             character.pet = activePet;
             character.activePetId = activePet?.id || null;
+            character.activePetIds = activePetIds;
             character.petChests = Math.max(0, Math.floor(Number(character.petChests) || 0));
-            return { pets, activePetId: character.activePetId, activePet };
+            return { pets, activePetId: character.activePetId, activePetIds, activePet, activePets };
         }
 
         function petForBattle(character) {
@@ -20299,6 +20307,7 @@
                 character.pet = normalizeClientPet(serverReward.pet);
                 character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean) : [...(character.pets || []), character.pet].filter(Boolean);
                 character.activePetId = serverReward.activePetId || character.pet?.id || null;
+                character.activePetIds = Array.isArray(serverReward.activePetIds) ? serverReward.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                 normalizeClientPetCollection(character);
                 const petLabel = PET_RARITIES[character.pet?.rarity]?.label || 'Common';
                 rewardLines.push(petLabel + ' ' + (PET_DEFS[character.pet?.species]?.name || 'Pet') + ' joined!');
@@ -23175,9 +23184,9 @@
                         needsSave = true;
                     }
                     if (c.pet !== undefined || Array.isArray(c.pets)) {
-                        const beforePets = JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId });
+                        const beforePets = JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId, activePetIds: c.activePetIds });
                         normalizeClientPetCollection(c);
-                        if (JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId }) !== beforePets) {
+                        if (JSON.stringify({ pet: c.pet, pets: c.pets, activePetId: c.activePetId, activePetIds: c.activePetIds }) !== beforePets) {
                             needsSave = true;
                         }
                     }
@@ -23810,6 +23819,7 @@
                             local.pet                    = normalizeClientPet(sc.pet);
                             local.pets                   = Array.isArray(sc.pets) ? sc.pets.map(normalizeClientPet).filter(Boolean) : (local.pet ? [local.pet] : []);
                             local.activePetId            = sc.activePetId || local.pet?.id || null;
+                            local.activePetIds           = Array.isArray(sc.activePetIds) ? sc.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (local.activePetId ? [local.activePetId] : []);
                             local.petChests              = Math.max(0, Math.floor(Number(sc.petChests) || 0));
                             normalizeClientPetCollection(local);
                             // Restore stat model history from server (source of truth)
@@ -26343,6 +26353,7 @@
                     character.pet = normalizeClientPet(data.pet);
                     character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean) : (character.pet ? [character.pet] : []);
                     character.activePetId = data.activePetId || character.pet?.id || null;
+                    character.activePetIds = Array.isArray(data.activePetIds) ? data.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                     if (data.petChests !== undefined) character.petChests = Math.max(0, Math.floor(Number(data.petChests) || 0));
                     if (data.newTokens !== undefined) {
                         globalTokens = data.newTokens;
@@ -26383,87 +26394,95 @@
             character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
             character.pet = pet;
             character.activePetId = pet.id;
+            character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
             persistPetChange(character);
             showNotice(def.name + ' joined your fighter!');
         }
 
-        async function setActivePet(petId) {
+        async function setActivePet(petId, slot = 0) {
             const character = getSelectedCharacter();
             if (!character || !petId) return;
             normalizeClientPetCollection(character);
             const pet = (character.pets || []).find(p => p.id === petId);
             if (!pet) return;
+            const safeSlot = Math.max(0, Math.min(1, Math.floor(Number(slot) || 0)));
             if (playerSession && BACKEND_URL) {
-                const data = await petActionOnServer('set_active', { petId });
+                const data = await petActionOnServer('set_active', { petId, slot: safeSlot });
                 if (!data.ok) showNotice(data.error || 'Could not select pet.');
                 return;
             }
-            character.pet = pet;
-            character.activePetId = pet.id;
+            const nextIds = (character.activePetIds || []).filter(id => id !== pet.id);
+            nextIds[safeSlot] = pet.id;
+            character.activePetIds = nextIds.filter(Boolean).slice(0, 2);
+            character.activePetId = character.activePetIds[0] || pet.id;
+            character.pet = (character.pets || []).find(p => p.id === character.activePetId) || pet;
             persistPetChange(character);
         }
 
-        async function healPet() {
+        async function healPet(petId = null) {
             const character = getSelectedCharacter();
             normalizeClientPetCollection(character);
-            if (!character || !character.pet) return;
+            const targetPet = petId ? (character?.pets || []).find(p => p.id === petId) : character?.pet;
+            if (!character || !targetPet) return;
             if (playerSession && BACKEND_URL) {
-                const data = await petActionOnServer('heal');
+                const data = await petActionOnServer('heal', { petId: targetPet.id });
                 if (!data.ok) {
                     showNotice(data.error || 'Could not heal pet.');
                     return;
                 }
                 const costText = data.cost ? ` (-${data.cost} tokens)` : '';
-                showNotice((character.pet?.name || 'Pet') + ' recovered!' + costText);
+                showNotice((targetPet.name || 'Pet') + ' recovered!' + costText);
                 return;
             }
-            character.pet = normalizeClientPet(character.pet);
-            character.pet.hp = character.pet.maxHp;
-            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
+            const healedPet = normalizeClientPet(targetPet);
+            healedPet.hp = healedPet.maxHp;
+            character.pets = (character.pets || []).map(p => p.id === healedPet.id ? healedPet : p);
+            if (character.activePetId === healedPet.id) character.pet = healedPet;
             persistPetChange(character);
-            showNotice(character.pet.name + ' recovered!');
+            showNotice(healedPet.name + ' recovered!');
         }
 
-        async function trainPet() {
+        async function trainPet(petId = null) {
             const character = getSelectedCharacter();
             normalizeClientPetCollection(character);
-            if (!character || !character.pet) return;
+            let targetPet = petId ? (character?.pets || []).find(p => p.id === petId) : character?.pet;
+            if (!character || !targetPet) return;
             if (playerSession && BACKEND_URL) {
-                const data = await petActionOnServer('train');
+                const data = await petActionOnServer('train', { petId: targetPet.id });
                 if (!data.ok) {
                     showNotice(data.error || 'Could not train pet.');
                     return;
                 }
                 const costText = data.cost ? ` (-${data.cost} tokens)` : '';
-                showNotice((character.pet?.name || 'Pet') + (data.leveledUp ? ' leveled up!' : ' trained.') + costText);
+                showNotice((targetPet.name || 'Pet') + (data.leveledUp ? ' leveled up!' : ' trained.') + costText);
                 return;
             }
-            character.pet = normalizeClientPet(character.pet);
-            const cap = PET_RARITIES[character.pet.rarity]?.cap || 20;
-            if (character.pet.level >= cap) {
-                showNotice(character.pet.name + ' is already max level.');
+            targetPet = normalizeClientPet(targetPet);
+            const cap = PET_RARITIES[targetPet.rarity]?.cap || 20;
+            if (targetPet.level >= cap) {
+                showNotice(targetPet.name + ' is already max level.');
                 return;
             }
-            const needed = getPetExpForNextLevel(character.pet.level, character.pet.rarity);
-            character.pet.xp += Math.ceil(needed * 0.25);
-            while (character.pet.level < cap && character.pet.xp >= getPetExpForNextLevel(character.pet.level, character.pet.rarity)) {
-                character.pet.xp -= getPetExpForNextLevel(character.pet.level, character.pet.rarity);
-                character.pet.level++;
-                character.pet.maxHp = getPetMaxHp(character.pet);
-                character.pet.hp = character.pet.maxHp;
+            const needed = getPetExpForNextLevel(targetPet.level, targetPet.rarity);
+            targetPet.xp += Math.ceil(needed * 0.25);
+            while (targetPet.level < cap && targetPet.xp >= getPetExpForNextLevel(targetPet.level, targetPet.rarity)) {
+                targetPet.xp -= getPetExpForNextLevel(targetPet.level, targetPet.rarity);
+                targetPet.level++;
+                targetPet.maxHp = getPetMaxHp(targetPet);
+                targetPet.hp = targetPet.maxHp;
             }
-            character.pets = (character.pets || []).map(p => p.id === character.pet.id ? character.pet : p);
+            character.pets = (character.pets || []).map(p => p.id === targetPet.id ? targetPet : p);
+            if (character.activePetId === targetPet.id) character.pet = targetPet;
             persistPetChange(character);
-            showNotice(character.pet.name + ' trained.');
+            showNotice(targetPet.name + ' trained.');
         }
 
         async function petInventoryAction(petId, action, value) {
             const character = getSelectedCharacter();
             if (!character) return;
             normalizeClientPetCollection(character);
-            if (petId && character.activePetId !== petId) await setActivePet(petId);
-            if (action === 'heal') await healPet();
-            if (action === 'train') await trainPet();
+            if (action === 'heal') await healPet(petId);
+            if (action === 'train') await trainPet(petId);
             renderInventoryPets();
         }
 
@@ -26649,6 +26668,7 @@
             character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
             character.pet = pet;
             character.activePetId = pet.id;
+            character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
             persistPetChange(character);
             showNotice(pet.name + ' joined your fighter!');
             renderInventoryPets();
@@ -26678,6 +26698,7 @@
             character.pets = pets.filter(p => p.id !== petA.id && p.id !== petB.id).concat(fused);
             character.pet = fused;
             character.activePetId = fused.id;
+            character.activePetIds = [fused.id, ...(character.activePetIds || []).filter(id => id !== petA.id && id !== petB.id && id !== fused.id)].slice(0, 2);
             petFusionState.slots = [null, null];
             persistPetChange(character);
             showNotice(fused.name + ' evolved!');
@@ -26695,14 +26716,16 @@
                 return;
             }
 
-            const { pets, activePet } = normalizeClientPetCollection(character);
+            const { pets, activePetIds } = normalizeClientPetCollection(character);
             pets.forEach(pet => {
                 const def = PET_DEFS[pet.species];
                 const cap = PET_RARITIES[pet.rarity]?.cap || 20;
                 const nextXp = getPetExpForNextLevel(pet.level, pet.rarity);
                 const xpText = pet.level >= cap ? 'MAX' : `${pet.xp}/${nextXp}`;
                 const dmg = getPetDamageRange(pet);
-                const isActive = activePet && pet.id === activePet.id;
+                const activeSlot = activePetIds.indexOf(pet.id);
+                const isActive = activeSlot >= 0;
+                const companionLabel = activeSlot >= 0 ? `Companion ${activeSlot + 1}` : '';
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
                 card.draggable = true;
@@ -26711,7 +26734,7 @@
                     <img src="${def.asset}" alt="${escapeHTML(def.name)}">
                     <div class="inventory-pet-info">
                         <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
-                        <div class="inventory-pet-role">${escapeHTML(def.role)}${isActive ? ' · Companion' : ''}<br>${petRarityChip(pet.rarity)}</div>
+                        <div class="inventory-pet-role">${escapeHTML(def.role)}${companionLabel ? ' · ' + companionLabel : ''}<br>${petRarityChip(pet.rarity)}</div>
                         <div class="inventory-pet-stats">
                             <span>HP ${pet.hp}/${pet.maxHp}</span>
                             <span>DMG ${dmg.min}-${dmg.max}</span>
@@ -26721,7 +26744,8 @@
                         </div>
                     </div>
                     <div class="inventory-pet-actions">
-                        ${!isActive ? `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">SET COMPANION</button>` : '<button type="button" disabled>COMPANION</button>'}
+                        ${activeSlot === 0 ? '<button type="button" disabled>COMPANION 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">SET SLOT 1</button>`}
+                        ${activeSlot === 1 ? '<button type="button" disabled>COMPANION 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">SET SLOT 2</button>`}
                         <button type="button" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">HEAL</button>
                         <button type="button" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">TRAIN</button>
                     </div>`;
@@ -40465,7 +40489,7 @@
                 return;
             }
             if (action === 'active') {
-                await setActivePet(btn.dataset.petId);
+                await setActivePet(btn.dataset.petId, btn.dataset.petSlot);
                 renderInventoryPets();
                 return;
             }
