@@ -755,6 +755,30 @@
         .skill-scroll-pop.damage { color: #7f1d1d; }
         .skill-scroll-pop.guard { color: #1e3a8a; }
         .skill-scroll-pop.control { color: #5b21b6; }
+        .skill-scroll-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .skill-scroll-icon {
+            width: 27px;
+            height: 27px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 27px;
+            border: 2px solid rgba(79,45,16,0.48);
+            border-radius: 50%;
+            background: radial-gradient(circle at 45% 30%, #fff3c4 0%, #d19b4e 72%, #8a5222 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 0 rgba(78,39,10,0.42);
+            font-size: 15px;
+            line-height: 1;
+            text-shadow: none;
+        }
+        .skill-scroll-text {
+            min-width: 0;
+        }
         .skill-scroll-title {
             display: block;
             font-size: 12px;
@@ -29092,30 +29116,29 @@
             const v = Math.abs(Math.round(Number(value) || 0));
             const hp = amount => amount ? `${amount} HP` : 'HP';
             const turns = amount => `${amount || 1} turn${(amount || 1) === 1 ? '' : 's'}`;
+            const nodeIcon = key => SKILL_ICONS[key] || '';
+            const hidden = { show: false };
             const map = {
-                hot:             { title: 'Regen', tone: 'heal', desc: `Restored ${hp(v)} over time` },
-                regeneration:    { title: 'Regeneration', tone: 'heal', desc: `Restored ${hp(v)}` },
-                second_wind:     { title: 'Second Wind', tone: 'heal', desc: `Recovered ${hp(v)} before falling` },
-                lifesteal:       { title: 'Lifesteal', tone: 'heal', desc: `Drained and restored ${hp(v)}` },
-                bleed:           { title: 'Bleed', tone: 'damage', desc: `Enemy lost ${hp(v)} from wounds` },
-                burn:            { title: 'Burn', tone: 'damage', desc: `Enemy took ${hp(v)} from fire` },
-                wind_cut:        { title: 'Wind Cut', tone: 'damage', desc: `Passive slash dealt ${hp(v)}` },
-                thorns:          { title: 'Thorns', tone: 'damage', desc: `Reflected ${hp(v)} back` },
-                counterattack:   { title: 'Counterattack', tone: 'damage', desc: `Punished the hit for ${hp(v)}` },
-                exposed:         { title: 'Exposed', tone: 'control', desc: `Defense broken for ${turns(v)}` },
-                fire_passive:    { title: 'Fire Aura', tone: 'damage', desc: 'Ignited passive pressure' },
-                wind_passive:    { title: 'Wind Guard', tone: 'guard', desc: 'Wind shield activated' },
-                sanguine_ward:   { title: 'Sanguine Ward', tone: 'guard', desc: 'Reduced incoming damage' },
-                shield_aegis:    { title: 'Aegis Block', tone: 'guard', desc: 'Prevented damage with a shield' },
-                bash:            { title: 'Bash', tone: 'damage', desc: `Returned ${hp(v)} after blocking` },
-                retaliation:     { title: 'Retaliation', tone: 'control', desc: 'Prepared a revenge strike' },
-                stun:            { title: 'Stunned', tone: 'control', desc: `Skipped enemy action for ${turns(v)}` },
+                hot:             hidden,
+                regeneration:    hidden,
+                lifesteal:       hidden,
+                bleed:           hidden,
+                burn:            hidden,
+                fire_passive:    hidden,
+                wind_passive:    hidden,
+                wind_cut:        hidden,
+                second_wind:     { title: 'Second Wind', tone: 'heal', icon: nodeIcon('defense_second_wind'), desc: `Recovered ${hp(v)} before falling` },
+                exposed:         { title: 'Exposed', tone: 'control', icon: nodeIcon('attack_expose'), desc: `Defense broken for ${turns(v)}` },
+                marked_prey:     { title: 'Marked Prey', tone: 'control', icon: nodeIcon('attack_predator'), desc: `Target pressured for ${turns(v)}` },
+                thorns:          { title: 'Thorns', tone: 'damage', icon: nodeIcon('defense_thorns'), desc: `Reflected ${hp(v)} back` },
+                counterattack:   { title: 'Counterattack', tone: 'damage', icon: nodeIcon('defense_counter'), desc: `Punished the hit for ${hp(v)}` },
+                sanguine_ward:   { title: 'Sanguine Ward', tone: 'guard', icon: nodeIcon('defense_sanguine_ward'), desc: 'Reduced incoming damage' },
+                shield_aegis:    { title: 'Aegis Block', tone: 'guard', icon: nodeIcon('defense_aegis'), desc: 'Prevented damage with a shield' },
+                bash:            { title: 'Bash', tone: 'damage', icon: nodeIcon('defense_bash'), desc: `Returned ${hp(v)} after blocking` },
+                retaliation:     { title: 'Retaliation', tone: 'control', icon: nodeIcon('defense_retaliation'), desc: 'Prepared a revenge strike' },
+                stun:            { title: 'Stunned', tone: 'control', icon: nodeIcon('defense_retaliation'), desc: `Skipped enemy action for ${turns(v)}` },
             };
-            return map[effect] || {
-                title: String(effect || 'Skill').replace(/_/g, ' '),
-                desc: value > 0 ? `Restored ${hp(v)}` : value < 0 ? `Dealt ${hp(v)}` : 'Skill effect activated',
-                tone: value > 0 ? 'heal' : value < 0 ? 'damage' : 'guard',
-            };
+            return map[effect] || hidden;
         }
 
         function showPlayerSkillScroll(event) {
@@ -29123,13 +29146,18 @@
             const fighterEl = game.player?.element;
             if (!arena || !fighterEl) return;
             const info = getSkillScrollInfo(event.effect, event.value);
-            if (!info.title) return;
+            if (info.show === false || !info.title) return;
 
             const pop = document.createElement('div');
             pop.className = 'skill-scroll-pop ' + info.tone;
             pop.innerHTML = `
-                <span class="skill-scroll-title">${escapeHTML(info.title)}</span>
-                <span class="skill-scroll-desc">${escapeHTML(info.desc || '')}</span>
+                <span class="skill-scroll-content">
+                    ${info.icon ? `<span class="skill-scroll-icon">${escapeHTML(info.icon)}</span>` : ''}
+                    <span class="skill-scroll-text">
+                        <span class="skill-scroll-title">${escapeHTML(info.title)}</span>
+                        <span class="skill-scroll-desc">${escapeHTML(info.desc || '')}</span>
+                    </span>
+                </span>
             `;
 
             const arenaRect = arena.getBoundingClientRect();
