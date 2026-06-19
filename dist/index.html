@@ -38633,7 +38633,7 @@
         function _mgAudio() {
             // AudioContext created lazily on first play() so it's always after a user gesture
             let ac = null;
-            let crashBuffer = null;
+            const buffers = {};
             function getAC() {
                 if (!ac) {
                     try { ac = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -38641,12 +38641,32 @@
                 }
                 return ac;
             }
-            function getCrashBuffer(ctx) {
-                if (crashBuffer) return crashBuffer;
-                crashBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.18), ctx.sampleRate);
-                const d = crashBuffer.getChannelData(0);
-                for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
-                return crashBuffer;
+            function toneSample(type, t, duration) {
+                if (type === 'jump') {
+                    const f = 190 * Math.pow(440 / 190, Math.min(1, t / 0.13));
+                    return Math.sin(Math.PI * 2 * f * t) * Math.pow(1 - t / duration, 1.8);
+                }
+                if (type === 'hit') {
+                    const f = t < 0.07 ? 660 : 1050;
+                    return Math.asin(Math.sin(Math.PI * 2 * f * t)) / (Math.PI / 2) * Math.pow(1 - t / duration, 1.5);
+                }
+                if (type === 'miss') {
+                    const f = 320 * Math.pow(70 / 320, Math.min(1, t / 0.18));
+                    return (2 * ((t * f) % 1) - 1) * Math.pow(1 - t / duration, 1.4);
+                }
+                return (Math.random() * 2 - 1) * Math.pow(1 - t / duration, 2);
+            }
+            function makeBuffer(ctx, type) {
+                if (buffers[type]) return buffers[type];
+                const durations = { jump: 0.18, crash: 0.18, hit: 0.20, miss: 0.18 };
+                const duration = durations[type] || 0.12;
+                const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = toneSample(type, i / ctx.sampleRate, duration) * 0.42;
+                }
+                buffers[type] = buffer;
+                return buffer;
             }
             return {
                 warm() {
@@ -38654,7 +38674,10 @@
                         const ctx = getAC();
                         if (!ctx) return;
                         if (ctx.state === 'suspended') ctx.resume();
-                        getCrashBuffer(ctx);
+                        makeBuffer(ctx, 'jump');
+                        makeBuffer(ctx, 'crash');
+                        makeBuffer(ctx, 'hit');
+                        makeBuffer(ctx, 'miss');
                     } catch(_) {}
                 },
                 play(type) {
@@ -38662,45 +38685,14 @@
                         const ctx = getAC();
                         if (!ctx) return;
                         if (ctx.state === 'suspended') ctx.resume();
-                        const g = ctx.createGain(); g.connect(ctx.destination);
-                        const t0 = ctx.currentTime;
-                        if (type === 'jump') {
-                            const o = ctx.createOscillator(); o.type = 'sine';
-                            o.frequency.setValueAtTime(190, t0);
-                            o.frequency.exponentialRampToValueAtTime(440, t0 + 0.13);
-                            g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
-                            o.connect(g); o.start(t0); o.stop(t0 + 0.18);
-                        } else if (type === 'crash') {
-                            const src = ctx.createBufferSource(); src.buffer = getCrashBuffer(ctx);
-                            const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160; f.Q.value = 0.6;
-                            src.connect(f); f.connect(g);
-                            g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
-                            src.start(t0);
-                        } else if (type === 'hit') {
-                            // Two-note ascending chirp — sounds like a small achievement
-                            const g2 = ctx.createGain(); g2.connect(ctx.destination);
-                            const o1 = ctx.createOscillator(); o1.type = 'triangle';
-                            const o2 = ctx.createOscillator(); o2.type = 'triangle';
-                            o1.frequency.value = 660;
-                            o2.frequency.value = 1050;
-                            g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
-                            g2.gain.setValueAtTime(0.0, t0 + 0.07);
-                            g2.gain.linearRampToValueAtTime(0.75, t0 + 0.085);
-                            g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
-                            o1.connect(g);  o1.start(t0);        o1.stop(t0 + 0.1);
-                            o2.connect(g2); o2.start(t0 + 0.07); o2.stop(t0 + 0.2);
-                        } else if (type === 'miss') {
-                            // Descending sawtooth buzz — classic "wrong answer"
-                            const o = ctx.createOscillator(); o.type = 'sawtooth';
-                            o.frequency.setValueAtTime(320, t0);
-                            o.frequency.exponentialRampToValueAtTime(70, t0 + 0.18);
-                            g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
-                            o.connect(g); o.start(t0); o.stop(t0 + 0.18);
-                        }
+                        const buffer = makeBuffer(ctx, type);
+                        const src = ctx.createBufferSource();
+                        const gain = ctx.createGain();
+                        src.buffer = buffer;
+                        gain.gain.value = 0.55;
+                        src.connect(gain);
+                        gain.connect(ctx.destination);
+                        src.start();
                     } catch(_) {}
                 }
             };
@@ -38720,7 +38712,7 @@
 
             const canvas = document.createElement('canvas');
             // Retina-aware canvas: render at device pixel density for crisp sprites
-            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
             canvas.width = GW * dpr; canvas.height = GH * dpr;
             canvas.className = 'mg-canvas';
             canvas.style.height = 'auto';
@@ -38786,6 +38778,7 @@
             let alive = true, deathTimer = 0, crashSounded = false;
             let lastObsType = 'ground';
             let animId;
+            let stopped = false;
 
             let spriteFrames = [];
             let spriteIdx = 0, spriteTimer = 0;
@@ -38793,6 +38786,17 @@
                 spriteFrames = runFrames.map(src => { const img = new Image(); img.src = src; return img; });
             } else if (staticSrc) {
                 const img = new Image(); img.src = staticSrc; spriteFrames = [img];
+            }
+            function preloadSpriteFrames() {
+                if (!spriteFrames.length) return Promise.resolve();
+                return Promise.all(spriteFrames.map(img => {
+                    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                    if (img.decode) return img.decode().catch(() => {});
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                    });
+                }));
             }
 
             function jump() {
@@ -38978,8 +38982,22 @@
                 if (!alive) { ctx.fillStyle = 'rgba(122,47,18,0.26)'; ctx.fillRect(0, 0, GW, GH); }
                 animId = requestAnimationFrame(loop);
             }
-            animId = requestAnimationFrame(loop);
-            return () => { cancelAnimationFrame(animId); canvas.removeEventListener('click', jump); document.removeEventListener('keydown', onKey); };
+            const loadingEl = document.createElement('div');
+            loadingEl.className = 'mg-hint';
+            loadingEl.textContent = 'LOADING...';
+            area.appendChild(loadingEl);
+            preloadSpriteFrames().then(() => {
+                if (stopped || gameOver) return;
+                loadingEl.remove();
+                animId = requestAnimationFrame(loop);
+            });
+            return () => {
+                stopped = true;
+                gameOver = true;
+                cancelAnimationFrame(animId);
+                canvas.removeEventListener('click', jump);
+                document.removeEventListener('keydown', onKey);
+            };
         }
 
         function _mgLaunchPunchingBag(area, punchFrameURLs, kickFrameURLs, uppercutFrameURLs, headbuttFrameURLs, onResult, maxMorale, maxXp, onRetry) {
@@ -39069,8 +39087,16 @@
                 gameArea.style.transform = 'scale(' + s + ')';
                 wrapEl.style.height = Math.round(GH * s) + 'px';
             }
+            let resizeRaf = 0;
+            function scheduleScale() {
+                if (resizeRaf) return;
+                resizeRaf = requestAnimationFrame(() => {
+                    resizeRaf = 0;
+                    applyScale();
+                });
+            }
             applyScale();
-            window.addEventListener('resize', applyScale);
+            window.addEventListener('resize', scheduleScale);
 
             // Static CSS elements (zero per-frame cost) ───────────────────────────
             const divEl = document.createElement('div');
@@ -39328,7 +39354,8 @@
             function endGame() {
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
-                window.removeEventListener('resize', applyScale);
+                window.removeEventListener('resize', scheduleScale);
+                if (resizeRaf) cancelAnimationFrame(resizeRaf);
                 area.innerHTML = '';
                 const acc = TOTAL_NOTES > 0 ? Math.round(hits / TOTAL_NOTES * 100) : 0;
                 const moraleGain = acc < 50 ? 0 : Math.min(10, Math.max(5, Math.floor(acc / 10)));
@@ -39489,25 +39516,33 @@
 
             // Pre-warm: decode bag image + all sprite frames sequentially before starting.
             // Includes Punching-Bag.png which is NOT a blob URL but still needs decode.
-            const _allUrls = ['Assets/UI/Punching-Bag.png', ...([].concat(...FRAME_URL_SETS.filter(Boolean)))];
-            let _pwIdx = 0;
+            const _allUrls = Array.from(new Set(['Assets/UI/Punching-Bag.png', ...([].concat(...FRAME_URL_SETS.filter(Boolean)))]));
             function _startLoop() {
                 _loadEl.remove();
                 animId = requestAnimationFrame(function startFrame(ts) { lt = ts; animId = requestAnimationFrame(loop); });
             }
             function _prewarm() {
-                if (_pwIdx >= _allUrls.length) { _startLoop(); return; }
-                const img = new Image();
-                img.onload  = () => { _pwIdx++; _prewarm(); };
-                img.onerror = () => { _pwIdx++; _prewarm(); };
-                img.src = _allUrls[_pwIdx];
+                if (!_allUrls.length) { _startLoop(); return; }
+                Promise.all(_allUrls.map(src => new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (img.decode) img.decode().catch(() => {}).then(resolve);
+                        else resolve();
+                    };
+                    img.onerror = resolve;
+                    img.src = src;
+                }))).then(() => {
+                    if (!gameOver) _startLoop();
+                });
             }
             if (_allUrls.length > 0) { _prewarm(); } else { _startLoop(); }
 
             return () => {
+                gameOver = true;
                 cancelAnimationFrame(animId);
                 document.removeEventListener('keydown', onKey);
-                window.removeEventListener('resize', applyScale);
+                window.removeEventListener('resize', scheduleScale);
+                if (resizeRaf) cancelAnimationFrame(resizeRaf);
             };
         }
         // ───────────────────────────────────────────────────────
