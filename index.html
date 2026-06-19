@@ -19033,7 +19033,7 @@
             };
             if (Array.isArray(character.pets)) character.pets.forEach(addPet);
             addPet(character.pet);
-            const pets = Array.from(byId.values()).slice(0, 12);
+            const pets = Array.from(byId.values()).slice(0, 40);
             const requestedActiveIds = Array.isArray(character.activePetIds) ? character.activePetIds.filter(id => typeof id === 'string') : [];
             const activePetIds = [...new Set([
                 ...requestedActiveIds,
@@ -19048,6 +19048,17 @@
             character.activePetIds = activePetIds;
             character.petChests = Math.max(0, Math.floor(Number(character.petChests) || 0));
             return { pets, activePetId: character.activePetId, activePetIds, activePet, activePets };
+        }
+
+        function applyGlobalPetCollectionToCharacters(pets, petChests) {
+            if (!Array.isArray(pets)) return;
+            const normalizedPets = pets.map(normalizeClientPet).filter(Boolean).slice(0, 40);
+            const normalizedChests = petChests === undefined ? null : Math.max(0, Math.floor(Number(petChests) || 0));
+            characters.forEach(character => {
+                character.pets = normalizedPets.map(pet => ({ ...pet }));
+                if (normalizedChests !== null) character.petChests = normalizedChests;
+                normalizeClientPetCollection(character);
+            });
         }
 
         function petForBattle(character) {
@@ -20615,8 +20626,9 @@
             if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
             if (serverReward.crystal)       rewardLines.push('💎 +1 CRYSTAL!');
             if (serverReward.pet && character) {
+                applyGlobalPetCollectionToCharacters(serverReward.pets);
                 character.pet = normalizeClientPet(serverReward.pet);
-                character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean) : [...(character.pets || []), character.pet].filter(Boolean);
+                character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean).slice(0, 40) : [...(character.pets || []), character.pet].filter(Boolean).slice(0, 40);
                 character.activePetId = serverReward.activePetId || character.pet?.id || null;
                 character.activePetIds = Array.isArray(serverReward.activePetIds) ? serverReward.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                 normalizeClientPetCollection(character);
@@ -26658,8 +26670,9 @@
                 }
                 const data = await resp.json().catch(() => ({ ok: false, error: 'Server error' }));
                 if (data.ok) {
+                    applyGlobalPetCollectionToCharacters(data.pets, data.petChests);
                     character.pet = normalizeClientPet(data.pet);
-                    character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean) : (character.pet ? [character.pet] : []);
+                    character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean).slice(0, 40) : (character.pet ? [character.pet] : []);
                     character.activePetId = data.activePetId || character.pet?.id || null;
                     character.activePetIds = Array.isArray(data.activePetIds) ? data.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                     if (data.petChests !== undefined) character.petChests = Math.max(0, Math.floor(Number(data.petChests) || 0));
@@ -26699,7 +26712,7 @@
                 tactic: species === 'cat' ? 'focus_pet' : 'balanced',
             });
             normalizeClientPetCollection(character);
-            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 40);
             character.pet = pet;
             character.activePetId = pet.id;
             character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
@@ -26957,7 +26970,7 @@
                 renderPetFusionPanel();
                 return;
             }
-            if ((character.pets || []).length >= 12) {
+            if ((character.pets || []).length >= 40) {
                 showNotice('Pet inventory is full.');
                 return;
             }
@@ -26973,7 +26986,7 @@
                 xp: 0,
             });
             character.petChests = Math.max(0, (character.petChests || 0) - 1);
-            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 40);
             character.pet = pet;
             character.activePetId = pet.id;
             character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
@@ -37472,6 +37485,7 @@
                                 <div class="market-detail-line">Payment: ${escapeHTML(currency)} · ${escapeHTML(String(listing.paymentChain || 'game'))}</div>
                                 <div class="market-detail-line">Fee: ${escapeHTML(formatMarketPrice(fee, currency))} (${Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 100}%)</div>
                                 <div class="market-detail-line">Seller receives: ${escapeHTML(formatMarketPrice(sellerGets, currency))}</div>
+                                <div class="market-detail-line">Pets: Not included</div>
                                 <div class="market-detail-line">Listed: ${escapeHTML(formatTradeDate(listing.createdAt))}</div>
                             </div>
                         </div>
