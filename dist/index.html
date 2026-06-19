@@ -6350,7 +6350,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: min(1040px, 100%);
+            width: 100%;
             height: 100%;
             box-sizing: border-box;
             background: none;
@@ -6363,11 +6363,17 @@
             display: flex;
             flex-direction: column;
             padding: 10px;
-            transform: translateX(-1080px);
-            transition: transform 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.985);
+            transition: opacity 0.2s ease, transform 0.2s ease;
             font-size: 18px;
         }
-        .market-panel.active { transform: translateX(0); }
+        .market-panel.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
         .market-header {
             display: flex;
             justify-content: space-between;
@@ -6468,6 +6474,20 @@
         }
         .market-history-btn:hover {
             background: #34d399;
+            color: #111;
+        }
+        .market-home-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.58em;
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.12);
+            color: #fde68a;
+            border-radius: 6px;
+            padding: 7px 12px;
+            cursor: pointer;
+        }
+        .market-home-btn:hover {
+            background: #fbbf24;
             color: #111;
         }
         .market-card-btn:disabled {
@@ -17042,6 +17062,7 @@
             <div class="market-title">⚖ MARKET</div>
             <div class="market-header-actions">
                 <button class="market-history-btn" id="market-history-btn">TRADING HISTORY</button>
+                <button class="market-home-btn" id="market-home-btn">LOBBY</button>
                 <span class="market-close" id="market-close">&times;</span>
             </div>
         </div>
@@ -40783,6 +40804,9 @@
         });
         document.getElementById('pet-fusion-close')?.addEventListener('click', closePetFusionPanel);
         document.getElementById('market-close').addEventListener('click', () => {
+            closeMarketplace();
+        });
+        document.getElementById('market-home-btn').addEventListener('click', () => {
             closeMarketplace();
         });
         document.getElementById('market-sell-btn').addEventListener('click', () => {
