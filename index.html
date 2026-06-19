@@ -39117,6 +39117,67 @@
             nctx.font = 'bold 16px monospace';
             nctx.textAlign = 'center';
             nctx.textBaseline = 'middle';
+            const noteSpritePad = 4;
+            const noteSpriteW = NOTE_W + noteSpritePad * 2;
+            const noteSpriteH = NOTE_H + noteSpritePad * 2;
+            function makeNoteSprite(lane, mode) {
+                const c = document.createElement('canvas');
+                c.width = noteSpriteW;
+                c.height = noteSpriteH;
+                const cx = c.getContext('2d');
+                const col = LANE_COLORS[lane];
+                const bx = noteSpritePad;
+                const by = noteSpritePad;
+                if (mode === 'attempted') {
+                    cx.beginPath();
+                    cx.roundRect(bx, by, NOTE_W, NOTE_H, 7);
+                    cx.fillStyle = '#1c0e0e';
+                    cx.fill();
+                    cx.strokeStyle = '#7f1d1d';
+                    cx.lineWidth = 2;
+                    cx.stroke();
+                    cx.fillStyle = '#ef4444aa';
+                    cx.font = 'bold 15px monospace';
+                    cx.textAlign = 'center';
+                    cx.textBaseline = 'middle';
+                    cx.fillText('X', noteSpriteW / 2, noteSpriteH / 2);
+                    return c;
+                }
+                if (mode === 'zone') {
+                    cx.fillStyle = col + '18';
+                    cx.beginPath();
+                    cx.roundRect(0, 0, noteSpriteW, noteSpriteH, 11);
+                    cx.fill();
+                }
+                const grad = cx.createLinearGradient(0, by, 0, by + NOTE_H);
+                grad.addColorStop(0, col + 'ee');
+                grad.addColorStop(1, col + '44');
+                cx.beginPath();
+                cx.roundRect(bx, by, NOTE_W, NOTE_H, 7);
+                cx.fillStyle = grad;
+                cx.fill();
+                cx.strokeStyle = mode === 'zone' ? 'rgba(255,255,255,0.85)' : col;
+                cx.lineWidth = mode === 'zone' ? 2.5 : 2;
+                cx.stroke();
+                cx.fillStyle = 'rgba(255,255,255,0.22)';
+                cx.beginPath();
+                cx.roundRect(bx + 5, by + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
+                cx.fill();
+                cx.font = 'bold 17px monospace';
+                cx.textAlign = 'center';
+                cx.textBaseline = 'middle';
+                cx.fillStyle = 'rgba(0,0,0,0.45)';
+                cx.fillText(LANE_LABELS[lane], noteSpriteW / 2 + 1, noteSpriteH / 2 + 1);
+                cx.fillStyle = '#ffffff';
+                cx.fillText(LANE_LABELS[lane], noteSpriteW / 2, noteSpriteH / 2);
+                return c;
+            }
+            const noteSprites = LANE_KEYS.map((_, lane) => ({
+                normal: makeNoteSprite(lane, 'normal'),
+                zone: makeNoteSprite(lane, 'zone'),
+                attempted: makeNoteSprite(lane, 'attempted')
+            }));
+            let hzActive = false;
 
             // Floating texts container — pre-allocated pool, zero createElement during gameplay
             const ftEl = document.createElement('div');
@@ -39377,65 +39438,26 @@
                     if (!n.hit && !n.miss && !n.attempted && n.canvasY !== undefined &&
                         Math.abs(n.canvasY + NOTE_H / 2 - HIT_CY) < HIT_H) { _noteInZone = true; break; }
                 }
-                hzEl.style.borderColor = _noteInZone ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
-                hzEl.style.boxShadow   = _noteInZone ? '0 0 12px rgba(255,220,60,0.4),inset 0 0 10px rgba(255,220,60,0.07)' : '';
+                if (_noteInZone !== hzActive) {
+                    hzActive = _noteInZone;
+                    hzEl.style.borderColor = hzActive ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
+                    hzEl.style.boxShadow   = hzActive ? '0 0 6px rgba(255,220,60,0.22)' : '';
+                }
 
                 for (const n of notes) {
                     if (n.hit || n.canvasY === undefined) continue;
                     const ny = n.canvasY;
                     if (ny < -NOTE_H || ny > GH) continue;
-                    const col = LANE_COLORS[n.lane];
                     if (n.miss) {
                         // Missed notes just vanish — floating "MISS" text already gives feedback
                         continue;
                     } else if (n.attempted) {
                         // Wasted early press — show darkened with ✕ so player knows
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
-                        nctx.fillStyle = '#1c0e0e';
-                        nctx.fill();
-                        nctx.strokeStyle = '#7f1d1d';
-                        nctx.lineWidth = 2;
-                        nctx.stroke();
-                        nctx.fillStyle = '#ef4444aa';
-                        nctx.font = 'bold 15px monospace';
-                        nctx.textAlign = 'center';
-                        nctx.textBaseline = 'middle';
-                        nctx.fillText('✕', COL_W / 2, ny + NOTE_H / 2);
+                        nctx.drawImage(noteSprites[n.lane].attempted, noteNX - noteSpritePad, ny - noteSpritePad);
                     } else {
                         const inZone = Math.abs(ny + NOTE_H / 2 - HIT_CY) < HIT_H / 2 + NOTE_H / 2;
-                        if (inZone) {
-                            nctx.save();
-                            nctx.shadowColor = col;
-                            nctx.shadowBlur = 16;
-                            nctx.fillStyle = col + '14';
-                            nctx.beginPath();
-                            nctx.roundRect(noteNX - 4, ny - 4, NOTE_W + 8, NOTE_H + 8, 11);
-                            nctx.fill();
-                            nctx.restore();
-                        }
-                        const grad = nctx.createLinearGradient(0, ny, 0, ny + NOTE_H);
-                        grad.addColorStop(0, col + 'ee');
-                        grad.addColorStop(1, col + '44');
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
-                        nctx.fillStyle = grad;
-                        nctx.fill();
-                        nctx.strokeStyle = inZone ? 'rgba(255,255,255,0.85)' : col;
-                        nctx.lineWidth = inZone ? 2.5 : 2;
-                        nctx.stroke();
-                        nctx.fillStyle = 'rgba(255,255,255,0.22)';
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX + 5, ny + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
-                        nctx.fill();
-                        nctx.font = 'bold 17px monospace';
-                        nctx.textAlign = 'center';
-                        nctx.textBaseline = 'middle';
-                        nctx.shadowColor = 'rgba(0,0,0,0.8)';
-                        nctx.shadowBlur = 5;
-                        nctx.fillStyle = '#ffffff';
-                        nctx.fillText(LANE_LABELS[n.lane], COL_W / 2, ny + NOTE_H / 2);
-                        nctx.shadowBlur = 0;
+                        const sprite = inZone ? noteSprites[n.lane].zone : noteSprites[n.lane].normal;
+                        nctx.drawImage(sprite, noteNX - noteSpritePad, ny - noteSpritePad);
                     }
                 }
             }
