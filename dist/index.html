@@ -16372,6 +16372,101 @@
             box-shadow: 0 0 12px rgba(180,116,26,0.25), inset 0 0 8px rgba(180,116,26,0.10) !important;
         }
         .care-panel .care-header { border-bottom-color: rgba(74,44,18,0.35) !important; }
+        .care-panel .care-bag-section,
+        .care-panel .care-item,
+        .care-panel .care-activity-row {
+            background: rgba(74,44,18,0.10) !important;
+            border-color: rgba(74,44,18,0.30) !important;
+            box-shadow: inset 0 1px 0 rgba(255,250,225,0.20);
+        }
+        .care-panel .care-item:hover,
+        .care-panel .care-activity-row:hover {
+            border-color: rgba(90,58,24,0.68) !important;
+            box-shadow: inset 0 0 10px rgba(180,116,26,0.14) !important;
+        }
+        .care-panel .care-item-name,
+        .care-panel .care-activity-name {
+            color: #2b1a0e !important;
+            font-weight: 800;
+        }
+        .care-panel .care-activity-stats,
+        .care-panel .care-item-count,
+        .care-panel .care-item-cd-text {
+            color: #6b4820 !important;
+        }
+        .care-panel .care-item-buy-btn,
+        .care-panel .care-activity-buy-btn,
+        .care-panel .care-confirm-yes,
+        .care-panel .care-confirm-no,
+        .mg-retry-btn {
+            background: linear-gradient(180deg, #f4c15d, #b86b21) !important;
+            border: 2px solid #5a3516 !important;
+            color: #2b1a0e !important;
+            box-shadow: 0 2px 0 #3b220f !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.35);
+        }
+        .care-panel .care-item-buy-btn:disabled,
+        .care-panel .care-activity-buy-btn:disabled {
+            background: #8a7a62 !important;
+            border-color: #5b4a38 !important;
+            color: #3d3126 !important;
+            box-shadow: none !important;
+        }
+        .care-panel .care-activity-test-btn {
+            background: rgba(74,44,18,0.12) !important;
+            border-color: rgba(74,44,18,0.50) !important;
+            color: #4a2c12 !important;
+        }
+        .care-panel .care-activity-test-btn:hover {
+            background: rgba(180,90,20,0.22) !important;
+            border-color: #4a2c12 !important;
+        }
+        .care-panel .care-confirm-overlay {
+            background: rgba(43,26,14,0.48) !important;
+        }
+        .care-panel .care-confirm-box {
+            background: rgba(246,224,182,0.98) !important;
+            border: 2px solid #4a2c12 !important;
+            color: #2b1a0e !important;
+            box-shadow: 0 10px 28px rgba(43,26,14,0.45) !important;
+        }
+        .care-panel .care-confirm-name,
+        .care-panel .care-confirm-desc {
+            color: #2b1a0e !important;
+        }
+        .mg-timer-bar {
+            background: rgba(43,26,14,0.55) !important;
+            border-color: rgba(245,230,200,0.26) !important;
+            border-radius: 4px !important;
+        }
+        .mg-timer-fill {
+            background: linear-gradient(90deg, #f4c15d, #b86b21, #7a2f12) !important;
+        }
+        .mg-canvas {
+            border: 3px solid #4a2c12 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 8px 22px rgba(43,26,14,0.38), inset 0 0 0 1px rgba(255,250,225,0.16);
+        }
+        .mg-score,
+        .mg-result-score {
+            color: #4a2c12 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.5);
+        }
+        .mg-hint {
+            color: #6b4820 !important;
+        }
+        .mg-result {
+            background: rgba(246,224,182,0.94);
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #2b1a0e;
+            box-shadow: 0 10px 28px rgba(43,26,14,0.35);
+        }
+        .mg-result-title {
+            color: #2f6b3c !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
 
         /* ── SKILL TREE — readable cards on the wood panel ── */
         .skills-panel .skills-branch-content,
@@ -18807,16 +18902,13 @@
 
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
-            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 10, icon: '💊' },
-            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 1,  icon: '🍎' },
-            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 1,  icon: '🍌' },
-            marshmallow:    { name: 'Marshmallow',     category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 2,  icon: '🍬' },
-            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 2,  icon: '🍫' },
-            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 3,  icon: '🍗' },
-            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 4,  icon: '🥩' },
-            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 5,  icon: '🩹' },
-            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 7,  icon: '🌿' },
-            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 9,  icon: '💉' },
+            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 0,  price: 25, icon: '💊' },
+            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 2,  icon: '🍎' },
+            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 4,  icon: '🍫' },
+            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 7,  icon: '🥩' },
+            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 8,  icon: '🩹' },
+            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 12, icon: '🌿' },
+            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 18, icon: '💉' },
         };
 
         const PET_DEFS = {
@@ -19034,13 +19126,12 @@
             };
             if (Array.isArray(character.pets)) character.pets.forEach(addPet);
             addPet(character.pet);
-            const pets = Array.from(byId.values()).slice(0, 12);
+            const pets = Array.from(byId.values()).slice(0, 40);
             const requestedActiveIds = Array.isArray(character.activePetIds) ? character.activePetIds.filter(id => typeof id === 'string') : [];
             const activePetIds = [...new Set([
                 ...requestedActiveIds,
                 ...(character.activePetId ? [character.activePetId] : []),
             ])].filter(id => pets.some(p => p.id === id)).slice(0, 2);
-            if (!activePetIds.length && pets[0]?.id) activePetIds.push(pets[0].id);
             const activePets = activePetIds.map(id => pets.find(p => p.id === id)).filter(Boolean);
             const activePet = activePets[0] || null;
             character.pets = pets;
@@ -19049,6 +19140,30 @@
             character.activePetIds = activePetIds;
             character.petChests = Math.max(0, Math.floor(Number(character.petChests) || 0));
             return { pets, activePetId: character.activePetId, activePetIds, activePet, activePets };
+        }
+
+        function applyGlobalPetCollectionToCharacters(pets, petChests) {
+            if (!Array.isArray(pets)) return;
+            const normalizedPets = pets.map(normalizeClientPet).filter(Boolean).slice(0, 40);
+            const normalizedChests = petChests === undefined ? null : Math.max(0, Math.floor(Number(petChests) || 0));
+            characters.forEach(character => {
+                character.pets = normalizedPets.map(pet => ({ ...pet }));
+                if (normalizedChests !== null) character.petChests = normalizedChests;
+                normalizeClientPetCollection(character);
+            });
+        }
+
+        function clearPetAssignmentsFromOtherCharacters(petIds, exceptCharacterId) {
+            const ids = new Set((Array.isArray(petIds) ? petIds : [petIds]).filter(Boolean));
+            if (!ids.size) return;
+            characters.forEach(character => {
+                if (!character || character.id === exceptCharacterId) return;
+                character.activePetIds = (Array.isArray(character.activePetIds) ? character.activePetIds : [])
+                    .filter(id => !ids.has(id))
+                    .slice(0, 2);
+                character.activePetId = character.activePetIds[0] || null;
+                normalizeClientPetCollection(character);
+            });
         }
 
         function petForBattle(character) {
@@ -19125,12 +19240,12 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 1,  icon: '🎵' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🥊', interactive: true, maxStack: 3 },
-            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 3,  icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 5,  icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 8,  icon: '👑' },
-            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🏃', interactive: true, maxStack: 3 },
+            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 2,  icon: '🎵' },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
+            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 5,  icon: '📣' },
+            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 8,  icon: '🎬' },
+            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 14, icon: '👑' },
+            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🏃', interactive: true, maxStack: 3 },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -19167,9 +19282,9 @@
         }
         // Chest drops: wellness items (food/medical) + battle consumables (potions)
         const CONSUMABLE_DROP_TABLES = {
-            bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
-            silver:    { chance: 0.20, pool: ['apple', 'banana', 'rice_bowl', 'chicken'], dropType: 'wellness' },
-            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
+            bronze:    { chance: 0.15, pool: ['apple'], dropType: 'wellness' },
+            silver:    { chance: 0.20, pool: ['apple', 'chocolate', 'steak'], dropType: 'wellness' },
+            gold:      { chance: 0.30, pool: ['chocolate', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
             epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'stamina_potion', 'bandage', 'herb'], dropType: 'mixed' },
             legendary: { chance: 1.00, pool: ['big_potion', 'stamina_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
         };
@@ -20616,8 +20731,9 @@
             if (serverReward.fragments > 0) rewardLines.push('+' + serverReward.fragments + ' ' + FRAG_ICON_HTML);
             if (serverReward.crystal)       rewardLines.push('💎 +1 CRYSTAL!');
             if (serverReward.pet && character) {
+                applyGlobalPetCollectionToCharacters(serverReward.pets);
                 character.pet = normalizeClientPet(serverReward.pet);
-                character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean) : [...(character.pets || []), character.pet].filter(Boolean);
+                character.pets = Array.isArray(serverReward.pets) ? serverReward.pets.map(normalizeClientPet).filter(Boolean).slice(0, 40) : [...(character.pets || []), character.pet].filter(Boolean).slice(0, 40);
                 character.activePetId = serverReward.activePetId || character.pet?.id || null;
                 character.activePetIds = Array.isArray(serverReward.activePetIds) ? serverReward.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                 normalizeClientPetCollection(character);
@@ -26659,8 +26775,15 @@
                 }
                 const data = await resp.json().catch(() => ({ ok: false, error: 'Server error' }));
                 if (data.ok) {
+                    applyGlobalPetCollectionToCharacters(data.pets, data.petChests);
+                    if (action === 'set_active' && payload.petId) {
+                        clearPetAssignmentsFromOtherCharacters(payload.petId, character.id);
+                    }
+                    if (action === 'fuse') {
+                        clearPetAssignmentsFromOtherCharacters([payload.petAId, payload.petBId, data.fusedPet?.id], character.id);
+                    }
                     character.pet = normalizeClientPet(data.pet);
-                    character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean) : (character.pet ? [character.pet] : []);
+                    character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean).slice(0, 40) : (character.pet ? [character.pet] : []);
                     character.activePetId = data.activePetId || character.pet?.id || null;
                     character.activePetIds = Array.isArray(data.activePetIds) ? data.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (character.activePetId ? [character.activePetId] : []);
                     if (data.petChests !== undefined) character.petChests = Math.max(0, Math.floor(Number(data.petChests) || 0));
@@ -26700,7 +26823,7 @@
                 tactic: species === 'cat' ? 'focus_pet' : 'balanced',
             });
             normalizeClientPetCollection(character);
-            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 40);
             character.pet = pet;
             character.activePetId = pet.id;
             character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
@@ -26958,7 +27081,7 @@
                 renderPetFusionPanel();
                 return;
             }
-            if ((character.pets || []).length >= 12) {
+            if ((character.pets || []).length >= 40) {
                 showNotice('Pet inventory is full.');
                 return;
             }
@@ -26974,7 +27097,7 @@
                 xp: 0,
             });
             character.petChests = Math.max(0, (character.petChests || 0) - 1);
-            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 12);
+            character.pets = [...(character.pets || []), pet].filter(Boolean).slice(0, 40);
             character.pet = pet;
             character.activePetId = pet.id;
             character.activePetIds = [pet.id, ...(character.activePetIds || []).filter(id => id !== pet.id)].slice(0, 2);
@@ -37473,6 +37596,7 @@
                                 <div class="market-detail-line">Payment: ${escapeHTML(currency)} · ${escapeHTML(String(listing.paymentChain || 'game'))}</div>
                                 <div class="market-detail-line">Fee: ${escapeHTML(formatMarketPrice(fee, currency))} (${Number(listing.feeBps || MARKETPLACE_FEE_BPS) / 100}%)</div>
                                 <div class="market-detail-line">Seller receives: ${escapeHTML(formatMarketPrice(sellerGets, currency))}</div>
+                                <div class="market-detail-line">Pets: Not included</div>
                                 <div class="market-detail-line">Listed: ${escapeHTML(formatTradeDate(listing.createdAt))}</div>
                             </div>
                         </div>
@@ -38578,6 +38702,8 @@
             const UPPER_OBS_TOP = GROUND_Y - 165;
             const UPPER_OBS_H   = 40;
             const MIN_SCORE = 50, FULL_SCORE = 120;
+            const laneDashes = Array.from({ length: 18 }, (_, i) => i * 74);
+            const wallMarks = Array.from({ length: 9 }, (_, i) => i * 132);
 
             const canvas = document.createElement('canvas');
             // Retina-aware canvas: render at device pixel density for crisp sprites
@@ -38729,44 +38855,94 @@
 
                 // ── Draw ──
                 ctx.clearRect(0, 0, GW, GH);
-                const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-                skyGrad.addColorStop(0, '#06060f'); skyGrad.addColorStop(1, '#0e0e20');
-                ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, GW, GH);
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                for (let i = 0; i < 40; i++) {
-                    const sx = ((i * 97 + elapsed * 30) % GW) | 0, sy = ((i * 41) % (GROUND_Y - 30)) | 0;
-                    ctx.fillRect(sx, sy, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
+                const roomGrad = ctx.createLinearGradient(0, 0, 0, GH);
+                roomGrad.addColorStop(0, '#6b4a24');
+                roomGrad.addColorStop(0.58, '#d9b873');
+                roomGrad.addColorStop(1, '#5b3618');
+                ctx.fillStyle = roomGrad; ctx.fillRect(0, 0, GW, GH);
+
+                ctx.fillStyle = 'rgba(58,34,16,0.28)';
+                ctx.fillRect(0, 0, GW, 54);
+                ctx.fillStyle = 'rgba(255,238,181,0.16)';
+                ctx.fillRect(0, 54, GW, 3);
+                ctx.font = 'bold 18px Fredoka, sans-serif';
+                ctx.fillStyle = 'rgba(43,26,14,0.78)';
+                ctx.fillText('JUMP TRAINING', 32, 34);
+
+                for (const baseX of wallMarks) {
+                    const x = ((baseX - elapsed * 42) % (GW + 132)) - 66;
+                    ctx.fillStyle = 'rgba(74,44,18,0.20)';
+                    ctx.fillRect(x, 82, 62, 8);
+                    ctx.fillRect(x + 16, 114, 62, 8);
+                    ctx.fillStyle = 'rgba(255,246,210,0.18)';
+                    ctx.fillRect(x + 2, 83, 58, 2);
                 }
-                const gGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
-                gGrad.addColorStop(0, '#1a1a30'); gGrad.addColorStop(1, '#0d0d18');
-                ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
-                ctx.fillStyle = '#f97316'; ctx.fillRect(0, GROUND_Y, GW, 3);
-                ctx.fillStyle = 'rgba(249,115,22,0.2)'; ctx.fillRect(0, GROUND_Y + 6, GW, 2);
+
+                ctx.fillStyle = 'rgba(43,26,14,0.18)';
+                ctx.fillRect(0, GROUND_Y - 2, GW, GH - GROUND_Y + 2);
+                const trackGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
+                trackGrad.addColorStop(0, '#9b4f1b');
+                trackGrad.addColorStop(0.42, '#6d3215');
+                trackGrad.addColorStop(1, '#3a1d11');
+                ctx.fillStyle = trackGrad;
+                ctx.fillRect(0, GROUND_Y, GW, GH - GROUND_Y);
+                ctx.fillStyle = '#f4c15d';
+                ctx.fillRect(0, GROUND_Y, GW, 4);
+                ctx.fillStyle = 'rgba(255,238,181,0.45)';
+                ctx.fillRect(0, GROUND_Y + 11, GW, 2);
+                ctx.fillStyle = 'rgba(255,238,181,0.34)';
+                for (const baseX of laneDashes) {
+                    const x = ((baseX - elapsed * obsSpeed * 0.55) % (GW + 74)) - 74;
+                    ctx.fillRect(x, GROUND_Y + 38, 38, 4);
+                }
+
+                ctx.fillStyle = 'rgba(43,26,14,0.18)';
+                ctx.fillRect(0, GROUND_Y - 58, GW, 3);
+                for (let i = 0; i < 8; i++) {
+                    const x = i * 132 + 20;
+                    ctx.fillStyle = i % 2 ? 'rgba(244,193,93,0.55)' : 'rgba(122,47,18,0.55)';
+                    ctx.beginPath();
+                    ctx.moveTo(x, GROUND_Y - 58);
+                    ctx.lineTo(x + 28, GROUND_Y - 58);
+                    ctx.lineTo(x + 14, GROUND_Y - 38);
+                    ctx.closePath();
+                    ctx.fill();
+                }
 
                 // Obstacles
                 for (const o of obstacles) {
                     if (o.upper) {
-                        ctx.fillStyle = '#1e3a5f';
-                        ctx.fillRect(o.x + o.w / 2 - 2, 0, 4, UPPER_OBS_TOP);
+                        ctx.fillStyle = 'rgba(58,34,16,0.75)';
+                        ctx.fillRect(o.x + o.w / 2 - 2, 58, 4, UPPER_OBS_TOP - 58);
                         const ug = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
-                        ug.addColorStop(0, '#1d4ed8'); ug.addColorStop(0.5, '#3b82f6'); ug.addColorStop(1, '#1d4ed8');
+                        ug.addColorStop(0, '#2f5d73'); ug.addColorStop(0.5, '#76a9bf'); ug.addColorStop(1, '#2f5d73');
                         ctx.fillStyle = ug;
-                        _mgRoundRect(ctx, o.x, UPPER_OBS_TOP, o.w, UPPER_OBS_H, 4); ctx.fill();
-                        ctx.fillStyle = 'rgba(255,210,0,0.4)';
-                        ctx.fillRect(o.x + 3, UPPER_OBS_TOP + UPPER_OBS_H - 8, o.w - 6, 4);
+                        _mgRoundRect(ctx, o.x - 4, UPPER_OBS_TOP, o.w + 8, UPPER_OBS_H, 8); ctx.fill();
+                        ctx.fillStyle = 'rgba(255,246,210,0.55)';
+                        ctx.fillRect(o.x, UPPER_OBS_TOP + 9, o.w, 5);
+                        ctx.fillRect(o.x, UPPER_OBS_TOP + UPPER_OBS_H - 13, o.w, 5);
                     } else {
                         const oy = GROUND_Y - o.h;
-                        const og = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
-                        og.addColorStop(0, '#b91c1c'); og.addColorStop(0.5, '#ef4444'); og.addColorStop(1, '#b91c1c');
-                        ctx.fillStyle = og; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 4); ctx.fill();
-                        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
+                        const coneGrad = ctx.createLinearGradient(o.x, oy, o.x + o.w, oy);
+                        coneGrad.addColorStop(0, '#7a2f12'); coneGrad.addColorStop(0.5, '#df6b22'); coneGrad.addColorStop(1, '#7a2f12');
+                        ctx.fillStyle = coneGrad;
+                        ctx.beginPath();
+                        ctx.moveTo(o.x - 5, GROUND_Y);
+                        ctx.lineTo(o.x + o.w / 2, oy);
+                        ctx.lineTo(o.x + o.w + 5, GROUND_Y);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(255,238,181,0.72)';
+                        ctx.fillRect(o.x + 2, oy + o.h * 0.50, o.w - 4, 5);
+                        ctx.fillStyle = '#3b220f';
+                        _mgRoundRect(ctx, o.x - 9, GROUND_Y - 8, o.w + 18, 8, 3); ctx.fill();
                     }
                 }
 
                 // Ground shadow
-                ctx.fillStyle = 'rgba(249,115,22,0.18)';
+                ctx.fillStyle = 'rgba(43,26,14,0.26)';
                 ctx.beginPath();
-                ctx.ellipse(PX + PW / 2, GROUND_Y, PW * 0.45, 4, 0, 0, Math.PI * 2);
+                ctx.ellipse(PX + PW / 2, GROUND_Y + 4, PW * 0.48, 5, 0, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Player sprite
@@ -38780,7 +38956,7 @@
                     ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 10, drawY + 2, 20, 16);
                 }
                 ctx.globalAlpha = 1;
-                if (!alive) { ctx.fillStyle = 'rgba(220,38,38,0.18)'; ctx.fillRect(0, 0, GW, GH); }
+                if (!alive) { ctx.fillStyle = 'rgba(122,47,18,0.26)'; ctx.fillRect(0, 0, GW, GH); }
                 animId = requestAnimationFrame(loop);
             }
             animId = requestAnimationFrame(loop);
@@ -38941,6 +39117,67 @@
             nctx.font = 'bold 16px monospace';
             nctx.textAlign = 'center';
             nctx.textBaseline = 'middle';
+            const noteSpritePad = 4;
+            const noteSpriteW = NOTE_W + noteSpritePad * 2;
+            const noteSpriteH = NOTE_H + noteSpritePad * 2;
+            function makeNoteSprite(lane, mode) {
+                const c = document.createElement('canvas');
+                c.width = noteSpriteW;
+                c.height = noteSpriteH;
+                const cx = c.getContext('2d');
+                const col = LANE_COLORS[lane];
+                const bx = noteSpritePad;
+                const by = noteSpritePad;
+                if (mode === 'attempted') {
+                    cx.beginPath();
+                    cx.roundRect(bx, by, NOTE_W, NOTE_H, 7);
+                    cx.fillStyle = '#1c0e0e';
+                    cx.fill();
+                    cx.strokeStyle = '#7f1d1d';
+                    cx.lineWidth = 2;
+                    cx.stroke();
+                    cx.fillStyle = '#ef4444aa';
+                    cx.font = 'bold 15px monospace';
+                    cx.textAlign = 'center';
+                    cx.textBaseline = 'middle';
+                    cx.fillText('X', noteSpriteW / 2, noteSpriteH / 2);
+                    return c;
+                }
+                if (mode === 'zone') {
+                    cx.fillStyle = col + '18';
+                    cx.beginPath();
+                    cx.roundRect(0, 0, noteSpriteW, noteSpriteH, 11);
+                    cx.fill();
+                }
+                const grad = cx.createLinearGradient(0, by, 0, by + NOTE_H);
+                grad.addColorStop(0, col + 'ee');
+                grad.addColorStop(1, col + '44');
+                cx.beginPath();
+                cx.roundRect(bx, by, NOTE_W, NOTE_H, 7);
+                cx.fillStyle = grad;
+                cx.fill();
+                cx.strokeStyle = mode === 'zone' ? 'rgba(255,255,255,0.85)' : col;
+                cx.lineWidth = mode === 'zone' ? 2.5 : 2;
+                cx.stroke();
+                cx.fillStyle = 'rgba(255,255,255,0.22)';
+                cx.beginPath();
+                cx.roundRect(bx + 5, by + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
+                cx.fill();
+                cx.font = 'bold 17px monospace';
+                cx.textAlign = 'center';
+                cx.textBaseline = 'middle';
+                cx.fillStyle = 'rgba(0,0,0,0.45)';
+                cx.fillText(LANE_LABELS[lane], noteSpriteW / 2 + 1, noteSpriteH / 2 + 1);
+                cx.fillStyle = '#ffffff';
+                cx.fillText(LANE_LABELS[lane], noteSpriteW / 2, noteSpriteH / 2);
+                return c;
+            }
+            const noteSprites = LANE_KEYS.map((_, lane) => ({
+                normal: makeNoteSprite(lane, 'normal'),
+                zone: makeNoteSprite(lane, 'zone'),
+                attempted: makeNoteSprite(lane, 'attempted')
+            }));
+            let hzActive = false;
 
             // Floating texts container — pre-allocated pool, zero createElement during gameplay
             const ftEl = document.createElement('div');
@@ -39201,65 +39438,26 @@
                     if (!n.hit && !n.miss && !n.attempted && n.canvasY !== undefined &&
                         Math.abs(n.canvasY + NOTE_H / 2 - HIT_CY) < HIT_H) { _noteInZone = true; break; }
                 }
-                hzEl.style.borderColor = _noteInZone ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
-                hzEl.style.boxShadow   = _noteInZone ? '0 0 12px rgba(255,220,60,0.4),inset 0 0 10px rgba(255,220,60,0.07)' : '';
+                if (_noteInZone !== hzActive) {
+                    hzActive = _noteInZone;
+                    hzEl.style.borderColor = hzActive ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
+                    hzEl.style.boxShadow   = hzActive ? '0 0 6px rgba(255,220,60,0.22)' : '';
+                }
 
                 for (const n of notes) {
                     if (n.hit || n.canvasY === undefined) continue;
                     const ny = n.canvasY;
                     if (ny < -NOTE_H || ny > GH) continue;
-                    const col = LANE_COLORS[n.lane];
                     if (n.miss) {
                         // Missed notes just vanish — floating "MISS" text already gives feedback
                         continue;
                     } else if (n.attempted) {
                         // Wasted early press — show darkened with ✕ so player knows
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
-                        nctx.fillStyle = '#1c0e0e';
-                        nctx.fill();
-                        nctx.strokeStyle = '#7f1d1d';
-                        nctx.lineWidth = 2;
-                        nctx.stroke();
-                        nctx.fillStyle = '#ef4444aa';
-                        nctx.font = 'bold 15px monospace';
-                        nctx.textAlign = 'center';
-                        nctx.textBaseline = 'middle';
-                        nctx.fillText('✕', COL_W / 2, ny + NOTE_H / 2);
+                        nctx.drawImage(noteSprites[n.lane].attempted, noteNX - noteSpritePad, ny - noteSpritePad);
                     } else {
                         const inZone = Math.abs(ny + NOTE_H / 2 - HIT_CY) < HIT_H / 2 + NOTE_H / 2;
-                        if (inZone) {
-                            nctx.save();
-                            nctx.shadowColor = col;
-                            nctx.shadowBlur = 16;
-                            nctx.fillStyle = col + '14';
-                            nctx.beginPath();
-                            nctx.roundRect(noteNX - 4, ny - 4, NOTE_W + 8, NOTE_H + 8, 11);
-                            nctx.fill();
-                            nctx.restore();
-                        }
-                        const grad = nctx.createLinearGradient(0, ny, 0, ny + NOTE_H);
-                        grad.addColorStop(0, col + 'ee');
-                        grad.addColorStop(1, col + '44');
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX, ny, NOTE_W, NOTE_H, 7);
-                        nctx.fillStyle = grad;
-                        nctx.fill();
-                        nctx.strokeStyle = inZone ? 'rgba(255,255,255,0.85)' : col;
-                        nctx.lineWidth = inZone ? 2.5 : 2;
-                        nctx.stroke();
-                        nctx.fillStyle = 'rgba(255,255,255,0.22)';
-                        nctx.beginPath();
-                        nctx.roundRect(noteNX + 5, ny + 5, NOTE_W - 10, 9, [4, 4, 0, 0]);
-                        nctx.fill();
-                        nctx.font = 'bold 17px monospace';
-                        nctx.textAlign = 'center';
-                        nctx.textBaseline = 'middle';
-                        nctx.shadowColor = 'rgba(0,0,0,0.8)';
-                        nctx.shadowBlur = 5;
-                        nctx.fillStyle = '#ffffff';
-                        nctx.fillText(LANE_LABELS[n.lane], COL_W / 2, ny + NOTE_H / 2);
-                        nctx.shadowBlur = 0;
+                        const sprite = inZone ? noteSprites[n.lane].zone : noteSprites[n.lane].normal;
+                        nctx.drawImage(sprite, noteNX - noteSpritePad, ny - noteSpritePad);
                     }
                 }
             }
@@ -39371,7 +39569,7 @@
         function _renderCareMoraleSection(character, area) {
             const subtitle = document.createElement('div');
             subtitle.className = 'care-section-subtitle';
-            subtitle.textContent = '⚡ ACTIVITIES — buy & use instantly';
+            subtitle.textContent = '⚡ MORALE — instant boosts and training';
             area.appendChild(subtitle);
 
             const list = document.createElement('div');
@@ -39423,11 +39621,12 @@
                 const moraleStatText = mItem.maxStack != null
                     ? '5-' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP'
                     : '+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP';
+                const activityType = isInteractive ? 'Training' : 'Instant';
                 row.innerHTML =
                     '<span class="care-activity-icon">' + mItem.icon + '</span>' +
                     '<div class="care-activity-info">' +
                         '<div class="care-activity-name">' + mItem.name + '</div>' +
-                        '<div class="care-activity-stats">' + moraleStatText + '</div>' +
+                        '<div class="care-activity-stats">' + activityType + ' · ' + moraleStatText + '</div>' +
                     '</div>' +
                     rightEl + testBtnHtml;
 
