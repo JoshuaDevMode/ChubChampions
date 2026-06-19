@@ -19040,7 +19040,6 @@
                 ...requestedActiveIds,
                 ...(character.activePetId ? [character.activePetId] : []),
             ])].filter(id => pets.some(p => p.id === id)).slice(0, 2);
-            if (!activePetIds.length && pets[0]?.id) activePetIds.push(pets[0].id);
             const activePets = activePetIds.map(id => pets.find(p => p.id === id)).filter(Boolean);
             const activePet = activePets[0] || null;
             character.pets = pets;
@@ -19058,6 +19057,19 @@
             characters.forEach(character => {
                 character.pets = normalizedPets.map(pet => ({ ...pet }));
                 if (normalizedChests !== null) character.petChests = normalizedChests;
+                normalizeClientPetCollection(character);
+            });
+        }
+
+        function clearPetAssignmentsFromOtherCharacters(petIds, exceptCharacterId) {
+            const ids = new Set((Array.isArray(petIds) ? petIds : [petIds]).filter(Boolean));
+            if (!ids.size) return;
+            characters.forEach(character => {
+                if (!character || character.id === exceptCharacterId) return;
+                character.activePetIds = (Array.isArray(character.activePetIds) ? character.activePetIds : [])
+                    .filter(id => !ids.has(id))
+                    .slice(0, 2);
+                character.activePetId = character.activePetIds[0] || null;
                 normalizeClientPetCollection(character);
             });
         }
@@ -26672,6 +26684,12 @@
                 const data = await resp.json().catch(() => ({ ok: false, error: 'Server error' }));
                 if (data.ok) {
                     applyGlobalPetCollectionToCharacters(data.pets, data.petChests);
+                    if (action === 'set_active' && payload.petId) {
+                        clearPetAssignmentsFromOtherCharacters(payload.petId, character.id);
+                    }
+                    if (action === 'fuse') {
+                        clearPetAssignmentsFromOtherCharacters([payload.petAId, payload.petBId, data.fusedPet?.id], character.id);
+                    }
                     character.pet = normalizeClientPet(data.pet);
                     character.pets = Array.isArray(data.pets) ? data.pets.map(normalizeClientPet).filter(Boolean).slice(0, 40) : (character.pet ? [character.pet] : []);
                     character.activePetId = data.activePetId || character.pet?.id || null;
