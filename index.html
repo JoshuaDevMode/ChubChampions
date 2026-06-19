@@ -16345,54 +16345,65 @@
             padding: 6px 14px !important;
         }
 
-        /* ── CARE panel — darken labels/titles on the cream face ── */
+        /* CARE panel: high-contrast text on a calmer cream face */
         .care-panel .care-title,
         .care-panel .care-section-label,
         .care-panel .care-section-subtitle,
         .care-panel .care-stat-status,
         .care-panel .care-tab,
         .care-panel #care-drag-hint {
-            color: #2b1a0e !important;
-            text-shadow: 0 1px 0 rgba(255,250,225,0.5) !important;
+            color: #1f1208 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.72) !important;
         }
         .care-panel .care-title { font-weight: 900 !important; }
-        .care-panel .care-section-subtitle { color: #5a3a18 !important; }
-        .care-panel .care-tab { background: rgba(74,44,18,0.10) !important; border-color: rgba(74,44,18,0.35) !important; }
-        .care-panel .care-tab.active { background: rgba(180,90,20,0.22) !important; border-color: #4a2c12 !important; color: #2b1a0e !important; }
-        .care-panel .care-tab:hover:not(.active) { color: #4a2c12 !important; border-color: rgba(74,44,18,0.55) !important; }
-        .care-panel .care-divider { background: rgba(74,44,18,0.25) !important; }
-        .care-panel .care-close { color: #4a2c12 !important; }
-        .care-panel .care-close:hover { color: #2b1a0e !important; }
+        .care-panel .care-section-subtitle { color: #3f260f !important; }
+        .care-panel .care-tab {
+            background: rgba(255,246,220,0.42) !important;
+            border-color: rgba(74,44,18,0.42) !important;
+        }
+        .care-panel .care-tab.active {
+            background: rgba(244,193,93,0.48) !important;
+            border-color: #4a2c12 !important;
+            color: #1f1208 !important;
+        }
+        .care-panel .care-tab:hover:not(.active) { color: #2b1a0e !important; border-color: rgba(74,44,18,0.62) !important; }
+        .care-panel .care-divider { background: rgba(74,44,18,0.34) !important; }
+        .care-panel .care-close { color: #2b1a0e !important; }
+        .care-panel .care-close:hover { color: #1f1208 !important; }
         .care-panel .care-stat-col {
-            background: rgba(74,44,18,0.10) !important;
-            border-color: rgba(74,44,18,0.30) !important;
+            background: rgba(255,246,220,0.50) !important;
+            border-color: rgba(74,44,18,0.38) !important;
         }
         .care-panel .care-stat-col.care-stat-clickable.active {
             border-color: #b8741a !important;
-            box-shadow: 0 0 12px rgba(180,116,26,0.25), inset 0 0 8px rgba(180,116,26,0.10) !important;
+            background: rgba(244,193,93,0.38) !important;
+            box-shadow: 0 0 12px rgba(180,116,26,0.22), inset 0 0 8px rgba(255,250,225,0.25) !important;
         }
         .care-panel .care-header { border-bottom-color: rgba(74,44,18,0.35) !important; }
         .care-panel .care-bag-section,
         .care-panel .care-item,
         .care-panel .care-activity-row {
-            background: rgba(74,44,18,0.10) !important;
-            border-color: rgba(74,44,18,0.30) !important;
-            box-shadow: inset 0 1px 0 rgba(255,250,225,0.20);
+            background: rgba(255,246,220,0.58) !important;
+            border-color: rgba(74,44,18,0.40) !important;
+            box-shadow: inset 0 1px 0 rgba(255,250,225,0.45);
         }
         .care-panel .care-item:hover,
         .care-panel .care-activity-row:hover {
             border-color: rgba(90,58,24,0.68) !important;
-            box-shadow: inset 0 0 10px rgba(180,116,26,0.14) !important;
+            background: rgba(255,238,190,0.72) !important;
+            box-shadow: inset 0 0 10px rgba(180,116,26,0.12) !important;
         }
         .care-panel .care-item-name,
         .care-panel .care-activity-name {
-            color: #2b1a0e !important;
-            font-weight: 800;
+            color: #1f1208 !important;
+            font-weight: 900;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55);
         }
         .care-panel .care-activity-stats,
         .care-panel .care-item-count,
         .care-panel .care-item-cd-text {
-            color: #6b4820 !important;
+            color: #3f260f !important;
+            font-weight: 700;
         }
         .care-panel .care-item-buy-btn,
         .care-panel .care-activity-buy-btn,
@@ -19240,11 +19251,8 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 2,  icon: '🎵' },
             punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
             pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 5,  icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 8,  icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 14, icon: '👑' },
             jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🏃', interactive: true, maxStack: 3 },
         };
         const MORALE_STATUSES = [
