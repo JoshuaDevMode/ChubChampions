@@ -16372,6 +16372,101 @@
             box-shadow: 0 0 12px rgba(180,116,26,0.25), inset 0 0 8px rgba(180,116,26,0.10) !important;
         }
         .care-panel .care-header { border-bottom-color: rgba(74,44,18,0.35) !important; }
+        .care-panel .care-bag-section,
+        .care-panel .care-item,
+        .care-panel .care-activity-row {
+            background: rgba(74,44,18,0.10) !important;
+            border-color: rgba(74,44,18,0.30) !important;
+            box-shadow: inset 0 1px 0 rgba(255,250,225,0.20);
+        }
+        .care-panel .care-item:hover,
+        .care-panel .care-activity-row:hover {
+            border-color: rgba(90,58,24,0.68) !important;
+            box-shadow: inset 0 0 10px rgba(180,116,26,0.14) !important;
+        }
+        .care-panel .care-item-name,
+        .care-panel .care-activity-name {
+            color: #2b1a0e !important;
+            font-weight: 800;
+        }
+        .care-panel .care-activity-stats,
+        .care-panel .care-item-count,
+        .care-panel .care-item-cd-text {
+            color: #6b4820 !important;
+        }
+        .care-panel .care-item-buy-btn,
+        .care-panel .care-activity-buy-btn,
+        .care-panel .care-confirm-yes,
+        .care-panel .care-confirm-no,
+        .mg-retry-btn {
+            background: linear-gradient(180deg, #f4c15d, #b86b21) !important;
+            border: 2px solid #5a3516 !important;
+            color: #2b1a0e !important;
+            box-shadow: 0 2px 0 #3b220f !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.35);
+        }
+        .care-panel .care-item-buy-btn:disabled,
+        .care-panel .care-activity-buy-btn:disabled {
+            background: #8a7a62 !important;
+            border-color: #5b4a38 !important;
+            color: #3d3126 !important;
+            box-shadow: none !important;
+        }
+        .care-panel .care-activity-test-btn {
+            background: rgba(74,44,18,0.12) !important;
+            border-color: rgba(74,44,18,0.50) !important;
+            color: #4a2c12 !important;
+        }
+        .care-panel .care-activity-test-btn:hover {
+            background: rgba(180,90,20,0.22) !important;
+            border-color: #4a2c12 !important;
+        }
+        .care-panel .care-confirm-overlay {
+            background: rgba(43,26,14,0.48) !important;
+        }
+        .care-panel .care-confirm-box {
+            background: rgba(246,224,182,0.98) !important;
+            border: 2px solid #4a2c12 !important;
+            color: #2b1a0e !important;
+            box-shadow: 0 10px 28px rgba(43,26,14,0.45) !important;
+        }
+        .care-panel .care-confirm-name,
+        .care-panel .care-confirm-desc {
+            color: #2b1a0e !important;
+        }
+        .mg-timer-bar {
+            background: rgba(43,26,14,0.55) !important;
+            border-color: rgba(245,230,200,0.26) !important;
+            border-radius: 4px !important;
+        }
+        .mg-timer-fill {
+            background: linear-gradient(90deg, #f4c15d, #b86b21, #7a2f12) !important;
+        }
+        .mg-canvas {
+            border: 3px solid #4a2c12 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 8px 22px rgba(43,26,14,0.38), inset 0 0 0 1px rgba(255,250,225,0.16);
+        }
+        .mg-score,
+        .mg-result-score {
+            color: #4a2c12 !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.5);
+        }
+        .mg-hint {
+            color: #6b4820 !important;
+        }
+        .mg-result {
+            background: rgba(246,224,182,0.94);
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            padding: 18px 22px;
+            color: #2b1a0e;
+            box-shadow: 0 10px 28px rgba(43,26,14,0.35);
+        }
+        .mg-result-title {
+            color: #2f6b3c !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
 
         /* ── SKILL TREE — readable cards on the wood panel ── */
         .skills-panel .skills-branch-content,
@@ -18806,16 +18901,13 @@
 
         // ===== WELLNESS ITEMS (out-of-battle: feed/heal character) =====
         const WELLNESS_ITEMS = {
-            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 10, price: 10, icon: '💊' },
-            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 1,  icon: '🍎' },
-            banana:         { name: 'Banana',          category: 'food',    wellnessRestore: 12, xpGrant: 6,  price: 1,  icon: '🍌' },
-            marshmallow:    { name: 'Marshmallow',     category: 'food',    wellnessRestore: 15, xpGrant: 7,  price: 2,  icon: '🍬' },
-            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 2,  icon: '🍫' },
-            chicken:        { name: 'Chicken',         category: 'food',    wellnessRestore: 22, xpGrant: 10, price: 3,  icon: '🍗' },
-            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 4,  icon: '🥩' },
-            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 5,  icon: '🩹' },
-            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 7,  icon: '🌿' },
-            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 9,  icon: '💉' },
+            happy_pill:     { name: 'Happy Pill',      category: 'special', wellnessRestore: 40, moraleBonus: 35, xpGrant: 0,  price: 25, icon: '💊' },
+            apple:          { name: 'Apple',           category: 'food',    wellnessRestore: 10, xpGrant: 5,  price: 2,  icon: '🍎' },
+            chocolate:      { name: 'Chocolate',       category: 'food',    wellnessRestore: 20, xpGrant: 9,  price: 4,  icon: '🍫' },
+            steak:          { name: 'Steak',           category: 'food',    wellnessRestore: 30, xpGrant: 14, price: 7,  icon: '🥩' },
+            bandage:        { name: 'Bandage',         category: 'medical', wellnessRestore: 32, xpGrant: 8,  price: 8,  icon: '🩹' },
+            herb:           { name: 'Herb',            category: 'medical', wellnessRestore: 45, xpGrant: 12, price: 12, icon: '🌿' },
+            adrenaline_shot:{ name: 'Adrenaline Shot', category: 'medical', wellnessRestore: 60, xpGrant: 18, price: 18, icon: '💉' },
         };
 
         const PET_DEFS = {
@@ -19147,12 +19239,12 @@
         const MORALE_MAX = 100;
         const MORALE_DECAY_PER_HOUR = 0.35; // -0.35 per hour (~12 days to zero)
         const MORALE_ITEMS = {
-            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 1,  icon: '🎵' },
-            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🥊', interactive: true, maxStack: 3 },
-            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 3,  icon: '📣' },
-            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 5,  icon: '🎬' },
-            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 8,  icon: '👑' },
-            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 1,  icon: '🏃', interactive: true, maxStack: 3 },
+            music_box:        { name: 'Music Box',        category: 'activity', moraleRestore: 8,  xpGrant: 4,  price: 2,  icon: '🎵' },
+            punching_bag:     { name: 'Punching Bag',     category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🥊', interactive: true, maxStack: 3 },
+            pep_talk:         { name: 'Pep Talk',         category: 'activity', moraleRestore: 20, xpGrant: 10, price: 5,  icon: '📣' },
+            movie_night:      { name: 'Movie Night',      category: 'activity', moraleRestore: 25, xpGrant: 12, price: 8,  icon: '🎬' },
+            champion_speech:  { name: 'Champion Speech',  category: 'activity', moraleRestore: 40, xpGrant: 15, price: 14, icon: '👑' },
+            jump_training:    { name: 'Jump Training',    category: 'activity', moraleRestore: 10, xpGrant: 5,  price: 2,  icon: '🏃', interactive: true, maxStack: 3 },
         };
         const MORALE_STATUSES = [
             { min: 80, label: 'Fired Up',     color: '#f97316', penalty: 0,    dmgBonus: 0.05, battlePenalty: 0 },
@@ -19189,9 +19281,9 @@
         }
         // Chest drops: wellness items (food/medical) + battle consumables (potions)
         const CONSUMABLE_DROP_TABLES = {
-            bronze:    { chance: 0.15, pool: ['apple', 'banana'], dropType: 'wellness' },
-            silver:    { chance: 0.20, pool: ['apple', 'banana', 'rice_bowl', 'chicken'], dropType: 'wellness' },
-            gold:      { chance: 0.30, pool: ['chicken', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
+            bronze:    { chance: 0.15, pool: ['apple'], dropType: 'wellness' },
+            silver:    { chance: 0.20, pool: ['apple', 'chocolate', 'steak'], dropType: 'wellness' },
+            gold:      { chance: 0.30, pool: ['chocolate', 'steak', 'small_potion', 'stamina_potion', 'big_potion'], dropType: 'mixed' },
             epic:      { chance: 0.50, pool: ['small_potion', 'big_potion', 'stamina_potion', 'bandage', 'herb'], dropType: 'mixed' },
             legendary: { chance: 1.00, pool: ['big_potion', 'stamina_potion', 'herb', 'adrenaline_shot'], guaranteed: 'adrenaline_shot', dropType: 'mixed' }
         };
@@ -39402,7 +39494,7 @@
         function _renderCareMoraleSection(character, area) {
             const subtitle = document.createElement('div');
             subtitle.className = 'care-section-subtitle';
-            subtitle.textContent = '⚡ ACTIVITIES — buy & use instantly';
+            subtitle.textContent = '⚡ MORALE — instant boosts and training';
             area.appendChild(subtitle);
 
             const list = document.createElement('div');
@@ -39454,11 +39546,12 @@
                 const moraleStatText = mItem.maxStack != null
                     ? '5-' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP'
                     : '+' + mItem.moraleRestore + ' Morale &nbsp;·&nbsp; +' + mItem.xpGrant + ' XP';
+                const activityType = isInteractive ? 'Training' : 'Instant';
                 row.innerHTML =
                     '<span class="care-activity-icon">' + mItem.icon + '</span>' +
                     '<div class="care-activity-info">' +
                         '<div class="care-activity-name">' + mItem.name + '</div>' +
-                        '<div class="care-activity-stats">' + moraleStatText + '</div>' +
+                        '<div class="care-activity-stats">' + activityType + ' · ' + moraleStatText + '</div>' +
                     '</div>' +
                     rightEl + testBtnHtml;
 
