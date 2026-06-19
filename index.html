@@ -38701,6 +38701,8 @@
             const UPPER_OBS_TOP = GROUND_Y - 165;
             const UPPER_OBS_H   = 40;
             const MIN_SCORE = 50, FULL_SCORE = 120;
+            const laneDashes = Array.from({ length: 18 }, (_, i) => i * 74);
+            const wallMarks = Array.from({ length: 9 }, (_, i) => i * 132);
 
             const canvas = document.createElement('canvas');
             // Retina-aware canvas: render at device pixel density for crisp sprites
@@ -38852,44 +38854,94 @@
 
                 // ── Draw ──
                 ctx.clearRect(0, 0, GW, GH);
-                const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-                skyGrad.addColorStop(0, '#06060f'); skyGrad.addColorStop(1, '#0e0e20');
-                ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, GW, GH);
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                for (let i = 0; i < 40; i++) {
-                    const sx = ((i * 97 + elapsed * 30) % GW) | 0, sy = ((i * 41) % (GROUND_Y - 30)) | 0;
-                    ctx.fillRect(sx, sy, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
+                const roomGrad = ctx.createLinearGradient(0, 0, 0, GH);
+                roomGrad.addColorStop(0, '#6b4a24');
+                roomGrad.addColorStop(0.58, '#d9b873');
+                roomGrad.addColorStop(1, '#5b3618');
+                ctx.fillStyle = roomGrad; ctx.fillRect(0, 0, GW, GH);
+
+                ctx.fillStyle = 'rgba(58,34,16,0.28)';
+                ctx.fillRect(0, 0, GW, 54);
+                ctx.fillStyle = 'rgba(255,238,181,0.16)';
+                ctx.fillRect(0, 54, GW, 3);
+                ctx.font = 'bold 18px Fredoka, sans-serif';
+                ctx.fillStyle = 'rgba(43,26,14,0.78)';
+                ctx.fillText('JUMP TRAINING', 32, 34);
+
+                for (const baseX of wallMarks) {
+                    const x = ((baseX - elapsed * 42) % (GW + 132)) - 66;
+                    ctx.fillStyle = 'rgba(74,44,18,0.20)';
+                    ctx.fillRect(x, 82, 62, 8);
+                    ctx.fillRect(x + 16, 114, 62, 8);
+                    ctx.fillStyle = 'rgba(255,246,210,0.18)';
+                    ctx.fillRect(x + 2, 83, 58, 2);
                 }
-                const gGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
-                gGrad.addColorStop(0, '#1a1a30'); gGrad.addColorStop(1, '#0d0d18');
-                ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y + 3, GW, GH);
-                ctx.fillStyle = '#f97316'; ctx.fillRect(0, GROUND_Y, GW, 3);
-                ctx.fillStyle = 'rgba(249,115,22,0.2)'; ctx.fillRect(0, GROUND_Y + 6, GW, 2);
+
+                ctx.fillStyle = 'rgba(43,26,14,0.18)';
+                ctx.fillRect(0, GROUND_Y - 2, GW, GH - GROUND_Y + 2);
+                const trackGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
+                trackGrad.addColorStop(0, '#9b4f1b');
+                trackGrad.addColorStop(0.42, '#6d3215');
+                trackGrad.addColorStop(1, '#3a1d11');
+                ctx.fillStyle = trackGrad;
+                ctx.fillRect(0, GROUND_Y, GW, GH - GROUND_Y);
+                ctx.fillStyle = '#f4c15d';
+                ctx.fillRect(0, GROUND_Y, GW, 4);
+                ctx.fillStyle = 'rgba(255,238,181,0.45)';
+                ctx.fillRect(0, GROUND_Y + 11, GW, 2);
+                ctx.fillStyle = 'rgba(255,238,181,0.34)';
+                for (const baseX of laneDashes) {
+                    const x = ((baseX - elapsed * obsSpeed * 0.55) % (GW + 74)) - 74;
+                    ctx.fillRect(x, GROUND_Y + 38, 38, 4);
+                }
+
+                ctx.fillStyle = 'rgba(43,26,14,0.18)';
+                ctx.fillRect(0, GROUND_Y - 58, GW, 3);
+                for (let i = 0; i < 8; i++) {
+                    const x = i * 132 + 20;
+                    ctx.fillStyle = i % 2 ? 'rgba(244,193,93,0.55)' : 'rgba(122,47,18,0.55)';
+                    ctx.beginPath();
+                    ctx.moveTo(x, GROUND_Y - 58);
+                    ctx.lineTo(x + 28, GROUND_Y - 58);
+                    ctx.lineTo(x + 14, GROUND_Y - 38);
+                    ctx.closePath();
+                    ctx.fill();
+                }
 
                 // Obstacles
                 for (const o of obstacles) {
                     if (o.upper) {
-                        ctx.fillStyle = '#1e3a5f';
-                        ctx.fillRect(o.x + o.w / 2 - 2, 0, 4, UPPER_OBS_TOP);
+                        ctx.fillStyle = 'rgba(58,34,16,0.75)';
+                        ctx.fillRect(o.x + o.w / 2 - 2, 58, 4, UPPER_OBS_TOP - 58);
                         const ug = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
-                        ug.addColorStop(0, '#1d4ed8'); ug.addColorStop(0.5, '#3b82f6'); ug.addColorStop(1, '#1d4ed8');
+                        ug.addColorStop(0, '#2f5d73'); ug.addColorStop(0.5, '#76a9bf'); ug.addColorStop(1, '#2f5d73');
                         ctx.fillStyle = ug;
-                        _mgRoundRect(ctx, o.x, UPPER_OBS_TOP, o.w, UPPER_OBS_H, 4); ctx.fill();
-                        ctx.fillStyle = 'rgba(255,210,0,0.4)';
-                        ctx.fillRect(o.x + 3, UPPER_OBS_TOP + UPPER_OBS_H - 8, o.w - 6, 4);
+                        _mgRoundRect(ctx, o.x - 4, UPPER_OBS_TOP, o.w + 8, UPPER_OBS_H, 8); ctx.fill();
+                        ctx.fillStyle = 'rgba(255,246,210,0.55)';
+                        ctx.fillRect(o.x, UPPER_OBS_TOP + 9, o.w, 5);
+                        ctx.fillRect(o.x, UPPER_OBS_TOP + UPPER_OBS_H - 13, o.w, 5);
                     } else {
                         const oy = GROUND_Y - o.h;
-                        const og = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
-                        og.addColorStop(0, '#b91c1c'); og.addColorStop(0.5, '#ef4444'); og.addColorStop(1, '#b91c1c');
-                        ctx.fillStyle = og; _mgRoundRect(ctx, o.x, oy, o.w, o.h, 4); ctx.fill();
-                        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(o.x + 4, oy + 4, o.w - 8, 6);
+                        const coneGrad = ctx.createLinearGradient(o.x, oy, o.x + o.w, oy);
+                        coneGrad.addColorStop(0, '#7a2f12'); coneGrad.addColorStop(0.5, '#df6b22'); coneGrad.addColorStop(1, '#7a2f12');
+                        ctx.fillStyle = coneGrad;
+                        ctx.beginPath();
+                        ctx.moveTo(o.x - 5, GROUND_Y);
+                        ctx.lineTo(o.x + o.w / 2, oy);
+                        ctx.lineTo(o.x + o.w + 5, GROUND_Y);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(255,238,181,0.72)';
+                        ctx.fillRect(o.x + 2, oy + o.h * 0.50, o.w - 4, 5);
+                        ctx.fillStyle = '#3b220f';
+                        _mgRoundRect(ctx, o.x - 9, GROUND_Y - 8, o.w + 18, 8, 3); ctx.fill();
                     }
                 }
 
                 // Ground shadow
-                ctx.fillStyle = 'rgba(249,115,22,0.18)';
+                ctx.fillStyle = 'rgba(43,26,14,0.26)';
                 ctx.beginPath();
-                ctx.ellipse(PX + PW / 2, GROUND_Y, PW * 0.45, 4, 0, 0, Math.PI * 2);
+                ctx.ellipse(PX + PW / 2, GROUND_Y + 4, PW * 0.48, 5, 0, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Player sprite
@@ -38903,7 +38955,7 @@
                     ctx.fillStyle = '#f4a261'; ctx.fillRect(PX + 10, drawY + 2, 20, 16);
                 }
                 ctx.globalAlpha = 1;
-                if (!alive) { ctx.fillStyle = 'rgba(220,38,38,0.18)'; ctx.fillRect(0, 0, GW, GH); }
+                if (!alive) { ctx.fillStyle = 'rgba(122,47,18,0.26)'; ctx.fillRect(0, 0, GW, GH); }
                 animId = requestAnimationFrame(loop);
             }
             animId = requestAnimationFrame(loop);
