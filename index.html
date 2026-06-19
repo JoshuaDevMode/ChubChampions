@@ -38633,6 +38633,7 @@
         function _mgAudio() {
             // AudioContext created lazily on first play() so it's always after a user gesture
             let ac = null;
+            let crashBuffer = null;
             function getAC() {
                 if (!ac) {
                     try { ac = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -38640,7 +38641,22 @@
                 }
                 return ac;
             }
+            function getCrashBuffer(ctx) {
+                if (crashBuffer) return crashBuffer;
+                crashBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.18), ctx.sampleRate);
+                const d = crashBuffer.getChannelData(0);
+                for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+                return crashBuffer;
+            }
             return {
+                warm() {
+                    try {
+                        const ctx = getAC();
+                        if (!ctx) return;
+                        if (ctx.state === 'suspended') ctx.resume();
+                        getCrashBuffer(ctx);
+                    } catch(_) {}
+                },
                 play(type) {
                     try {
                         const ctx = getAC();
@@ -38656,14 +38672,11 @@
                             g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
                             o.connect(g); o.start(t0); o.stop(t0 + 0.18);
                         } else if (type === 'crash') {
-                            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.25), ctx.sampleRate);
-                            const d = buf.getChannelData(0);
-                            for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
-                            const src = ctx.createBufferSource(); src.buffer = buf;
+                            const src = ctx.createBufferSource(); src.buffer = getCrashBuffer(ctx);
                             const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160; f.Q.value = 0.6;
                             src.connect(f); f.connect(g);
                             g.gain.setValueAtTime(0.75, t0);
-                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+                            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
                             src.start(t0);
                         } else if (type === 'hit') {
                             // Two-note ascending chirp — sounds like a small achievement
@@ -38723,7 +38736,50 @@
             area.appendChild(hint);
 
             const snd = _mgAudio();
+            snd.warm();
             const ctx = ctx2d;
+            const bgCanvas = document.createElement('canvas');
+            bgCanvas.width = GW;
+            bgCanvas.height = GH;
+            const bgCtx = bgCanvas.getContext('2d');
+            {
+                const roomGrad = bgCtx.createLinearGradient(0, 0, 0, GH);
+                roomGrad.addColorStop(0, '#6b4a24');
+                roomGrad.addColorStop(0.58, '#d9b873');
+                roomGrad.addColorStop(1, '#5b3618');
+                bgCtx.fillStyle = roomGrad; bgCtx.fillRect(0, 0, GW, GH);
+                bgCtx.fillStyle = 'rgba(58,34,16,0.28)';
+                bgCtx.fillRect(0, 0, GW, 54);
+                bgCtx.fillStyle = 'rgba(255,238,181,0.16)';
+                bgCtx.fillRect(0, 54, GW, 3);
+                bgCtx.font = 'bold 18px Fredoka, sans-serif';
+                bgCtx.fillStyle = 'rgba(43,26,14,0.78)';
+                bgCtx.fillText('JUMP TRAINING', 32, 34);
+                bgCtx.fillStyle = 'rgba(43,26,14,0.18)';
+                bgCtx.fillRect(0, GROUND_Y - 2, GW, GH - GROUND_Y + 2);
+                const trackGrad = bgCtx.createLinearGradient(0, GROUND_Y, 0, GH);
+                trackGrad.addColorStop(0, '#9b4f1b');
+                trackGrad.addColorStop(0.42, '#6d3215');
+                trackGrad.addColorStop(1, '#3a1d11');
+                bgCtx.fillStyle = trackGrad;
+                bgCtx.fillRect(0, GROUND_Y, GW, GH - GROUND_Y);
+                bgCtx.fillStyle = '#f4c15d';
+                bgCtx.fillRect(0, GROUND_Y, GW, 4);
+                bgCtx.fillStyle = 'rgba(255,238,181,0.45)';
+                bgCtx.fillRect(0, GROUND_Y + 11, GW, 2);
+                bgCtx.fillStyle = 'rgba(43,26,14,0.18)';
+                bgCtx.fillRect(0, GROUND_Y - 58, GW, 3);
+                for (let i = 0; i < 8; i++) {
+                    const x = i * 132 + 20;
+                    bgCtx.fillStyle = i % 2 ? 'rgba(244,193,93,0.55)' : 'rgba(122,47,18,0.55)';
+                    bgCtx.beginPath();
+                    bgCtx.moveTo(x, GROUND_Y - 58);
+                    bgCtx.lineTo(x + 28, GROUND_Y - 58);
+                    bgCtx.lineTo(x + 14, GROUND_Y - 38);
+                    bgCtx.closePath();
+                    bgCtx.fill();
+                }
+            }
             let elapsed = 0, lt = 0, score = 0, gameOver = false;
             let pY = 0, pVY = 0, grounded = true;
             let obstacles = [], nextObs = 1.4, obsSpeed = 260;
@@ -38855,19 +38911,7 @@
 
                 // ── Draw ──
                 ctx.clearRect(0, 0, GW, GH);
-                const roomGrad = ctx.createLinearGradient(0, 0, 0, GH);
-                roomGrad.addColorStop(0, '#6b4a24');
-                roomGrad.addColorStop(0.58, '#d9b873');
-                roomGrad.addColorStop(1, '#5b3618');
-                ctx.fillStyle = roomGrad; ctx.fillRect(0, 0, GW, GH);
-
-                ctx.fillStyle = 'rgba(58,34,16,0.28)';
-                ctx.fillRect(0, 0, GW, 54);
-                ctx.fillStyle = 'rgba(255,238,181,0.16)';
-                ctx.fillRect(0, 54, GW, 3);
-                ctx.font = 'bold 18px Fredoka, sans-serif';
-                ctx.fillStyle = 'rgba(43,26,14,0.78)';
-                ctx.fillText('JUMP TRAINING', 32, 34);
+                ctx.drawImage(bgCanvas, 0, 0);
 
                 for (const baseX of wallMarks) {
                     const x = ((baseX - elapsed * 42) % (GW + 132)) - 66;
@@ -38878,35 +38922,10 @@
                     ctx.fillRect(x + 2, 83, 58, 2);
                 }
 
-                ctx.fillStyle = 'rgba(43,26,14,0.18)';
-                ctx.fillRect(0, GROUND_Y - 2, GW, GH - GROUND_Y + 2);
-                const trackGrad = ctx.createLinearGradient(0, GROUND_Y, 0, GH);
-                trackGrad.addColorStop(0, '#9b4f1b');
-                trackGrad.addColorStop(0.42, '#6d3215');
-                trackGrad.addColorStop(1, '#3a1d11');
-                ctx.fillStyle = trackGrad;
-                ctx.fillRect(0, GROUND_Y, GW, GH - GROUND_Y);
-                ctx.fillStyle = '#f4c15d';
-                ctx.fillRect(0, GROUND_Y, GW, 4);
-                ctx.fillStyle = 'rgba(255,238,181,0.45)';
-                ctx.fillRect(0, GROUND_Y + 11, GW, 2);
                 ctx.fillStyle = 'rgba(255,238,181,0.34)';
                 for (const baseX of laneDashes) {
                     const x = ((baseX - elapsed * obsSpeed * 0.55) % (GW + 74)) - 74;
                     ctx.fillRect(x, GROUND_Y + 38, 38, 4);
-                }
-
-                ctx.fillStyle = 'rgba(43,26,14,0.18)';
-                ctx.fillRect(0, GROUND_Y - 58, GW, 3);
-                for (let i = 0; i < 8; i++) {
-                    const x = i * 132 + 20;
-                    ctx.fillStyle = i % 2 ? 'rgba(244,193,93,0.55)' : 'rgba(122,47,18,0.55)';
-                    ctx.beginPath();
-                    ctx.moveTo(x, GROUND_Y - 58);
-                    ctx.lineTo(x + 28, GROUND_Y - 58);
-                    ctx.lineTo(x + 14, GROUND_Y - 38);
-                    ctx.closePath();
-                    ctx.fill();
                 }
 
                 // Obstacles
@@ -38991,6 +39010,7 @@
             let   bagAngle = 0, bagVel = 0;
 
             const snd = _mgAudio();
+            snd.warm();
 
             // ── Frame URL sets (used directly as img.src — browser caches them) ───
             const FRAME_URL_SETS = [punchFrameURLs, kickFrameURLs, uppercutFrameURLs];
@@ -39036,11 +39056,11 @@
             // ── DOM game area: bag+char as CSS imgs; canvas only for notes ─────────
             // Wrapper controls responsive width; inner gameArea stays 680×410 and scales
             const wrapEl = document.createElement('div');
-            wrapEl.style.cssText = 'display:block;width:100%;max-width:min(980px,95vw);margin:0 auto;border:2px solid #222;border-radius:8px;overflow:hidden;cursor:pointer;background:#07070f;';
+            wrapEl.style.cssText = 'display:block;width:100%;max-width:min(980px,95vw);margin:0 auto;border:3px solid #4a2c12;border-radius:6px;overflow:hidden;cursor:pointer;background:#d9b873;box-shadow:0 8px 22px rgba(43,26,14,0.38),inset 0 0 0 1px rgba(255,250,225,0.16);';
             area.appendChild(wrapEl);
 
             const gameArea = document.createElement('div');
-            gameArea.style.cssText = 'position:relative;width:' + GW + 'px;height:' + GH + 'px;background:#07070f;overflow:hidden;transform-origin:top left;';
+            gameArea.style.cssText = 'position:relative;width:' + GW + 'px;height:' + GH + 'px;background:linear-gradient(180deg,#d9b873 0%,#c89545 62%,#5b3618 100%);overflow:hidden;transform-origin:top left;';
             wrapEl.appendChild(gameArea);
 
             function applyScale() {
@@ -39054,28 +39074,28 @@
 
             // Static CSS elements (zero per-frame cost) ───────────────────────────
             const divEl = document.createElement('div');
-            divEl.style.cssText = 'position:absolute;left:' + (COL_LEFT-6) + 'px;top:0;width:1px;height:100%;background:#1a1a35;';
+            divEl.style.cssText = 'position:absolute;left:' + (COL_LEFT-6) + 'px;top:0;width:2px;height:100%;background:rgba(74,44,18,0.45);';
             gameArea.appendChild(divEl);
 
             const mountEl = document.createElement('div');
-            mountEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-11) + 'px;top:0;width:22px;height:' + (BAG_PIVOT_Y+7) + 'px;background:#2a2a3a;border-radius:0 0 3px 3px;';
+            mountEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-11) + 'px;top:0;width:22px;height:' + (BAG_PIVOT_Y+7) + 'px;background:#3b220f;border-radius:0 0 3px 3px;';
             gameArea.appendChild(mountEl);
 
             const boltEl = document.createElement('div');
-            boltEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-5) + 'px;top:' + (BAG_PIVOT_Y-5) + 'px;width:10px;height:10px;background:#666;border-radius:50%;';
+            boltEl.style.cssText = 'position:absolute;left:' + (BAG_PIVOT_X-5) + 'px;top:' + (BAG_PIVOT_Y-5) + 'px;width:10px;height:10px;background:#8b5a24;border-radius:50%;';
             gameArea.appendChild(boltEl);
 
             const noteColEl = document.createElement('div');
-            noteColEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;background:#0c0c20;';
+            noteColEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:' + COL_W + 'px;height:' + GH + 'px;background:rgba(43,26,14,0.22);box-shadow:inset 0 0 0 1px rgba(255,250,225,0.18);';
             gameArea.appendChild(noteColEl);
 
             const noteAccentEl = document.createElement('div');
-            noteAccentEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:4px;height:' + GH + 'px;background:rgba(124,58,237,0.094);';
+            noteAccentEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:0;width:4px;height:' + GH + 'px;background:rgba(90,53,22,0.35);';
             gameArea.appendChild(noteAccentEl);
 
             const hzTop = HIT_CY - HIT_H / 2;
             const hzEl = document.createElement('div');
-            hzEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:' + hzTop + 'px;width:' + COL_W + 'px;height:' + HIT_H + 'px;background:rgba(255,255,255,0.027);border:2px solid rgba(196,181,253,0.73);box-sizing:border-box;';
+            hzEl.style.cssText = 'position:absolute;left:' + COL_LEFT + 'px;top:' + hzTop + 'px;width:' + COL_W + 'px;height:' + HIT_H + 'px;background:rgba(255,250,225,0.10);border:2px solid rgba(74,44,18,0.62);box-sizing:border-box;';
             gameArea.appendChild(hzEl);
 
             // Pendulum: rotates via single CSS transform (GPU-composited, zero canvas cost)
@@ -39084,7 +39104,7 @@
             gameArea.appendChild(pendulumEl);
 
             const ropeEl = document.createElement('div');
-            ropeEl.style.cssText = 'position:absolute;left:-1.5px;top:0;width:3px;height:' + BAG_ROPE + 'px;background:#4a4a5a;';
+            ropeEl.style.cssText = 'position:absolute;left:-1.5px;top:0;width:3px;height:' + BAG_ROPE + 'px;background:#3b220f;';
             pendulumEl.appendChild(ropeEl);
 
             const bagEl = document.createElement('img');
@@ -39211,9 +39231,9 @@
                 btn.innerHTML = '<span style="font-size:10px;display:block">' + key.toUpperCase() + '</span>' +
                     '<span style="font-size:6px;opacity:0.7;display:block">' + LANE_NAMES[i] + '</span>';
                 btn.style.cssText = 'font-family:"Press Start 2P",monospace;width:80px;height:50px;' +
-                    'background:transparent;border:2.5px solid ' + LANE_COLORS[i] + ';' +
-                    'box-shadow:0 0 8px ' + LANE_COLORS[i] + '55,inset 0 0 8px ' + LANE_COLORS[i] + '18;' +
-                    'color:' + LANE_COLORS[i] + ';cursor:pointer;border-radius:7px;transition:background 0.08s,box-shadow 0.08s;line-height:1.4;';
+                    'background:linear-gradient(180deg,#f4c15d,#b86b21);border:2.5px solid #5a3516;' +
+                    'box-shadow:0 2px 0 #3b220f;' +
+                    'color:#2b1a0e;cursor:pointer;border-radius:7px;transition:transform 0.08s,filter 0.08s;line-height:1.4;text-shadow:0 1px 0 rgba(255,250,225,0.35);';
                 btn.addEventListener('mousedown', () => tryHit(i));
                 btnRow.appendChild(btn);
                 return btn;
@@ -39243,13 +39263,12 @@
             }
 
             function flashBtn(i) {
-                const c = LANE_COLORS[i];
-                btnEls[i].style.background = c + '55';
-                btnEls[i].style.boxShadow = '0 0 18px ' + c + 'cc,inset 0 0 14px ' + c + '44';
+                btnEls[i].style.filter = 'brightness(1.18)';
+                btnEls[i].style.transform = 'translateY(1px)';
                 setTimeout(() => {
                     if (!btnEls[i]) return;
-                    btnEls[i].style.background = 'transparent';
-                    btnEls[i].style.boxShadow = '0 0 8px ' + c + '55,inset 0 0 8px ' + c + '18';
+                    btnEls[i].style.filter = '';
+                    btnEls[i].style.transform = '';
                 }, 120);
             }
 
@@ -39440,8 +39459,8 @@
                 }
                 if (_noteInZone !== hzActive) {
                     hzActive = _noteInZone;
-                    hzEl.style.borderColor = hzActive ? 'rgba(255,220,60,0.95)' : 'rgba(196,181,253,0.73)';
-                    hzEl.style.boxShadow   = hzActive ? '0 0 6px rgba(255,220,60,0.22)' : '';
+                    hzEl.style.borderColor = hzActive ? 'rgba(244,193,93,0.95)' : 'rgba(74,44,18,0.62)';
+                    hzEl.style.background = hzActive ? 'rgba(244,193,93,0.20)' : 'rgba(255,250,225,0.10)';
                 }
 
                 for (const n of notes) {
@@ -39464,7 +39483,7 @@
 
             // Loading overlay — shown during prewarm so game starts with no FPS spike
             const _loadEl = document.createElement('div');
-            _loadEl.style.cssText = 'position:absolute;inset:0;background:#07070f;display:flex;align-items:center;justify-content:center;font:bold 13px "Press Start 2P",monospace;color:#7c3aed;letter-spacing:2px;z-index:50;';
+            _loadEl.style.cssText = 'position:absolute;inset:0;background:#d9b873;display:flex;align-items:center;justify-content:center;font:bold 13px "Press Start 2P",monospace;color:#4a2c12;letter-spacing:2px;z-index:50;';
             _loadEl.textContent = 'LOADING...';
             gameArea.appendChild(_loadEl);
 
