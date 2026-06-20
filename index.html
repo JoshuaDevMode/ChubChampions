@@ -11862,6 +11862,33 @@
             color: #3b220f;
             text-align: center;
         }
+        .daily-roulette-dust {
+            width: min(300px, 100%);
+            display: grid;
+            gap: 5px;
+            font-family: 'Fredoka', sans-serif;
+            color: #3b220f;
+            font-size: 0.58em;
+        }
+        .daily-roulette-dust-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .daily-roulette-dust-track {
+            height: 14px;
+            border-radius: 999px;
+            border: 2px solid #3b220f;
+            background: rgba(59,34,15,0.25);
+            overflow: hidden;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.25);
+        }
+        .daily-roulette-dust-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #b174ff 0%, #68d7ff 55%, #fff18a 100%);
+            box-shadow: 0 0 10px rgba(120,190,255,0.7);
+        }
         .daily-claim-cell {
             width: 100%;
             aspect-ratio: 1;
@@ -21193,6 +21220,8 @@
         let globalTokens = 0;
         let globalFragments = 0;
         let globalCrystals = 0;
+        let luckySpinDust = 0;
+        let luckySpinFreeSpins = 0;
         let globalFragmentChestsOpened = 0;
         let pendingVictoryChests = []; // array of { tier, unlockStart, unlockDuration }
         let chestTimerInterval = null; // global interval for updating chest countdowns
@@ -21272,19 +21301,23 @@
             { day: 30, type: 'chest_tokens', tier: 'epic', tokens: 5,  icon: '<img src="Assets/UI/Chests/Epic.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Epic+🪙' },
         ];
         const DAILY_ROULETTE_PREVIEW = [
-            { id: 'tokens_1_a',    type: 'tokens',       amount: 1, label: '1 Coin',        icon: '🪙', color: '#f7c84b' },
-            { id: 'tokens_1_b',    type: 'tokens',       amount: 1, label: '1 Coin',        icon: '🪙', color: '#ffe184' },
-            { id: 'tokens_2',      type: 'tokens',       amount: 2, label: '2 Coins',       icon: '🪙', color: '#f2a93b' },
-            { id: 'tokens_3',      type: 'tokens',       amount: 3, label: '3 Coins',       icon: '🪙', color: '#e7c14b' },
-            { id: 'fragments_1',   type: 'fragments',    amount: 1, label: '1 Fragment',    icon: FRAG_DAILY_ICON, color: '#83d86d' },
-            { id: 'combo_small',   type: 'combo',        tokens: 2, fragments: 1, label: 'Coin + Frag', icon: '🎁', color: '#73b8ff' },
-            { id: 'xpboost_small', type: 'xpboost',      mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡', color: '#c07cff' },
-            { id: 'bronze_chest',  type: 'chest',        tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">', color: '#d99a5d' },
-            { id: 'silver_chest',  type: 'chest',        tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">', color: '#c9d0db' },
-            { id: 'gold_chest',    type: 'chest',        tier: 'gold', label: 'Gold', icon: '<img src="Assets/UI/Chests/Golden.png" alt="Gold">', color: '#ffd65a' },
-            { id: 'epic_bonus',    type: 'chest_tokens', tier: 'epic', tokens: 5, label: 'Epic+', icon: '<img src="Assets/UI/Chests/Epic.png" alt="Epic">', color: '#a05bd8' },
+            { id: 'dust_5_a',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#b174ff' },
+            { id: 'dust_5_b',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#9466df' },
+            { id: 'dust_10_a',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#68d7ff' },
+            { id: 'dust_10_b',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#53bde6' },
+            { id: 'dust_15_a',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#fff18a' },
+            { id: 'dust_15_b',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#f2d35a' },
+            { id: 'tokens_1_a',     type: 'tokens', amount: 1, label: '1 Coin', icon: '🪙', color: '#f7c84b' },
+            { id: 'tokens_1_b',     type: 'tokens', amount: 1, label: '1 Coin', icon: '🪙', color: '#ffe184' },
+            { id: 'food_apple',     type: 'wellness_item', itemId: 'apple', label: 'Apple', icon: '🍎', color: '#83d86d' },
+            { id: 'food_chocolate', type: 'wellness_item', itemId: 'chocolate', label: 'Chocolate', icon: '🍫', color: '#c8834d' },
+            { id: 'fragments_1',    type: 'fragments', amount: 1, label: '1 Fragment', icon: FRAG_DAILY_ICON, color: '#f09c42' },
+            { id: 'xpboost_small',  type: 'xpboost', mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡', color: '#c07cff' },
+            { id: 'bronze_chest',   type: 'chest', tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">', color: '#d99a5d' },
+            { id: 'silver_chest',   type: 'chest', tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">', color: '#c9d0db' },
         ];
         const DAILY_ROULETTE_PAID_SPIN_COST = 5;
+        const LUCKY_SPIN_DUST_FOR_FREE_SPIN = 100;
         let dailyRouletteSpinning = false;
 
         let dailyClaimData = {
@@ -21324,6 +21357,8 @@
                     globalUnlockedWeapons = data.globalUnlockedWeapons || [];
                     globalTokens = data.globalTokens || 0;
                     globalCrystals = data.globalCrystals || 0;
+                    luckySpinDust = data.luckySpinDust || 0;
+                    luckySpinFreeSpins = data.luckySpinFreeSpins || 0;
                     globalFragmentChestsOpened = data.globalFragmentChestsOpened || 0;
                     // pendingVictoryChests: NOT loaded from localStorage — server is the only source of truth
                     globalCharactersCreated = data.globalCharactersCreated || 0;
@@ -21423,6 +21458,8 @@
                     globalUnlockedWeapons: globalUnlockedWeapons,
                     globalTokens: globalTokens,
                     globalCrystals: globalCrystals,
+                    luckySpinDust: luckySpinDust,
+                    luckySpinFreeSpins: luckySpinFreeSpins,
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
                     globalCharactersCreated: globalCharactersCreated,
                     shopItemCooldowns:     shopItemCooldowns,
@@ -22218,6 +22255,15 @@
                 case 'tokens':
                     toastText += '+' + (reward.amount || 0) + ' 🪙';
                     break;
+                case 'dust':
+                    toastText += '+' + (reward.amount || 0) + ' Lucky Dust';
+                    if (result.luckySpinFreeSpins > luckySpinFreeSpins) toastText += ' + Free Spin!';
+                    break;
+                case 'wellness_item': {
+                    const item = WELLNESS_ITEMS[reward.itemId];
+                    toastText += (item ? item.icon + ' ' + item.name : reward.label || 'Food');
+                    break;
+                }
                 case 'fragments':
                     toastText += '+' + (reward.amount || 0) + ' ' + FRAG_ICON_HTML;
                     break;
@@ -22257,11 +22303,17 @@
             await sleep(950);
         }
 
-        async function claimDailyReward(dayNum, paidSpin = false) {
+        async function claimDailyReward(dayNum, spinMode = 'daily') {
             if (dailyRouletteSpinning) return;
             if (dayNum < 1 || dayNum > 30) return;
+            const paidSpin = spinMode === 'paid';
+            const useFreeSpin = spinMode === 'free_spin';
             if (paidSpin && globalTokens < DAILY_ROULETTE_PAID_SPIN_COST) {
                 showDailyClaimToast('Need ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins to spin again.');
+                return;
+            }
+            if (useFreeSpin && luckySpinFreeSpins < 1) {
+                showDailyClaimToast('No free Lucky Spins available.');
                 return;
             }
             dailyRouletteSpinning = true;
@@ -22279,7 +22331,7 @@
             }
             if (needle) needle.classList.add('spinning');
 
-            const result = await claimDailyOnServer(dayNum, paidSpin);
+            const result = await claimDailyOnServer(dayNum, paidSpin, useFreeSpin);
             clearInterval(tickTimer);
             if (!result || !result.ok) {
                 if (wheel) wheel.classList.remove('spinning');
@@ -22297,6 +22349,14 @@
             if (needle) needle.classList.remove('spinning');
             playRouletteWinSound();
             const toastText = formatDailyRouletteToast(dayNum, reward, result);
+            if (reward.type === 'wellness_item') {
+                const dailyCharFood = getSelectedCharacter();
+                if (dailyCharFood) {
+                    if (!Array.isArray(dailyCharFood.wellnessItems)) dailyCharFood.wellnessItems = [];
+                    dailyCharFood.wellnessItems.push(reward.itemId);
+                    saveCharacters();
+                }
+            }
 
             switch (result.rewardType) {
                 case 'chest':
@@ -22412,10 +22472,12 @@
             if (!grid) return;
             const currentDay = getDailyClaimDayNumber();
             const canClaim = canClaimToday();
-            const canPaidSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && globalTokens >= DAILY_ROULETTE_PAID_SPIN_COST;
+            const hasFreeSpin = luckySpinFreeSpins > 0;
+            const canPaidSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && !hasFreeSpin && globalTokens >= DAILY_ROULETTE_PAID_SPIN_COST;
+            const canExtraSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && (hasFreeSpin || canPaidSpin);
             const statusText = currentDay === -1
                 ? 'Daily cycle complete.'
-                : (canClaim ? 'Free spin available.' : 'Extra spin costs ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins.');
+                : (canClaim ? 'Free daily spin available.' : (hasFreeSpin ? 'Free spin ready from Dust.' : 'Extra spin costs ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins.'));
             grid.className = 'daily-claim-grid daily-roulette';
             const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
             const rouletteGradient = 'conic-gradient(' + DAILY_ROULETTE_PREVIEW.map((reward, idx) => {
@@ -22437,12 +22499,21 @@
             html += '<div class="daily-roulette-wheel" id="daily-roulette-wheel" style="--roulette-gradient:' + rouletteGradient + ';">' + segments + '<div class="daily-roulette-center">LUCK</div></div>';
             html += '<div class="daily-roulette-needle" id="daily-roulette-needle"></div>';
             html += '</div>';
-            html += '<button class="daily-roulette-spin btn-shine" id="daily-roulette-spin" ' + ((canClaim || canPaidSpin) ? '' : 'disabled') + '>' + (canClaim ? 'FREE SPIN' : ('SPIN AGAIN - ' + DAILY_ROULETTE_PAID_SPIN_COST + ' COINS')) + '</button>';
+            const dustPct = Math.max(0, Math.min(100, (luckySpinDust / LUCKY_SPIN_DUST_FOR_FREE_SPIN) * 100));
+            html += '<div class="daily-roulette-dust">';
+            html += '<div class="daily-roulette-dust-row"><span>Lucky Dust</span><span>' + luckySpinDust + ' / ' + LUCKY_SPIN_DUST_FOR_FREE_SPIN + ' · Free Spins: ' + luckySpinFreeSpins + '</span></div>';
+            html += '<div class="daily-roulette-dust-track"><div class="daily-roulette-dust-fill" style="width:' + dustPct + '%"></div></div>';
+            html += '</div>';
+            const spinLabel = canClaim ? 'FREE SPIN' : (hasFreeSpin ? 'USE FREE SPIN' : ('SPIN AGAIN - ' + DAILY_ROULETTE_PAID_SPIN_COST + ' COINS'));
+            html += '<button class="daily-roulette-spin btn-shine" id="daily-roulette-spin" ' + ((canClaim || canExtraSpin) ? '' : 'disabled') + '>' + spinLabel + '</button>';
             html += '<div class="daily-roulette-result" id="daily-roulette-result">' + statusText + '</div>';
             grid.innerHTML = html;
 
             const spinBtn = document.getElementById('daily-roulette-spin');
-            if (spinBtn && (canClaim || canPaidSpin)) spinBtn.addEventListener('click', () => claimDailyReward(currentDay, !canClaim));
+            if (spinBtn && (canClaim || canExtraSpin)) {
+                const mode = canClaim ? 'daily' : (hasFreeSpin ? 'free_spin' : 'paid');
+                spinBtn.addEventListener('click', () => claimDailyReward(currentDay, mode));
+            }
         }
 
         function updateDailyBattleCounter() {
@@ -23674,7 +23745,7 @@
                     Object.keys(localStorage)
                         .filter(k => k.startsWith('chubchampions_') && k !== 'chubchampions_session')
                         .forEach(k => localStorage.removeItem(k));
-                    globalTokens = 0; globalCrystals = 0;
+                    globalTokens = 0; globalCrystals = 0; luckySpinDust = 0; luckySpinFreeSpins = 0;
                     pendingVictoryChests = []; winStreak = 0;
                     updateCurrencyUI(); updateVictoryChestSlots();
                     return;
@@ -23682,6 +23753,8 @@
 
                 globalTokens               = data.tokens;
                 globalCrystals             = data.crystals ?? globalCrystals;
+                luckySpinDust              = data.luckySpinDust ?? luckySpinDust;
+                luckySpinFreeSpins         = data.luckySpinFreeSpins ?? luckySpinFreeSpins;
                 globalCharactersCreated    = data.charactersCreated;
                 if (Array.isArray(data.pendingChests)) {
                     // Normalize characterId to number — DB stores it as string but char.id is a number
@@ -25593,7 +25666,7 @@
             }
         }
 
-        async function claimDailyOnServer(dayNum, paidSpin = false) {
+        async function claimDailyOnServer(dayNum, paidSpin = false, useFreeSpin = false) {
             if (!playerSession) return { ok: false, error: 'Not logged in' };
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/daily-claim', {
@@ -25604,11 +25677,14 @@
                         dayNum,
                         characterId: String(getSelectedCharacter()?.id ?? ''),
                         paidSpin,
+                        useFreeSpin,
                     }),
                 });
                 const data = await resp.json();
                 if (data.ok) {
                     globalTokens = data.newTokens;
+                    luckySpinDust = data.luckySpinDust ?? luckySpinDust;
+                    luckySpinFreeSpins = data.luckySpinFreeSpins ?? luckySpinFreeSpins;
                     // Fragments are now per-character — update selected character
                     if (data.newFragments !== undefined) {
                         const _dcChar = getSelectedCharacter();
