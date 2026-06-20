@@ -11696,8 +11696,8 @@
             border-image-width: 20px;
             border-image-repeat: stretch;
             padding: 12px 18px;
-            max-width: 440px;
-            width: 90%;
+            max-width: 560px;
+            width: 94%;
         }
         .lucky-spin-header {
             display: flex;
@@ -11731,8 +11731,8 @@
         }
         .daily-roulette-stage {
             position: relative;
-            width: 260px;
-            height: 260px;
+            width: 330px;
+            height: 330px;
             display: grid;
             place-items: center;
         }
@@ -11750,14 +11750,14 @@
             filter: drop-shadow(0 2px 0 rgba(255,255,255,0.35));
         }
         .daily-roulette-wheel {
-            width: 230px;
-            height: 230px;
+            width: 300px;
+            height: 300px;
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            border: 7px solid #3b220f;
+            border: 6px solid #3b220f;
             background: var(--roulette-gradient, conic-gradient(#f7c84b 0deg 360deg));
-            box-shadow: inset 0 0 0 9px rgba(255,255,255,0.28), 0 8px 0 #1d1108, 0 16px 22px rgba(0,0,0,0.35);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.28);
             transition: transform 1.15s cubic-bezier(.12,.82,.18,1);
         }
         .daily-roulette-wheel.spinning {
@@ -11770,73 +11770,52 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 70px;
-            height: 44px;
-            margin-left: -35px;
+            width: 82px;
+            height: 48px;
+            margin-left: -41px;
             margin-top: -22px;
             display: grid;
             place-items: center;
-            transform-origin: 35px 22px;
+            transform-origin: 41px 22px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.58em;
+            font-size: 0.54em;
             color: #3b220f;
             text-shadow: 0 1px 0 rgba(255,255,255,0.45);
             pointer-events: none;
         }
         .daily-roulette-segment-inner {
-            transform: translateY(-76px);
+            transform: translateY(-102px);
             display: grid;
             place-items: center;
             gap: 1px;
             line-height: 1;
             text-align: center;
-        }
-        .daily-roulette-needle {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 5px;
-            height: 104px;
-            margin-left: -2.5px;
-            margin-top: -104px;
-            border-radius: 999px;
-            background: linear-gradient(180deg, #fff8c9 0%, #d82323 35%, #7b1010 100%);
-            transform-origin: 50% 100%;
-            z-index: 4;
-            box-shadow: 0 0 0 2px #3b220f, 0 0 10px rgba(255,220,90,0.8);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .daily-roulette-needle.spinning {
-            opacity: 1;
-            animation: dailyRouletteNeedle 0.42s linear infinite;
-        }
-        @keyframes dailyRouletteNeedle {
-            to { transform: rotate(360deg); }
+            max-width: 76px;
+            overflow-wrap: anywhere;
         }
         .daily-roulette-icon {
-            font-size: 1.55em;
+            font-size: 1.45em;
             line-height: 1;
         }
         .daily-roulette-icon img {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             object-fit: contain;
             display: block;
         }
         .daily-roulette-center {
             position: absolute;
-            inset: 72px;
+            inset: 104px;
             border-radius: 50%;
             display: grid;
             place-items: center;
             background: radial-gradient(circle at 45% 30%, #fff4bd 0%, #f2b736 58%, #a45d12 100%);
-            border: 5px solid #3b220f;
+            border: 4px solid #3b220f;
             z-index: 2;
             font-family: 'Fredoka', sans-serif;
             color: #3b220f;
             text-shadow: 0 1px 0 rgba(255,255,255,0.45);
-            box-shadow: inset 0 3px 0 rgba(255,255,255,0.45), 0 4px 0 #1d1108;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
         }
         .daily-roulette-spin {
             width: 190px;
@@ -19671,16 +19650,27 @@
             osc.stop(now + 0.045);
         }
 
-        function playRouletteWinSound() {
+        function playRouletteWinSound(rewardType = 'default') {
             _ensureAudioCtx();
             const now = _audioCtx.currentTime;
-            [660, 880, 1175].forEach((freq, idx) => {
+            const patterns = {
+                dust: [520, 640],
+                tokens: [720, 960, 1200],
+                pet_snacks: [390, 520, 650],
+                wellness_item: [440, 660, 880],
+                fragments: [880, 1175, 1568],
+                xpboost: [640, 960, 1440, 1920],
+                chest: [330, 660, 990, 1320],
+                default: [660, 880, 1175],
+            };
+            const freqs = patterns[rewardType] || patterns.default;
+            freqs.forEach((freq, idx) => {
                 const osc = _audioCtx.createOscillator();
                 const gain = _audioCtx.createGain();
-                const start = now + idx * 0.08;
-                osc.type = 'triangle';
+                const start = now + idx * 0.075;
+                osc.type = rewardType === 'dust' ? 'sine' : rewardType === 'chest' ? 'square' : 'triangle';
                 osc.frequency.setValueAtTime(freq, start);
-                gain.gain.setValueAtTime(0.07 * _globalVolume, start);
+                gain.gain.setValueAtTime((rewardType === 'chest' ? 0.045 : 0.065) * _globalVolume, start);
                 gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
                 osc.connect(gain).connect(_audioCtx.destination);
                 osc.start(start);
@@ -21269,18 +21259,19 @@
         const FRAG_DAILY_ICON = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         const DAILY_ROULETTE_PREVIEW = [
             { id: 'dust_5_a',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#b174ff' },
-            { id: 'dust_5_b',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#9466df' },
-            { id: 'dust_10_a',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#68d7ff' },
-            { id: 'dust_10_b',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#53bde6' },
-            { id: 'dust_15_a',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#fff18a' },
-            { id: 'dust_15_b',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#f2d35a' },
             { id: 'tokens_1_a',     type: 'tokens', amount: 1, label: '1 Coin', icon: '🪙', color: '#f7c84b' },
-            { id: 'tokens_1_b',     type: 'tokens', amount: 1, label: '1 Coin', icon: '🪙', color: '#ffe184' },
+            { id: 'dust_10_a',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#68d7ff' },
             { id: 'food_apple',     type: 'wellness_item', itemId: 'apple', label: 'Apple', icon: '🍎', color: '#83d86d' },
-            { id: 'food_chocolate', type: 'wellness_item', itemId: 'chocolate', label: 'Chocolate', icon: '🍫', color: '#c8834d' },
+            { id: 'dust_15_a',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#fff18a' },
             { id: 'fragments_1',    type: 'fragments', amount: 1, label: '1 Fragment', icon: FRAG_DAILY_ICON, color: '#f09c42' },
+            { id: 'dust_5_b',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#9466df' },
             { id: 'xpboost_small',  type: 'xpboost', mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡', color: '#c07cff' },
+            { id: 'dust_10_b',      type: 'dust', amount: 10, label: '10 Dust', icon: '✦', color: '#53bde6' },
+            { id: 'pet_snacks_10',  type: 'pet_snacks', amount: 10, label: '10 Snacks', icon: '🍖', color: '#f3b15f' },
+            { id: 'tokens_1_b',     type: 'tokens', amount: 1, label: '1 Coin', icon: '🪙', color: '#ffe184' },
             { id: 'bronze_chest',   type: 'chest', tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">', color: '#d99a5d' },
+            { id: 'dust_15_b',      type: 'dust', amount: 15, label: '15 Dust', icon: '✦', color: '#f2d35a' },
+            { id: 'food_chocolate', type: 'wellness_item', itemId: 'chocolate', label: 'Choco', icon: '🍫', color: '#c8834d' },
             { id: 'silver_chest',   type: 'chest', tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">', color: '#c9d0db' },
         ];
         const DAILY_ROULETTE_PAID_SPIN_COST = 5;
@@ -22226,6 +22217,9 @@
                     toastText += '+' + (reward.amount || 0) + ' Lucky Dust';
                     if (result.luckySpinFreeSpins > luckySpinFreeSpins) toastText += ' + Free Spin!';
                     break;
+                case 'pet_snacks':
+                    toastText += '+' + (reward.amount || 0) + ' Pet Snacks';
+                    break;
                 case 'wellness_item': {
                     const item = WELLNESS_ITEMS[reward.itemId];
                     toastText += (item ? item.icon + ' ' + item.name : reward.label || 'Food');
@@ -22287,7 +22281,6 @@
             const spinBtn = document.getElementById('daily-roulette-spin');
             const resultEl = document.getElementById('daily-roulette-result');
             const wheel = document.getElementById('daily-roulette-wheel');
-            const needle = document.getElementById('daily-roulette-needle');
             if (spinBtn) spinBtn.disabled = true;
             if (resultEl) resultEl.textContent = paidSpin ? 'Paid spin: -' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins...' : 'Spinning...';
             playWoodClick();
@@ -22296,13 +22289,11 @@
                 wheel.style.transform = '';
                 wheel.classList.add('spinning');
             }
-            if (needle) needle.classList.add('spinning');
 
             const result = await runLuckySpinOnServer(dayNum, paidSpin, useFreeSpin);
             clearInterval(tickTimer);
             if (!result || !result.ok) {
                 if (wheel) wheel.classList.remove('spinning');
-                if (needle) needle.classList.remove('spinning');
                 dailyRouletteSpinning = false;
                 if (spinBtn) spinBtn.disabled = false;
                 if (resultEl) resultEl.textContent = result?.error || 'Claim failed.';
@@ -22313,9 +22304,15 @@
             // globalTokens, globalFragments, and luckySpinData already updated by runLuckySpinOnServer
             const reward = resolveDailyRouletteReward(result.rouletteReward);
             await settleDailyRouletteWheel(reward);
-            if (needle) needle.classList.remove('spinning');
-            playRouletteWinSound();
+            playRouletteWinSound(reward.type);
             const toastText = formatDailyRouletteToast(dayNum, reward, result);
+            if (reward.type === 'pet_snacks') {
+                const snackChar = getSelectedCharacter();
+                if (snackChar) {
+                    snackChar.petSnacks = Math.max(0, Math.floor(Number(result.petSnacks ?? snackChar.petSnacks ?? 0)));
+                    saveCharacters();
+                }
+            }
             if (reward.type === 'wellness_item') {
                 const dailyCharFood = getSelectedCharacter();
                 if (dailyCharFood) {
@@ -22454,7 +22451,7 @@
             }).join(', ') + ')';
             const segments = DAILY_ROULETTE_PREVIEW.map((reward, idx) => (
                 '<div class="daily-roulette-segment" style="transform: rotate(' + (idx * slice + slice / 2) + 'deg);">' +
-                    '<div class="daily-roulette-segment-inner" style="transform: translateY(-76px) rotate(' + (-(idx * slice + slice / 2)) + 'deg);">' +
+                    '<div class="daily-roulette-segment-inner" style="transform: translateY(-102px) rotate(' + (-(idx * slice + slice / 2)) + 'deg);">' +
                         '<div class="daily-roulette-icon">' + reward.icon + '</div>' +
                         '<div>' + reward.label + '</div>' +
                     '</div>' +
@@ -22464,7 +22461,6 @@
             html += '<div class="daily-roulette-stage">';
             html += '<div class="daily-roulette-pointer"></div>';
             html += '<div class="daily-roulette-wheel" id="daily-roulette-wheel" style="--roulette-gradient:' + rouletteGradient + ';">' + segments + '<div class="daily-roulette-center">LUCK</div></div>';
-            html += '<div class="daily-roulette-needle" id="daily-roulette-needle"></div>';
             html += '</div>';
             const dustPct = Math.max(0, Math.min(100, (luckySpinDust / LUCKY_SPIN_DUST_FOR_FREE_SPIN) * 100));
             html += '<div class="daily-roulette-dust">';
