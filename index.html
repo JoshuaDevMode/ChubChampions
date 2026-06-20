@@ -17104,6 +17104,141 @@
         .chat-message .msg-author {
             color: #7a2f12 !important;
         }
+        .main-menu .lobby-currency-bar {
+            grid-template-columns: minmax(0, 1.05fr) auto minmax(0, 1fr) !important;
+            gap: 16px !important;
+        }
+        .main-menu .top-nav-group {
+            grid-column: 1 !important;
+            justify-self: center !important;
+        }
+        .main-menu .lobby-topright-cluster {
+            display: contents !important;
+        }
+        .main-menu .top-currency-group {
+            grid-column: 2 !important;
+            justify-self: center !important;
+        }
+        .main-menu .profile-capsule {
+            grid-column: 3 !important;
+            justify-self: center !important;
+        }
+        .daily-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+            align-items: center !important;
+            justify-items: center !important;
+            gap: 8px !important;
+        }
+        .daily-chat-row .daily-claim-lobby-btn {
+            grid-column: 2 !important;
+        }
+        .daily-chat-row .chat-btn {
+            grid-column: 3 !important;
+            justify-self: start !important;
+        }
+        .chat-btn.has-reply-notification::after {
+            content: '' !important;
+            position: absolute !important;
+            top: -2px !important;
+            right: -2px !important;
+            width: 11px !important;
+            height: 11px !important;
+            border-radius: 50% !important;
+            background: #ef4444 !important;
+            box-shadow: 0 0 0 2px #2b1a0e, 0 0 12px rgba(239,68,68,0.9) !important;
+        }
+        .chat-message {
+            display: grid !important;
+            grid-template-columns: 28px minmax(0, 1fr) !important;
+            column-gap: 7px !important;
+        }
+        .chat-message.player {
+            background: linear-gradient(180deg, #ffe38a 0%, #f5c14a 100%) !important;
+            border-color: #9a6114 !important;
+            align-self: flex-end !important;
+        }
+        .chat-message.cpu {
+            background: linear-gradient(180deg, #dbeafe 0%, #93c5fd 100%) !important;
+            border-color: #2563eb !important;
+            align-self: flex-start !important;
+        }
+        .chat-avatar {
+            grid-row: 1 / span 3;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            border: 2px solid rgba(43,26,14,0.72);
+            background: linear-gradient(180deg, #fff7df, #d9b46b);
+            object-fit: cover;
+            align-self: start;
+        }
+        .chat-avatar-placeholder {
+            display: grid;
+            place-items: center;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.78em;
+            font-weight: 900;
+        }
+        .chat-message .msg-author,
+        .chat-message-body,
+        .chat-reply-ref {
+            grid-column: 2;
+        }
+        .chat-message .msg-author {
+            text-decoration: none !important;
+        }
+        .chat-message.player .msg-author,
+        .chat-message.player .chat-message-text {
+            color: #3d2410 !important;
+        }
+        .chat-message.cpu .msg-author,
+        .chat-message.cpu .chat-message-text {
+            color: #102a56 !important;
+        }
+        .chat-message.cpu .msg-author {
+            color: #1d4ed8 !important;
+        }
+        .chat-reply-ref {
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .skills-icon-btn:not(.has-action)::before,
+        .skills-icon-btn:not(.has-action)::after,
+        .menu-bars-with-care .care-icon-btn:not(.has-action)::before,
+        .menu-bars-with-care .care-icon-btn:not(.has-action)::after,
+        .daily-claim-lobby-btn:not(.has-reward)::before,
+        .daily-claim-lobby-btn:not(.has-reward)::after {
+            display: none !important;
+            content: none !important;
+        }
+        .main-menu .skills-icon-btn:not(.has-action),
+        .main-menu .menu-bars-with-care .care-icon-btn:not(.has-action),
+        .main-menu .daily-claim-lobby-btn:not(.has-reward) {
+            filter: none !important;
+        }
+        .notice-box, .confirm-box, .input-modal-box,
+        .chest-confirm-box, .daily-claim-panel, .reward-reveal,
+        .levelup-confirm-box, .care-confirm-box {
+            color: #2b1a0e !important;
+        }
+        .notice-title, .notice-message,
+        .confirm-title, .confirm-message,
+        .input-modal-title,
+        .chest-confirm-title, .chest-confirm-time,
+        .daily-claim-title, .daily-claim-day,
+        .reward-title, .reward-subtitle,
+        .levelup-confirm-title {
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.65) !important;
+        }
+        .chest-confirm-box .chest-confirm-emoji {
+            margin-bottom: 4px !important;
+        }
+        #create-confirm-overlay .chest-confirm-box {
+            padding-top: 18px !important;
+        }
 
         /* ── NOTIFICATIONS panel — match lobby cream/wood palette ── */
         .notif-panel {
@@ -17478,7 +17613,7 @@
                 <button class="chat-reply-cancel" id="chat-reply-cancel" type="button">&times;</button>
             </div>
             <div class="chat-input-row">
-                <input type="text" class="chat-input" id="chat-input" placeholder="Global message..." maxlength="20">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Global message..." maxlength="100">
                 <button class="chat-send" id="chat-send">&#10148;</button>
             </div>
         </div>
@@ -17579,11 +17714,11 @@
                     </div>
                 </div>
                 <div class="menu-equipment-panel" id="menu-equipment-panel" style="display:none;">
-                    <div class="menu-equipment-title">⚔️ MY EQUIPMENT</div>
+                    <div class="menu-equipment-title">MY EQUIPMENT</div>
                     <div class="menu-equipment-slots" id="menu-equipment-slots"></div>
                 </div>
                 <div class="menu-equipment-panel menu-consumables-panel" id="menu-consumables-panel" style="display:none;">
-                    <div class="menu-equipment-title">🍎 CONSUMABLES</div>
+                    <div class="menu-equipment-title">CONSUMABLES</div>
                     <div class="menu-equip-consumable-slots" id="menu-equip-consumable-slots"></div>
                 </div>
                 <div class="menu-pet-panel" id="menu-pet-panel" hidden></div>
@@ -17689,8 +17824,8 @@
             <!-- Right Side - Daily, Chests, Battle buttons -->
             <div class="menu-buttons-bottom">
                 <div class="daily-chat-row">
-                    <div class="chat-btn" id="chat-btn" title="Chat"><img src="/ChubChampions/assets/Chat-Icon-C7DojCo4.png" alt="Chat"></div>
                     <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">DAILY REWARD</div>
+                    <div class="chat-btn" id="chat-btn" title="Chat"><img src="/ChubChampions/assets/Chat-Icon-C7DojCo4.png" alt="Chat"></div>
                 </div>
                 <div class="victory-chest-container" id="victory-chest-container">
                     <div class="victory-chest-label">BATTLE CHESTS</div>
@@ -17751,22 +17886,22 @@
             </div>
             <!-- Equipment Section -->
             <div class="inv-equipment-section">
-                <div class="inv-equipment-title">⚔️ My Equipment</div>
+                <div class="inv-equipment-title">My Equipment</div>
                 <div class="inv-equipment-slots" id="inv-equipment-slots">
                     <!-- Populated by JS -->
                 </div>
             </div>
             <!-- Consumables Equipped -->
             <div class="inv-consumable-section">
-                <div class="inv-consumable-title">🍎 Battle Items</div>
+                <div class="inv-consumable-title">Battle Items</div>
                 <div class="inv-consumable-equipped" id="inv-consumable-equipped">
                     <!-- Equipped consumable slots populated by JS -->
                 </div>
             </div>
             <!-- Filter Tabs -->
             <div class="inv-filter-tabs">
-                <button class="inv-filter-tab active" data-filter="weapons">⚔️ Weapons</button>
-                <button class="inv-filter-tab" data-filter="consumables">🍎 Consumables</button>
+                <button class="inv-filter-tab active" data-filter="weapons">Weapons</button>
+                <button class="inv-filter-tab" data-filter="consumables">Consumables</button>
                 <button class="inv-filter-tab" data-filter="pets">Pets</button>
             </div>
             <!-- Weapons Grid (default visible) -->
@@ -18611,7 +18746,6 @@
     <!-- Create Character Confirmation Modal -->
     <div class="chest-confirm-overlay" id="create-confirm-overlay">
         <div class="chest-confirm-box">
-            <div class="chest-confirm-emoji">➕</div>
             <div class="chest-confirm-title">Create New Character?</div>
             <div class="chest-confirm-time" id="create-confirm-cost"></div>
             <div class="chest-confirm-buttons">
@@ -24917,6 +25051,7 @@
                     unlockedWeapons: globalUnlockedWeapons,
                     wallet:          playerSession.wallet   || undefined,
                     wallets:         playerSession.wallets?.length ? playerSession.wallets : undefined,
+                    avatar:          playerSession.avatar || undefined,
                     // Only auto-save display_name for Twitter users (their @ is unique).
                     // Wallet-only users set their name manually via SET NAME button.
                     displayName:     (playerSession.avatar && playerSession.name) ? playerSession.name : undefined,
@@ -29079,6 +29214,7 @@
                 updateWellnessDisplay(character);
                 updateMoraleDisplay(character);
                 updateInstinctDisplay(character);
+                updateLobbyActionButtonStates(character);
 
                 const isDepressed = (character.morale ?? 100) < 20;
                 const noBattlesLeft = !hasBattlesRemaining(character);
@@ -29108,6 +29244,7 @@
                     upgradeBtn.style.visibility = 'hidden';
                 }
             } else {
+                updateLobbyActionButtonStates(null);
                 nameEl.textContent = 'NO FIGHTER';
                 statsPanel.style.display = 'none'; // Hide wooden panel
                 if (charImg) charImg.style.visibility = 'hidden';
@@ -37590,6 +37727,22 @@
             return `<span class="chat-role-badge">${escapeHTML(label)}</span>`;
         }
 
+        function chatAvatarHtml(msg, mine) {
+            const name = mine ? 'You' : (msg.displayName || 'Player');
+            const initial = escapeHTML(String(name).trim().charAt(0).toUpperCase() || 'P');
+            if (msg.avatarUrl) {
+                return `<img class="chat-avatar" src="${escapeHTML(msg.avatarUrl)}" alt="" referrerpolicy="no-referrer" data-chat-initial="${initial}">`;
+            }
+            return `<div class="chat-avatar chat-avatar-placeholder">${initial}</div>`;
+        }
+
+        function replaceBrokenChatAvatar(img) {
+            const fallback = document.createElement('div');
+            fallback.className = 'chat-avatar chat-avatar-placeholder';
+            fallback.textContent = img.dataset.chatInitial || 'P';
+            img.replaceWith(fallback);
+        }
+
         function setChatReplyTarget(message) {
             chatReplyTarget = message ? {
                 id: message.id,
@@ -37620,6 +37773,12 @@
                 return;
             }
             const shouldNotify = chatLastMessageId !== null && messages[messages.length - 1]?.id !== chatLastMessageId;
+            const newMessages = shouldNotify
+                ? messages.filter(msg => Number(msg.id) > Number(chatLastMessageId || 0))
+                : [];
+            const hasReplyToMe = !!playerSession && newMessages.some(msg =>
+                msg.playerId !== playerSession.playerId && msg.replyTo?.playerId === playerSession.playerId
+            );
             chatLastMessageId = messages[messages.length - 1]?.id ?? chatLastMessageId;
             messagesEl.innerHTML = messages.map(msg => {
                 const mine = playerSession && msg.playerId === playerSession.playerId;
@@ -37627,6 +37786,7 @@
                     ? `<div class="chat-reply-ref">↪ <div><span>${escapeHTML(msg.replyTo.displayName || 'Player')}</span>: ${escapeHTML(msg.replyTo.message || '')}</div></div>`
                     : '';
                 return `<div class="chat-message ${mine ? 'player' : 'cpu'}">
+                    ${chatAvatarHtml(msg, mine)}
                     ${reply}
                     <div class="msg-author" data-player-id="${escapeHTML(msg.playerId)}">${escapeHTML(mine ? 'You' : msg.displayName)}${chatRoleBadge(msg.role)}</div>
                     <div class="chat-message-body">
@@ -37638,7 +37798,7 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
             const chatPanel = document.getElementById('chat-panel');
             if (shouldNotify && chatPanel?.classList.contains('hidden')) {
-                document.getElementById('chat-btn')?.classList.add('has-notification');
+                document.getElementById('chat-btn')?.classList.add(hasReplyToMe ? 'has-reply-notification' : 'has-notification');
             }
         }
 
@@ -37668,7 +37828,7 @@
 
         async function sendPlayerMessage() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim().slice(0, 20);
+            const text = input.value.trim().slice(0, 100);
             if (text === '') return;
             if (!playerSession) {
                 showNotice('Login to use global chat.');
@@ -37708,7 +37868,7 @@
         document.getElementById('chat-btn').addEventListener('click', () => {
             const panel = document.getElementById('chat-panel');
             panel.classList.toggle('hidden');
-            document.getElementById('chat-btn').classList.remove('has-notification');
+            document.getElementById('chat-btn').classList.remove('has-notification', 'has-reply-notification');
             if (!panel.classList.contains('hidden')) {
                 startChatPolling();
                 document.getElementById('chat-input').focus();
@@ -37736,6 +37896,9 @@
             if (!author) return;
             openPlayerProfile(author.dataset.playerId);
         });
+        document.getElementById('chat-messages').addEventListener('error', e => {
+            if (e.target?.classList?.contains('chat-avatar')) replaceBrokenChatAvatar(e.target);
+        }, true);
 
         // Combat Log toggle
         document.getElementById('log-btn').addEventListener('click', () => {
@@ -39288,6 +39451,20 @@
                 max: MORALE_MAX, label: 'Morale: ',
                 fillId: 'care-morale-fill', statusId: 'care-morale-status', valueId: 'care-morale-value',
             });
+        }
+
+        function updateLobbyActionButtonStates(character) {
+            const skillsBtn = document.getElementById('menu-skills-btn');
+            const careBtn = document.getElementById('menu-care-btn');
+            const hasSkillAction = !!character && (character.skillPoints || 0) > 0;
+            const hasCareAction = !!character && (
+                (character.wellness ?? 100) < WELLNESS_MAX ||
+                (character.morale ?? 100) < MORALE_MAX ||
+                (character.wellnessItems || []).length > 0 ||
+                (character.moraleItems || []).length > 0
+            );
+            if (skillsBtn) skillsBtn.classList.toggle('has-action', hasSkillAction);
+            if (careBtn) careBtn.classList.toggle('has-action', hasCareAction);
         }
 
         let careActiveTab     = 'food';      // 'food' | 'medical'
