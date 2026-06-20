@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Wet+Paint&family=Fredoka:wght@400;600;700&family=DynaPuff:wght@400;700&family=Chewy&family=Sour+Gummy:ital,wght@0,400;0,700;1,400&family=Fuzzy+Bubbles:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&family=Rubik+Wet+Paint&family=Fredoka:wght@400;600;700&family=DynaPuff:wght@400;700&family=Chewy&family=Sour+Gummy:ital,wght@0,400;0,700;1,400&family=Fuzzy+Bubbles:wght@400;700&display=swap" rel="stylesheet">
     <title>Chub Champions</title>
     <link rel="icon" type="image/png" href="Assets/UI/Chests/Golden.png">
     <style>
@@ -16941,8 +16941,8 @@
         .damage-text {
             --hit-color: #ffe66b;
             --hit-dark: #481008;
-            font-family: Impact, 'Rubik Wet Paint', 'Press Start 2P', sans-serif !important;
-            font-size: 3.05em !important;
+            font-family: 'Bangers', 'Rubik Wet Paint', Impact, sans-serif !important;
+            font-size: 3.25em !important;
             font-weight: 900 !important;
             line-height: 0.9;
             letter-spacing: 0 !important;
@@ -19440,6 +19440,16 @@
             return Math.max(1, Number(pet?.visualHeight) || getPetVisualSize(pet?.species || 'dog', 'battle').height) / 2;
         }
 
+        function getBattlePetVisualWorldX(pet) {
+            if (!pet?.el) return typeof pet?.worldX === 'number' ? pet.worldX : null;
+            const stageScale = battlePetStageScale();
+            const styleLeft = parseFloat(pet.el.style.left);
+            if (!Number.isFinite(styleLeft) || stageScale <= 0) return typeof pet.worldX === 'number' ? pet.worldX : null;
+            const visualWorldX = styleLeft / stageScale;
+            if (typeof pet.worldX !== 'number') return visualWorldX;
+            return Math.abs(visualWorldX - _visualPos(pet.worldX)) > 8 ? visualWorldX : pet.worldX;
+        }
+
         function getPetAttackEdgeGap(attackType, targetPet) {
             const weapon = getWeaponById(attackType);
             const petHalf = getBattlePetHalfWidth(targetPet);
@@ -19458,15 +19468,18 @@
             return -(14 + heightLift + weaponLift);
         }
 
-        function getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX) {
+        function getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX, attackerWorldX) {
             const fighterWidth = 220;
             const petHalf = getBattlePetHalfWidth(targetPet);
             const petLeft = targetWorldX;
             const petRight = targetWorldX + petHalf * 2;
+            const petCenter = petLeft + petHalf;
             const edgeGap = getPetAttackEdgeGap(attackType, targetPet);
-            const left = attacker === 'player'
-                ? petLeft - fighterWidth - edgeGap
-                : petRight + edgeGap;
+            const attackerCenter = (typeof attackerWorldX === 'number'
+                ? attackerWorldX
+                : (attacker === 'player' ? game.player?._homeX : game.cpu?._homeX)) + fighterWidth / 2;
+            const attackFromLeft = attackerCenter <= petCenter;
+            const left = attackFromLeft ? petLeft - fighterWidth - edgeGap : petRight + edgeGap;
             return Math.max(0, Math.min(1370, Math.round(left)));
         }
 
@@ -26123,16 +26136,20 @@
                 if (!targetPet?.el) return;
                 const arenaEl = document.getElementById('arena');
                 const scale = arenaEl.offsetWidth / 1600;
-                const targetWorldX = typeof event.targetX === 'number'
-                    ? event.targetX
-                    : (typeof targetPet.worldX === 'number' ? targetPet.worldX : (defender === 'player' ? 72 : 1432));
-                const attackLeftWorld = getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX);
-                const attackLeftPx = Math.round((_visualPos(attackLeftWorld) || attackLeftWorld) * scale);
+                const visualTargetWorldX = getBattlePetVisualWorldX(targetPet);
+                const targetWorldX = typeof visualTargetWorldX === 'number'
+                    ? visualTargetWorldX
+                    : (typeof event.targetX === 'number'
+                        ? event.targetX
+                        : (typeof targetPet.worldX === 'number' ? targetPet.worldX : (defender === 'player' ? 72 : 1432)));
                 const homeWorldX = attacker === 'player' ? event.playerX : event.cpuX;
+                const attackLeftWorld = getFighterAttackXForPet(attacker, attackType, targetPet, targetWorldX, homeWorldX);
+                const attackLeftPx = Math.round((_visualPos(attackLeftWorld) || attackLeftWorld) * scale);
                 const homeLeftPx = Math.round((_visualPos(homeWorldX) || homeWorldX) * scale);
                 const runMs = Math.round(Math.max(260, Math.min(760, Math.abs(attackLeftWorld - homeWorldX) / 100 * 115 * atkMult)));
                 const attackY = getPetTargetAttackY(targetPet, attackType);
                 const animType = isWeaponAnim ? 'punch' : attackType;
+                const attackRunMeta = { distancePx: Math.abs(attackLeftWorld - homeWorldX), durationMs: runMs };
 
                 stopIdleBlink(attackerEl);
                 attackerEl.classList.add('dashing');
@@ -26142,7 +26159,7 @@
                 targetPet.el.style.zIndex = '18';
                 attackerEl.style.setProperty('transition', `left ${runMs}ms ease-out, transform ${runMs}ms ease-out`, 'important');
                 void attackerEl.offsetWidth;
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null, null, attackRunMeta);
                 attackerEl.style.left = attackLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 attackerEl.style.transform = `translateY(${attackY}px)`;
@@ -26171,7 +26188,7 @@
 
                 attackerEl.style.setProperty('transition', `left ${Math.round(runMs * 0.72)}ms ease-out, transform ${Math.round(runMs * 0.72)}ms ease-out`, 'important');
                 void attackerEl.offsetWidth;
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null, null, { distancePx: Math.abs(attackLeftWorld - homeWorldX), durationMs: Math.round(runMs * 0.72) });
                 attackerEl.style.left = homeLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 attackerEl.style.transform = '';
@@ -26289,6 +26306,10 @@
             // Mid = halfway between attacker's home and attack position
             const _attackerHomeScaled = (attacker === 'player' ? game.player._homeX : game.cpu._homeX) * _scale;
             const _midLeftPx = (_attackerHomeScaled + _atkLeftPx) / 2;
+            const _approachRunMeta = {
+                distancePx: Math.abs((_atkLeftPx / _scale) - (_attackerHomeScaled / _scale)),
+                durationMs: _movMs,
+            };
 
             // [DIAG] Log positions at attack start so we can compare _homeX (server) vs
             // actual style.left (visual) after a prior jump attack. If they diverge, the
@@ -26321,7 +26342,7 @@
                 await sleep(15);
             } else if (isLSFollow) {
                 // Light Step follow-up: run from midpoint to opponent (shorter distance)
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null, null, { distancePx: Math.abs((_atkLeftPx - _midLeftPx) / _scale), durationMs: 190 });
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(190);
@@ -26386,9 +26407,9 @@
                 // This makes both the run and the arc proportional to the actual gap,
                 // so a 300px gap = short run + short arc, 900px gap = long run + long arc.
                 const runTarget = (jaHomeLeftPx + _jaLandingLeft) / 2;
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
                 const r0Left   = jaHomeLeftPx;
                 const runDelta = runTarget - r0Left;
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null, null, { distancePx: Math.abs(runDelta / jaScale), durationMs: jaRunMs });
 
                 await new Promise(res => {
                     const r0 = performance.now();
@@ -26653,7 +26674,7 @@
                 }
             } else {
                 // Normal first hit: run from starting corner to opponent
-                animateRun(attackerEl, false, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, false, isWeaponAnim ? attackType : null, null, _approachRunMeta);
                 attackerEl.style.left  = _atkLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(Math.round(300 * atkMult));
@@ -26985,14 +27006,13 @@
                 await sleep(20);
             } else if (isLSFirst) {
                 // Light Step first hit: step back to midpoint before follow-up
-                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null, null, { distancePx: Math.abs((parseFloat(attackerEl.style.left) || _atkLeftPx) - _midLeftPx) / _scale, durationMs: 210 });
                 attackerEl.style.left  = _midLeftPx + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(210);
                 stopRunAnimation(attackerEl);
             } else {
                 // Last hit (or solo attack): run back to starting corner
-                animateRun(attackerEl, true, isWeaponAnim ? attackType : null);
                 // Deferred rotation reset after jump attack — clear inline transform
                 // so CSS facing-flipped class takes over after _syncFacingDirection().
                 if (attackerEl._jumpReturn) {
@@ -27011,6 +27031,7 @@
                 // Return to current home position (server coords scaled to real arena width)
                 const _retScale = _arenaW / 1600;
                 const _retHomeX = _visualPos(game[attacker]._homeX ?? (attacker === 'player' ? 128 : 1252)) * _retScale;
+                animateRun(attackerEl, true, isWeaponAnim ? attackType : null, null, { distancePx: Math.abs((parseFloat(attackerEl.style.left) || _atkLeftPx) - _retHomeX) / _retScale, durationMs: _retMs });
                 attackerEl.style.left  = _retHomeX + 'px';
                 attackerEl.style.right = 'auto';
                 await sleep(_retMs);
@@ -32181,7 +32202,24 @@
             noise.stop(t + duration);
         }
 
-        function animateRun(fighterEl, reverse, weaponIdForRun, speed) {
+        function getRunCadence(speed, movementMeta = null) {
+            if (movementMeta && Number(movementMeta.distancePx) > 0 && Number(movementMeta.durationMs) > 0) {
+                const distance = Math.max(1, Number(movementMeta.distancePx));
+                const duration = Math.max(80, Number(movementMeta.durationMs));
+                const strideCount = Math.max(1, Math.min(8, Math.round(distance / 115)));
+                const footMs = Math.max(105, Math.min(360, Math.round(duration / strideCount)));
+                const frameMs = Math.max(45, Math.min(170, Math.round(footMs * 0.52)));
+                return { frameMs, footMs };
+            }
+            if (speed != null) {
+                const frameMs = Math.max(30, Math.min(250, Math.round(11750 / speed)));
+                const footMs = Math.max(70, Math.min(340, Math.round(frameMs * 1.55)));
+                return { frameMs, footMs };
+            }
+            return { frameMs: 140, footMs: 230 };
+        }
+
+        function animateRun(fighterEl, reverse, weaponIdForRun, speed, movementMeta = null) {
             const img = fighterEl.querySelector('img.character-png');
             if (!img) return;
 
@@ -32254,17 +32292,16 @@
                 _idleOv._suppressEquipFlash = true;
             }
 
-            // Frame and footstep rate: 7120/speed — ~3.8 frames per step at any AGI.
-            // Same gait rhythm, different absolute speed — slow chars trudge, fast ones blur.
+            // Frame and footstep rate. Normal move events use backend speed, while
+            // attack run-ups pass distance/duration so slow approaches sound slower.
             //   speed  47 (AGI  15) → 151ms/frame  6.6fps  (heavy trudge)
-            //   speed  89 (AGI  68) →  80ms/frame 12.5fps  (baseline)
             //   speed  89 (AGI  68) → 132ms/frame  8fps    (sluggish walk)
             //   speed 147 (AGI 140) →  80ms/frame 13fps    (slow jog)
             //   speed 275 (AGI 300) →  43ms/frame 23fps    (nimble sprint)
             //   speed 452 (AGI 700) →  30ms/frame 33fps    (blurring dash, floor)
-            // Without speed (attack run-ups): fixed 250ms / 150ms defaults.
-            const _frameMs = speed != null ? Math.max(30, Math.min(250, Math.round(11750 / speed))) : 250;
-            const _footMs  = speed != null ? Math.max(50, Math.round(_frameMs * 0.75)) : 150;
+            const _cadence = getRunCadence(speed, movementMeta);
+            const _frameMs = _cadence.frameMs;
+            const _footMs  = _cadence.footMs;
 
             if (hasWeaponRun) {
                 // Weapon run: character in weapon-holding pose + weapon overlay
