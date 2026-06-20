@@ -11756,18 +11756,7 @@
             position: relative;
             overflow: hidden;
             border: 7px solid #3b220f;
-            background:
-                conic-gradient(
-                    #f7c84b 0deg 40deg,
-                    #83d86d 40deg 80deg,
-                    #f09c42 80deg 120deg,
-                    #73b8ff 120deg 160deg,
-                    #c07cff 160deg 200deg,
-                    #e8a05d 200deg 240deg,
-                    #c9d0db 240deg 280deg,
-                    #ffd65a 280deg 320deg,
-                    #a05bd8 320deg 360deg
-                );
+            background: var(--roulette-gradient, conic-gradient(#f7c84b 0deg 360deg));
             box-shadow: inset 0 0 0 9px rgba(255,255,255,0.28), 0 8px 0 #1d1108, 0 16px 22px rgba(0,0,0,0.35);
             transition: transform 1.15s cubic-bezier(.12,.82,.18,1);
         }
@@ -11781,13 +11770,13 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 76px;
+            width: 70px;
             height: 44px;
-            margin-left: -38px;
+            margin-left: -35px;
             margin-top: -22px;
             display: grid;
             place-items: center;
-            transform-origin: 38px 22px;
+            transform-origin: 35px 22px;
             font-family: 'Fredoka', sans-serif;
             font-size: 0.58em;
             color: #3b220f;
@@ -11795,12 +11784,35 @@
             pointer-events: none;
         }
         .daily-roulette-segment-inner {
-            transform: translateY(-78px);
+            transform: translateY(-76px);
             display: grid;
             place-items: center;
             gap: 1px;
             line-height: 1;
             text-align: center;
+        }
+        .daily-roulette-needle {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 5px;
+            height: 104px;
+            margin-left: -2.5px;
+            margin-top: -104px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #fff8c9 0%, #d82323 35%, #7b1010 100%);
+            transform-origin: 50% 100%;
+            z-index: 4;
+            box-shadow: 0 0 0 2px #3b220f, 0 0 10px rgba(255,220,90,0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .daily-roulette-needle.spinning {
+            opacity: 1;
+            animation: dailyRouletteNeedle 0.42s linear infinite;
+        }
+        @keyframes dailyRouletteNeedle {
+            to { transform: rotate(360deg); }
         }
         .daily-roulette-icon {
             font-size: 1.55em;
@@ -18011,7 +18023,7 @@
             <!-- Right Side - Daily, Chests, Battle buttons -->
             <div class="menu-buttons-bottom">
                 <div class="daily-chat-row">
-                    <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">DAILY REWARD</div>
+                    <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">LUCKY SPIN</div>
                     <div class="chat-btn" id="chat-btn" title="Chat"><img src="/ChubChampions/assets/Chat-Icon-C7DojCo4.png" alt="Chat"></div>
                 </div>
                 <div class="victory-chest-container" id="victory-chest-container">
@@ -18958,7 +18970,7 @@
     <div class="daily-claim-overlay" id="daily-claim-overlay">
         <div class="daily-claim-panel">
             <div class="daily-claim-header">
-                <div class="daily-claim-title">📅 DAILY REWARDS</div>
+                <div class="daily-claim-title">LUCKY SPIN</div>
                 <span class="daily-claim-close" id="daily-claim-close">&times;</span>
             </div>
             <div class="daily-claim-grid" id="daily-claim-grid"></div>
@@ -19616,6 +19628,38 @@
             g6.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
             src6.connect(bp6).connect(g6).connect(_audioCtx.destination);
             src6.start(now); src6.stop(now + dur);
+        }
+
+        function playRouletteTickSound() {
+            _ensureAudioCtx();
+            const now = _audioCtx.currentTime;
+            const osc = _audioCtx.createOscillator();
+            const gain = _audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(720, now);
+            osc.frequency.exponentialRampToValueAtTime(520, now + 0.035);
+            gain.gain.setValueAtTime(0.045 * _globalVolume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            osc.connect(gain).connect(_audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.045);
+        }
+
+        function playRouletteWinSound() {
+            _ensureAudioCtx();
+            const now = _audioCtx.currentTime;
+            [660, 880, 1175].forEach((freq, idx) => {
+                const osc = _audioCtx.createOscillator();
+                const gain = _audioCtx.createGain();
+                const start = now + idx * 0.08;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.07 * _globalVolume, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+                osc.connect(gain).connect(_audioCtx.destination);
+                osc.start(start);
+                osc.stop(start + 0.2);
+            });
         }
 
 
@@ -21228,16 +21272,19 @@
             { day: 30, type: 'chest_tokens', tier: 'epic', tokens: 5,  icon: '<img src="Assets/UI/Chests/Epic.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Epic+🪙' },
         ];
         const DAILY_ROULETTE_PREVIEW = [
-            { id: 'tokens_3',      type: 'tokens',       amount: 3, label: '3 Coins',       icon: '🪙' },
-            { id: 'tokens_5',      type: 'tokens',       amount: 5, label: '5 Coins',       icon: '🪙' },
-            { id: 'fragments_1',   type: 'fragments',    amount: 1, label: '1 Fragment',    icon: FRAG_DAILY_ICON },
-            { id: 'combo_small',   type: 'combo',        tokens: 3, fragments: 1, label: 'Coins + Frag', icon: '🎁' },
-            { id: 'xpboost_small', type: 'xpboost',      mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡' },
-            { id: 'bronze_chest',  type: 'chest',        tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">' },
-            { id: 'silver_chest',  type: 'chest',        tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">' },
-            { id: 'gold_chest',    type: 'chest',        tier: 'gold', label: 'Gold', icon: '<img src="Assets/UI/Chests/Golden.png" alt="Gold">' },
-            { id: 'epic_bonus',    type: 'chest_tokens', tier: 'epic', tokens: 5, label: 'Epic+', icon: '<img src="Assets/UI/Chests/Epic.png" alt="Epic">' },
+            { id: 'tokens_1_a',    type: 'tokens',       amount: 1, label: '1 Coin',        icon: '🪙', color: '#f7c84b' },
+            { id: 'tokens_1_b',    type: 'tokens',       amount: 1, label: '1 Coin',        icon: '🪙', color: '#ffe184' },
+            { id: 'tokens_2',      type: 'tokens',       amount: 2, label: '2 Coins',       icon: '🪙', color: '#f2a93b' },
+            { id: 'tokens_3',      type: 'tokens',       amount: 3, label: '3 Coins',       icon: '🪙', color: '#e7c14b' },
+            { id: 'fragments_1',   type: 'fragments',    amount: 1, label: '1 Fragment',    icon: FRAG_DAILY_ICON, color: '#83d86d' },
+            { id: 'combo_small',   type: 'combo',        tokens: 2, fragments: 1, label: 'Coin + Frag', icon: '🎁', color: '#73b8ff' },
+            { id: 'xpboost_small', type: 'xpboost',      mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡', color: '#c07cff' },
+            { id: 'bronze_chest',  type: 'chest',        tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">', color: '#d99a5d' },
+            { id: 'silver_chest',  type: 'chest',        tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">', color: '#c9d0db' },
+            { id: 'gold_chest',    type: 'chest',        tier: 'gold', label: 'Gold', icon: '<img src="Assets/UI/Chests/Golden.png" alt="Gold">', color: '#ffd65a' },
+            { id: 'epic_bonus',    type: 'chest_tokens', tier: 'epic', tokens: 5, label: 'Epic+', icon: '<img src="Assets/UI/Chests/Epic.png" alt="Epic">', color: '#a05bd8' },
         ];
+        const DAILY_ROULETTE_PAID_SPIN_COST = 5;
         let dailyRouletteSpinning = false;
 
         let dailyClaimData = {
@@ -22210,25 +22257,35 @@
             await sleep(950);
         }
 
-        async function claimDailyReward(dayNum) {
+        async function claimDailyReward(dayNum, paidSpin = false) {
             if (dailyRouletteSpinning) return;
             if (dayNum < 1 || dayNum > 30) return;
+            if (paidSpin && globalTokens < DAILY_ROULETTE_PAID_SPIN_COST) {
+                showDailyClaimToast('Need ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins to spin again.');
+                return;
+            }
             dailyRouletteSpinning = true;
             const spinBtn = document.getElementById('daily-roulette-spin');
             const resultEl = document.getElementById('daily-roulette-result');
             const wheel = document.getElementById('daily-roulette-wheel');
+            const needle = document.getElementById('daily-roulette-needle');
             if (spinBtn) spinBtn.disabled = true;
-            if (resultEl) resultEl.textContent = 'Spinning...';
+            if (resultEl) resultEl.textContent = paidSpin ? 'Paid spin: -' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins...' : 'Spinning...';
+            playWoodClick();
+            let tickTimer = setInterval(playRouletteTickSound, 95);
             if (wheel) {
                 wheel.style.transform = '';
                 wheel.classList.add('spinning');
             }
+            if (needle) needle.classList.add('spinning');
 
-            const result = await claimDailyOnServer(dayNum);
+            const result = await claimDailyOnServer(dayNum, paidSpin);
+            clearInterval(tickTimer);
             if (!result || !result.ok) {
                 if (wheel) wheel.classList.remove('spinning');
+                if (needle) needle.classList.remove('spinning');
                 dailyRouletteSpinning = false;
-                if (spinBtn) spinBtn.disabled = !canClaimToday();
+                if (spinBtn) spinBtn.disabled = false;
                 if (resultEl) resultEl.textContent = result?.error || 'Claim failed.';
                 showDailyClaimToast(result?.error || 'Claim failed. Please try again.');
                 return;
@@ -22237,6 +22294,8 @@
             // globalTokens, globalFragments, and dailyClaimData already updated by claimDailyOnServer
             const reward = resolveDailyRouletteReward(result.rouletteReward);
             await settleDailyRouletteWheel(reward);
+            if (needle) needle.classList.remove('spinning');
+            playRouletteWinSound();
             const toastText = formatDailyRouletteToast(dayNum, reward, result);
 
             switch (result.rewardType) {
@@ -22251,6 +22310,7 @@
                     document.getElementById('daily-claim-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
                     dailyRouletteSpinning = false;
+                    renderDailyClaimGrid();
                     return;
                 case 'chest_tokens':
                     saveProgression();
@@ -22262,12 +22322,13 @@
                     document.getElementById('daily-claim-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
                     dailyRouletteSpinning = false;
+                    renderDailyClaimGrid();
                     return;
             }
 
             // Daily login bonus: +3 morale to selected character
             const dailyChar = getSelectedCharacter();
-            if (dailyChar && dailyChar.morale !== undefined) {
+            if (!result.paidSpin && dailyChar && dailyChar.morale !== undefined) {
                 dailyChar.morale = Math.min(MORALE_MAX, dailyChar.morale + 3);
                 dailyChar.lastMoraleTimestamp = Date.now();
                 saveCharacters();
@@ -22351,14 +22412,20 @@
             if (!grid) return;
             const currentDay = getDailyClaimDayNumber();
             const canClaim = canClaimToday();
+            const canPaidSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && globalTokens >= DAILY_ROULETTE_PAID_SPIN_COST;
             const statusText = currentDay === -1
                 ? 'Daily cycle complete.'
-                : (canClaim ? 'Day ' + currentDay + ' spin available.' : 'Already claimed today.');
+                : (canClaim ? 'Free spin available.' : 'Extra spin costs ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins.');
             grid.className = 'daily-claim-grid daily-roulette';
             const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
+            const rouletteGradient = 'conic-gradient(' + DAILY_ROULETTE_PREVIEW.map((reward, idx) => {
+                const start = (idx * slice).toFixed(3);
+                const end = ((idx + 1) * slice).toFixed(3);
+                return reward.color + ' ' + start + 'deg ' + end + 'deg';
+            }).join(', ') + ')';
             const segments = DAILY_ROULETTE_PREVIEW.map((reward, idx) => (
-                '<div class="daily-roulette-segment" style="transform: rotate(' + (idx * slice) + 'deg);">' +
-                    '<div class="daily-roulette-segment-inner" style="transform: translateY(-78px) rotate(' + (-(idx * slice)) + 'deg);">' +
+                '<div class="daily-roulette-segment" style="transform: rotate(' + (idx * slice + slice / 2) + 'deg);">' +
+                    '<div class="daily-roulette-segment-inner" style="transform: translateY(-76px) rotate(' + (-(idx * slice + slice / 2)) + 'deg);">' +
                         '<div class="daily-roulette-icon">' + reward.icon + '</div>' +
                         '<div>' + reward.label + '</div>' +
                     '</div>' +
@@ -22367,14 +22434,15 @@
             let html = '';
             html += '<div class="daily-roulette-stage">';
             html += '<div class="daily-roulette-pointer"></div>';
-            html += '<div class="daily-roulette-wheel" id="daily-roulette-wheel">' + segments + '<div class="daily-roulette-center">SPIN</div></div>';
+            html += '<div class="daily-roulette-wheel" id="daily-roulette-wheel" style="--roulette-gradient:' + rouletteGradient + ';">' + segments + '<div class="daily-roulette-center">LUCK</div></div>';
+            html += '<div class="daily-roulette-needle" id="daily-roulette-needle"></div>';
             html += '</div>';
-            html += '<button class="daily-roulette-spin btn-shine" id="daily-roulette-spin" ' + (canClaim ? '' : 'disabled') + '>' + (canClaim ? 'SPIN DAILY REWARD' : 'CLAIMED') + '</button>';
+            html += '<button class="daily-roulette-spin btn-shine" id="daily-roulette-spin" ' + ((canClaim || canPaidSpin) ? '' : 'disabled') + '>' + (canClaim ? 'FREE SPIN' : ('SPIN AGAIN - ' + DAILY_ROULETTE_PAID_SPIN_COST + ' COINS')) + '</button>';
             html += '<div class="daily-roulette-result" id="daily-roulette-result">' + statusText + '</div>';
             grid.innerHTML = html;
 
             const spinBtn = document.getElementById('daily-roulette-spin');
-            if (spinBtn && canClaim) spinBtn.addEventListener('click', () => claimDailyReward(currentDay));
+            if (spinBtn && (canClaim || canPaidSpin)) spinBtn.addEventListener('click', () => claimDailyReward(currentDay, !canClaim));
         }
 
         function updateDailyBattleCounter() {
@@ -25525,7 +25593,7 @@
             }
         }
 
-        async function claimDailyOnServer(dayNum) {
+        async function claimDailyOnServer(dayNum, paidSpin = false) {
             if (!playerSession) return { ok: false, error: 'Not logged in' };
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/daily-claim', {
@@ -25535,6 +25603,7 @@
                         playerId: playerSession.playerId,
                         dayNum,
                         characterId: String(getSelectedCharacter()?.id ?? ''),
+                        paidSpin,
                     }),
                 });
                 const data = await resp.json();
