@@ -16563,6 +16563,204 @@
             border-color: rgba(245,230,200,0.4) !important;
         }
 
+        /* UI harmony pass: keep old dark/neon surfaces inside the lobby palette */
+        :root {
+            --ui-cream-face: rgba(255,246,220,0.64);
+            --ui-cream-face-strong: rgba(255,246,220,0.82);
+            --ui-warm-line: rgba(74,44,18,0.42);
+            --ui-warm-line-strong: #4a2c12;
+            --ui-warm-text: #1f1208;
+            --ui-warm-subtext: #4f3014;
+            --ui-gold-fill: linear-gradient(180deg, #f4c15d, #b86b21);
+        }
+        .settings-panel,
+        .chat-panel,
+        .market-panel,
+        .pet-fusion-panel,
+        .wardrobe-container,
+        .aon-panel {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0) 42%),
+                linear-gradient(180deg, #f4eee0 0%, #e6dccb 72%, #d4c8b0 100%) !important;
+            border: 3px solid var(--ui-warm-line-strong) !important;
+            color: var(--ui-warm-text) !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,253,247,0.7),
+                0 4px 0 #2b1a0e,
+                0 12px 28px rgba(43,26,14,0.42) !important;
+        }
+        .settings-header,
+        .chat-header,
+        .market-header,
+        .pet-fusion-header,
+        .wardrobe-header {
+            border-bottom-color: rgba(74,44,18,0.34) !important;
+            background: rgba(255,246,220,0.26) !important;
+        }
+        .settings-title,
+        .chat-header span:first-child,
+        .market-title,
+        .pet-fusion-title,
+        .wardrobe-title,
+        .inventory-title,
+        .skills-title {
+            color: var(--ui-warm-text) !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.65) !important;
+            font-weight: 900 !important;
+        }
+        .settings-close,
+        .chat-close,
+        .market-close,
+        .pet-fusion-close,
+        .wardrobe-close,
+        .inventory-close,
+        .skills-close {
+            color: #3b220f !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.45) !important;
+        }
+        .settings-close:hover,
+        .chat-close:hover,
+        .market-close:hover,
+        .pet-fusion-close:hover,
+        .wardrobe-close:hover,
+        .inventory-close:hover,
+        .skills-close:hover {
+            color: #7a2f12 !important;
+        }
+        .market-card,
+        .market-listing-card,
+        .market-detail-card,
+        .inventory-weapon-card,
+        .inventory-consumable-card,
+        .inventory-pet-card,
+        .wardrobe-equipped-slot,
+        .wardrobe-skin-card,
+        .pet-fusion-slot,
+        .pet-fusion-result,
+        .pet-fusion-rules,
+        .pet-fusion-inventory,
+        .pet-fusion-inventory-item,
+        .settings-toggle-row,
+        .chat-message,
+        .vault-pack-card {
+            background: var(--ui-cream-face) !important;
+            border-color: var(--ui-warm-line) !important;
+            color: var(--ui-warm-text) !important;
+            box-shadow: inset 0 1px 0 rgba(255,250,225,0.45) !important;
+        }
+        .market-card:hover,
+        .market-listing-card:hover,
+        .inventory-weapon-card:hover,
+        .inventory-consumable-card:hover,
+        .inventory-pet-card:hover,
+        .wardrobe-equipped-slot:hover,
+        .wardrobe-skin-card:hover,
+        .pet-fusion-inventory-item:hover,
+        .vault-pack-card:hover {
+            background: var(--ui-cream-face-strong) !important;
+            border-color: #b8741a !important;
+        }
+        .inventory-weapon-card.equipped,
+        .inventory-consumable-card.equipped,
+        .inventory-pet-card.equipped,
+        .wardrobe-skin-card.equipped,
+        .pet-fusion-inventory-item.active,
+        .vault-pack-card.selected {
+            background: rgba(244,193,93,0.32) !important;
+            border-color: #b8741a !important;
+            box-shadow: inset 0 1px 0 rgba(255,250,225,0.55), 0 0 0 1px rgba(74,44,18,0.18) !important;
+        }
+        .inventory-weapon-name,
+        .inventory-consumable-name,
+        .inventory-pet-name,
+        .wardrobe-slot-name,
+        .wardrobe-skin-card-name,
+        .pet-fusion-inventory-title,
+        .market-card-name,
+        .market-character-name {
+            color: var(--ui-warm-text) !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+            font-weight: 900 !important;
+        }
+        .inventory-weapon-stats,
+        .inventory-consumable-desc,
+        .inventory-pet-role,
+        .inventory-pet-stats,
+        .wardrobe-slot-label,
+        .wardrobe-slot-empty,
+        .wardrobe-empty-msg,
+        .market-card-meta,
+        .market-character-meta,
+        .pet-fusion-rules,
+        .settings-toggle-label,
+        .chat-empty {
+            color: var(--ui-warm-subtext) !important;
+            text-shadow: none !important;
+        }
+        .market-control,
+        .vault-form-input,
+        .chat-input {
+            background: rgba(255,250,235,0.72) !important;
+            border: 2px solid rgba(74,44,18,0.38) !important;
+            color: var(--ui-warm-text) !important;
+            box-shadow: inset 0 1px 2px rgba(74,44,18,0.16) !important;
+        }
+        .market-control:focus,
+        .vault-form-input:focus,
+        .chat-input:focus {
+            border-color: #b8741a !important;
+            outline: none !important;
+        }
+        .wardrobe-tab,
+        .inv-filter-tab,
+        .market-tab,
+        .vault-tab,
+        .skill-branch-tab,
+        .pet-fusion-actions button,
+        .wardrobe-connect-btn,
+        .wardrobe-chain-btn,
+        .chat-send {
+            background: rgba(255,246,220,0.56) !important;
+            border-color: rgba(74,44,18,0.42) !important;
+            color: var(--ui-warm-text) !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
+        .wardrobe-tab.active,
+        .inv-filter-tab.active,
+        .market-tab.active,
+        .vault-tab.active,
+        .skill-branch-tab.active,
+        .wardrobe-chain-btn.active,
+        .pet-fusion-actions button:not(:disabled),
+        .chat-send {
+            background: var(--ui-gold-fill) !important;
+            border-color: var(--ui-warm-line-strong) !important;
+            color: #2b1a0e !important;
+            box-shadow: 0 2px 0 #3b220f !important;
+        }
+        .skills-panel .skills-branch-content,
+        .skills-panel .skill-tree-side,
+        .skills-panel .skills-detail-col {
+            background: rgba(43,26,14,0.78) !important;
+            border-color: rgba(245,230,200,0.24) !important;
+        }
+        .skills-panel .skill-node {
+            background: rgba(43,26,14,0.82) !important;
+            border-color: rgba(245,230,200,0.28) !important;
+        }
+        .skills-panel .skill-node.maxed {
+            background: rgba(115,76,22,0.86) !important;
+            border-color: #d9a83d !important;
+        }
+        .chat-message.player,
+        .chat-message.cpu {
+            background: rgba(255,246,220,0.72) !important;
+            border-color: rgba(74,44,18,0.34) !important;
+        }
+        .chat-message .msg-author {
+            color: #7a2f12 !important;
+        }
+
         /* ── NOTIFICATIONS panel — match lobby cream/wood palette ── */
         .notif-panel {
             background:
