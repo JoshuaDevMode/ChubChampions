@@ -11723,6 +11723,133 @@
             grid-template-columns: repeat(6, 1fr);
             gap: 6px;
         }
+        .daily-claim-grid.daily-roulette {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .daily-roulette-stage {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: grid;
+            place-items: center;
+        }
+        .daily-roulette-pointer {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            transform: translateX(-50%);
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-top: 24px solid #3b220f;
+            z-index: 3;
+            filter: drop-shadow(0 2px 0 rgba(255,255,255,0.35));
+        }
+        .daily-roulette-wheel {
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 7px solid #3b220f;
+            background:
+                conic-gradient(
+                    #f7c84b 0deg 40deg,
+                    #83d86d 40deg 80deg,
+                    #f09c42 80deg 120deg,
+                    #73b8ff 120deg 160deg,
+                    #c07cff 160deg 200deg,
+                    #e8a05d 200deg 240deg,
+                    #c9d0db 240deg 280deg,
+                    #ffd65a 280deg 320deg,
+                    #a05bd8 320deg 360deg
+                );
+            box-shadow: inset 0 0 0 9px rgba(255,255,255,0.28), 0 8px 0 #1d1108, 0 16px 22px rgba(0,0,0,0.35);
+            transition: transform 1.15s cubic-bezier(.12,.82,.18,1);
+        }
+        .daily-roulette-wheel.spinning {
+            animation: dailyRouletteSpin 0.55s linear infinite;
+        }
+        @keyframes dailyRouletteSpin {
+            to { transform: rotate(360deg); }
+        }
+        .daily-roulette-segment {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 76px;
+            height: 44px;
+            margin-left: -38px;
+            margin-top: -22px;
+            display: grid;
+            place-items: center;
+            transform-origin: 38px 22px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.58em;
+            color: #3b220f;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+            pointer-events: none;
+        }
+        .daily-roulette-segment-inner {
+            transform: translateY(-78px);
+            display: grid;
+            place-items: center;
+            gap: 1px;
+            line-height: 1;
+            text-align: center;
+        }
+        .daily-roulette-icon {
+            font-size: 1.55em;
+            line-height: 1;
+        }
+        .daily-roulette-icon img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            display: block;
+        }
+        .daily-roulette-center {
+            position: absolute;
+            inset: 72px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at 45% 30%, #fff4bd 0%, #f2b736 58%, #a45d12 100%);
+            border: 5px solid #3b220f;
+            z-index: 2;
+            font-family: 'Fredoka', sans-serif;
+            color: #3b220f;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.45), 0 4px 0 #1d1108;
+        }
+        .daily-roulette-spin {
+            width: 190px;
+            min-height: 44px;
+            border: 3px solid #3b220f;
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.8em;
+            color: #3b220f;
+            background: linear-gradient(180deg, #ffd865 0%, #f0a719 100%);
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), 0 4px 0 #3b220f;
+        }
+        .daily-roulette-spin:disabled {
+            cursor: not-allowed;
+            filter: grayscale(0.75);
+            opacity: 0.72;
+        }
+        .daily-roulette-result {
+            min-height: 24px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            color: #3b220f;
+            text-align: center;
+        }
         .daily-claim-cell {
             width: 100%;
             aspect-ratio: 1;
@@ -17171,18 +17298,31 @@
             height: 32px !important;
         }
         .daily-chat-row {
-            display: grid !important;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+            position: relative !important;
+            display: flex !important;
             align-items: center !important;
-            justify-items: center !important;
-            gap: 8px !important;
+            justify-content: center !important;
+            width: 195px !important;
+            min-height: 62px !important;
+            gap: 0 !important;
         }
         .daily-chat-row .daily-claim-lobby-btn {
-            grid-column: 2 !important;
+            width: 195px !important;
+            min-width: 195px !important;
+            max-width: 195px !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
         }
         .daily-chat-row .chat-btn {
-            grid-column: 1 !important;
-            justify-self: end !important;
+            position: absolute !important;
+            top: 50% !important;
+            right: calc(100% + 8px) !important;
+            transform: translateY(-50%) !important;
+            margin: 0 !important;
+            z-index: 24 !important;
+        }
+        .daily-chat-row .chat-btn:hover {
+            transform: translateY(-50%) scale(1.08) !important;
         }
         .chat-btn.has-reply-notification::after {
             content: '' !important;
@@ -21087,6 +21227,18 @@
             { day: 29, type: 'combo',        tokens: 5, fragments: 1, icon: '🎁', label: '5🪙+1' },
             { day: 30, type: 'chest_tokens', tier: 'epic', tokens: 5,  icon: '<img src="Assets/UI/Chests/Epic.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Epic+🪙' },
         ];
+        const DAILY_ROULETTE_PREVIEW = [
+            { id: 'tokens_3',      type: 'tokens',       amount: 3, label: '3 Coins',       icon: '🪙' },
+            { id: 'tokens_5',      type: 'tokens',       amount: 5, label: '5 Coins',       icon: '🪙' },
+            { id: 'fragments_1',   type: 'fragments',    amount: 1, label: '1 Fragment',    icon: FRAG_DAILY_ICON },
+            { id: 'combo_small',   type: 'combo',        tokens: 3, fragments: 1, label: 'Coins + Frag', icon: '🎁' },
+            { id: 'xpboost_small', type: 'xpboost',      mult: 1.5, battles: 5, label: 'XP Boost', icon: '⚡' },
+            { id: 'bronze_chest',  type: 'chest',        tier: 'bronze', label: 'Bronze', icon: '<img src="Assets/UI/Chests/Common.png" alt="Bronze">' },
+            { id: 'silver_chest',  type: 'chest',        tier: 'silver', label: 'Silver', icon: '<img src="Assets/UI/Chests/Silver.png" alt="Silver">' },
+            { id: 'gold_chest',    type: 'chest',        tier: 'gold', label: 'Gold', icon: '<img src="Assets/UI/Chests/Golden.png" alt="Gold">' },
+            { id: 'epic_bonus',    type: 'chest_tokens', tier: 'epic', tokens: 5, label: 'Epic+', icon: '<img src="Assets/UI/Chests/Epic.png" alt="Epic">' },
+        ];
+        let dailyRouletteSpinning = false;
 
         let dailyClaimData = {
             startDate: null,
@@ -22008,25 +22160,19 @@
             return Math.floor(d / 3600000) + 'h ago';
         }
 
-        async function claimDailyReward(dayNum) {
-            const reward = DAILY_REWARDS.find(r => r.day === dayNum);
-            if (!reward) return;
+        function resolveDailyRouletteReward(serverReward) {
+            const preview = DAILY_ROULETTE_PREVIEW.find(r => r.id === serverReward?.id);
+            return { ...(preview || {}), ...(serverReward || {}) };
+        }
 
-            const result = await claimDailyOnServer(dayNum);
-            if (!result || !result.ok) {
-                showDailyClaimToast(result?.error || 'Claim failed. Please try again.');
-                return;
-            }
-
-            // globalTokens, globalFragments, and dailyClaimData already updated by claimDailyOnServer
+        function formatDailyRouletteToast(dayNum, reward, result) {
             let toastText = 'Day ' + dayNum + ': ';
-
             switch (result.rewardType) {
                 case 'tokens':
-                    toastText += '+' + reward.amount + ' 🪙';
+                    toastText += '+' + (reward.amount || 0) + ' 🪙';
                     break;
                 case 'fragments':
-                    toastText += '+' + reward.amount + ' ' + FRAG_ICON_HTML;
+                    toastText += '+' + (reward.amount || 0) + ' ' + FRAG_ICON_HTML;
                     break;
                 case 'xpboost':
                     if (result.xpBoost && pendingXpBoosts.length < 3) {
@@ -22040,6 +22186,61 @@
                     break;
                 case 'chest':
                     toastText += getChestTierById(reward.tier).name + ' Chest!';
+                    break;
+                case 'chest_tokens':
+                    toastText += getChestTierById(reward.tier).name + ' Chest! +' + (reward.tokens || 0) + ' 🪙';
+                    break;
+                case 'combo':
+                    toastText += '+' + (reward.tokens || 0) + ' 🪙 +' + (reward.fragments || 0) + ' ' + FRAG_ICON_HTML;
+                    break;
+                default:
+                    toastText += reward.label || 'Reward';
+                    break;
+            }
+            return toastText;
+        }
+
+        async function settleDailyRouletteWheel(reward) {
+            const wheel = document.getElementById('daily-roulette-wheel');
+            if (!wheel) return;
+            const idx = Math.max(0, DAILY_ROULETTE_PREVIEW.findIndex(r => r.id === reward.id));
+            const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
+            wheel.classList.remove('spinning');
+            wheel.style.transform = 'rotate(' + (1440 + (360 - (idx * slice + slice / 2))) + 'deg)';
+            await sleep(950);
+        }
+
+        async function claimDailyReward(dayNum) {
+            if (dailyRouletteSpinning) return;
+            if (dayNum < 1 || dayNum > 30) return;
+            dailyRouletteSpinning = true;
+            const spinBtn = document.getElementById('daily-roulette-spin');
+            const resultEl = document.getElementById('daily-roulette-result');
+            const wheel = document.getElementById('daily-roulette-wheel');
+            if (spinBtn) spinBtn.disabled = true;
+            if (resultEl) resultEl.textContent = 'Spinning...';
+            if (wheel) {
+                wheel.style.transform = '';
+                wheel.classList.add('spinning');
+            }
+
+            const result = await claimDailyOnServer(dayNum);
+            if (!result || !result.ok) {
+                if (wheel) wheel.classList.remove('spinning');
+                dailyRouletteSpinning = false;
+                if (spinBtn) spinBtn.disabled = !canClaimToday();
+                if (resultEl) resultEl.textContent = result?.error || 'Claim failed.';
+                showDailyClaimToast(result?.error || 'Claim failed. Please try again.');
+                return;
+            }
+
+            // globalTokens, globalFragments, and dailyClaimData already updated by claimDailyOnServer
+            const reward = resolveDailyRouletteReward(result.rouletteReward);
+            await settleDailyRouletteWheel(reward);
+            const toastText = formatDailyRouletteToast(dayNum, reward, result);
+
+            switch (result.rewardType) {
+                case 'chest':
                     saveProgression();
                     updateCurrencyUI();
                     renderDailyClaimGrid();
@@ -22049,9 +22250,9 @@
                     // Close daily overlay before opening chest
                     document.getElementById('daily-claim-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
+                    dailyRouletteSpinning = false;
                     return;
                 case 'chest_tokens':
-                    toastText += getChestTierById(reward.tier).name + ' Chest! +' + reward.tokens + ' 🪙';
                     saveProgression();
                     updateCurrencyUI();
                     renderDailyClaimGrid();
@@ -22060,10 +22261,8 @@
                     showDailyClaimToast(toastText);
                     document.getElementById('daily-claim-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
+                    dailyRouletteSpinning = false;
                     return;
-                case 'combo':
-                    toastText += '+' + reward.tokens + ' 🪙 +' + reward.fragments + ' ' + FRAG_ICON_HTML;
-                    break;
             }
 
             // Daily login bonus: +3 morale to selected character
@@ -22080,6 +22279,8 @@
             updateDailyClaimIndicator();
             updateXpBoostSlots();
             showDailyClaimToast(toastText);
+            if (resultEl) resultEl.innerHTML = 'Won: <strong>' + (reward.label || 'Reward') + '</strong>';
+            dailyRouletteSpinning = false;
         }
 
         async function openInstantChest(tierId, serverReward = null) {
@@ -22149,38 +22350,31 @@
             const grid = document.getElementById('daily-claim-grid');
             if (!grid) return;
             const currentDay = getDailyClaimDayNumber();
+            const canClaim = canClaimToday();
+            const statusText = currentDay === -1
+                ? 'Daily cycle complete.'
+                : (canClaim ? 'Day ' + currentDay + ' spin available.' : 'Already claimed today.');
+            grid.className = 'daily-claim-grid daily-roulette';
+            const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
+            const segments = DAILY_ROULETTE_PREVIEW.map((reward, idx) => (
+                '<div class="daily-roulette-segment" style="transform: rotate(' + (idx * slice) + 'deg);">' +
+                    '<div class="daily-roulette-segment-inner" style="transform: translateY(-78px) rotate(' + (-(idx * slice)) + 'deg);">' +
+                        '<div class="daily-roulette-icon">' + reward.icon + '</div>' +
+                        '<div>' + reward.label + '</div>' +
+                    '</div>' +
+                '</div>'
+            )).join('');
             let html = '';
-            for (let i = 0; i < 30; i++) {
-                const dayNum = i + 1;
-                const reward = DAILY_REWARDS[i];
-                let cellClass = 'daily-claim-cell';
-                let statusIcon = '';
-
-                if (dailyClaimData.claimedDays.includes(dayNum)) {
-                    cellClass += ' claimed';
-                } else if (currentDay === dayNum) {
-                    cellClass += ' available';
-                } else if (currentDay > dayNum || currentDay === -1) {
-                    cellClass += ' missed';
-                    statusIcon = '<span style="font-size:0.6em;">❌</span>';
-                } else {
-                    cellClass += ' locked';
-                }
-
-                html += '<div class="' + cellClass + '" data-day="' + dayNum + '">';
-                html += '<span class="day-number">' + dayNum + '</span>';
-                html += '<span class="day-reward">' + (statusIcon || reward.icon) + '</span>';
-                html += '</div>';
-            }
+            html += '<div class="daily-roulette-stage">';
+            html += '<div class="daily-roulette-pointer"></div>';
+            html += '<div class="daily-roulette-wheel" id="daily-roulette-wheel">' + segments + '<div class="daily-roulette-center">SPIN</div></div>';
+            html += '</div>';
+            html += '<button class="daily-roulette-spin btn-shine" id="daily-roulette-spin" ' + (canClaim ? '' : 'disabled') + '>' + (canClaim ? 'SPIN DAILY REWARD' : 'CLAIMED') + '</button>';
+            html += '<div class="daily-roulette-result" id="daily-roulette-result">' + statusText + '</div>';
             grid.innerHTML = html;
 
-            // Attach click to available cells
-            grid.querySelectorAll('.daily-claim-cell.available').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const day = parseInt(cell.dataset.day);
-                    claimDailyReward(day);
-                });
-            });
+            const spinBtn = document.getElementById('daily-roulette-spin');
+            if (spinBtn && canClaim) spinBtn.addEventListener('click', () => claimDailyReward(currentDay));
         }
 
         function updateDailyBattleCounter() {
