@@ -8473,6 +8473,83 @@
             flex: 1;
             padding-right: 5px;
         }
+        .inventory-pet-chest-widget {
+            display: none;
+            grid-template-columns: 92px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border: 2px solid rgba(74,44,18,0.34);
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,247,223,0.95), rgba(232,196,122,0.55));
+            font-family: 'Fredoka', sans-serif;
+            color: #2b1a0e;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+        }
+        .inventory-pet-chest-widget.active { display: grid; }
+        .pet-snack-icon {
+            width: 82px;
+            height: 60px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: rgba(74,44,18,0.1);
+            border: 1px solid rgba(74,44,18,0.22);
+            font-size: 30px;
+        }
+        .pet-snack-title {
+            font-size: 0.95em;
+            font-weight: 900;
+        }
+        .pet-snack-meta {
+            margin-top: 2px;
+            font-size: 0.72em;
+            font-weight: 800;
+            color: #6b4820;
+        }
+        .pet-snack-bar {
+            position: relative;
+            height: 15px;
+            margin-top: 7px;
+            overflow: hidden;
+            border: 2px solid #2b1a0e;
+            border-radius: 999px;
+            background: rgba(43,26,14,0.18);
+        }
+        .pet-snack-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f59e0b, #facc15);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+        .pet-snack-bar-text {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: #2b1a0e;
+            font-size: 0.58em;
+            font-weight: 900;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .pet-snack-action {
+            height: 32px;
+            padding: 0 12px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.66em;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .pet-snack-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .inventory-pet-slots {
             display: none;
             grid-template-columns: repeat(2, minmax(180px, 1fr));
@@ -8500,6 +8577,13 @@
         .inventory-pet-slot.empty {
             border-style: dashed;
             background: rgba(255,247,223,0.54);
+            grid-template-columns: 86px minmax(0, 1fr);
+            text-align: center;
+        }
+        .inventory-pet-slot.locked {
+            opacity: 0.86;
+            border-style: solid;
+            background: linear-gradient(180deg, rgba(245,230,190,0.84), rgba(190,170,130,0.56));
         }
         .inventory-pet-slot.drop-over {
             border-color: #15803d;
@@ -8510,6 +8594,11 @@
             height: 88px;
             object-fit: contain;
             filter: drop-shadow(0 4px 4px rgba(43,26,14,0.24));
+        }
+        .inventory-pet-slot canvas {
+            width: 58px;
+            height: 58px;
+            justify-self: center;
         }
         .inventory-pet-slot-title {
             font-size: 0.76em;
@@ -8530,6 +8619,24 @@
             font-size: 0.78em;
             font-weight: 800;
             line-height: 1.2;
+        }
+        .inventory-pet-slot-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .inventory-pet-slot-actions button {
+            min-height: 26px;
+            padding: 4px 9px;
+            border: 2px solid #2b1a0e;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #fff7df 0%, #e8c47a 100%);
+            color: #4a2c12;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.64em;
+            font-weight: 900;
+            cursor: pointer;
         }
         .pet-fusion-panel {
             display: none;
@@ -12707,6 +12814,31 @@
         .chat-btn:hover {
             transform: scale(1.1);
         }
+        .daily-chat-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .daily-chat-row .chat-btn {
+            position: relative;
+            top: auto;
+            right: auto;
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            border: 2px solid #2b1a0e;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #fff7df 0%, #e8c47a 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 3px 0 #2b1a0e;
+            flex: 0 0 auto;
+        }
+        .daily-chat-row .chat-btn img {
+            width: 24px;
+            height: 24px;
+        }
         .chat-btn.has-notification::after {
             content: '';
             position: absolute;
@@ -13261,8 +13393,9 @@
             right: 14px;
             top: 12px;
             position: absolute;
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+            justify-content: stretch;
             align-items: center;
             gap: 10px;
             padding: 0;
@@ -13277,6 +13410,8 @@
             display: flex;
             gap: 2px;
             align-items: center;
+            justify-self: center;
+            grid-column: 2;
             flex: 0 0 auto;
             background: linear-gradient(180deg, #fff8e6 0%, #f2e4c4 100%);
             border: 3px solid #2b1a0e;
@@ -13347,6 +13482,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            justify-self: end;
+            grid-column: 3;
             flex: 0 0 auto;
         }
 
@@ -17227,7 +17364,6 @@
         <!-- Fullscreen button (mobile, lobby) -->
         <div class="fullscreen-btn-lobby" id="fullscreen-btn-lobby" title="Fullscreen" onclick="toggleFullscreen()">⛶</div>
         <!-- Global Lobby Chat -->
-        <div class="chat-btn" id="chat-btn" title="Chat"><img src="Assets/UI/Chat-Icon.png" alt="Chat"></div>
         <div class="chat-panel hidden" id="chat-panel">
             <div class="chat-header">
                 <span>CHAT</span>
@@ -17246,7 +17382,7 @@
                 <button class="top-nav-btn" id="menu-shop-btn">SHOP</button>
                 <button class="top-nav-btn" id="menu-market-btn">MARKET</button>
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
-                <button class="top-nav-btn" id="menu-pets-btn">PETS</button>
+                <button class="top-nav-btn" id="menu-pets-btn">FUSION</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
                 <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
@@ -17445,7 +17581,10 @@
 
             <!-- Right Side - Daily, Chests, Battle buttons -->
             <div class="menu-buttons-bottom">
-                <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">DAILY REWARD</div>
+                <div class="daily-chat-row">
+                    <div class="chat-btn" id="chat-btn" title="Chat"><img src="Assets/UI/Chat-Icon.png" alt="Chat"></div>
+                    <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">DAILY REWARD</div>
+                </div>
                 <div class="victory-chest-container" id="victory-chest-container">
                     <div class="victory-chest-label">BATTLE CHESTS</div>
                     <div class="victory-chest-slots" id="victory-chest-slots"></div>
@@ -17531,6 +17670,10 @@
             <div class="inventory-consumables-grid" id="inventory-consumables-grid" style="display:none;">
                 <!-- Consumable cards populated by JS -->
             </div>
+            <!-- Pet Chest / Snacks (hidden by default) -->
+            <div class="inventory-pet-chest-widget" id="inventory-pet-chest-widget">
+                <!-- Pet snack progress populated by JS -->
+            </div>
             <!-- Equipped Pet Slots (hidden by default) -->
             <div class="inventory-pet-slots" id="inventory-pet-slots">
                 <!-- Equipped pet slots populated by JS -->
@@ -17562,7 +17705,6 @@
                     </div>
                     <div class="pet-fusion-actions">
                         <button type="button" id="pet-fusion-button" disabled>FUSE</button>
-                        <button type="button" id="pet-open-chest-button">OPEN PET CHEST (0)</button>
                     </div>
                 </div>
             </div>
@@ -19675,10 +19817,13 @@
             addPet(character.pet);
             const pets = Array.from(byId.values()).slice(0, 40);
             const requestedActiveIds = Array.isArray(character.activePetIds) ? character.activePetIds.filter(id => typeof id === 'string') : [];
-            const activePetIds = [...new Set([
+            const rawActivePetIds = [...new Set([
                 ...requestedActiveIds,
                 ...(character.activePetId ? [character.activePetId] : []),
             ])].filter(id => pets.some(p => p.id === id)).slice(0, 2);
+            character.petSlot2Unlocked = Boolean(character.petSlot2Unlocked || rawActivePetIds.length > 1);
+            character.petSnacks = Math.max(0, Math.floor(Number(character.petSnacks) || 0));
+            const activePetIds = rawActivePetIds.slice(0, character.petSlot2Unlocked ? 2 : 1);
             const activePets = activePetIds.map(id => pets.find(p => p.id === id)).filter(Boolean);
             const activePet = activePets[0] || null;
             character.pets = pets;
@@ -19696,6 +19841,7 @@
             characters.forEach(character => {
                 character.pets = normalizedPets.map(pet => ({ ...pet }));
                 if (normalizedChests !== null) character.petChests = normalizedChests;
+                character.petSnacks = Math.max(0, Math.floor(Number(character.petSnacks) || 0));
                 normalizeClientPetCollection(character);
             });
         }
@@ -20663,7 +20809,9 @@
         const CHEST_IMG_PATH = 'Assets/UI/Chests/';
         const FRAG_ICON_HTML = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
         // Cute drawn padlock — used in slot/card lock states
-        const LOCK_ICON_HTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" style="display:block;margin:auto;"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="#7a4a10" stroke-width="2.2" stroke-linecap="round"/><rect x="4.5" y="11" width="15" height="10" rx="2.6" fill="#fde68a" stroke="#7a4a10" stroke-width="2"/><circle cx="12" cy="15" r="1.5" fill="#7a4a10"/><path d="M12 16.4 L12 18.6" stroke="#7a4a10" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="13.7" r="0.7" fill="#fff5c4" opacity="0.85"/></svg>';
+        const LOCK_ICON_HTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="26" height="26" style="display:block;margin:auto;filter:drop-shadow(0 2px 1px rgba(43,26,14,0.28));"><path d="M10 14v-3.3C10 6.7 12.7 4 16 4s6 2.7 6 6.7V14" fill="none" stroke="#3b220f" stroke-width="3" stroke-linecap="round"/><rect x="6" y="13" width="20" height="15" rx="4" fill="#f4b43f" stroke="#3b220f" stroke-width="2.5"/><path d="M8.5 15.5c2.6-1.5 12.2-1.5 15 0" fill="none" stroke="#ffe8a3" stroke-width="2" stroke-linecap="round" opacity=".75"/><circle cx="16" cy="20" r="2.2" fill="#3b220f"/><path d="M16 21.8v3.5" stroke="#3b220f" stroke-width="2.2" stroke-linecap="round"/></svg>';
+        const PET_SNACKS_FOR_CHEST = 200;
+        const PET_SECOND_SLOT_UNLOCK_COST = 5000;
         const VICTORY_CHEST_TIERS = [
             { id: 'bronze',     name: 'COMMON',      img: CHEST_IMG_PATH + 'Common.png',    color: '#cd7f32', tokens: 2,        fragments: 0, xpMult: 0,    singleReward: true },
             { id: 'silver',     name: 'SILVER',      img: CHEST_IMG_PATH + 'Silver.png',    color: '#c0c0c0', tokens: 4,        fragments: 1, xpMult: 0,    singleReward: true },
@@ -24718,6 +24866,8 @@
                         lastMoraleTimestamp: character.lastMoraleTimestamp || null,
                     },
                     petChests: character.petChests || 0,
+                    petSnacks: character.petSnacks || 0,
+                    petSlot2Unlocked: !!character.petSlot2Unlocked,
                     stat_model: character.statModel || null,
                 }),
             }).then(r => {
@@ -24793,6 +24943,8 @@
                             local.activePetId            = sc.activePetId || local.pet?.id || null;
                             local.activePetIds           = Array.isArray(sc.activePetIds) ? sc.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : (local.activePetId ? [local.activePetId] : []);
                             local.petChests              = Math.max(0, Math.floor(Number(sc.petChests) || 0));
+                            local.petSnacks              = Math.max(0, Math.floor(Number(sc.petSnacks) || 0));
+                            local.petSlot2Unlocked       = Boolean(sc.petSlot2Unlocked || local.activePetIds?.[1]);
                             normalizeClientPetCollection(local);
                             // Restore stat model history from server (source of truth)
                             if (sc.statModel) local.statModel = sc.statModel;
@@ -27390,6 +27542,10 @@
             const pet = (character.pets || []).find(p => p.id === petId);
             if (!pet) return;
             const safeSlot = Math.max(0, Math.min(1, Math.floor(Number(slot) || 0)));
+            if (safeSlot === 1 && !character.petSlot2Unlocked) {
+                showNotice('Unlock the second companion slot first.');
+                return;
+            }
             const applyLocalActivePet = () => {
                 const nextIds = (character.activePetIds || []).filter(id => id !== pet.id);
                 nextIds[safeSlot] = pet.id;
@@ -27420,8 +27576,69 @@
             const currentSlot = petId ? activePetIds.indexOf(petId) : -1;
             if (currentSlot >= 0) return currentSlot;
             if (!activePetIds[0]) return 0;
-            if (!activePetIds[1]) return 1;
-            return 0;
+            if (character.petSlot2Unlocked && !activePetIds[1]) return 1;
+            return -1;
+        }
+
+        async function unsetActivePet(slot = 0) {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            normalizeClientPetCollection(character);
+            const safeSlot = Math.max(0, Math.min(1, Math.floor(Number(slot) || 0)));
+            const applyLocalUnset = () => {
+                character.activePetIds = (character.activePetIds || []).filter((_, index) => index !== safeSlot).slice(0, 2);
+                character.activePetId = character.activePetIds[0] || null;
+                character.pet = (character.pets || []).find(p => p.id === character.activePetId) || null;
+                persistPetChange(character);
+            };
+            if (playerSession && BACKEND_URL) {
+                const data = await petActionOnServer('unset_active', { slot: safeSlot });
+                if (data.ok) {
+                    character.activePetIds = Array.isArray(data.activePetIds) ? data.activePetIds.filter(id => typeof id === 'string').slice(0, 2) : [];
+                    character.activePetId = data.activePetId || character.activePetIds[0] || null;
+                    character.pet = (character.pets || []).find(p => p.id === character.activePetId) || null;
+                    persistPetChange(character);
+                    return;
+                }
+                if (data.error !== 'Database error' && data.error !== 'Server error') {
+                    showNotice(data.error || 'Could not remove companion.');
+                    return;
+                }
+            }
+            applyLocalUnset();
+        }
+
+        function unlockSecondPetSlot() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            normalizeClientPetCollection(character);
+            if (character.petSlot2Unlocked) return;
+            if (globalTokens < PET_SECOND_SLOT_UNLOCK_COST) {
+                showNotice('Not enough tokens for the second companion slot.');
+                return;
+            }
+            globalTokens -= PET_SECOND_SLOT_UNLOCK_COST;
+            character.petSlot2Unlocked = true;
+            syncGlobalsToChar(character);
+            persistPetChange(character);
+            updateCurrencyUI();
+            renderInventoryPets();
+            showNotice('Second companion slot unlocked!');
+        }
+
+        function convertPetSnacksToChest() {
+            const character = getSelectedCharacter();
+            if (!character) return;
+            normalizeClientPetCollection(character);
+            if (character.petSnacks < PET_SNACKS_FOR_CHEST) {
+                showNotice('You need 200 snacks for a Pet Chest.');
+                return;
+            }
+            character.petSnacks -= PET_SNACKS_FOR_CHEST;
+            character.petChests = Math.max(0, Math.floor(Number(character.petChests) || 0)) + 1;
+            persistPetChange(character);
+            renderInventoryPets();
+            showNotice('Pet Chest crafted!');
         }
 
         async function healPet(petId = null) {
@@ -27542,6 +27759,10 @@
 
         function drawPetFusionPlus() {
             const canvas = document.getElementById('pet-fusion-plus-canvas');
+            drawPlusCanvas(canvas);
+        }
+
+        function drawPlusCanvas(canvas) {
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -27595,12 +27816,6 @@
             }
             const fuseBtn = document.getElementById('pet-fusion-button');
             if (fuseBtn) fuseBtn.disabled = !result;
-            const chestBtn = document.getElementById('pet-open-chest-button');
-            if (chestBtn) {
-                const count = Math.max(0, Math.floor(Number(character?.petChests) || 0));
-                chestBtn.textContent = `OPEN PET CHEST (${count})`;
-                chestBtn.disabled = count <= 0;
-            }
             const sideGrid = document.getElementById('pet-fusion-inventory-grid');
             if (sideGrid) {
                 sideGrid.innerHTML = '';
@@ -27625,6 +27840,8 @@
         }
 
         function closePetFusionPanel() {
+            petFusionState.slots = [null, null];
+            renderPetFusionPanel();
             document.getElementById('pet-fusion-panel')?.classList.remove('active');
         }
 
@@ -27714,23 +27931,54 @@
         function renderInventoryPets() {
             const grid = document.getElementById('inventory-pets-grid');
             const slots = document.getElementById('inventory-pet-slots');
+            const chestWidget = document.getElementById('inventory-pet-chest-widget');
             if (!grid) return;
             const character = getSelectedCharacter();
             grid.innerHTML = '';
             if (slots) slots.innerHTML = '';
+            if (chestWidget) chestWidget.innerHTML = '';
             if (!character) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#7a5a35;font-family:\'Fredoka\',sans-serif;font-weight:800;padding:20px;">Select a fighter first.</div>';
                 return;
             }
 
             const { pets, activePetIds } = normalizeClientPetCollection(character);
+            if (chestWidget) {
+                const snacks = Math.max(0, Math.floor(Number(character.petSnacks) || 0));
+                const chests = Math.max(0, Math.floor(Number(character.petChests) || 0));
+                const pct = Math.max(0, Math.min(100, (snacks / PET_SNACKS_FOR_CHEST) * 100));
+                chestWidget.innerHTML = `
+                    <div class="pet-snack-icon">🍖</div>
+                    <div>
+                        <div class="pet-snack-title">Pet Chest</div>
+                        <div class="pet-snack-meta">${chests} chest${chests === 1 ? '' : 's'} owned · Snacks fill this bar from future chest drops.</div>
+                        <div class="pet-snack-bar">
+                            <div class="pet-snack-bar-fill" style="width:${pct}%"></div>
+                            <div class="pet-snack-bar-text">${snacks} / ${PET_SNACKS_FOR_CHEST} snacks</div>
+                        </div>
+                    </div>
+                    <button type="button" class="pet-snack-action" data-pet-action="craft_chest" ${snacks < PET_SNACKS_FOR_CHEST ? 'disabled' : ''}>Craft chest</button>
+                `;
+            }
             if (slots) {
                 [0, 1].forEach(slotIndex => {
                     const pet = pets.find(p => p.id === activePetIds[slotIndex]);
                     const slot = document.createElement('div');
-                    slot.className = 'inventory-pet-slot' + (pet ? '' : ' empty');
+                    const locked = slotIndex === 1 && !character.petSlot2Unlocked;
+                    slot.className = 'inventory-pet-slot' + (pet ? '' : ' empty') + (locked ? ' locked' : '');
                     slot.dataset.petSlot = String(slotIndex);
-                    if (pet) {
+                    if (locked) {
+                        slot.innerHTML = `
+                            <div>${LOCK_ICON_HTML}</div>
+                            <div>
+                                <div class="inventory-pet-slot-title">Companion</div>
+                                <div class="inventory-pet-slot-name">Second slot locked</div>
+                                <div class="inventory-pet-slot-meta">Unlock with ${PET_SECOND_SLOT_UNLOCK_COST.toLocaleString()} tokens.</div>
+                                <div class="inventory-pet-slot-actions">
+                                    <button type="button" data-pet-slot-action="unlock_slot_2">Unlock</button>
+                                </div>
+                            </div>`;
+                    } else if (pet) {
                         const def = PET_DEFS[pet.species] || PET_DEFS.dog;
                         const dmg = getPetDamageRange(pet);
                         slot.innerHTML = `
@@ -27739,10 +27987,13 @@
                                 <div class="inventory-pet-slot-title">Companion</div>
                                 <div class="inventory-pet-slot-name">${escapeHTML(pet.name)}</div>
                                 <div class="inventory-pet-slot-meta">${petRarityChip(pet.rarity)} LV ${pet.level} · HP ${pet.hp}/${pet.maxHp} · DMG ${dmg.min}-${dmg.max}</div>
+                                <div class="inventory-pet-slot-actions">
+                                    <button type="button" data-pet-slot-action="remove" data-pet-slot="${slotIndex}">Remove</button>
+                                </div>
                             </div>`;
                     } else {
                         slot.innerHTML = `
-                            <div></div>
+                            <canvas class="inventory-pet-slot-plus" width="56" height="56"></canvas>
                             <div>
                                 <div class="inventory-pet-slot-title">Companion</div>
                                 <div class="inventory-pet-slot-name">Empty slot</div>
@@ -27750,6 +28001,7 @@
                             </div>`;
                     }
                     slots.appendChild(slot);
+                    drawPlusCanvas(slot.querySelector('canvas'));
                 });
             }
 
@@ -27761,6 +28013,8 @@
                 const dmg = getPetDamageRange(pet);
                 const activeSlot = activePetIds.indexOf(pet.id);
                 const isActive = activeSlot >= 0;
+                const nextSlot = getNextCompanionSlot(pet.id);
+                const canSetCompanion = !isActive && nextSlot >= 0;
                 const companionBadge = isActive
                     ? '<span class="inventory-pet-badge">Companion</span>'
                     : '<span class="inventory-pet-badge empty">Not equipped</span>';
@@ -27785,7 +28039,7 @@
                         </div>
                         <div class="inventory-pet-passive">${escapeHTML(getPetPassiveText(pet))}</div>
                         <div class="inventory-pet-actions">
-                            ${isActive ? '<button type="button" disabled>Companion</button>' : `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">Set companion</button>`}
+                            ${isActive ? '<button type="button" disabled>Companion</button>' : `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}" ${canSetCompanion ? '' : 'disabled'}>Set companion</button>`}
                             <button type="button" class="secondary" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">Heal</button>
                             <button type="button" class="secondary" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">Train</button>
                         </div>
@@ -40583,7 +40837,7 @@
             const consumablesLocked = character.level < CONSUMABLE_MIN_LEVEL;
             if (consumablesLocked) {
                 equippedContainer.innerHTML = '';
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-family:\'Press Start 2P\',monospace;font-size:0.5em;padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;">' + LOCK_ICON_HTML + '<span>Consumables unlock at<br>Level ' + CONSUMABLE_MIN_LEVEL + '</span></div>';
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6b4820;font-family:\'Fredoka\',sans-serif;font-weight:900;font-size:0.82em;padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;">' + LOCK_ICON_HTML + '<span>Consumables unlock at<br>Level ' + CONSUMABLE_MIN_LEVEL + '</span></div>';
                 return;
             }
 
@@ -41640,9 +41894,11 @@
             const eqSec   = document.querySelector('.inv-equipment-section');
             const consSec = document.querySelector('.inv-consumable-section');
             const petSlots = document.getElementById('inventory-pet-slots');
+            const petChest = document.getElementById('inventory-pet-chest-widget');
             if (eqSec)   eqSec.style.display   = filter === 'weapons'     ? '' : 'none';
             if (consSec) consSec.style.display = filter === 'consumables' ? '' : 'none';
             if (petSlots) petSlots.classList.toggle('active', filter === 'pets');
+            if (petChest) petChest.classList.toggle('active', filter === 'pets');
         }
 
         // Inventory button handler
@@ -41657,6 +41913,7 @@
             document.getElementById('inventory-consumables-grid').style.display = 'none';
             document.getElementById('inventory-pets-grid').style.display = 'none';
             document.getElementById('inventory-pet-slots')?.classList.remove('active');
+            document.getElementById('inventory-pet-chest-widget')?.classList.remove('active');
             _syncInvSectionsToTab('weapons');
             document.getElementById('inventory-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('inventory-mode');
@@ -41810,16 +42067,42 @@
                 return;
             }
             if (action === 'active') {
-                await setActivePet(btn.dataset.petId, btn.dataset.petSlot ?? getNextCompanionSlot(btn.dataset.petId));
+                const slot = btn.dataset.petSlot ?? getNextCompanionSlot(btn.dataset.petId);
+                if (Number(slot) < 0) {
+                    showNotice('Remove a companion before setting another pet.');
+                    return;
+                }
+                await setActivePet(btn.dataset.petId, slot);
                 renderInventoryPets();
                 return;
             }
             await petInventoryAction(btn.dataset.petId, action);
         });
 
+        document.getElementById('inventory-pet-chest-widget')?.addEventListener('click', e => {
+            const btn = e.target.closest('button[data-pet-action]');
+            if (!btn) return;
+            if (btn.dataset.petAction === 'craft_chest') convertPetSnacksToChest();
+        });
+
+        document.getElementById('inventory-pet-slots')?.addEventListener('click', async e => {
+            const btn = e.target.closest('button[data-pet-slot-action]');
+            if (!btn) return;
+            const action = btn.dataset.petSlotAction;
+            if (action === 'remove') {
+                await unsetActivePet(btn.dataset.petSlot);
+                renderInventoryPets();
+                return;
+            }
+            if (action === 'unlock_slot_2') {
+                unlockSecondPetSlot();
+            }
+        });
+
         document.getElementById('inventory-pet-slots')?.addEventListener('dragover', e => {
             const slot = e.target.closest('.inventory-pet-slot[data-pet-slot]');
             if (!slot) return;
+            if (slot.classList.contains('locked')) return;
             e.preventDefault();
             slot.classList.add('drop-over');
         });
@@ -41833,8 +42116,19 @@
             if (!slot) return;
             e.preventDefault();
             slot.classList.remove('drop-over');
+            if (slot.classList.contains('locked')) {
+                showNotice('Unlock the second companion slot first.');
+                return;
+            }
             const petId = e.dataTransfer.getData('text/plain');
             if (!petId) return;
+            const character = getSelectedCharacter();
+            const activePetIds = normalizeClientPetCollection(character).activePetIds;
+            const currentPetId = activePetIds[Number(slot.dataset.petSlot) || 0];
+            if (currentPetId && currentPetId !== petId) {
+                showNotice('Remove that companion before assigning another pet.');
+                return;
+            }
             await setActivePet(petId, slot.dataset.petSlot);
             renderInventoryPets();
         });
@@ -41888,7 +42182,6 @@
         });
 
         document.getElementById('pet-fusion-button')?.addEventListener('click', fuseSelectedPets);
-        document.getElementById('pet-open-chest-button')?.addEventListener('click', openPetChest);
 
         // PvP button handler (coming soon)
         document.getElementById('menu-pvp-btn').addEventListener('click', () => {
