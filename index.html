@@ -8473,6 +8473,64 @@
             flex: 1;
             padding-right: 5px;
         }
+        .inventory-pet-slots {
+            display: none;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+            flex: 0 0 auto;
+        }
+        .inventory-pet-slots.active {
+            display: grid;
+        }
+        .inventory-pet-slot {
+            min-height: 116px;
+            border: 3px solid rgba(74,44,18,0.62);
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,247,223,0.96), rgba(232,196,122,0.66));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.66), 0 4px 10px rgba(74,44,18,0.16);
+            display: grid;
+            grid-template-columns: 94px minmax(0, 1fr);
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            font-family: 'Fredoka', sans-serif;
+            color: #2b1a0e;
+        }
+        .inventory-pet-slot.empty {
+            border-style: dashed;
+            background: rgba(255,247,223,0.54);
+        }
+        .inventory-pet-slot.drop-over {
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.18), inset 0 1px 0 rgba(255,255,255,0.66);
+        }
+        .inventory-pet-slot img {
+            width: 88px;
+            height: 88px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(43,26,14,0.24));
+        }
+        .inventory-pet-slot-title {
+            font-size: 0.76em;
+            font-weight: 900;
+            color: #7a4b1b;
+            text-transform: uppercase;
+        }
+        .inventory-pet-slot-name {
+            font-size: 1em;
+            font-weight: 900;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .inventory-pet-slot-meta {
+            margin-top: 3px;
+            color: #6b4820;
+            font-size: 0.78em;
+            font-weight: 800;
+            line-height: 1.2;
+        }
         .pet-fusion-panel {
             display: none;
             position: absolute;
@@ -17472,6 +17530,10 @@
             <!-- Consumables Grid (hidden by default) -->
             <div class="inventory-consumables-grid" id="inventory-consumables-grid" style="display:none;">
                 <!-- Consumable cards populated by JS -->
+            </div>
+            <!-- Equipped Pet Slots (hidden by default) -->
+            <div class="inventory-pet-slots" id="inventory-pet-slots">
+                <!-- Equipped pet slots populated by JS -->
             </div>
             <!-- Pets Grid (hidden by default) -->
             <div class="inventory-pets-grid" id="inventory-pets-grid" style="display:none;">
@@ -27351,6 +27413,17 @@
             applyLocalActivePet();
         }
 
+        function getNextCompanionSlot(petId = null) {
+            const character = getSelectedCharacter();
+            if (!character) return 0;
+            const { activePetIds } = normalizeClientPetCollection(character);
+            const currentSlot = petId ? activePetIds.indexOf(petId) : -1;
+            if (currentSlot >= 0) return currentSlot;
+            if (!activePetIds[0]) return 0;
+            if (!activePetIds[1]) return 1;
+            return 0;
+        }
+
         async function healPet(petId = null) {
             const character = getSelectedCharacter();
             normalizeClientPetCollection(character);
@@ -27640,15 +27713,46 @@
 
         function renderInventoryPets() {
             const grid = document.getElementById('inventory-pets-grid');
+            const slots = document.getElementById('inventory-pet-slots');
             if (!grid) return;
             const character = getSelectedCharacter();
             grid.innerHTML = '';
+            if (slots) slots.innerHTML = '';
             if (!character) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#7a5a35;font-family:\'Fredoka\',sans-serif;font-weight:800;padding:20px;">Select a fighter first.</div>';
                 return;
             }
 
             const { pets, activePetIds } = normalizeClientPetCollection(character);
+            if (slots) {
+                [0, 1].forEach(slotIndex => {
+                    const pet = pets.find(p => p.id === activePetIds[slotIndex]);
+                    const slot = document.createElement('div');
+                    slot.className = 'inventory-pet-slot' + (pet ? '' : ' empty');
+                    slot.dataset.petSlot = String(slotIndex);
+                    if (pet) {
+                        const def = PET_DEFS[pet.species] || PET_DEFS.dog;
+                        const dmg = getPetDamageRange(pet);
+                        slot.innerHTML = `
+                            <img src="${def.asset}" alt="${escapeHTML(def.name)}">
+                            <div>
+                                <div class="inventory-pet-slot-title">Companion</div>
+                                <div class="inventory-pet-slot-name">${escapeHTML(pet.name)}</div>
+                                <div class="inventory-pet-slot-meta">${petRarityChip(pet.rarity)} LV ${pet.level} · HP ${pet.hp}/${pet.maxHp} · DMG ${dmg.min}-${dmg.max}</div>
+                            </div>`;
+                    } else {
+                        slot.innerHTML = `
+                            <div></div>
+                            <div>
+                                <div class="inventory-pet-slot-title">Companion</div>
+                                <div class="inventory-pet-slot-name">Empty slot</div>
+                                <div class="inventory-pet-slot-meta">Drag a pet here or use Set companion.</div>
+                            </div>`;
+                    }
+                    slots.appendChild(slot);
+                });
+            }
+
             pets.forEach(pet => {
                 const def = PET_DEFS[pet.species];
                 const cap = PET_RARITIES[pet.rarity]?.cap || 20;
@@ -27657,9 +27761,8 @@
                 const dmg = getPetDamageRange(pet);
                 const activeSlot = activePetIds.indexOf(pet.id);
                 const isActive = activeSlot >= 0;
-                const companionLabel = activeSlot >= 0 ? `Equipped ${activeSlot + 1}` : '';
-                const companionBadge = companionLabel
-                    ? `<span class="inventory-pet-badge">${companionLabel}</span>`
+                const companionBadge = isActive
+                    ? '<span class="inventory-pet-badge">Companion</span>'
                     : '<span class="inventory-pet-badge empty">Not equipped</span>';
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
@@ -27682,8 +27785,7 @@
                         </div>
                         <div class="inventory-pet-passive">${escapeHTML(getPetPassiveText(pet))}</div>
                         <div class="inventory-pet-actions">
-                            ${activeSlot === 0 ? '<button type="button" disabled>Equipped 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">Equip 1</button>`}
-                            ${activeSlot === 1 ? '<button type="button" disabled>Equipped 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">Equip 2</button>`}
+                            ${isActive ? '<button type="button" disabled>Companion</button>' : `<button type="button" data-pet-action="active" data-pet-id="${escapeHTML(pet.id)}">Set companion</button>`}
                             <button type="button" class="secondary" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">Heal</button>
                             <button type="button" class="secondary" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">Train</button>
                         </div>
@@ -41537,8 +41639,10 @@
         function _syncInvSectionsToTab(filter) {
             const eqSec   = document.querySelector('.inv-equipment-section');
             const consSec = document.querySelector('.inv-consumable-section');
+            const petSlots = document.getElementById('inventory-pet-slots');
             if (eqSec)   eqSec.style.display   = filter === 'weapons'     ? '' : 'none';
             if (consSec) consSec.style.display = filter === 'consumables' ? '' : 'none';
+            if (petSlots) petSlots.classList.toggle('active', filter === 'pets');
         }
 
         // Inventory button handler
@@ -41552,6 +41656,7 @@
             document.getElementById('inventory-weapons-grid').style.display = '';
             document.getElementById('inventory-consumables-grid').style.display = 'none';
             document.getElementById('inventory-pets-grid').style.display = 'none';
+            document.getElementById('inventory-pet-slots')?.classList.remove('active');
             _syncInvSectionsToTab('weapons');
             document.getElementById('inventory-panel').classList.add('active');
             document.getElementById('main-menu').classList.add('inventory-mode');
@@ -41705,11 +41810,33 @@
                 return;
             }
             if (action === 'active') {
-                await setActivePet(btn.dataset.petId, btn.dataset.petSlot);
+                await setActivePet(btn.dataset.petId, btn.dataset.petSlot ?? getNextCompanionSlot(btn.dataset.petId));
                 renderInventoryPets();
                 return;
             }
             await petInventoryAction(btn.dataset.petId, action);
+        });
+
+        document.getElementById('inventory-pet-slots')?.addEventListener('dragover', e => {
+            const slot = e.target.closest('.inventory-pet-slot[data-pet-slot]');
+            if (!slot) return;
+            e.preventDefault();
+            slot.classList.add('drop-over');
+        });
+
+        document.getElementById('inventory-pet-slots')?.addEventListener('dragleave', e => {
+            e.target.closest('.inventory-pet-slot')?.classList.remove('drop-over');
+        });
+
+        document.getElementById('inventory-pet-slots')?.addEventListener('drop', async e => {
+            const slot = e.target.closest('.inventory-pet-slot[data-pet-slot]');
+            if (!slot) return;
+            e.preventDefault();
+            slot.classList.remove('drop-over');
+            const petId = e.dataTransfer.getData('text/plain');
+            if (!petId) return;
+            await setActivePet(petId, slot.dataset.petSlot);
+            renderInventoryPets();
         });
 
         document.getElementById('inventory-pets-grid').addEventListener('dragstart', e => {
