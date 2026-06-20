@@ -32207,13 +32207,13 @@
                 const distance = Math.max(1, Number(movementMeta.distancePx));
                 const duration = Math.max(80, Number(movementMeta.durationMs));
                 const strideCount = Math.max(1, Math.min(8, Math.round(distance / 115)));
-                const footMs = Math.max(105, Math.min(360, Math.round(duration / strideCount)));
+                const footMs = Math.max(150, Math.min(360, Math.round(duration / strideCount)));
                 const frameMs = Math.max(45, Math.min(170, Math.round(footMs * 0.52)));
                 return { frameMs, footMs };
             }
             if (speed != null) {
                 const frameMs = Math.max(30, Math.min(250, Math.round(11750 / speed)));
-                const footMs = Math.max(70, Math.min(340, Math.round(frameMs * 1.55)));
+                const footMs = Math.max(50, Math.round(frameMs * 0.75));
                 return { frameMs, footMs };
             }
             return { frameMs: 140, footMs: 230 };
