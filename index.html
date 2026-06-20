@@ -8793,6 +8793,11 @@
             font-weight: 900;
             cursor: pointer;
         }
+        .inventory-pet-actions button.secondary {
+            border-color: rgba(74,44,18,0.58);
+            background: linear-gradient(180deg, #fff7df 0%, #e8c47a 100%);
+            color: #4a2c12;
+        }
         .inventory-pet-actions select {
             background: #fff7df;
             max-width: 130px;
@@ -27336,7 +27341,7 @@
                 if (!data.ok) {
                     if (data.error === 'Database error' || data.error === 'Server error') {
                         applyLocalActivePet();
-                        showNotice('Companion updated locally. Backend pet data needs review.');
+                        showNotice('Pet equipped locally. Backend pet data needs review.');
                     } else {
                         showNotice(data.error || 'Could not select pet.');
                     }
@@ -27440,7 +27445,7 @@
                 <img src="${def.asset}" alt="${escapeHTML(def.name)}">
                 <div>
                     <div class="inventory-pet-name">${escapeHTML(pet.name)}</div>
-                    <div class="inventory-pet-role">LV ${pet.level} · DMG ${dmg.min}-${dmg.max}${isActive ? ' · Companion' : ''}</div>
+                    <div class="inventory-pet-role">LV ${pet.level} · DMG ${dmg.min}-${dmg.max}${isActive ? ' · Equipped' : ''}</div>
                     ${petRarityChip(pet.rarity)}
                 </div>
             `;
@@ -27652,10 +27657,10 @@
                 const dmg = getPetDamageRange(pet);
                 const activeSlot = activePetIds.indexOf(pet.id);
                 const isActive = activeSlot >= 0;
-                const companionLabel = activeSlot >= 0 ? `Companion ${activeSlot + 1}` : '';
+                const companionLabel = activeSlot >= 0 ? `Equipped ${activeSlot + 1}` : '';
                 const companionBadge = companionLabel
                     ? `<span class="inventory-pet-badge">${companionLabel}</span>`
-                    : '<span class="inventory-pet-badge empty">Reserve</span>';
+                    : '<span class="inventory-pet-badge empty">Not equipped</span>';
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
                 card.draggable = true;
@@ -27677,8 +27682,10 @@
                         </div>
                         <div class="inventory-pet-passive">${escapeHTML(getPetPassiveText(pet))}</div>
                         <div class="inventory-pet-actions">
-                            ${activeSlot === 0 ? '<button type="button" disabled>IN SLOT 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">SLOT 1</button>`}
-                            ${activeSlot === 1 ? '<button type="button" disabled>IN SLOT 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">SLOT 2</button>`}
+                            ${activeSlot === 0 ? '<button type="button" disabled>Equipped 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">Equip 1</button>`}
+                            ${activeSlot === 1 ? '<button type="button" disabled>Equipped 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">Equip 2</button>`}
+                            <button type="button" class="secondary" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">Heal</button>
+                            <button type="button" class="secondary" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">Train</button>
                         </div>
                     </div>
                     `;
