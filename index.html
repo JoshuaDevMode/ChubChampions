@@ -17107,23 +17107,46 @@
             color: #7a2f12 !important;
         }
         .main-menu .lobby-currency-bar {
-            grid-template-columns: minmax(0, 1.05fr) auto minmax(0, 1fr) !important;
-            gap: 16px !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            gap: 18px !important;
+            left: 18px !important;
+            right: 18px !important;
+            width: auto !important;
+            overflow: visible !important;
         }
         .main-menu .top-nav-group {
-            grid-column: 1 !important;
-            justify-self: center !important;
+            grid-column: auto !important;
+            justify-self: auto !important;
+            flex: 0 1 auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            gap: 0 !important;
+            padding: 5px 6px !important;
+            overflow: visible !important;
         }
         .main-menu .lobby-topright-cluster {
             display: contents !important;
         }
         .main-menu .top-currency-group {
-            grid-column: 2 !important;
-            justify-self: center !important;
+            grid-column: auto !important;
+            justify-self: auto !important;
+            flex: 0 0 auto !important;
         }
         .main-menu .profile-capsule {
-            grid-column: 3 !important;
-            justify-self: center !important;
+            grid-column: auto !important;
+            justify-self: auto !important;
+            flex: 0 0 auto !important;
+        }
+        .main-menu .top-nav-btn {
+            padding: 9px 12px !important;
+            letter-spacing: 0.04em !important;
+            gap: 6px !important;
+        }
+        .main-menu .top-nav-btn::before {
+            width: 20px !important;
+            height: 20px !important;
         }
         .daily-chat-row {
             display: grid !important;
@@ -17136,8 +17159,8 @@
             grid-column: 2 !important;
         }
         .daily-chat-row .chat-btn {
-            grid-column: 3 !important;
-            justify-self: start !important;
+            grid-column: 1 !important;
+            justify-self: end !important;
         }
         .chat-btn.has-reply-notification::after {
             content: '' !important;
