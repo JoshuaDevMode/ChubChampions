@@ -12926,11 +12926,93 @@
         .chat-message .msg-author:hover {
             color: #fff2bd;
         }
+        .chat-reply-ref {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 4px 6px;
+            border-left: 3px solid #f8d48a;
+            border-radius: 4px;
+            background: rgba(255,226,164,0.12);
+            color: rgba(255,255,255,0.78);
+            font-size: 0.72em;
+            line-height: 1.2;
+        }
+        .chat-reply-ref span {
+            color: #f8d48a;
+            font-weight: 800;
+        }
+        .chat-message-body {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .chat-message-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-reply-btn {
+            width: 22px;
+            height: 22px;
+            border: 1px solid rgba(255,226,164,0.28);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.18);
+            color: #f8d48a;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .chat-reply-btn:hover {
+            background: rgba(248,212,138,0.18);
+            color: #fff2bd;
+        }
+        .chat-role-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 5px;
+            padding: 1px 5px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #fde68a, #f59e0b);
+            color: #2b1a0e;
+            font-size: 0.7em;
+            font-weight: 900;
+            text-decoration: none;
+        }
         .chat-empty {
             color: rgba(255,255,255,0.55);
             font-size: 0.7em;
             text-align: center;
             padding: 18px 8px;
+        }
+        .chat-reply-preview {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-top: 1px solid rgba(255,226,164,0.22);
+            background: rgba(248,212,138,0.12);
+            color: rgba(255,255,255,0.82);
+            font-size: 0.72em;
+        }
+        .chat-reply-preview.active {
+            display: flex;
+        }
+        .chat-reply-preview-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .chat-reply-cancel {
+            border: 0;
+            background: transparent;
+            color: #f8d48a;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
         }
         .chat-input-row {
             display: flex;
@@ -16939,6 +17021,26 @@
             color: var(--ui-warm-subtext) !important;
             text-shadow: none !important;
         }
+        .chat-message .msg-author,
+        .chat-reply-ref span {
+            color: #7a4b1b !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.45) !important;
+        }
+        .chat-reply-ref,
+        .chat-reply-preview {
+            background: rgba(244,193,93,0.18) !important;
+            border-color: rgba(184,116,26,0.55) !important;
+            color: var(--ui-warm-subtext) !important;
+        }
+        .chat-reply-btn {
+            background: rgba(255,246,220,0.54) !important;
+            border-color: rgba(74,44,18,0.34) !important;
+            color: #7a4b1b !important;
+        }
+        .chat-role-badge {
+            color: #2b1a0e !important;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55) !important;
+        }
         .market-control,
         .vault-form-input,
         .chat-input {
@@ -17370,6 +17472,10 @@
                 <span class="chat-close" id="chat-close">&times;</span>
             </div>
             <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-reply-preview" id="chat-reply-preview">
+                <div class="chat-reply-preview-text" id="chat-reply-preview-text"></div>
+                <button class="chat-reply-cancel" id="chat-reply-cancel" type="button">&times;</button>
+            </div>
             <div class="chat-input-row">
                 <input type="text" class="chat-input" id="chat-input" placeholder="Global message..." maxlength="20">
                 <button class="chat-send" id="chat-send">&#10148;</button>
@@ -37474,10 +37580,39 @@
         // Global Lobby Chat
         let chatPollTimer = null;
         let chatLastMessageId = null;
+        let chatReplyTarget = null;
+        let chatRenderedMessages = [];
+
+        function chatRoleBadge(role) {
+            if (!['admin', 'mod', 'official'].includes(String(role || '').toLowerCase())) return '';
+            const label = String(role).toUpperCase();
+            return `<span class="chat-role-badge">${escapeHTML(label)}</span>`;
+        }
+
+        function setChatReplyTarget(message) {
+            chatReplyTarget = message ? {
+                id: message.id,
+                playerId: message.playerId,
+                displayName: message.displayName || 'Player',
+                message: message.message || '',
+            } : null;
+            const preview = document.getElementById('chat-reply-preview');
+            const text = document.getElementById('chat-reply-preview-text');
+            if (!preview || !text) return;
+            if (!chatReplyTarget) {
+                preview.classList.remove('active');
+                text.textContent = '';
+                return;
+            }
+            text.textContent = `↪ Replying to ${chatReplyTarget.displayName}: ${chatReplyTarget.message}`;
+            preview.classList.add('active');
+            document.getElementById('chat-input')?.focus();
+        }
 
         function renderGlobalChat(messages = []) {
             const messagesEl = document.getElementById('chat-messages');
             if (!messagesEl) return;
+            chatRenderedMessages = Array.isArray(messages) ? messages : [];
             if (!messages.length) {
                 messagesEl.innerHTML = '<div class="chat-empty">No messages yet.</div>';
                 chatLastMessageId = null;
@@ -37487,9 +37622,16 @@
             chatLastMessageId = messages[messages.length - 1]?.id ?? chatLastMessageId;
             messagesEl.innerHTML = messages.map(msg => {
                 const mine = playerSession && msg.playerId === playerSession.playerId;
+                const reply = msg.replyTo
+                    ? `<div class="chat-reply-ref">↪ <div><span>${escapeHTML(msg.replyTo.displayName || 'Player')}</span>: ${escapeHTML(msg.replyTo.message || '')}</div></div>`
+                    : '';
                 return `<div class="chat-message ${mine ? 'player' : 'cpu'}">
-                    <div class="msg-author" data-player-id="${escapeHTML(msg.playerId)}">${escapeHTML(mine ? 'You' : msg.displayName)}</div>
-                    ${escapeHTML(msg.message)}
+                    ${reply}
+                    <div class="msg-author" data-player-id="${escapeHTML(msg.playerId)}">${escapeHTML(mine ? 'You' : msg.displayName)}${chatRoleBadge(msg.role)}</div>
+                    <div class="chat-message-body">
+                        <div class="chat-message-text">${escapeHTML(msg.message)}</div>
+                        <button class="chat-reply-btn" type="button" data-chat-reply-id="${escapeHTML(msg.id)}" title="Reply">↩</button>
+                    </div>
                 </div>`;
             }).join('');
             messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -37540,6 +37682,7 @@
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         message: text,
+                        replyToId: chatReplyTarget?.id || null,
                     }),
                 }, 10000);
                 const data = await resp.json().catch(() => ({}));
@@ -37549,6 +37692,7 @@
                     return;
                 }
                 renderGlobalChat(data.messages || []);
+                setChatReplyTarget(null);
             } catch (e) {
                 console.warn('[chat] send failed:', e);
                 showNotice('Could not send message.');
@@ -37578,7 +37722,15 @@
         });
 
         document.getElementById('chat-send').addEventListener('click', sendPlayerMessage);
+        document.getElementById('chat-reply-cancel')?.addEventListener('click', () => setChatReplyTarget(null));
         document.getElementById('chat-messages').addEventListener('click', e => {
+            const replyBtn = e.target.closest?.('.chat-reply-btn[data-chat-reply-id]');
+            if (replyBtn) {
+                const targetId = String(replyBtn.dataset.chatReplyId);
+                const message = chatRenderedMessages.find(msg => String(msg.id) === targetId);
+                if (message) setChatReplyTarget(message);
+                return;
+            }
             const author = e.target.closest?.('.msg-author[data-player-id]');
             if (!author) return;
             openPlayerProfile(author.dataset.playerId);
