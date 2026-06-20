@@ -16798,6 +16798,223 @@
         .notif-panel .notif-empty { color: #5a3a18 !important; }
         .notif-panel .notif-item { border-bottom-color: rgba(74,44,18,0.18) !important; }
         .notif-panel .notif-item:hover { background: rgba(180,116,26,0.12) !important; }
+
+        /* ── Battle HUD refresh: clearer read + warmer game identity ── */
+        .arena .hud {
+            top: 10px !important;
+            padding: 4px 14px 8px !important;
+            gap: 12px !important;
+            align-items: flex-start !important;
+        }
+        .arena .player-info {
+            max-width: 650px;
+            min-height: 92px;
+            padding: 7px 12px 8px !important;
+            border-radius: 8px !important;
+            border: 2px solid rgba(43,26,14,0.92) !important;
+            box-shadow:
+                inset 0 2px 0 rgba(255,246,220,0.32),
+                inset 0 -2px 0 rgba(43,26,14,0.26),
+                0 3px 0 rgba(43,26,14,0.92),
+                0 8px 18px rgba(0,0,0,0.36) !important;
+        }
+        .arena #player-hud-info {
+            background:
+                linear-gradient(180deg, rgba(255,246,220,0.24) 0%, rgba(255,246,220,0.02) 42%),
+                linear-gradient(90deg, rgba(86,26,18,0.92) 0%, rgba(145,42,28,0.88) 56%, rgba(94,32,22,0.88) 100%) !important;
+        }
+        .arena #cpu-hud-info {
+            background:
+                linear-gradient(180deg, rgba(255,246,220,0.22) 0%, rgba(255,246,220,0.02) 42%),
+                linear-gradient(270deg, rgba(38,50,92,0.92) 0%, rgba(49,79,139,0.88) 56%, rgba(30,44,78,0.88) 100%) !important;
+        }
+        .arena .player-info::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(255,234,180,0.24);
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .arena .player-info > * {
+            position: relative;
+            z-index: 1;
+        }
+        .arena .player-name {
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 0.92em !important;
+            font-weight: 900 !important;
+            letter-spacing: 0 !important;
+            text-transform: uppercase;
+            margin-bottom: 5px !important;
+        }
+        .arena #player-hud-info .player-name,
+        .arena #cpu-hud-info .player-name {
+            color: #fff4cf !important;
+            text-shadow: 0 2px 0 rgba(43,26,14,0.95), 0 0 10px rgba(255,206,115,0.28) !important;
+        }
+        .arena .player-level {
+            display: inline-flex;
+            align-items: center;
+            min-height: 18px;
+            padding: 1px 6px;
+            margin-left: 6px !important;
+            border-radius: 999px;
+            background: rgba(255,214,99,0.2);
+            border: 1px solid rgba(255,214,99,0.42);
+            color: #ffe38a !important;
+            font-size: 0.68em !important;
+            text-shadow: 0 1px 0 rgba(43,26,14,0.9) !important;
+        }
+        .arena .health-bar-container {
+            height: 17px !important;
+            border: 2px solid #241308 !important;
+            background: #1b1008 !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.55), 0 1px 0 rgba(255,238,190,0.15) !important;
+            margin-bottom: 4px !important;
+        }
+        .arena .health-bar {
+            background: linear-gradient(180deg, #79e35e 0%, #35a62e 52%, #247e24 100%) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 0 10px rgba(62,190,56,0.28);
+        }
+        .arena .health-text,
+        .arena .fury-text {
+            font-family: 'Fredoka', sans-serif !important;
+            font-weight: 900 !important;
+            letter-spacing: 0 !important;
+        }
+        .arena .fury-bar-container,
+        .arena .stamina-bar-container {
+            background: #1b1008 !important;
+            border-color: #241308 !important;
+        }
+        .arena .fury-bar {
+            background: linear-gradient(90deg, #b45309, #f59e0b 56%, #ffe16b) !important;
+        }
+        .arena .stamina-bar {
+            background: linear-gradient(90deg, #9a6b18, #d6a925 56%, #ffe16b) !important;
+        }
+        .arena .player-stats-combat {
+            justify-content: flex-start !important;
+            gap: 5px !important;
+            margin-top: 3px !important;
+            font-size: 0.68em !important;
+            color: #fff0c2 !important;
+            text-shadow: 0 1px 0 rgba(43,26,14,0.9) !important;
+        }
+        .arena #cpu-stats-combat {
+            justify-content: flex-end !important;
+        }
+        .arena .player-stats-combat > span {
+            min-height: 18px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: rgba(20,12,6,0.28);
+            border: 1px solid rgba(255,238,190,0.14);
+            opacity: 1 !important;
+        }
+        .arena .stamina-text {
+            color: #ffe8a6 !important;
+            text-shadow: 0 1px 0 rgba(43,26,14,0.95) !important;
+            font-size: 10px !important;
+        }
+        .arena .hud-center {
+            min-width: 116px !important;
+            padding-top: 8px !important;
+        }
+        .arena .match-timer {
+            font-family: 'Press Start 2P', monospace !important;
+            font-size: 1.25em !important;
+            padding: 9px 13px !important;
+            color: #fff0c2 !important;
+            background:
+                linear-gradient(180deg, rgba(255,246,220,0.16), rgba(255,246,220,0)),
+                rgba(43,26,14,0.78) !important;
+            border: 2px solid rgba(255,214,99,0.5) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 3px 0 rgba(43,26,14,0.9), 0 7px 16px rgba(0,0,0,0.35) !important;
+            text-shadow: 0 2px 0 #1b1008 !important;
+        }
+
+        /* Fighting-game style hit numbers */
+        .damage-text {
+            --hit-color: #ffe66b;
+            --hit-dark: #481008;
+            font-family: Impact, 'Rubik Wet Paint', 'Press Start 2P', sans-serif !important;
+            font-size: 3.05em !important;
+            font-weight: 900 !important;
+            line-height: 0.9;
+            letter-spacing: 0 !important;
+            color: var(--hit-color) !important;
+            -webkit-text-stroke: 2px var(--hit-dark);
+            text-shadow:
+                3px 4px 0 #120804,
+                0 0 14px rgba(255,206,71,0.42),
+                0 0 2px #fff !important;
+            transform-origin: center center;
+            animation: damage-float 1.25s cubic-bezier(.15,.9,.2,1) forwards !important;
+            filter: drop-shadow(0 8px 0 rgba(0,0,0,0.18));
+            white-space: nowrap;
+        }
+        .damage-text::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 112%;
+            height: 58%;
+            transform: translate(-50%, -43%) skewX(-12deg);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+            opacity: 0.85;
+            z-index: -1;
+        }
+        .damage-text.critical {
+            --hit-color: #ff3d20;
+            --hit-dark: #250300;
+            font-size: 3.55em !important;
+            text-shadow:
+                4px 5px 0 #120302,
+                0 0 18px rgba(255,45,16,0.78),
+                0 0 4px #fff1bd !important;
+        }
+        .damage-text.recoil {
+            --hit-color: #c084fc;
+            --hit-dark: #2e0b52;
+            font-size: 2.8em !important;
+        }
+        .damage-text.heal {
+            --hit-color: #52f07f;
+            --hit-dark: #063a18;
+            font-size: 2.65em !important;
+        }
+        .damage-label {
+            display: block;
+            margin-top: 2px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.24em;
+            color: #fff0c2;
+            -webkit-text-stroke: 0;
+            text-shadow: 2px 2px 0 #250300, 0 0 8px rgba(255,61,32,0.9);
+        }
+        @keyframes damage-float {
+            0% {
+                transform: translate(-50%, 8px) rotate(-7deg) scale(0.42);
+                opacity: 0;
+            }
+            12% {
+                transform: translate(-50%, -8px) rotate(-7deg) scale(1.24);
+                opacity: 1;
+            }
+            30% {
+                transform: translate(-50%, -20px) rotate(-5deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -86px) rotate(4deg) scale(0.92);
+                opacity: 0;
+            }
+        }
         .notif-panel .notif-text { color: #2b1a0e !important; text-shadow: 0 1px 0 rgba(255,250,225,0.45) !important; }
         .notif-panel .notif-time { color: #6b4820 !important; }
         .notif-panel .notif-item.levelup .notif-text { color: #b8741a !important; }
@@ -31214,7 +31431,7 @@
         function showDamage(fighter, damage, isCrit, isRecoil = false) {
             const damageEl = document.createElement('div');
             damageEl.className = 'damage-text' + (isCrit ? ' critical' : '') + (isRecoil ? ' recoil' : '');
-            damageEl.textContent = `-${damage}` + (isCrit ? ' CRITICAL!' : '');
+            damageEl.innerHTML = `-${damage}` + (isCrit ? '<span class="damage-label">CRIT</span>' : '');
             const fighterEl = game[fighter].element;
             const arena = document.getElementById('arena');
             const arenaRect = arena.getBoundingClientRect();
@@ -31230,7 +31447,7 @@
             if (!targetEl) return;
             const damageEl = document.createElement('div');
             damageEl.className = 'damage-text' + (isCrit ? ' critical' : '');
-            damageEl.textContent = `-${damage}` + (isCrit ? ' CRITICAL!' : '');
+            damageEl.innerHTML = `-${damage}` + (isCrit ? '<span class="damage-label">CRIT</span>' : '');
             const arena = document.getElementById('arena');
             const arenaRect = arena.getBoundingClientRect();
             const targetRect = targetEl.getBoundingClientRect();
