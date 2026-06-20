@@ -22940,6 +22940,18 @@
             } catch(e) {}
         };
 
+        window.__privyRefreshSessionProfile = function(data) {
+            if (!playerSession || !data) return;
+            _applyRefreshedProfile(data);
+            if (Array.isArray(data.wallets)) playerSession.wallets = data.wallets;
+            if (typeof data.wallet === 'string' && data.wallet) playerSession.wallet = data.wallet;
+            if (typeof data.playerId === 'string' && data.playerId) playerSession.playerId = data.playerId;
+            if (typeof data.hasEmbeddedWallet === 'boolean') playerSession.hasEmbeddedWallet = data.hasEmbeddedWallet;
+            try { localStorage.setItem('chubchampions_session', JSON.stringify(playerSession)); } catch(e) {}
+            try { syncPlayerToBackend(); } catch(e) {}
+            try { updatePlayerSessionUI(); } catch(e) {}
+        };
+
         // ═══════════════════════════════════════════════════════════════
         // Token-refresh iframe bridge
         // ═══════════════════════════════════════════════════════════════

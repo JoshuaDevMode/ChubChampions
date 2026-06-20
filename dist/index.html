@@ -17604,7 +17604,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <!-- @solana/web3.js v1 — used for Solana on-chain AoN battle rooms -->
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
-  <script type="module" crossorigin src="/ChubChampions/assets/index-YvZxj3S3.js"></script>
+  <script type="module" crossorigin src="/ChubChampions/assets/index-CQ5iMhcI.js"></script>
 </head>
 <body>
     <div class="lobby-wrapper" id="lobby-wrapper">
@@ -22939,6 +22939,18 @@
                     localStorage.setItem('chubchampions_session', JSON.stringify(p));
                 }
             } catch(e) {}
+        };
+
+        window.__privyRefreshSessionProfile = function(data) {
+            if (!playerSession || !data) return;
+            _applyRefreshedProfile(data);
+            if (Array.isArray(data.wallets)) playerSession.wallets = data.wallets;
+            if (typeof data.wallet === 'string' && data.wallet) playerSession.wallet = data.wallet;
+            if (typeof data.playerId === 'string' && data.playerId) playerSession.playerId = data.playerId;
+            if (typeof data.hasEmbeddedWallet === 'boolean') playerSession.hasEmbeddedWallet = data.hasEmbeddedWallet;
+            try { localStorage.setItem('chubchampions_session', JSON.stringify(playerSession)); } catch(e) {}
+            try { syncPlayerToBackend(); } catch(e) {}
+            try { updatePlayerSessionUI(); } catch(e) {}
         };
 
         // ═══════════════════════════════════════════════════════════════

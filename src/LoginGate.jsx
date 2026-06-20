@@ -68,19 +68,33 @@ export default function LoginGate() {
     };
   }, [logout, getAccessToken]);
 
+  function pickFirstString(...values) {
+    return values.find(v => typeof v === 'string' && v.trim())?.trim() || '';
+  }
+
+  function extractSocialAvatar(account) {
+    if (!account) return '';
+    return pickFirstString(
+      account.profilePictureUrl,
+      account.profilePicture,
+      account.profileImageUrl,
+      account.profileImage,
+      account.avatarUrl,
+      account.avatar,
+      account.picture,
+      account.imageUrl,
+      account.image,
+      account.rawUserInfo?.profile_image_url_https,
+      account.rawUserInfo?.profile_image_url,
+      account.rawUserInfo?.picture,
+      account.rawUserInfo?.avatar_url,
+    );
+  }
+
   async function handleAuthenticated() {
     try {
       const token = await getAccessToken();
 
-      // Returning user (session already in localStorage) — just refresh token, don't re-init game
-      const savedSession = localStorage.getItem('chubchampions_session');
-      if (savedSession) {
-        if (token) window.__privyUpdateToken?.(token);
-        setVisible(false);
-        return;
-      }
-
-      // Fresh login — build full session and init game
       const playerId = user.id; // full DID e.g. "did:privy:abc123" — must match backend claims.userId
 
       const linkedWallet = user.linkedAccounts?.find(a => a.type === 'wallet');
@@ -107,7 +121,16 @@ export default function LoginGate() {
         || (emailAcc?.address ? emailAcc.address.split('@')[0] : '')
         || 'Fighter';
 
-      const avatar = twitterAcc?.profilePictureUrl || '';
+      const avatar = extractSocialAvatar(twitterAcc);
+
+      // Returning user (session already in localStorage) — refresh profile/token, don't re-init game
+      const savedSession = localStorage.getItem('chubchampions_session');
+      if (savedSession) {
+        window.__privyRefreshSessionProfile?.({ playerId, wallet, wallets: allWallets, hasEmbeddedWallet, name, avatar, token });
+        if (token) window.__privyUpdateToken?.(token);
+        setVisible(false);
+        return;
+      }
 
       window.__privyLogin?.({ playerId, wallet, wallets: allWallets, hasEmbeddedWallet, name, avatar, token });
       setVisible(false);
