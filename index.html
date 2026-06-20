@@ -18286,7 +18286,7 @@
         <div class="market-summary">
             <div>
                 <div class="market-balance" id="market-balance">🪙 0</div>
-                <div class="market-fee" id="market-fee">Fee 4% · CHUB, MON, AUSD, SOL, USDC</div>
+                <div class="market-fee" id="market-fee">Fee 4% · CHUB, MON, AUSD, SOL, USDC SOL</div>
             </div>
             <div class="market-sell-row">
                 <select class="market-sell-currency" id="market-sell-currency">
@@ -18295,7 +18295,6 @@
                     <option value="AUSD">AUSD</option>
                     <option value="SOL">SOL</option>
                     <option value="USDC:solana">USDC SOL</option>
-                    <option value="USDC:monad">USDC MON</option>
                 </select>
                 <button class="market-sell-btn" id="market-sell-btn">LIST SELECTED</button>
             </div>
@@ -38855,6 +38854,7 @@
                     : (currency === 'MON' || currency === 'AUSD') ? 'monad'
                     : 'solana';
             }
+            if (currency === 'USDC') paymentChain = 'solana';
             return { currency, paymentChain };
         }
 
