@@ -8466,8 +8466,9 @@
 
         .inventory-pets-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+            align-content: start;
+            gap: 8px;
             overflow-y: auto;
             flex: 1;
             padding-right: 5px;
@@ -8654,35 +8655,37 @@
             background: rgba(255,248,225,0.46);
             border: 2px solid rgba(120,80,30,0.26);
             border-radius: 10px;
-            padding: 10px;
+            padding: 8px;
             display: grid;
-            grid-template-columns: 112px minmax(0, 1fr);
-            gap: 10px;
-            align-items: stretch;
+            grid-template-columns: 86px minmax(0, 1fr);
+            gap: 8px;
+            align-items: center;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
-            min-height: 158px;
+            min-height: 112px;
         }
         .inventory-pet-card.active {
             border-color: #b45309;
             background: linear-gradient(180deg, rgba(254,243,199,0.85), rgba(251,191,36,0.18));
         }
         .inventory-pet-card img {
-            width: 100px;
-            height: 92px;
+            width: 78px;
+            height: 72px;
             object-fit: contain;
             justify-self: center;
             align-self: center;
             filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
         }
         .inventory-pet-portrait {
-            width: 112px;
-            min-height: 118px;
+            width: 86px;
+            min-height: 88px;
             border: 2px solid rgba(120,80,30,0.20);
             border-radius: 8px;
             background: rgba(255,255,255,0.24);
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
         .inventory-pet-info {
             min-width: 0;
@@ -8690,28 +8693,62 @@
             color: #2b1a0e;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
+        }
+        .inventory-pet-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            min-width: 0;
         }
         .inventory-pet-name {
             font-weight: 900;
-            font-size: 1.02em;
+            font-size: 0.94em;
             line-height: 1.05;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .inventory-pet-badge {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            min-height: 20px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(74,44,18,0.38);
+            background: linear-gradient(180deg, #ffe8a3 0%, #d99624 100%);
+            color: #2b1a0e;
+            font-size: 0.64em;
+            font-weight: 900;
+            text-shadow: 0 1px 0 rgba(255,250,225,0.55);
+            box-shadow: 0 1px 0 rgba(43,26,14,0.5);
+        }
+        .inventory-pet-badge.empty {
+            background: rgba(74,44,18,0.08);
+            color: #6b4820;
+            box-shadow: none;
         }
         .inventory-pet-role {
             color: #6b4820;
-            font-size: 0.78em;
+            font-size: 0.72em;
             font-weight: 800;
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
         }
         .inventory-pet-stats {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 4px;
-            font-size: 0.72em;
+            font-size: 0.68em;
             font-weight: 800;
         }
         .inventory-pet-stat {
-            min-height: 32px;
+            min-height: 28px;
             border: 1px solid rgba(120,80,30,0.18);
             border-radius: 7px;
             background: rgba(255,255,255,0.22);
@@ -8727,10 +8764,14 @@
             border-radius: 7px;
             background: rgba(120,80,30,0.08);
             color: #4a2c0a;
-            font-size: 0.70em;
+            font-size: 0.67em;
             font-weight: 800;
-            line-height: 1.18;
-            padding: 6px 7px;
+            line-height: 1.12;
+            padding: 5px 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         .inventory-pet-actions {
             grid-column: 1 / -1;
@@ -8738,7 +8779,7 @@
             gap: 6px;
             flex-wrap: wrap;
             justify-content: flex-end;
-            margin-top: 0;
+            margin-top: 2px;
         }
         .inventory-pet-actions button,
         .inventory-pet-actions select {
@@ -16663,6 +16704,7 @@
         .inventory-weapon-card.equipped,
         .inventory-consumable-card.equipped,
         .inventory-pet-card.equipped,
+        .inventory-pet-card.active,
         .wardrobe-skin-card.equipped,
         .pet-fusion-inventory-item.active,
         .vault-pack-card.selected {
@@ -27282,17 +27324,27 @@
             const pet = (character.pets || []).find(p => p.id === petId);
             if (!pet) return;
             const safeSlot = Math.max(0, Math.min(1, Math.floor(Number(slot) || 0)));
+            const applyLocalActivePet = () => {
+                const nextIds = (character.activePetIds || []).filter(id => id !== pet.id);
+                nextIds[safeSlot] = pet.id;
+                character.activePetIds = nextIds.filter(Boolean).slice(0, 2);
+                character.activePetId = character.activePetIds[0] || pet.id;
+                character.pet = (character.pets || []).find(p => p.id === character.activePetId) || pet;
+                persistPetChange(character);
+            };
             if (playerSession && BACKEND_URL) {
                 const data = await petActionOnServer('set_active', { petId, slot: safeSlot });
-                if (!data.ok) showNotice(data.error || 'Could not select pet.');
+                if (!data.ok) {
+                    if (data.error === 'Database error' || data.error === 'Server error') {
+                        applyLocalActivePet();
+                        showNotice('Companion updated locally. Backend pet data needs review.');
+                    } else {
+                        showNotice(data.error || 'Could not select pet.');
+                    }
+                }
                 return;
             }
-            const nextIds = (character.activePetIds || []).filter(id => id !== pet.id);
-            nextIds[safeSlot] = pet.id;
-            character.activePetIds = nextIds.filter(Boolean).slice(0, 2);
-            character.activePetId = character.activePetIds[0] || pet.id;
-            character.pet = (character.pets || []).find(p => p.id === character.activePetId) || pet;
-            persistPetChange(character);
+            applyLocalActivePet();
         }
 
         async function healPet(petId = null) {
@@ -27602,6 +27654,9 @@
                 const activeSlot = activePetIds.indexOf(pet.id);
                 const isActive = activeSlot >= 0;
                 const companionLabel = activeSlot >= 0 ? `Companion ${activeSlot + 1}` : '';
+                const companionBadge = companionLabel
+                    ? `<span class="inventory-pet-badge">${companionLabel}</span>`
+                    : '<span class="inventory-pet-badge empty">Reserve</span>';
                 const card = document.createElement('div');
                 card.className = 'inventory-pet-card' + (isActive ? ' active' : '');
                 card.draggable = true;
@@ -27611,22 +27666,23 @@
                         <img src="${def.asset}" alt="${escapeHTML(def.name)}">
                     </div>
                     <div class="inventory-pet-info">
-                        <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
-                        <div class="inventory-pet-role">${escapeHTML(def.role)}${companionLabel ? ' · ' + companionLabel : ''}<br>${petRarityChip(pet.rarity)}</div>
+                        <div class="inventory-pet-heading">
+                            <div class="inventory-pet-name">${escapeHTML(pet.name)} · LV ${pet.level}</div>
+                            ${companionBadge}
+                        </div>
+                        <div class="inventory-pet-role">${petRarityChip(pet.rarity)}<span>${escapeHTML(def.role)}</span></div>
                         <div class="inventory-pet-stats">
                             <span class="inventory-pet-stat">HP<br>${pet.hp}/${pet.maxHp}</span>
                             <span class="inventory-pet-stat">DMG<br>${dmg.min}-${dmg.max}</span>
                             <span class="inventory-pet-stat">XP<br>${xpText}</span>
-                            <span class="inventory-pet-stat">CAP<br>${cap}</span>
                         </div>
                         <div class="inventory-pet-passive">${escapeHTML(getPetPassiveText(pet))}</div>
+                        <div class="inventory-pet-actions">
+                            ${activeSlot === 0 ? '<button type="button" disabled>IN SLOT 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">SLOT 1</button>`}
+                            ${activeSlot === 1 ? '<button type="button" disabled>IN SLOT 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">SLOT 2</button>`}
+                        </div>
                     </div>
-                    <div class="inventory-pet-actions">
-                        ${activeSlot === 0 ? '<button type="button" disabled>COMPANION 1</button>' : `<button type="button" data-pet-action="active" data-pet-slot="0" data-pet-id="${escapeHTML(pet.id)}">SET SLOT 1</button>`}
-                        ${activeSlot === 1 ? '<button type="button" disabled>COMPANION 2</button>' : `<button type="button" data-pet-action="active" data-pet-slot="1" data-pet-id="${escapeHTML(pet.id)}">SET SLOT 2</button>`}
-                        <button type="button" data-pet-action="heal" data-pet-id="${escapeHTML(pet.id)}">HEAL</button>
-                        <button type="button" data-pet-action="train" data-pet-id="${escapeHTML(pet.id)}">TRAIN</button>
-                    </div>`;
+                    `;
                 grid.appendChild(card);
             });
 
