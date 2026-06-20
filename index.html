@@ -11293,7 +11293,7 @@
             border-color: rgba(167,139,250,0.25);
         }
 
-        /* Forge + Daily Reward group (left column) */
+        /* Forge + LUCKY SPIN group (left column) */
         .forge-group {
             display: flex;
             flex-direction: column;
@@ -11675,8 +11675,8 @@
             cursor: not-allowed;
         }
 
-        /* ===== DAILY CLAIM SYSTEM ===== */
-        .daily-claim-overlay {
+        /* ===== Lucky Spin SYSTEM ===== */
+        .lucky-spin-overlay {
             display: none;
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -11685,10 +11685,10 @@
             justify-content: center;
             align-items: center;
         }
-        .daily-claim-overlay.active {
+        .lucky-spin-overlay.active {
             display: flex;
         }
-        .daily-claim-panel {
+        .lucky-spin-panel {
             background: none;
             border: 20px solid transparent;
             border-image-source: url('Assets/UI/iron-frame.png');
@@ -11699,31 +11699,31 @@
             max-width: 440px;
             width: 90%;
         }
-        .daily-claim-header {
+        .lucky-spin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
         }
-        .daily-claim-title {
+        .lucky-spin-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 0.7em;
             color: #ffd700;
             text-shadow: 1px 1px 0 #000;
         }
-        .daily-claim-close {
+        .lucky-spin-close {
             color: #aaa;
             font-size: 1.8em;
             cursor: pointer;
             line-height: 1;
         }
-        .daily-claim-close:hover { color: #fff; }
-        .daily-claim-grid {
+        .lucky-spin-close:hover { color: #fff; }
+        .lucky-spin-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 6px;
         }
-        .daily-claim-grid.daily-roulette {
+        .lucky-spin-grid.daily-roulette {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -11889,7 +11889,7 @@
             background: linear-gradient(90deg, #b174ff 0%, #68d7ff 55%, #fff18a 100%);
             box-shadow: 0 0 10px rgba(120,190,255,0.7);
         }
-        .daily-claim-cell {
+        .lucky-spin-cell {
             width: 100%;
             aspect-ratio: 1;
             border-radius: 6px;
@@ -11902,7 +11902,7 @@
             background: rgba(30,30,50,0.8);
             transition: all 0.2s;
         }
-        .daily-claim-cell .day-number {
+        .lucky-spin-cell .day-number {
             position: absolute;
             top: 2px;
             left: 4px;
@@ -11910,35 +11910,35 @@
             color: #888;
             font-family: 'Fredoka', sans-serif;
         }
-        .daily-claim-cell .day-reward {
+        .lucky-spin-cell .day-reward {
             font-size: 1.2em;
             margin-top: 4px;
         }
-        .daily-claim-cell.claimed {
+        .lucky-spin-cell.claimed {
             background: rgba(30,100,30,0.5);
             border-color: #4caf50;
             opacity: 0.7;
         }
-        .daily-claim-cell.claimed .day-reward::after {
+        .lucky-spin-cell.claimed .day-reward::after {
             content: '✅';
             position: absolute;
             bottom: 2px;
             right: 2px;
             font-size: 0.6em;
         }
-        .daily-claim-cell.available {
+        .lucky-spin-cell.available {
             border-color: #ffd700;
             box-shadow: 0 0 10px rgba(255,215,0,0.5);
             cursor: pointer;
             overflow: clip;
             overflow-clip-margin: 2px;
         }
-        .daily-claim-cell.available:hover {
+        .lucky-spin-cell.available:hover {
             transform: scale(1.08);
             box-shadow: 0 0 18px rgba(255,215,0,0.8);
         }
-        .daily-claim-cell.available::before,
-        .daily-claim-cell.available::after {
+        .lucky-spin-cell.available::before,
+        .lucky-spin-cell.available::after {
             content: '';
             position: absolute;
             width: 24px; height: 3px;
@@ -11952,18 +11952,18 @@
             pointer-events: none;
             z-index: 10;
         }
-        .daily-claim-cell.available::before { animation-delay: 0s; }
-        .daily-claim-cell.available::after  { animation-delay: -1s; }
-        .daily-claim-cell.missed {
+        .lucky-spin-cell.available::before { animation-delay: 0s; }
+        .lucky-spin-cell.available::after  { animation-delay: -1s; }
+        .lucky-spin-cell.missed {
             background: rgba(120,20,20,0.4);
             border-color: #c0392b;
             opacity: 0.5;
         }
-        .daily-claim-cell.locked {
+        .lucky-spin-cell.locked {
             opacity: 0.35;
             border-color: #333;
         }
-        .daily-claim-lobby-btn {
+        .lucky-spin-lobby-btn {
             position: relative;
             background: linear-gradient(180deg, #fde878 0%, #f5c020 40%, #d08800 70%, #a86000 100%);
             border: 4px solid #100800;
@@ -11988,7 +11988,7 @@
             box-sizing: border-box;
             letter-spacing: 1px;
         }
-        .daily-claim-lobby-btn:hover {
+        .lucky-spin-lobby-btn:hover {
             filter: brightness(1.08);
             transform: scale(1.02);
             box-shadow:
@@ -11998,7 +11998,7 @@
                 0 8px 18px rgba(0,0,0,0.7),
                 0 2px 0 #100800;
         }
-        .daily-claim-lobby-btn.has-reward {
+        .lucky-spin-lobby-btn.has-reward {
         }
 
         /* ── Magic Dust Active Indicator ────────────────────────────────────────
@@ -12020,14 +12020,14 @@
             50%      { box-shadow: 0 0 14px 4px rgba(255,252,200,0.75), 0 0 28px 7px rgba(255,245,180,0.30); }
         }
 
-        /* ── Daily Reward button ── */
-        .daily-claim-lobby-btn.has-reward {
+        /* ── LUCKY SPIN button ── */
+        .lucky-spin-lobby-btn.has-reward {
             position: relative;
             overflow: clip;
             overflow-clip-margin: 4px;  /* clip at outer border edge (4px border) */
         }
-        .daily-claim-lobby-btn.has-reward::before,
-        .daily-claim-lobby-btn.has-reward::after {
+        .lucky-spin-lobby-btn.has-reward::before,
+        .lucky-spin-lobby-btn.has-reward::after {
             content: '';
             position: absolute;
             width: 52px; height: 4px;
@@ -12042,8 +12042,8 @@
             pointer-events: none;
             z-index: 10;
         }
-        .daily-claim-lobby-btn.has-reward::before { animation-delay: 0s; }
-        .daily-claim-lobby-btn.has-reward::after  { animation-delay: -1s; }
+        .lucky-spin-lobby-btn.has-reward::before { animation-delay: 0s; }
+        .lucky-spin-lobby-btn.has-reward::after  { animation-delay: -1s; }
 
         /* ── Upgrade stats button ── */
         .menu-upgrade-stats {
@@ -12108,7 +12108,7 @@
             pointer-events: none;
         }
 
-        .daily-claim-toast {
+        .lucky-spin-toast {
             position: absolute;
             top: 80px;
             left: 50%;
@@ -14031,8 +14031,8 @@
         }
 
         /* ── RIGHT column ── */
-        /* DAILY REWARD pill (yellow) */
-        .main-menu .daily-claim-lobby-btn {
+        /* LUCKY SPIN pill (yellow) */
+        .main-menu .lucky-spin-lobby-btn {
             background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #d97706 100%) !important;
             border: 3px solid #2b1a0e !important;
             border-radius: 999px !important;
@@ -14058,8 +14058,8 @@
             justify-content: center;
             gap: 8px;
         }
-        .main-menu .daily-claim-lobby-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
-        .main-menu .daily-claim-lobby-btn:active { transform: translateY(2px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(120,60,0,0.35), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
+        .main-menu .lucky-spin-lobby-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .main-menu .lucky-spin-lobby-btn:active { transform: translateY(2px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(120,60,0,0.35), 0 2px 0 #2b1a0e, 0 4px 10px rgba(0,0,0,0.4) !important; }
 
         /* BATTLE CHESTS card */
         .main-menu .victory-chest-container {
@@ -14694,7 +14694,7 @@
         .main-menu .menu-buttons-bottom {
             width: 300px !important;
         }
-        .main-menu .daily-claim-lobby-btn,
+        .main-menu .lucky-spin-lobby-btn,
         .main-menu .victory-chest-container,
         .main-menu .menu-btn-battle,
         .main-menu .menu-btn-aon,
@@ -15357,7 +15357,7 @@
         }
 
         /* Accent buttons (not panels) keep a darker warm-brown border */
-        .main-menu .daily-claim-lobby-btn,
+        .main-menu .lucky-spin-lobby-btn,
         .main-menu .top-currency-group,
         .main-menu .profile-capsule .session-avatar,
         .main-menu .skills-icon-btn,
@@ -15366,7 +15366,7 @@
         .main-menu .xp-boost-manage-btn {
             border-color: #4a2c12 !important;
         }
-        .main-menu .daily-claim-lobby-btn,
+        .main-menu .lucky-spin-lobby-btn,
         .main-menu .skills-icon-btn {
             box-shadow:
                 inset 0 2px 0 rgba(255,255,255,0.5),
@@ -15644,7 +15644,7 @@
         .leaderboard-container, .char-profile-sprite-frame,
         .char-profile-stats-frame, .char-profile-history-frame,
         .character-create-container, .levelup-container,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
+        .chest-confirm-box, .lucky-spin-panel, .reward-reveal, .results-panel,
         .shop-panel, .vault-panel, .inventory-panel, .history-container,
         .lobby-currency-bar, .session-dropdown,
         .aon-container, .skills-panel, .wardrobe-panel,
@@ -15674,7 +15674,7 @@
         /* PILL VARIANT — top nav, profile capsule, daily-reward button. */
         .main-menu .top-nav-group,
         .main-menu .profile-capsule,
-        .main-menu .daily-claim-lobby-btn {
+        .main-menu .lucky-spin-lobby-btn {
             -webkit-mask-image: var(--panel-mask-pill);
                     mask-image: var(--panel-mask-pill);
         }
@@ -15747,7 +15747,7 @@
         .leaderboard-container, .char-profile-sprite-frame,
         .char-profile-stats-frame, .char-profile-history-frame,
         .character-create-container, .levelup-container,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel {
+        .chest-confirm-box, .lucky-spin-panel, .reward-reveal, .results-panel {
             --panel-shines:
                 radial-gradient(ellipse 45% 35% at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 75%),
                 radial-gradient(ellipse 30% 25% at 92% 10%, rgba(255,255,255,0.3) 0%, transparent 70%),
@@ -16139,7 +16139,7 @@
 
         /* ══════════ GOLD CRYSTAL GLASS — currency pill + lobby buttons ══════════ */
         .main-menu .top-currency-group,
-        .main-menu .daily-claim-lobby-btn,
+        .main-menu .lucky-spin-lobby-btn,
         .main-menu .menu-bars-with-care .care-icon-btn,
         .main-menu .skills-icon-btn {
             background:
@@ -16168,7 +16168,7 @@
         /* Orbiting comet around every yellow button. Two streaks per button (180° apart)
            so a glow is always visible on at least one edge. Each yellow button has its
            own offset-path radius matching its border-radius (pills vs rounded rects). */
-        /* Match the Daily Rewards comet: bright white streak with strong gold glow
+        /* Match the LUCKY SPINs comet: bright white streak with strong gold glow
            and offset-rotate:auto so the streak hugs the perimeter. Width is tuned
            per button so the streak stays in scale (a 52px bar on a 70px-wide care
            btn would dominate; ~30% of the shortest button dimension reads well). */
@@ -16176,8 +16176,8 @@
         .skills-icon-btn::after,
         .menu-bars-with-care .care-icon-btn::before,
         .menu-bars-with-care .care-icon-btn::after,
-        .daily-claim-lobby-btn:not(.has-reward)::before,
-        .daily-claim-lobby-btn:not(.has-reward)::after {
+        .lucky-spin-lobby-btn:not(.has-reward)::before,
+        .lucky-spin-lobby-btn:not(.has-reward)::after {
             content: "";
             position: absolute;
             top: 0; left: 0;
@@ -16201,7 +16201,7 @@
         }
         .skills-icon-btn::after,
         .menu-bars-with-care .care-icon-btn::after,
-        .daily-claim-lobby-btn:not(.has-reward)::after {
+        .lucky-spin-lobby-btn:not(.has-reward)::after {
             animation-delay: -1s;
         }
         /* Pill-shaped buttons — full pill perimeter trace */
@@ -16216,8 +16216,8 @@
             width: 18px;
             offset-path: inset(2px round 14px);
         }
-        .daily-claim-lobby-btn:not(.has-reward)::before,
-        .daily-claim-lobby-btn:not(.has-reward)::after {
+        .lucky-spin-lobby-btn:not(.has-reward)::before,
+        .lucky-spin-lobby-btn:not(.has-reward)::after {
             width: 40px;
             offset-path: inset(2px round 6px);
         }
@@ -16299,7 +16299,7 @@
         .leaderboard-container, .char-profile-sprite-frame,
         .char-profile-stats-frame, .char-profile-history-frame,
         .character-create-container, .levelup-container,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
+        .chest-confirm-box, .lucky-spin-panel, .reward-reveal, .results-panel,
         .shop-panel, .vault-panel, .inventory-panel, .history-container,
         .session-dropdown,
         .aon-container, .skills-panel, .wardrobe-panel,
@@ -16321,7 +16321,7 @@
         .leaderboard-container, .char-profile-sprite-frame,
         .char-profile-stats-frame, .char-profile-history-frame,
         .character-create-container, .levelup-container,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal, .results-panel,
+        .chest-confirm-box, .lucky-spin-panel, .reward-reveal, .results-panel,
         .shop-panel, .vault-panel, .inventory-panel, .history-container,
         .session-dropdown,
         .aon-container, .skills-panel, .wardrobe-panel,
@@ -17345,7 +17345,7 @@
             min-height: 62px !important;
             gap: 0 !important;
         }
-        .daily-chat-row .daily-claim-lobby-btn {
+        .daily-chat-row .lucky-spin-lobby-btn {
             width: 195px !important;
             min-width: 195px !important;
             max-width: 195px !important;
@@ -17434,18 +17434,18 @@
         .skills-icon-btn:not(.has-action)::after,
         .menu-bars-with-care .care-icon-btn:not(.has-action)::before,
         .menu-bars-with-care .care-icon-btn:not(.has-action)::after,
-        .daily-claim-lobby-btn:not(.has-reward)::before,
-        .daily-claim-lobby-btn:not(.has-reward)::after {
+        .lucky-spin-lobby-btn:not(.has-reward)::before,
+        .lucky-spin-lobby-btn:not(.has-reward)::after {
             display: none !important;
             content: none !important;
         }
         .main-menu .skills-icon-btn:not(.has-action),
         .main-menu .menu-bars-with-care .care-icon-btn:not(.has-action),
-        .main-menu .daily-claim-lobby-btn:not(.has-reward) {
+        .main-menu .lucky-spin-lobby-btn:not(.has-reward) {
             filter: none !important;
         }
         .notice-box, .confirm-box, .input-modal-box,
-        .chest-confirm-box, .daily-claim-panel, .reward-reveal,
+        .chest-confirm-box, .lucky-spin-panel, .reward-reveal,
         .levelup-confirm-box, .care-confirm-box {
             color: #2b1a0e !important;
         }
@@ -17453,7 +17453,7 @@
         .confirm-title, .confirm-message,
         .input-modal-title,
         .chest-confirm-title, .chest-confirm-time,
-        .daily-claim-title, .daily-claim-day,
+        .lucky-spin-title, .lucky-spin-day,
         .reward-title, .reward-subtitle,
         .levelup-confirm-title {
             color: #2b1a0e !important;
@@ -18049,7 +18049,7 @@
             <!-- Right Side - Daily, Chests, Battle buttons -->
             <div class="menu-buttons-bottom">
                 <div class="daily-chat-row">
-                    <div class="daily-claim-lobby-btn btn-shine" id="daily-claim-btn">LUCKY SPIN</div>
+                    <div class="lucky-spin-lobby-btn btn-shine" id="lucky-spin-btn">LUCKY SPIN</div>
                     <div class="chat-btn" id="chat-btn" title="Chat"><img src="Assets/UI/Chat-Icon.png" alt="Chat"></div>
                 </div>
                 <div class="victory-chest-container" id="victory-chest-container">
@@ -18992,14 +18992,14 @@
         </div>
     </div>
 
-    <!-- Daily Claim Overlay -->
-    <div class="daily-claim-overlay" id="daily-claim-overlay">
-        <div class="daily-claim-panel">
-            <div class="daily-claim-header">
-                <div class="daily-claim-title">LUCKY SPIN</div>
-                <span class="daily-claim-close" id="daily-claim-close">&times;</span>
+    <!-- Lucky Spin Overlay -->
+    <div class="lucky-spin-overlay" id="lucky-spin-overlay">
+        <div class="lucky-spin-panel">
+            <div class="lucky-spin-header">
+                <div class="lucky-spin-title">LUCKY SPIN</div>
+                <span class="lucky-spin-close" id="lucky-spin-close">&times;</span>
             </div>
-            <div class="daily-claim-grid" id="daily-claim-grid"></div>
+            <div class="lucky-spin-grid" id="lucky-spin-grid"></div>
         </div>
     </div>
 
@@ -21265,40 +21265,8 @@
         let xpBoostBattlesLeft = 0;
         let pendingXpBoosts = []; // array of { mult, battles }, max 3
 
-        // Daily Claim system
+        // Lucky Spin system
         const FRAG_DAILY_ICON = '<img src="Assets/UI/Fragment.png" style="width:32px;height:32px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 3px #e87b20) drop-shadow(0 0 6px rgba(232,123,32,0.4));">';
-        const DAILY_REWARDS = [
-            { day: 1,  type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
-            { day: 2,  type: 'fragments',    amount: 1,  icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 3,  type: 'chest',        tier: 'bronze', icon: '<img src="Assets/UI/Chests/Common.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 4,  type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
-            { day: 5,  type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 6,  type: 'fragments',    amount: 1,  icon: FRAG_DAILY_ICON, label: '1x' },
-            { day: 7,  type: 'chest',        tier: 'silver', icon: '<img src="Assets/UI/Chests/Silver.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 8,  type: 'xpboost',      mult: 2,   battles: 5,  icon: '⚡', label: '⚡2x' },
-            { day: 9,  type: 'combo',        tokens: 3, fragments: 1, icon: '🎁', label: '3🪙+1' },
-            { day: 10, type: 'chest',        tier: 'silver', icon: '<img src="Assets/UI/Chests/Silver.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 11, type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
-            { day: 12, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 13, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
-            { day: 14, type: 'chest',        tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 15, type: 'xpboost',      mult: 1.5, battles: 10, icon: '⚡', label: '⚡1.5x' },
-            { day: 16, type: 'tokens',       amount: 3,  icon: '🪙', label: '3 🪙' },
-            { day: 17, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
-            { day: 18, type: 'combo',        tokens: 5, fragments: 1, icon: '🎁', label: '5🪙+1' },
-            { day: 19, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 20, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 21, type: 'chest',        tier: 'gold', icon: '<img src="Assets/UI/Chests/Golden.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Chest' },
-            { day: 22, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
-            { day: 23, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 24, type: 'combo',        tokens: 8, fragments: 2, icon: '🎁', label: '8🪙+2' },
-            { day: 25, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 26, type: 'fragments',    amount: 2,  icon: FRAG_DAILY_ICON, label: '2x' },
-            { day: 27, type: 'tokens',       amount: 5,  icon: '🪙', label: '5 🪙' },
-            { day: 28, type: 'xpboost',      mult: 2,   battles: 5,  icon: '⚡', label: '⚡2x' },
-            { day: 29, type: 'combo',        tokens: 5, fragments: 1, icon: '🎁', label: '5🪙+1' },
-            { day: 30, type: 'chest_tokens', tier: 'epic', tokens: 5,  icon: '<img src="Assets/UI/Chests/Epic.png" style="width:22px;height:22px;object-fit:contain;">', label: 'Epic+🪙' },
-        ];
         const DAILY_ROULETTE_PREVIEW = [
             { id: 'dust_5_a',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#b174ff' },
             { id: 'dust_5_b',       type: 'dust', amount: 5, label: '5 Dust', icon: '✦', color: '#9466df' },
@@ -21319,7 +21287,7 @@
         const LUCKY_SPIN_DUST_FOR_FREE_SPIN = 100;
         let dailyRouletteSpinning = false;
 
-        let dailyClaimData = {
+        let luckySpinData = {
             startDate: null,
             claimedDays: []
         };
@@ -21364,7 +21332,7 @@
                     shopItemCooldowns     = data.shopItemCooldowns     || {};
                     lastLoginTimestamp = data.lastLoginTimestamp || null;
                     rerollsUsed = data.rerollsUsed || 0;
-                    dailyClaimData = data.dailyClaimData || { startDate: null, claimedDays: [] };
+                    luckySpinData = data.luckySpinData || { startDate: null, claimedDays: [] };
                     dailyBattlesPlayed = data.dailyBattlesPlayed || 0;
                     dailyBattleDate = data.dailyBattleDate || '';
                     dailyChestsEarned = data.dailyChestsEarned || 0;
@@ -21462,7 +21430,7 @@
                     globalFragmentChestsOpened: globalFragmentChestsOpened,
                     globalCharactersCreated: globalCharactersCreated,
                     shopItemCooldowns:     shopItemCooldowns,
-                    dailyClaimData: dailyClaimData,
+                    luckySpinData: luckySpinData,
                     dailyBattlesPlayed: dailyBattlesPlayed,
                     dailyBattleDate: dailyBattleDate,
                     dailyChestsEarned: dailyChestsEarned,
@@ -22127,11 +22095,11 @@
             }
         }
 
-        // ===== DAILY CLAIM SYSTEM =====
+        // ===== Lucky Spin SYSTEM =====
 
-        function getDailyClaimDayNumber() {
-            if (!dailyClaimData.startDate) return 1; // first time, day 1 is available
-            const start = new Date(dailyClaimData.startDate);
+        function getLuckySpinDayNumber() {
+            if (!luckySpinData.startDate) return 1; // first time, day 1 is available
+            const start = new Date(luckySpinData.startDate);
             start.setHours(0, 0, 0, 0);
             const now = new Date();
             now.setHours(0, 0, 0, 0);
@@ -22141,17 +22109,17 @@
             return diffDays;
         }
 
-        function canClaimToday() {
-            const dayNum = getDailyClaimDayNumber();
+        function canUseDailyLuckySpin() {
+            const dayNum = getLuckySpinDayNumber();
             if (dayNum < 1 || dayNum > 30) return false;
-            return !dailyClaimData.claimedDays.includes(dayNum);
+            return !luckySpinData.claimedDays.includes(dayNum);
         }
 
-        function showDailyClaimToast(text) {
-            const existing = document.querySelector('.daily-claim-toast');
+        function showLuckySpinToast(text) {
+            const existing = document.querySelector('.lucky-spin-toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
-            toast.className = 'daily-claim-toast';
+            toast.className = 'lucky-spin-toast';
             toast.innerHTML = text;
             document.getElementById('lobby-wrapper').appendChild(toast);
             setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2200);
@@ -22302,17 +22270,17 @@
             await sleep(950);
         }
 
-        async function claimDailyReward(dayNum, spinMode = 'daily') {
+        async function runLuckySpin(dayNum, spinMode = 'daily') {
             if (dailyRouletteSpinning) return;
             if (dayNum < 1 || dayNum > 30) return;
             const paidSpin = spinMode === 'paid';
             const useFreeSpin = spinMode === 'free_spin';
             if (paidSpin && globalTokens < DAILY_ROULETTE_PAID_SPIN_COST) {
-                showDailyClaimToast('Need ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins to spin again.');
+                showLuckySpinToast('Need ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins to spin again.');
                 return;
             }
             if (useFreeSpin && luckySpinFreeSpins < 1) {
-                showDailyClaimToast('No free Lucky Spins available.');
+                showLuckySpinToast('No free Lucky Spins available.');
                 return;
             }
             dailyRouletteSpinning = true;
@@ -22330,7 +22298,7 @@
             }
             if (needle) needle.classList.add('spinning');
 
-            const result = await claimDailyOnServer(dayNum, paidSpin, useFreeSpin);
+            const result = await runLuckySpinOnServer(dayNum, paidSpin, useFreeSpin);
             clearInterval(tickTimer);
             if (!result || !result.ok) {
                 if (wheel) wheel.classList.remove('spinning');
@@ -22338,11 +22306,11 @@
                 dailyRouletteSpinning = false;
                 if (spinBtn) spinBtn.disabled = false;
                 if (resultEl) resultEl.textContent = result?.error || 'Claim failed.';
-                showDailyClaimToast(result?.error || 'Claim failed. Please try again.');
+                showLuckySpinToast(result?.error || 'Spin failed. Please try again.');
                 return;
             }
 
-            // globalTokens, globalFragments, and dailyClaimData already updated by claimDailyOnServer
+            // globalTokens, globalFragments, and luckySpinData already updated by runLuckySpinOnServer
             const reward = resolveDailyRouletteReward(result.rouletteReward);
             await settleDailyRouletteWheel(reward);
             if (needle) needle.classList.remove('spinning');
@@ -22364,9 +22332,9 @@
                     renderDailyClaimGrid();
                     updateDailyClaimIndicator();
                     updateXpBoostSlots();
-                    showDailyClaimToast(toastText);
+                    showLuckySpinToast(toastText);
                     // Close daily overlay before opening chest
-                    document.getElementById('daily-claim-overlay').classList.remove('active');
+                    document.getElementById('lucky-spin-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
                     dailyRouletteSpinning = false;
                     renderDailyClaimGrid();
@@ -22377,8 +22345,8 @@
                     renderDailyClaimGrid();
                     updateDailyClaimIndicator();
                     updateXpBoostSlots();
-                    showDailyClaimToast(toastText);
-                    document.getElementById('daily-claim-overlay').classList.remove('active');
+                    showLuckySpinToast(toastText);
+                    document.getElementById('lucky-spin-overlay').classList.remove('active');
                     await openInstantChest(reward.tier, result.chestReward);
                     dailyRouletteSpinning = false;
                     renderDailyClaimGrid();
@@ -22398,7 +22366,7 @@
             renderDailyClaimGrid();
             updateDailyClaimIndicator();
             updateXpBoostSlots();
-            showDailyClaimToast(toastText);
+            showLuckySpinToast(toastText);
             if (resultEl) resultEl.innerHTML = 'Won: <strong>' + (reward.label || 'Reward') + '</strong>';
             dailyRouletteSpinning = false;
         }
@@ -22467,17 +22435,17 @@
         }
 
         function renderDailyClaimGrid() {
-            const grid = document.getElementById('daily-claim-grid');
+            const grid = document.getElementById('lucky-spin-grid');
             if (!grid) return;
-            const currentDay = getDailyClaimDayNumber();
-            const canClaim = canClaimToday();
+            const currentDay = getLuckySpinDayNumber();
+            const canClaim = canUseDailyLuckySpin();
             const hasFreeSpin = luckySpinFreeSpins > 0;
             const canPaidSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && !hasFreeSpin && globalTokens >= DAILY_ROULETTE_PAID_SPIN_COST;
             const canExtraSpin = currentDay >= 1 && currentDay <= 30 && !canClaim && (hasFreeSpin || canPaidSpin);
             const statusText = currentDay === -1
                 ? 'Daily cycle complete.'
                 : (canClaim ? 'Free daily spin available.' : (hasFreeSpin ? 'Free spin ready from Dust.' : 'Extra spin costs ' + DAILY_ROULETTE_PAID_SPIN_COST + ' coins.'));
-            grid.className = 'daily-claim-grid daily-roulette';
+            grid.className = 'lucky-spin-grid daily-roulette';
             const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
             const rouletteGradient = 'conic-gradient(' + DAILY_ROULETTE_PREVIEW.map((reward, idx) => {
                 const start = (idx * slice).toFixed(3);
@@ -22511,7 +22479,7 @@
             const spinBtn = document.getElementById('daily-roulette-spin');
             if (spinBtn && (canClaim || canExtraSpin)) {
                 const mode = canClaim ? 'daily' : (hasFreeSpin ? 'free_spin' : 'paid');
-                spinBtn.addEventListener('click', () => claimDailyReward(currentDay, mode));
+                spinBtn.addEventListener('click', () => runLuckySpin(currentDay, mode));
             }
         }
 
@@ -22537,9 +22505,9 @@
         }
 
         function updateDailyClaimIndicator() {
-            const btn = document.getElementById('daily-claim-btn');
+            const btn = document.getElementById('lucky-spin-btn');
             if (!btn) return;
-            if (canClaimToday()) {
+            if (canUseDailyLuckySpin()) {
                 btn.classList.add('has-reward');
             } else {
                 btn.classList.remove('has-reward');
@@ -22625,15 +22593,15 @@
         // Victory chest overlay close
         document.getElementById('victory-reward-close-btn').addEventListener('click', closeVictoryChestOverlay);
 
-        // Daily claim button
-        document.getElementById('daily-claim-btn').addEventListener('click', function() {
+        // Lucky Spin button
+        document.getElementById('lucky-spin-btn').addEventListener('click', function() {
             renderDailyClaimGrid();
-            document.getElementById('daily-claim-overlay').classList.add('active');
+            document.getElementById('lucky-spin-overlay').classList.add('active');
         });
-        document.getElementById('daily-claim-close').addEventListener('click', function() {
-            document.getElementById('daily-claim-overlay').classList.remove('active');
+        document.getElementById('lucky-spin-close').addEventListener('click', function() {
+            document.getElementById('lucky-spin-overlay').classList.remove('active');
         });
-        document.getElementById('daily-claim-overlay').addEventListener('click', function(e) {
+        document.getElementById('lucky-spin-overlay').addEventListener('click', function(e) {
             if (e.target === this) this.classList.remove('active');
         });
 
@@ -23762,10 +23730,10 @@
                         characterId: c.characterId != null ? Number(c.characterId) : undefined,
                     }));
                 }
-                // Restore authoritative daily claim state
-                if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
-                    dailyClaimData.startDate   = data.dailyClaimStart;
-                    dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
+                // Restore authoritative Lucky Spin state
+                if (data.luckySpinStart !== null && data.luckySpinStart !== undefined) {
+                    luckySpinData.startDate   = data.luckySpinStart;
+                    luckySpinData.claimedDays = Array.isArray(data.luckySpinDays) ? data.luckySpinDays : [];
                 }
                 // Restore authoritative shop state (overrides stale localStorage)
                 shopItemCooldowns = data.shopItemCooldowns || {};
@@ -25665,10 +25633,10 @@
             }
         }
 
-        async function claimDailyOnServer(dayNum, paidSpin = false, useFreeSpin = false) {
+        async function runLuckySpinOnServer(dayNum, paidSpin = false, useFreeSpin = false) {
             if (!playerSession) return { ok: false, error: 'Not logged in' };
             try {
-                const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/daily-claim', {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/economy/lucky-spin', {
                     method: 'POST',
                     headers: await getAuthHeaders(),
                     body: JSON.stringify({
@@ -25693,16 +25661,16 @@
                             saveCharacters();
                         }
                     }
-                    // Sync authoritative daily claim state from server
-                    if (data.dailyClaimStart !== null && data.dailyClaimStart !== undefined) {
-                        dailyClaimData.startDate   = data.dailyClaimStart;
-                        dailyClaimData.claimedDays = Array.isArray(data.dailyClaimDays) ? data.dailyClaimDays : [];
+                    // Sync authoritative Lucky Spin state from server
+                    if (data.luckySpinStart !== null && data.luckySpinStart !== undefined) {
+                        luckySpinData.startDate   = data.luckySpinStart;
+                        luckySpinData.claimedDays = Array.isArray(data.luckySpinDays) ? data.luckySpinDays : [];
                     }
                     updateCurrencyUI();
                 }
                 return data;
             } catch (e) {
-                console.warn('[daily-claim] network error:', e);
+                console.warn('[lucky-spin] network error:', e);
                 return { ok: false, error: 'Network error' };
             }
         }
@@ -44540,3 +44508,4 @@
     <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
+
