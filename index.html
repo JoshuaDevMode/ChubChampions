@@ -11758,7 +11758,7 @@
             border: 6px solid #3b220f;
             background: var(--roulette-gradient, conic-gradient(#f7c84b 0deg 360deg));
             box-shadow: 0 5px 12px rgba(0,0,0,0.28);
-            transition: transform 1.15s cubic-bezier(.12,.82,.18,1);
+            transition: transform var(--roulette-spin-duration, 2.6s) cubic-bezier(.08,.82,.12,1);
         }
         .daily-roulette-wheel.spinning {
             animation: dailyRouletteSpin 0.55s linear infinite;
@@ -19635,15 +19635,19 @@
             src6.start(now); src6.stop(now + dur);
         }
 
-        function playRouletteTickSound() {
+        function playRouletteTickSound(progress = 0) {
             _ensureAudioCtx();
             const now = _audioCtx.currentTime;
             const osc = _audioCtx.createOscillator();
             const gain = _audioCtx.createGain();
+            const slow = Math.max(0, Math.min(1, progress));
+            const startFreq = 760 - slow * 180;
+            const endFreq = 520 - slow * 110;
+            const volume = (0.047 - slow * 0.018) * _globalVolume;
             osc.type = 'square';
-            osc.frequency.setValueAtTime(720, now);
-            osc.frequency.exponentialRampToValueAtTime(520, now + 0.035);
-            gain.gain.setValueAtTime(0.045 * _globalVolume, now);
+            osc.frequency.setValueAtTime(startFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(Math.max(220, endFreq), now + 0.035);
+            gain.gain.setValueAtTime(Math.max(0.012, volume), now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
             osc.connect(gain).connect(_audioCtx.destination);
             osc.start(now);
@@ -19676,6 +19680,41 @@
                 osc.start(start);
                 osc.stop(start + 0.2);
             });
+        }
+
+        function getDailyRouletteSpinProfile() {
+            const roll = Math.random();
+            if (roll < 0.08) {
+                return {
+                    durationMs: 4300 + Math.floor(Math.random() * 700),
+                    turns: 8 + Math.floor(Math.random() * 2),
+                };
+            }
+            if (roll < 0.30) {
+                return {
+                    durationMs: 3200 + Math.floor(Math.random() * 500),
+                    turns: 6 + Math.floor(Math.random() * 2),
+                };
+            }
+            return {
+                durationMs: 2400 + Math.floor(Math.random() * 450),
+                turns: 5 + Math.floor(Math.random() * 2),
+            };
+        }
+
+        function startRouletteDecelTicks(durationMs) {
+            let cancelled = false;
+            const started = performance.now();
+            const tick = () => {
+                if (cancelled) return;
+                const progress = Math.max(0, Math.min(1, (performance.now() - started) / durationMs));
+                playRouletteTickSound(progress);
+                if (progress >= 0.98) return;
+                const interval = 55 + Math.pow(progress, 1.75) * 245;
+                setTimeout(tick, interval);
+            };
+            tick();
+            return () => { cancelled = true; };
         }
 
 
@@ -22259,9 +22298,14 @@
             if (!wheel) return;
             const idx = Math.max(0, DAILY_ROULETTE_PREVIEW.findIndex(r => r.id === reward.id));
             const slice = 360 / DAILY_ROULETTE_PREVIEW.length;
+            const profile = getDailyRouletteSpinProfile();
             wheel.classList.remove('spinning');
-            wheel.style.transform = 'rotate(' + (1440 + (360 - (idx * slice + slice / 2))) + 'deg)';
-            await sleep(950);
+            void wheel.offsetWidth;
+            wheel.style.setProperty('--roulette-spin-duration', profile.durationMs + 'ms');
+            wheel.style.transform = 'rotate(' + (profile.turns * 360 + (360 - (idx * slice + slice / 2))) + 'deg)';
+            const stopDecelTicks = startRouletteDecelTicks(profile.durationMs);
+            await sleep(profile.durationMs + 120);
+            stopDecelTicks();
         }
 
         async function runLuckySpin(dayNum, spinMode = 'daily') {
