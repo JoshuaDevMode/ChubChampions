@@ -5788,6 +5788,37 @@
             box-shadow: 0 0 18px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255,220,80,0.18);
             transform: translateY(-2px);
         }
+
+        .shop-item-crystal-chest {
+            grid-column: 1 / -1;
+            border-color: rgba(56, 189, 248, 0.62);
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.62), rgba(49, 46, 129, 0.62));
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255,255,255,0.14);
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+        }
+        .shop-item-crystal-chest:hover {
+            border-color: #67e8f9;
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.72), rgba(67, 56, 202, 0.72));
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.38), inset 0 1px 0 rgba(255,255,255,0.18);
+        }
+        .crystal-chest-progress {
+            width: 120px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-radius: 999px;
+            background: rgba(0,0,0,0.42);
+            overflow: hidden;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.38);
+        }
+        .crystal-chest-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #67e8f9, #a78bfa, #f0abfc);
+            box-shadow: 0 0 10px rgba(103,232,249,0.55);
+        }
         .shop-item-fragment .shop-item-name {
             color: #fde68a;
             text-shadow: 0 0 8px rgba(251,191,36,0.5);
@@ -38143,6 +38174,26 @@
             // Update tab styles
             document.getElementById('shop-tab-potions').classList.toggle('active', shopActiveTab === 'potions');
 
+            const crystalCost = 10;
+            const crystalProgress = Math.min(100, Math.floor((globalCrystals / crystalCost) * 100));
+            const canOpenCrystalChest = globalCrystals >= crystalCost;
+            const crystalChest = document.createElement('div');
+            crystalChest.className = 'shop-item shop-item-crystal-chest' + (canOpenCrystalChest ? '' : ' cant-afford');
+            crystalChest.innerHTML =
+                '<div class="shop-item-icon">💎</div>' +
+                '<div class="shop-item-info">' +
+                    '<div class="shop-item-name">CRYSTAL SKIN CHEST</div>' +
+                    '<div class="shop-item-heal">Random skin reward</div>' +
+                '</div>' +
+                '<div class="crystal-chest-progress" title="' + Math.min(globalCrystals, crystalCost) + ' / ' + crystalCost + '">' +
+                    '<div class="crystal-chest-fill" style="width:' + crystalProgress + '%"></div>' +
+                '</div>' +
+                '<div class="' + (canOpenCrystalChest ? 'shop-item-price' : 'shop-item-cooldown') + '">💎 ' + Math.min(globalCrystals, crystalCost) + '/' + crystalCost + '</div>';
+            if (canOpenCrystalChest) {
+                crystalChest.addEventListener('click', openCrystalSkinChest);
+            }
+            grid.appendChild(crystalChest);
+
             // Fragment item (always shown, independent of tabs)
             const today = new Date().toDateString();
             const fragBought = shopFragmentDate === today && shopFragmentBoughtToday;
@@ -38494,6 +38545,61 @@
             saveProgression();
             renderShop();
             showNotice('+1 ' + FRAG_ICON_HTML + ' Fragment purchased!');
+        }
+
+        async function openCrystalSkinChest() {
+            if (globalCrystals < 10) {
+                showNotice('You need 10 crystals for a Crystal Skin Chest.');
+                return;
+            }
+            if (!playerSession?.playerId) {
+                showNotice('Session expired. Please log in again.');
+                return;
+            }
+
+            try {
+                const headers = await getAuthHeaders();
+                const resp = await fetch(BACKEND_URL + '/api/economy/crystal-skin-chest', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        walletAddress: playerSession.wallet || wardrobeWallet || '',
+                    }),
+                });
+                const data = await resp.json();
+                if (!data.ok) {
+                    showNotice(data.error || 'Could not open Crystal Skin Chest.');
+                    return;
+                }
+
+                globalCrystals = data.newCrystalBalance ?? Math.max(0, globalCrystals - 10);
+                updateCurrencyUI();
+                renderShop();
+
+                const skin = data.skin;
+                if (skin) {
+                    const wardrobeSkin = {
+                        mint: skin.mint,
+                        name: skin.name || 'Crystal Skin',
+                        type: (skin.type || 'body').toLowerCase(),
+                        rarity: (skin.rarity || 'common').toLowerCase(),
+                        skinKey: skin.skinKey || null,
+                        templateId: Number(skin.templateId || 0),
+                        image: skin.image || '',
+                    };
+                    const exists = wardrobeNFTs.some(s => s.mint === wardrobeSkin.mint);
+                    if (!exists) wardrobeNFTs.push(wardrobeSkin);
+                    renderWardrobeGrid();
+                    updateWardrobeEquippedUI();
+                    showNotice('💎 Crystal Skin Chest opened: ' + wardrobeSkin.name + '!');
+                } else {
+                    showNotice('💎 Crystal Skin Chest opened!');
+                }
+            } catch (e) {
+                console.error('[Crystal Skin Chest]', e);
+                showNotice('Network error opening Crystal Skin Chest.');
+            }
         }
 
         function openShop() {
@@ -42114,7 +42220,7 @@
             const response = await fetch(url, {
                 method: 'POST',
                 headers: await getAuthHeaders(),
-                body: JSON.stringify({ walletAddress }),
+                body: JSON.stringify({ walletAddress, playerId: playerSession?.playerId || '' }),
             });
             const data = await response.json();
             // data.items will contain the NFT assets
