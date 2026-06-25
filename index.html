@@ -18363,10 +18363,10 @@
         </div>
     </div>
 
-    <!-- Vault Panel (deposit/withdraw CHUB) -->
+    <!-- Coin Shop Panel (buy server-side coins with crypto) -->
     <div class="vault-panel" id="vault-panel">
         <div class="vault-header">
-            <div class="vault-title">🏦 CHUB VAULT</div>
+            <div class="vault-title">🏦 COIN SHOP</div>
             <span class="vault-close" id="vault-close">&times;</span>
         </div>
 
@@ -18376,11 +18376,6 @@
                 <div class="vault-bal-label">IN-GAME</div>
                 <div class="vault-bal-value" id="vault-ingame-bal">🪙 0</div>
             </div>
-            <div class="vault-bal-divider"></div>
-            <div class="vault-bal-item">
-                <div class="vault-bal-label">ON-CHAIN</div>
-                <div class="vault-bal-value" id="vault-onchain-bal">-- CHUB</div>
-            </div>
         </div>
 
         <!-- Chain selector -->
@@ -18389,11 +18384,9 @@
             <button class="vault-chain-btn" id="vault-chain-mon" data-chain="monad">⬡ MONAD</button>
         </div>
 
-        <!-- Buy / Deposit / Withdraw tabs -->
+        <!-- Buy tab -->
         <div class="vault-tabs">
             <div class="vault-tab active" id="vault-tab-buy" data-tab="buy">BUY</div>
-            <div class="vault-tab" id="vault-tab-deposit" data-tab="deposit">DEPOSIT</div>
-            <div class="vault-tab" id="vault-tab-withdraw" data-tab="withdraw">WITHDRAW</div>
         </div>
 
         <div class="vault-content" id="vault-content">
@@ -24108,37 +24101,20 @@
         }
 
         // ══════════════════════════════════════════════════════════════════════════
-        // ═══  CHUB VAULT — Deposit / Withdraw  ═══════════════════════════════════
+        // ═══  COIN SHOP — crypto purchase → server-side game balance  ═══════════
         // ══════════════════════════════════════════════════════════════════════════
-
-        // Vault contract address (Monad) — fill after deploy
-        const CHUB_VAULT_ADDRESS = ''; // e.g. '0x9876...'
-
-        // Minimal ABI for ChubVault (Monad)
-        const CHUB_VAULT_ABI = [
-            'function deposit(uint256 amount) external',
-            'function withdraw(uint256 amount, uint256 nonce, uint256 deadline, bytes sig) external',
-            'function claimHeldPayout() external',
-            'function nonces(address) external view returns (uint256)',
-            'function heldPayouts(address) external view returns (uint256)',
-            'event Deposited(address indexed user, uint256 amount)',
-            'event Withdrawn(address indexed user, uint256 amount, uint256 nonce)',
-        ];
-
-        // Solana vault program ID — fill after deploy
-        const CHUB_VAULT_SOLANA_PROGRAM = ''; // e.g. 'Vault111...'
 
         let _vaultChain = 'solana'; // current selected chain in vault UI
         let _vaultTab   = 'buy';
         let _vaultCurrency = 'native'; // 'native' (SOL/MON), 'usdc', or 'ausd' (Monad only)
 
-        // ── Token Packs (Option B — $0.04/CHUB) ────────────────────────────
+        // ── Coin Packs (server-side game balance) ──────────────────────────
         const TOKEN_PACKS = [
-            { id: 'starter', chub: 25,   usd: 0.99,  label: 'STARTER',  badge: '' },
-            { id: 'popular', chub: 80,   usd: 2.99,  label: 'POPULAR',  badge: '⭐' },
-            { id: 'value',   chub: 175,  usd: 4.99,  label: 'VALUE',    badge: '🔥' },
-            { id: 'pro',     chub: 400,  usd: 9.99,  label: 'PRO',      badge: '💎' },
-            { id: 'whale',   chub: 1000, usd: 19.99, label: 'WHALE',    badge: '🐋' },
+            { id: 'starter', coins: 25,   usd: 0.99,  label: 'STARTER',  badge: '' },
+            { id: 'popular', coins: 80,   usd: 2.99,  label: 'POPULAR',  badge: '⭐' },
+            { id: 'value',   coins: 175,  usd: 4.99,  label: 'VALUE',    badge: '🔥' },
+            { id: 'pro',     coins: 400,  usd: 9.99,  label: 'PRO',      badge: '💎' },
+            { id: 'whale',   coins: 1000, usd: 19.99, label: 'WHALE',    badge: '🐋' },
         ];
 
         // Live crypto prices (USD) — fetched on vault open
@@ -24172,10 +24148,6 @@
             if (!price || price <= 0) return 0;
             return +(pack.usd / price).toFixed(6);
         }
-
-        // Exchange rates (CHUB per 1 native token) — kept for deposit/withdraw
-        const CHUB_RATE_MONAD  = 10000; // 1 MON = 10,000 CHUB
-        const CHUB_RATE_SOLANA = 10000; // 1 SOL = 10,000 CHUB
 
         // Treasury wallets — fill after setup
         const TREASURY_WALLET_MONAD  = ''; // 0x... address
@@ -24222,57 +24194,8 @@
         }
 
         async function _refreshVaultBalances() {
-            // In-game balance
             const igEl = document.getElementById('vault-ingame-bal');
             if (igEl) igEl.textContent = '🪙 ' + globalTokens;
-
-            // On-chain CHUB balance
-            const ocEl = document.getElementById('vault-onchain-bal');
-            if (!ocEl) return;
-
-            if (!playerSession || !playerSession.wallet) {
-                ocEl.textContent = '-- CHUB';
-                return;
-            }
-
-            const addr = playerSession.wallet.trim();
-            ocEl.textContent = '...';
-
-            try {
-                if (_vaultChain === 'monad') {
-                    if (!CHUB_TOKEN_ADDRESS || !window.ethereum) { ocEl.textContent = '-- CHUB'; return; }
-                    // Read ERC20 balance via eth_call
-                    const balSig = '0x70a08231000000000000000000000000' + addr.slice(2).toLowerCase();
-                    let balHex = null;
-                    try {
-                        balHex = await window.ethereum.request({
-                            method: 'eth_call',
-                            params: [{ to: CHUB_TOKEN_ADDRESS, data: balSig }, 'latest'],
-                        });
-                    } catch(e) {}
-                    if (!balHex && MONAD_RPC_URL) {
-                        const r = await fetch(MONAD_RPC_URL, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_call', params: [{ to: CHUB_TOKEN_ADDRESS, data: balSig }, 'latest'], id: 1 }),
-                        });
-                        balHex = (await r.json()).result;
-                    }
-                    if (balHex) {
-                        const bal = parseInt(balHex, 16) / 1e18;
-                        ocEl.textContent = Math.floor(bal).toLocaleString() + ' CHUB';
-                    } else {
-                        ocEl.textContent = '-- CHUB';
-                    }
-                } else {
-                    // Solana — read SPL token balance
-                    if (!window.solanaWeb3) { ocEl.textContent = '-- CHUB'; return; }
-                    // TODO: Read actual SPL token account balance when mint is deployed
-                    ocEl.textContent = '-- CHUB';
-                }
-            } catch(e) {
-                console.warn('[Vault] balance fetch error:', e);
-                ocEl.textContent = '-- CHUB';
-            }
         }
 
         function renderVault() {
@@ -24290,7 +24213,6 @@
 
             const chainLabel  = _vaultChain === 'monad' ? '⬡ Monad' : '◎ Solana';
             const nativeSym   = _vaultChain === 'monad' ? 'MON' : 'SOL';
-            const rate        = _vaultChain === 'monad' ? CHUB_RATE_MONAD : CHUB_RATE_SOLANA;
             const treasuryOk  = _vaultChain === 'monad' ? !!TREASURY_WALLET_MONAD : !!TREASURY_WALLET_SOLANA;
 
             // ── BUY tab ───────────────────────────────────────────────────────────
@@ -24325,7 +24247,7 @@
                         <div class="vault-pack-card" onclick="selectPack('${pack.id}')" id="vault-pack-${pack.id}">
                             <div class="vault-pack-badge">${pack.badge}</div>
                             <div class="vault-pack-label">${pack.label}</div>
-                            <div class="vault-pack-chub">🪙 ${pack.chub.toLocaleString()}</div>
+                            <div class="vault-pack-chub">🪙 ${pack.coins.toLocaleString()} COINS</div>
                             <div class="vault-pack-price">${priceLabel}</div>
                             <div class="vault-pack-usd">$${pack.usd.toFixed(2)} USD</div>
                         </div>`;
@@ -24375,67 +24297,6 @@
                 return;
             }
 
-            // ── DEPOSIT / WITHDRAW need vault contracts deployed ──────────────────
-            const contractReady = _vaultChain === 'monad'
-                ? (CHUB_VAULT_ADDRESS && CHUB_TOKEN_ADDRESS)
-                : (CHUB_VAULT_SOLANA_PROGRAM);
-
-            if (!contractReady) {
-                content.innerHTML = `
-                    <div class="vault-wallet-warn">
-                        ${chainLabel} vault is not deployed yet.<br>
-                        <span style="font-size:0.85em;color:#666">Coming soon!</span>
-                    </div>`;
-                return;
-            }
-
-            // ── DEPOSIT tab ───────────────────────────────────────────────────────
-            if (_vaultTab === 'deposit') {
-                content.innerHTML = `
-                    <div class="vault-form">
-                        <div class="vault-form-label">DEPOSIT CHUB (on-chain → in-game)</div>
-                        <input type="number" class="vault-form-input" id="vault-deposit-amount"
-                               placeholder="Amount" min="10" step="1">
-                        <div class="vault-amount-presets">
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=100">100</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=1000">1K</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=10000">10K</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-deposit-amount').value=100000">100K</button>
-                        </div>
-                        <button class="vault-action-btn deposit-btn" id="vault-deposit-btn" onclick="vaultDeposit()">
-                            DEPOSIT TO GAME
-                        </button>
-                        <div class="vault-info-box">
-                            Burns CHUB from your ${chainLabel} wallet and credits your in-game balance.<br>
-                            Min: <span class="vault-limit">10 CHUB</span> · Max: <span class="vault-limit">1,000,000 CHUB</span>
-                        </div>
-                        <div id="vault-deposit-status"></div>
-                    </div>`;
-            }
-
-            // ── WITHDRAW tab ──────────────────────────────────────────────────────
-            if (_vaultTab === 'withdraw') {
-                content.innerHTML = `
-                    <div class="vault-form">
-                        <div class="vault-form-label">WITHDRAW CHUB (in-game → on-chain)</div>
-                        <input type="number" class="vault-form-input" id="vault-withdraw-amount"
-                               placeholder="Amount" min="10" step="1">
-                        <div class="vault-amount-presets">
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=100">100</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=1000">1K</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=10000">10K</button>
-                            <button class="vault-preset-btn" onclick="document.getElementById('vault-withdraw-amount').value=''+globalTokens">MAX</button>
-                        </div>
-                        <button class="vault-action-btn withdraw-btn" id="vault-withdraw-btn" onclick="vaultWithdraw()">
-                            WITHDRAW TO WALLET
-                        </button>
-                        <div class="vault-info-box">
-                            Deducts from your in-game balance and mints CHUB to your ${chainLabel} wallet.<br>
-                            Min: <span class="vault-limit">10 CHUB</span> · Max: <span class="vault-limit">500,000 CHUB</span> · Daily: <span class="vault-limit">1,000,000 CHUB</span>
-                        </div>
-                        <div id="vault-withdraw-status"></div>
-                    </div>`;
-            }
         }
 
         function _vaultStatus(elId, msg, type) {
@@ -24445,38 +24306,7 @@
             el.textContent = msg;
         }
 
-        // ── Monad Deposit (EVM via ethers.js) ───────────────────────────────────
-        async function _monadDeposit(amount) {
-            if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected. Install MetaMask.');
-
-            const provider = new window.ethers.BrowserProvider(window.ethereum);
-            const signer   = await provider.getSigner();
-            const amountWei = window.ethers.parseUnits(String(amount), 18);
-
-            // No approve needed — vault calls ChubToken.spend() as an authorized contract
-            const vault = new window.ethers.Contract(CHUB_VAULT_ADDRESS, CHUB_VAULT_ABI, signer);
-
-            _vaultStatus('vault-deposit-status', 'Sending deposit transaction...', 'pending');
-            const depTx = await vault.deposit(amountWei);
-            _vaultStatus('vault-deposit-status', 'Waiting for deposit confirmation...', 'pending');
-            const receipt = await depTx.wait();
-
-            return receipt.hash;
-        }
-
-        // ── Solana Deposit ──────────────────────────────────────────────────────
-        async function _solanaDeposit(amount) {
-            // Requires Phantom or similar wallet
-            const provider = window.solana || window.phantom?.solana;
-            if (!provider || !provider.isPhantom) throw new Error('Install Phantom wallet for Solana deposits.');
-
-            // TODO: Build Anchor instruction to call chub-vault deposit(amount)
-            // This requires the deployed program IDL and mint address
-            throw new Error('Solana vault not yet deployed. Coming soon!');
-        }
-
-        // ── Deposit Flow ────────────────────────────────────────────────────────
-        // ── Buy CHUB with native currency ──────────────────────────────────────
+        // ── Buy coins with native currency ─────────────────────────────────────
         // ── Send MON via EVM (embedded Privy or external MetaMask) ─────────
         async function _sendMonad(nativeAmount, treasury) {
             if (!window.ethers) throw new Error('ethers.js not loaded.');
@@ -24695,7 +24525,7 @@
                 btn.disabled = false;
                 const curSym = _vaultCurrency === 'ausd' ? 'aUSD' : _vaultCurrency === 'usdc' ? 'USDC' : (_vaultChain === 'monad' ? 'MON' : 'SOL');
                 const price = _packCryptoPrice(pack, _vaultCurrency, _vaultChain);
-                btn.textContent = `BUY ${pack.chub} CHUB — ${price} ${curSym}`;
+                btn.textContent = `BUY ${pack.coins} COINS - ${price} ${curSym}`;
             }
         }
 
@@ -24723,7 +24553,7 @@
                         : await _sendSolana(nativeAmount, treasury);
                 }
 
-                // Notify backend to credit CHUB
+                // Notify backend to credit server-side coins
                 _vaultStatus('vault-buy-status', 'Verifying purchase...', 'pending');
 
                 const headers = await getAuthHeaders();
@@ -24744,7 +24574,7 @@
                     globalTokens = data.newTokens;
                     updateCurrencyUI();
                     _refreshVaultBalances();
-                    _vaultStatus('vault-buy-status', '+' + data.tokensCredited.toLocaleString() + ' CHUB added to your balance!', 'success');
+                    _vaultStatus('vault-buy-status', '+' + data.tokensCredited.toLocaleString() + ' coins added to your balance!', 'success');
                     _selectedPackId = null;
                 } else {
                     _vaultStatus('vault-buy-status', data.error || 'Purchase verification failed', 'error');
@@ -24755,138 +24585,6 @@
             } finally {
                 if (btn) btn.disabled = false;
             }
-        }
-
-        // ── Deposit CHUB (on-chain → in-game) ──────────────────────────────────
-        async function vaultDeposit() {
-            const amountInput = document.getElementById('vault-deposit-amount');
-            const amount = Math.floor(Number(amountInput?.value || 0));
-
-            if (amount < 10) { _vaultStatus('vault-deposit-status', 'Minimum deposit is 10 CHUB', 'error'); return; }
-            if (amount > 1000000) { _vaultStatus('vault-deposit-status', 'Maximum deposit is 1,000,000 CHUB', 'error'); return; }
-
-            const btn = document.getElementById('vault-deposit-btn');
-            if (btn) btn.disabled = true;
-
-            try {
-                let txHash;
-                if (_vaultChain === 'monad') {
-                    txHash = await _monadDeposit(amount);
-                } else {
-                    txHash = await _solanaDeposit(amount);
-                }
-
-                // Notify backend to credit in-game tokens
-                _vaultStatus('vault-deposit-status', 'Verifying deposit on-chain...', 'pending');
-
-                const headers = await getAuthHeaders();
-                const resp = await fetch(BACKEND_URL + '/api/tokens/deposit', {
-                    method: 'POST', headers,
-                    body: JSON.stringify({
-                        playerId: playerSession.oddsId || playerSession.oddsid,
-                        txHash,
-                        walletAddress: playerSession.wallet,
-                        chain: _vaultChain,
-                    }),
-                });
-                const data = await resp.json();
-
-                if (data.ok) {
-                    globalTokens = data.newTokens;
-                    updateCurrencyUI();
-                    _vaultStatus('vault-deposit-status', '+' + data.tokensCredited + ' CHUB credited to your game balance!', 'success');
-                    _refreshVaultBalances();
-                } else {
-                    _vaultStatus('vault-deposit-status', data.error || 'Deposit verification failed', 'error');
-                }
-            } catch(e) {
-                console.error('[Vault deposit]', e);
-                _vaultStatus('vault-deposit-status', e.message || 'Deposit failed', 'error');
-            } finally {
-                if (btn) btn.disabled = false;
-            }
-        }
-
-        // ── Withdraw Flow ───────────────────────────────────────────────────────
-        async function vaultWithdraw() {
-            const amountInput = document.getElementById('vault-withdraw-amount');
-            const amount = Math.floor(Number(amountInput?.value || 0));
-
-            if (amount < 10) { _vaultStatus('vault-withdraw-status', 'Minimum withdrawal is 10 CHUB', 'error'); return; }
-            if (amount > 500000) { _vaultStatus('vault-withdraw-status', 'Maximum withdrawal is 500,000 CHUB', 'error'); return; }
-            if (amount > globalTokens) { _vaultStatus('vault-withdraw-status', 'Not enough in-game tokens', 'error'); return; }
-
-            const btn = document.getElementById('vault-withdraw-btn');
-            if (btn) btn.disabled = true;
-
-            try {
-                // Step 1: Request signed permit from backend
-                _vaultStatus('vault-withdraw-status', 'Requesting withdrawal permit...', 'pending');
-
-                const headers = await getAuthHeaders();
-                const resp = await fetch(BACKEND_URL + '/api/tokens/withdraw', {
-                    method: 'POST', headers,
-                    body: JSON.stringify({
-                        playerId: playerSession.oddsId || playerSession.oddsid,
-                        amount,
-                        walletAddress: playerSession.wallet,
-                        chain: _vaultChain,
-                    }),
-                });
-                const data = await resp.json();
-
-                if (!data.ok) {
-                    _vaultStatus('vault-withdraw-status', data.error || 'Withdraw request failed', 'error');
-                    return;
-                }
-
-                // Update in-game balance immediately (backend already deducted)
-                globalTokens = data.newTokens;
-                updateCurrencyUI();
-                _refreshVaultBalances();
-
-                // Step 2: Execute on-chain transaction with the signed permit
-                if (_vaultChain === 'monad') {
-                    await _monadWithdraw(data);
-                } else {
-                    await _solanaWithdraw(data);
-                }
-
-                _vaultStatus('vault-withdraw-status', amount + ' CHUB minted to your wallet!', 'success');
-                _refreshVaultBalances();
-
-            } catch(e) {
-                console.error('[Vault withdraw]', e);
-                _vaultStatus('vault-withdraw-status', e.message || 'Withdrawal failed', 'error');
-            } finally {
-                if (btn) btn.disabled = false;
-            }
-        }
-
-        // ── Monad Withdraw (EVM via ethers.js) ──────────────────────────────────
-        async function _monadWithdraw(permitData) {
-            if (!window.ethers || !window.ethereum) throw new Error('No EVM wallet detected.');
-
-            const provider = new window.ethers.BrowserProvider(window.ethereum);
-            const signer   = await provider.getSigner();
-            const vault    = new window.ethers.Contract(CHUB_VAULT_ADDRESS, CHUB_VAULT_ABI, signer);
-
-            const { signature, nonce, deadline, amountWei } = permitData;
-
-            _vaultStatus('vault-withdraw-status', 'Sending withdrawal transaction...', 'pending');
-            const tx = await vault.withdraw(BigInt(amountWei), BigInt(nonce), BigInt(deadline), signature);
-            _vaultStatus('vault-withdraw-status', 'Waiting for confirmation...', 'pending');
-            await tx.wait();
-        }
-
-        // ── Solana Withdraw ─────────────────────────────────────────────────────
-        async function _solanaWithdraw(permitData) {
-            const provider = window.solana || window.phantom?.solana;
-            if (!provider || !provider.isPhantom) throw new Error('Install Phantom wallet for Solana withdrawals.');
-
-            // TODO: Build tx with Ed25519 verify instruction + vault withdraw CPI
-            // Requires deployed program IDL and accounts setup
-            throw new Error('Solana vault not yet deployed. Coming soon!');
         }
 
         function loadCharacters() {
@@ -25215,7 +24913,6 @@
         // ── On-chain AoN — Monad contract addresses ───────────────────────────
         // Fill these in after deploying with `forge script DeployAoN.s.sol`
         const AON_ESCROW_ADDRESS = ''; // e.g. '0x1234...'
-        const CHUB_TOKEN_ADDRESS = ''; // e.g. '0xabcd...'
         const MONAD_CHAIN_ID = 10143; // Monad testnet
         const MONAD_RPC_URL  = '';    // e.g. 'https://testnet-rpc.monad.xyz' — fill after deploy
 
@@ -25235,13 +24932,6 @@
             'event RoomCreated(uint256 indexed roomId, address indexed p1, uint256 entryFee)',
             'event P2Joined(uint256 indexed roomId, address indexed p2, uint64 entropySeq)',
             'event MatchResolved(uint256 indexed roomId, address indexed winner, uint256 payout, uint32 turns)',
-        ];
-
-        // Minimal ABI for CHUB token (only approve/allowance needed for createRoom)
-        const CHUB_TOKEN_ABI = [
-            'function approve(address spender, uint256 amount) external returns (bool)',
-            'function allowance(address owner, address spender) external view returns (uint256)',
-            'function balanceOf(address account) external view returns (uint256)',
         ];
 
         // ── Pack character data for contract call ─────────────────────────────
@@ -25320,7 +25010,7 @@
         }
 
         // ── On-chain AoN: create room (P1) ────────────────────────────────────
-        async function aonCreateRoomOnChain(character, entryFeeChub) {
+        async function aonCreateRoomOnChain(character, entryFeeAmount) {
             if (!AON_ESCROW_ADDRESS) { showToast('Contract not deployed yet'); return null; }
             const signer     = await getMonadSigner();
             const walletAddr = await signer.getAddress();
@@ -25339,14 +25029,9 @@
             const sigData = await sigResp.json();
             if (!sigData.ok) { showToast(sigData.error || 'Sign error'); return null; }
 
-            const entryFeeWei = window.ethers.parseUnits(String(entryFeeChub), 18);
+            const entryFeeWei = window.ethers.parseUnits(String(entryFeeAmount), 18);
 
-            // 2. Approve token spend (CHUB is burned — contract calls token.spend() directly,
-            //    which requires the token contract to approve the escrow as authorized spender)
-            //    Note: ChubToken.spend() is called by the escrow, no ERC-20 approval needed
-            //    if escrow is setAuthorized(true). Keeping this comment for clarity.
-
-            // 3. Call createRoom on-chain
+            // 2. Call createRoom on-chain
             const escrow   = new window.ethers.Contract(AON_ESCROW_ADDRESS, AON_ESCROW_ABI, signer);
             const tx       = await escrow.createRoom(
                 entryFeeWei,
@@ -35922,7 +35607,7 @@
             }
         }
 
-        // ── On-chain AoN matchmaking (P2P, real CHUB tokens on Monad) ──────────
+        // ── On-chain AoN matchmaking (P2P wallet escrow on Monad) ──────────────
         // Flow:
         //   P1: sign-character → createRoom → backend registers roomId
         //   P2: backend finds roomId → sign-character → joinRoom
@@ -36039,7 +35724,7 @@
                 // Fallback: static result
                 showNotice(
                     (didWin ? '🏆 YOU WIN!' : '💀 YOU LOSE') +
-                    '\nPayout: ' + onChainResult.payout + ' CHUB' +
+                    '\nPayout: ' + onChainResult.payout +
                     '\nTurns: ' + onChainResult.turns
                 );
                 aonActive = false;
