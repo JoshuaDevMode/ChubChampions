@@ -18218,7 +18218,7 @@
     <!-- Skill Hover Tooltip -->
     <div id="skill-tooltip" class="skill-tooltip"></div>
 
-    <!-- NFT Wardrobe Panel -->
+    <!-- Wardrobe Panel -->
     <div class="wardrobe-panel" id="wardrobe-panel">
         <div class="wardrobe-container">
             <div class="wardrobe-header">
@@ -18226,8 +18226,8 @@
                 <span class="wardrobe-close" id="wardrobe-close">&times;</span>
             </div>
 
-            <!-- Wallet connection bar -->
-            <div class="wardrobe-wallet-bar">
+            <!-- Optional wallet connection bar for future external skins -->
+            <div class="wardrobe-wallet-bar" style="display:none">
                 <div class="wardrobe-wallet-addr" id="wardrobe-wallet-addr">Not connected</div>
                 <button class="wardrobe-chain-btn active" id="wardrobe-chain-solana" data-chain="solana">SOL</button>
                 <button class="wardrobe-chain-btn" id="wardrobe-chain-monad" data-chain="monad">MON</button>
@@ -18257,9 +18257,9 @@
                 <button class="wardrobe-tab" data-tab="feet">FEET</button>
             </div>
 
-            <!-- NFT skin grid -->
+            <!-- Skin grid -->
             <div class="wardrobe-grid" id="wardrobe-grid">
-                <div class="wardrobe-empty-msg">Connect your wallet to<br>see your NFT skins</div>
+                <div class="wardrobe-empty-msg">No skins unlocked yet</div>
             </div>
         </div>
     </div>
@@ -38564,7 +38564,6 @@
                     headers,
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
-                        walletAddress: playerSession.wallet || wardrobeWallet || '',
                     }),
                 });
                 const data = await resp.json();
@@ -38580,7 +38579,7 @@
                 const skin = data.skin;
                 if (skin) {
                     const wardrobeSkin = {
-                        mint: skin.mint,
+                        mint: skin.id,
                         name: skin.name || 'Crystal Skin',
                         type: (skin.type || 'body').toLowerCase(),
                         rarity: (skin.rarity || 'common').toLowerCase(),
@@ -42121,12 +42120,12 @@
             if (e.target.id === 'instinct-panel-overlay') closeInstinctPanel();
         });
 
-        // ─── Wardrobe (NFT) Panel ──────────────────────────────────────────────
+        // ─── Wardrobe Panel ───────────────────────────────────────────────────
 
         function openWardrobePanel() {
             document.getElementById('wardrobe-panel').classList.add('active');
             updateWardrobeEquippedUI();
-            if (wardrobeWallet) loadWardrobeNFTs();
+            loadWardrobeNFTs();
         }
 
         function closeWardrobePanel() {
@@ -42200,19 +42199,37 @@
         }
 
         async function loadWardrobeNFTs() {
-            if (!wardrobeWallet || wardrobeLoading) return;
+            if (wardrobeLoading) return;
             wardrobeLoading = true;
-            document.getElementById('wardrobe-grid').innerHTML = '<div class="wardrobe-loading">Loading NFTs...</div>';
+            document.getElementById('wardrobe-grid').innerHTML = '<div class="wardrobe-loading">Loading skins...</div>';
             try {
-                wardrobeNFTs = wardrobeChain === 'solana'
-                    ? await loadSolanaWardrobeSkins(wardrobeWallet)
-                    : await loadMonadWardrobeSkins(wardrobeWallet);
+                wardrobeNFTs = await loadInternalWardrobeSkins();
             } catch (e) {
-                console.warn('[Wardrobe] Failed to load NFTs:', e);
+                console.warn('[Wardrobe] Failed to load skins:', e);
                 wardrobeNFTs = [];
             }
             wardrobeLoading = false;
             renderWardrobeGrid();
+        }
+
+        async function loadInternalWardrobeSkins() {
+            if (!playerSession?.playerId) return [];
+            const response = await fetch(BACKEND_URL + '/api/player/skins', {
+                method: 'POST',
+                headers: await getAuthHeaders(),
+                body: JSON.stringify({ playerId: playerSession.playerId }),
+            });
+            const data = await response.json();
+            if (!data.ok) throw new Error(data.error || 'Skin lookup failed');
+            return (Array.isArray(data.skins) ? data.skins : []).map(skin => ({
+                mint: skin.id,
+                name: skin.name || 'Unknown Skin',
+                type: (skin.type || 'body').toLowerCase(),
+                rarity: (skin.rarity || 'common').toLowerCase(),
+                skinKey: skin.skinKey || null,
+                templateId: Number(skin.templateId || 0),
+                image: skin.image || '',
+            }));
         }
 
         async function loadSolanaWardrobeSkins(walletAddress) {
@@ -42300,14 +42317,10 @@
         function renderWardrobeGrid() {
             const grid = document.getElementById('wardrobe-grid');
             const char = getSelectedCharacter();
-            if (!wardrobeWallet) {
-                grid.innerHTML = '<div class="wardrobe-empty-msg">Connect your wallet to<br>see your NFT skins</div>';
-                return;
-            }
             const filtered    = wardrobeNFTs.filter(s => s.type === wardrobeActiveTab);
             const equippedKey = char && char.appearance ? char.appearance[wardrobeActiveTab] : null;
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="wardrobe-empty-msg">No ${wardrobeActiveTab.toUpperCase()} skins found.<br>Check your wallet or switch chain.</div>`;
+                grid.innerHTML = `<div class="wardrobe-empty-msg">No ${wardrobeActiveTab.toUpperCase()} skins unlocked yet.</div>`;
                 return;
             }
             grid.innerHTML = filtered.map(skin => {
@@ -42360,7 +42373,6 @@
             syncCharacterToBackend(char);
             updateWardrobeEquippedUI();
             renderWardrobeGrid();
-            wardrobeCallEquipOnChain(skin).catch(e => console.warn('[Wardrobe] On-chain equip failed:', e));
         }
 
         function wardrobeUnequipSkin(slot) {
@@ -42371,26 +42383,6 @@
             syncCharacterToBackend(char);
             updateWardrobeEquippedUI();
             renderWardrobeGrid();
-            wardrobeCallUnequipOnChain(slot).catch(e => console.warn('[Wardrobe] On-chain unequip failed:', e));
-        }
-
-        async function wardrobeCallEquipOnChain(skin) {
-            if (!wardrobeWallet) return;
-            // TODO: build & send transaction once contracts are deployed
-            if (wardrobeChain === 'solana') {
-                console.log('[Wardrobe] TODO Solana equip_skin mint:', skin.mint, 'slot:', skin.type);
-            } else {
-                console.log('[Wardrobe] TODO Monad equip tokenId:', skin.mint, 'slot:', skin.type);
-            }
-        }
-
-        async function wardrobeCallUnequipOnChain(slot) {
-            if (!wardrobeWallet) return;
-            if (wardrobeChain === 'solana') {
-                console.log('[Wardrobe] TODO Solana unequip_skin slot:', slot);
-            } else {
-                console.log('[Wardrobe] TODO Monad unequip slot:', slot);
-            }
         }
 
         // Wardrobe event handlers
