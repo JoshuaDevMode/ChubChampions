@@ -8702,6 +8702,28 @@
             font-weight: 900;
             letter-spacing: 0;
         }
+        .fusion-tabs {
+            display: flex;
+            gap: 6px;
+            margin-top: 7px;
+        }
+        .fusion-tab {
+            min-width: 98px;
+            height: 28px;
+            border: 2px solid rgba(74,44,18,0.42);
+            border-radius: 8px;
+            background: rgba(255,246,220,0.56);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .fusion-tab.active {
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            border-color: #4a2c12;
+            box-shadow: 0 2px 0 #3b220f;
+        }
         .pet-fusion-close {
             width: 30px;
             height: 30px;
@@ -8720,6 +8742,8 @@
             gap: 14px;
             min-height: 0;
         }
+        .fusion-tab-panel { display: none; }
+        .fusion-tab-panel.active { display: grid; }
         .pet-fusion-workbench {
             display: grid;
             grid-template-columns: minmax(120px, 1fr) 64px minmax(120px, 1fr);
@@ -8847,6 +8871,40 @@
             filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
         }
         .pet-fusion-inventory-item[draggable="true"] { cursor: grab; }
+        .character-fusion-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .character-fusion-slot,
+        .character-fusion-result {
+            min-width: 138px;
+        }
+        .character-fusion-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .character-fusion-actions button {
+            height: 24px;
+            border: 2px solid rgba(74,44,18,0.42);
+            border-radius: 7px;
+            background: rgba(255,246,220,0.72);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .character-fusion-actions button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .character-fusion-meta {
+            font-size: 0.72em;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #4f3014;
+        }
         .inventory-pet-card {
             background: rgba(255,248,225,0.46);
             border: 2px solid rgba(120,80,30,0.26);
@@ -17238,6 +17296,7 @@
         .market-tab,
         .vault-tab,
         .skill-branch-tab,
+        .fusion-tab,
         .pet-fusion-actions button,
         .wardrobe-connect-btn,
         .wardrobe-chain-btn,
@@ -17252,6 +17311,7 @@
         .market-tab.active,
         .vault-tab.active,
         .skill-branch-tab.active,
+        .fusion-tab.active,
         .wardrobe-chain-btn.active,
         .pet-fusion-actions button:not(:disabled),
         .chat-send {
@@ -18163,13 +18223,41 @@
         </div>
     </div>
 
-    <!-- Pet Fusion Panel -->
+    <!-- Fusion Panel -->
     <div class="pet-fusion-panel" id="pet-fusion-panel">
         <div class="pet-fusion-header">
-            <div class="pet-fusion-title">PET FUSION</div>
+            <div>
+                <div class="pet-fusion-title">FUSION</div>
+                <div class="fusion-tabs">
+                    <button type="button" class="fusion-tab active" data-fusion-tab="characters">CHARACTERS</button>
+                    <button type="button" class="fusion-tab" data-fusion-tab="pets">PETS</button>
+                </div>
+            </div>
             <button class="pet-fusion-close" id="pet-fusion-close" type="button">&times;</button>
         </div>
-        <div class="pet-fusion-body">
+        <div class="pet-fusion-body fusion-tab-panel active" id="fusion-tab-characters" data-fusion-tab-panel="characters">
+            <div>
+                <div class="pet-fusion-workbench">
+                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="0">Main fighter</div>
+                    <div class="pet-fusion-plus"><canvas id="character-fusion-plus-canvas" width="56" height="56"></canvas></div>
+                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="1">Sacrifice fighter</div>
+                </div>
+                <div class="pet-fusion-side">
+                    <div class="pet-fusion-result character-fusion-result" id="character-fusion-result">Result preview</div>
+                    <div class="pet-fusion-rules" id="character-fusion-rules">
+                        Main fighter keeps identity. Sacrifice is consumed. Requires both fighters at level 20+.
+                    </div>
+                    <div class="pet-fusion-actions">
+                        <button type="button" id="character-fusion-button" disabled>FUSE</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pet-fusion-inventory">
+                <div class="pet-fusion-inventory-title">Owned Fighters</div>
+                <div class="pet-fusion-inventory-grid character-fusion-grid" id="character-fusion-inventory-grid"></div>
+            </div>
+        </div>
+        <div class="pet-fusion-body fusion-tab-panel" id="fusion-tab-pets" data-fusion-tab-panel="pets">
             <div>
                 <div class="pet-fusion-workbench">
                     <div class="pet-fusion-slot" data-fusion-slot="0">Drop pet here</div>
@@ -25275,6 +25363,8 @@
                             local.element      = sc.element;
                             local.adaptability = sc.adaptability;
                             local.qTable       = sc.qTable;
+                            local.fusionData   = sc.fusionData || { count: sc.fusionCount || 0, history: [] };
+                            local.fusionCount  = sc.fusionCount || local.fusionData.count || 0;
                             // Level, exp and stats are validated server-side
                             local.level  = sc.level;
                             local.exp    = sc.exp ?? local.exp ?? 0;
@@ -28071,7 +28161,193 @@
             renderInventoryPets();
         }
 
+        const fusionPanelState = { tab: 'characters' };
+        const characterFusionState = { slots: [null, null] };
+        const CHARACTER_FUSION_COSTS = [500, 750, 1000, 1500, 2000];
         const petFusionState = { slots: [null, null] };
+
+        function characterFusionCount(character) {
+            return Math.max(0, Math.floor(Number(character?.fusionCount ?? character?.fusionData?.count ?? 0) || 0));
+        }
+
+        function characterFusionCost(character) {
+            const count = characterFusionCount(character);
+            return CHARACTER_FUSION_COSTS[count] ?? null;
+        }
+
+        function qTableStateCount(raw) {
+            return raw && typeof raw === 'object' ? Object.keys(raw).length : 0;
+        }
+
+        function getCharacterFusionValidation(main, sacrifice) {
+            if (!main || !sacrifice) return { ok: false, reason: 'Choose a main fighter and a sacrifice fighter.' };
+            if (String(main.id) === String(sacrifice.id)) return { ok: false, reason: 'Choose two different fighters.' };
+            if ((main.level || 1) < 20 || (sacrifice.level || 1) < 20) return { ok: false, reason: 'Both fighters must be level 20 or higher.' };
+            if (main.hasPendingLevelUp || sacrifice.hasPendingLevelUp) return { ok: false, reason: 'Resolve pending level ups first.' };
+            const cost = characterFusionCost(main);
+            if (!cost) return { ok: false, reason: 'This fighter has reached the fusion limit.' };
+            if (globalTokens < cost) return { ok: false, reason: `Need ${cost} coins.` };
+            return { ok: true, cost };
+        }
+
+        function characterFusionMiniHtml(character, fallback) {
+            if (!character) return fallback;
+            const count = characterFusionCount(character);
+            return `
+                <div class="inventory-pet-name">${escapeHTML(character.name || 'Fighter')}</div>
+                <div class="character-fusion-meta">LV ${character.level || 1}</div>
+                <div class="character-fusion-meta">Instinct ${qTableStateCount(character.qTable)} states</div>
+                <div class="character-fusion-meta">Fusion ${count}/5</div>
+            `;
+        }
+
+        function characterFusionInventoryItemHtml(character, main, sacrifice) {
+            const isMain = main && String(main.id) === String(character.id);
+            const isSacrifice = sacrifice && String(sacrifice.id) === String(character.id);
+            const cost = characterFusionCost(character);
+            return `
+                <div>
+                    <div class="inventory-pet-name">${escapeHTML(character.name || 'Fighter')}</div>
+                    <div class="character-fusion-meta">LV ${character.level || 1} · Instinct ${qTableStateCount(character.qTable)} states</div>
+                    <div class="character-fusion-meta">Fusion ${characterFusionCount(character)}/5${cost ? ` · Next ${cost} coins` : ' · Maxed'}</div>
+                    <div class="character-fusion-actions">
+                        <button type="button" data-character-fusion-pick="0" data-character-id="${character.id}" ${isMain ? 'disabled' : ''}>MAIN</button>
+                        <button type="button" data-character-fusion-pick="1" data-character-id="${character.id}" ${isSacrifice ? 'disabled' : ''}>SACRIFICE</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFusionTabs() {
+            document.querySelectorAll('[data-fusion-tab]').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.fusionTab === fusionPanelState.tab);
+            });
+            document.querySelectorAll('[data-fusion-tab-panel]').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.fusionTabPanel === fusionPanelState.tab);
+            });
+        }
+
+        function setFusionTab(tab) {
+            fusionPanelState.tab = tab === 'pets' ? 'pets' : 'characters';
+            renderFusionPanel();
+        }
+
+        function drawCharacterFusionPlus() {
+            drawPlusCanvas(document.getElementById('character-fusion-plus-canvas'));
+        }
+
+        function renderCharacterFusionPanel() {
+            characterFusionState.slots = characterFusionState.slots.map(id => characters.some(c => String(c.id) === String(id)) ? id : null);
+            const selected = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
+            document.querySelectorAll('[data-character-fusion-slot]').forEach(slot => {
+                const index = Number(slot.dataset.characterFusionSlot);
+                slot.innerHTML = characterFusionMiniHtml(selected[index], index === 0 ? 'Main fighter' : 'Sacrifice fighter');
+            });
+
+            const resultEl = document.getElementById('character-fusion-result');
+            const rulesEl = document.getElementById('character-fusion-rules');
+            const button = document.getElementById('character-fusion-button');
+            const validation = getCharacterFusionValidation(selected[0], selected[1]);
+            if (resultEl) {
+                if (selected[0] && selected[1]) {
+                    const cost = characterFusionCost(selected[0]);
+                    resultEl.innerHTML = `
+                        <div class="inventory-pet-name">${escapeHTML(selected[0].name || 'Fighter')}</div>
+                        <div class="character-fusion-meta">Fusion ${characterFusionCount(selected[0]) + 1}/5</div>
+                        <div class="character-fusion-meta">${cost || 0} coins</div>
+                        <div class="character-fusion-meta">Battle Instinct DNA mixed</div>
+                    `;
+                } else {
+                    resultEl.textContent = 'Result preview';
+                }
+            }
+            if (rulesEl) {
+                rulesEl.textContent = validation.ok
+                    ? `${selected[1].name || 'Sacrifice'} is consumed. ${selected[0].name || 'Main'} keeps identity and inherits a capped part of the Battle Instinct.`
+                    : validation.reason;
+            }
+            if (button) button.disabled = !validation.ok;
+
+            const grid = document.getElementById('character-fusion-inventory-grid');
+            if (grid) {
+                grid.innerHTML = '';
+                characters.forEach(character => {
+                    const item = document.createElement('div');
+                    const active = selected.some(c => c && String(c.id) === String(character.id));
+                    item.className = 'pet-fusion-inventory-item' + (active ? ' active' : '');
+                    item.dataset.characterId = character.id;
+                    item.innerHTML = characterFusionInventoryItemHtml(character, selected[0], selected[1]);
+                    grid.appendChild(item);
+                });
+                if (!characters.length) {
+                    grid.innerHTML = '<div class="inventory-pet-role" style="grid-column:1/-1;text-align:center;">No fighters owned.</div>';
+                }
+            }
+            drawCharacterFusionPlus();
+        }
+
+        function renderFusionPanel() {
+            renderFusionTabs();
+            if (fusionPanelState.tab === 'pets') renderPetFusionPanel();
+            else renderCharacterFusionPanel();
+        }
+
+        function pickCharacterFusionSlot(characterId, slotIndex) {
+            const id = Number(characterId);
+            if (!characters.some(c => String(c.id) === String(id))) return;
+            const otherIndex = slotIndex === 0 ? 1 : 0;
+            if (String(characterFusionState.slots[otherIndex]) === String(id)) characterFusionState.slots[otherIndex] = null;
+            characterFusionState.slots[slotIndex] = id;
+            renderCharacterFusionPanel();
+        }
+
+        async function fuseSelectedCharacters() {
+            const [main, sacrifice] = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
+            const validation = getCharacterFusionValidation(main, sacrifice);
+            if (!validation.ok) {
+                showNotice(validation.reason);
+                return;
+            }
+            if (!playerSession || !BACKEND_URL) {
+                showNotice('Character fusion requires server sync.');
+                return;
+            }
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/fusion', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        mainCharacterId: String(main.id),
+                        sacrificeCharacterId: String(sacrifice.id),
+                    }),
+                });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not fuse fighters.');
+                    return;
+                }
+                globalTokens = Number(data.newTokens ?? globalTokens);
+                const mainLocal = characters.find(c => String(c.id) === String(main.id));
+                if (mainLocal) {
+                    mainLocal.fusionData = data.fusionData || { count: data.fusionCount || characterFusionCount(mainLocal) + 1, history: [] };
+                    mainLocal.fusionCount = data.fusionCount || mainLocal.fusionData.count || characterFusionCount(mainLocal);
+                }
+                characters = characters.filter(c => String(c.id) !== String(sacrifice.id));
+                if (String(selectedCharacterId) === String(sacrifice.id)) selectedCharacterId = main.id;
+                characterFusionState.slots = [null, null];
+                saveCharacters();
+                updateCurrencyUI();
+                updateLobbyCharacterDisplay();
+                populateInventoryPanel();
+                renderCharacterFusionPanel();
+                showNotice((main.name || 'Fighter') + ' fusion complete.');
+            } catch (err) {
+                console.error('[character fusion]', err);
+                showNotice('Could not fuse fighters.');
+            }
+        }
 
         function petRarityChip(rarity) {
             const meta = PET_RARITIES[rarity] || PET_RARITIES.common;
@@ -28198,13 +28474,15 @@
         }
 
         function openPetFusionPanel() {
-            renderPetFusionPanel();
+            fusionPanelState.tab = 'characters';
+            renderFusionPanel();
             document.getElementById('pet-fusion-panel')?.classList.add('active');
         }
 
         function closePetFusionPanel() {
+            characterFusionState.slots = [null, null];
             petFusionState.slots = [null, null];
-            renderPetFusionPanel();
+            renderFusionPanel();
             document.getElementById('pet-fusion-panel')?.classList.remove('active');
         }
 
@@ -42481,6 +42759,9 @@
             openPetFusionPanel();
         });
         document.getElementById('pet-fusion-close')?.addEventListener('click', closePetFusionPanel);
+        document.querySelectorAll('[data-fusion-tab]').forEach(tab => {
+            tab.addEventListener('click', () => setFusionTab(tab.dataset.fusionTab));
+        });
         document.getElementById('market-close').addEventListener('click', () => {
             closeMarketplace();
         });
@@ -42698,6 +42979,20 @@
             e.target.closest('.pet-fusion-inventory-item')?.classList.remove('pet-dragging');
         });
 
+        document.getElementById('character-fusion-inventory-grid')?.addEventListener('click', e => {
+            const btn = e.target.closest('button[data-character-fusion-pick]');
+            if (!btn) return;
+            pickCharacterFusionSlot(btn.dataset.characterId, Number(btn.dataset.characterFusionPick));
+        });
+
+        document.querySelectorAll('[data-character-fusion-slot]').forEach(slot => {
+            slot.addEventListener('click', () => {
+                const index = Number(slot.dataset.characterFusionSlot);
+                characterFusionState.slots[index] = null;
+                renderCharacterFusionPanel();
+            });
+        });
+
         document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
             slot.addEventListener('dragover', e => {
                 e.preventDefault();
@@ -42723,6 +43018,7 @@
         });
 
         document.getElementById('pet-fusion-button')?.addEventListener('click', fuseSelectedPets);
+        document.getElementById('character-fusion-button')?.addEventListener('click', fuseSelectedCharacters);
 
         // PvP button handler (coming soon)
         document.getElementById('menu-pvp-btn').addEventListener('click', () => {
