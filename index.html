@@ -6681,6 +6681,90 @@
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: 8px;
         }
+        .tournament-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 12px;
+            min-height: 0;
+            flex: 1;
+        }
+        .tournament-card,
+        .tournament-bracket {
+            background: rgba(255,248,225,0.62);
+            border: 2px solid rgba(120,80,30,0.32);
+            border-radius: 8px;
+            padding: 12px;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            overflow: auto;
+        }
+        .tournament-name {
+            font-size: 1em;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .tournament-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .tournament-meta {
+            background: rgba(255,246,220,0.72);
+            border: 1px solid rgba(74,44,18,0.24);
+            border-radius: 7px;
+            padding: 7px;
+            font-size: 0.62em;
+            font-weight: 800;
+        }
+        .tournament-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .tournament-actions button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            font-weight: 900;
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            color: #2b1a0e;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .tournament-actions button:disabled {
+            opacity: 0.48;
+            cursor: not-allowed;
+        }
+        .tournament-entry-row,
+        .tournament-match-row {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr) auto;
+            gap: 7px;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(74,44,18,0.18);
+            font-size: 0.62em;
+            font-weight: 800;
+        }
+        .tournament-match-row {
+            grid-template-columns: 44px minmax(0, 1fr) auto;
+        }
+        .tournament-section-title {
+            font-size: 0.75em;
+            font-weight: 900;
+            color: #4f3014;
+            margin: 10px 0 6px;
+        }
+        .tournament-empty {
+            text-align: center;
+            color: #6b4820;
+            font-size: 0.72em;
+            font-weight: 800;
+            padding: 20px 8px;
+        }
         .market-preview {
             display: none;
             flex-direction: column;
@@ -13777,6 +13861,7 @@
         .main-menu #menu-market-btn::before     { content: "⚖"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-pets-btn::before       { content: "🐾"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-tournaments-btn::before{ content: "🏟"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
         .main-menu .top-nav-btn:hover {
@@ -17920,6 +18005,7 @@
                 <button class="top-nav-btn" id="menu-market-btn">MARKET</button>
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn" id="menu-pets-btn">FUSION</button>
+                <button class="top-nav-btn" id="menu-tournaments-btn">TOURNAMENTS</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
                 <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
@@ -18276,6 +18362,26 @@
             <div class="pet-fusion-inventory">
                 <div class="pet-fusion-inventory-title">Owned Pets</div>
                 <div class="pet-fusion-inventory-grid" id="pet-fusion-inventory-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Panel -->
+    <div class="market-panel" id="tournament-panel">
+        <div class="market-header">
+            <div class="market-title">TOURNAMENTS</div>
+            <div class="market-header-actions">
+                <button class="market-home-btn" id="tournament-refresh-btn" type="button">REFRESH</button>
+                <button class="market-home-btn" id="tournament-home-btn" type="button">HOME</button>
+                <span class="market-close" id="tournament-close">&times;</span>
+            </div>
+        </div>
+        <div class="tournament-layout">
+            <div class="tournament-card" id="tournament-current-card">
+                <div class="tournament-empty">Loading tournament...</div>
+            </div>
+            <div class="tournament-bracket" id="tournament-bracket">
+                <div class="tournament-empty">Bracket appears when registration closes.</div>
             </div>
         </div>
     </div>
@@ -39202,6 +39308,159 @@
             closeMarketplaceDetail();
         }
 
+        let tournamentState = { loading: false, tournaments: [] };
+
+        function formatTournamentTime(value) {
+            const ms = new Date(value).getTime() - Date.now();
+            if (!Number.isFinite(ms)) return '--';
+            if (ms <= 0) return 'now';
+            const minutes = Math.ceil(ms / 60000);
+            if (minutes < 60) return minutes + 'm';
+            const hours = Math.floor(minutes / 60);
+            return hours + 'h ' + (minutes % 60) + 'm';
+        }
+
+        function currentTournament() {
+            return tournamentState.tournaments[0] || null;
+        }
+
+        function renderTournamentPanel() {
+            const card = document.getElementById('tournament-current-card');
+            const bracket = document.getElementById('tournament-bracket');
+            if (!card || !bracket) return;
+            if (tournamentState.loading) {
+                card.innerHTML = '<div class="tournament-empty">Loading tournament...</div>';
+                bracket.innerHTML = '<div class="tournament-empty">Loading bracket...</div>';
+                return;
+            }
+            const tournament = currentTournament();
+            if (!tournament) {
+                card.innerHTML = '<div class="tournament-empty">No tournament available.</div>';
+                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+                return;
+            }
+            const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
+            const matches = Array.isArray(tournament.tournament_matches) ? tournament.tournament_matches : [];
+            const character = getSelectedCharacter();
+            const alreadyJoined = playerSession && entries.some(e => String(e.player_id) === String(playerSession.playerId));
+            const full = entries.length >= Number(tournament.max_entries || 0);
+            const registrationOpen = tournament.status === 'registration' && new Date(tournament.registration_ends_at).getTime() > Date.now();
+            const canJoin = !!playerSession && !!character && registrationOpen && !alreadyJoined && !full && globalTokens >= Number(tournament.entry_fee || 0);
+            card.innerHTML = `
+                <div class="tournament-name">${escapeHTML(tournament.name || 'Chub Cup')}</div>
+                <div class="tournament-meta-grid">
+                    <div class="tournament-meta">STATUS<br>${escapeHTML(String(tournament.status || '').toUpperCase())}</div>
+                    <div class="tournament-meta">ENTRY<br>${Number(tournament.entry_fee || 0)} coins</div>
+                    <div class="tournament-meta">SLOTS<br>${entries.length} / ${Number(tournament.max_entries || 0)}</div>
+                    <div class="tournament-meta">STARTS<br>${formatTournamentTime(tournament.starts_at)}</div>
+                </div>
+                <div class="tournament-section-title">Rewards</div>
+                <div class="tournament-meta">Champion: 300 coins + Pet Chest · Finalist: 120 coins · Semifinalist: 40 coins</div>
+                <div class="tournament-actions">
+                    <button id="tournament-join-btn" type="button" ${canJoin ? '' : 'disabled'}>${alreadyJoined ? 'JOINED' : full ? 'FULL' : 'JOIN'}</button>
+                </div>
+                <div class="tournament-section-title">Entries</div>
+                ${entries.length ? entries.map((entry, index) => `
+                    <div class="tournament-entry-row">
+                        <span>#${entry.seed || index + 1}</span>
+                        <span>${escapeHTML(entry.character_name || 'Fighter')}</span>
+                        <span>LV ${Number(entry.character_level || 1)}</span>
+                    </div>
+                `).join('') : '<div class="tournament-empty">No entries yet.</div>'}
+            `;
+            card.querySelector('#tournament-join-btn')?.addEventListener('click', joinCurrentTournament);
+
+            if (!matches.length) {
+                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+                return;
+            }
+            bracket.innerHTML = `
+                <div class="tournament-section-title">Bracket</div>
+                ${matches.map(match => {
+                    const a = entries.find(e => Number(e.id) === Number(match.entry_a_id));
+                    const b = entries.find(e => Number(e.id) === Number(match.entry_b_id));
+                    const winner = entries.find(e => Number(e.id) === Number(match.winner_entry_id));
+                    return `
+                        <div class="tournament-match-row">
+                            <span>R${match.round}.${match.match_index + 1}</span>
+                            <span>${escapeHTML(a?.character_name || 'TBD')} vs ${escapeHTML(b?.character_name || 'BYE')}</span>
+                            <span>${winner ? escapeHTML(winner.character_name || 'Winner') : escapeHTML(String(match.status || 'scheduled'))}</span>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
+
+        async function loadTournaments() {
+            tournamentState.loading = true;
+            renderTournamentPanel();
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/list', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession?.playerId || '' }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not load tournaments.');
+                    tournamentState.tournaments = [];
+                } else {
+                    tournamentState.tournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
+                }
+            } catch (err) {
+                tournamentState.tournaments = [];
+                showNotice('Could not connect to tournaments.');
+            } finally {
+                tournamentState.loading = false;
+                renderTournamentPanel();
+            }
+        }
+
+        function openTournamentPanel() {
+            if (!playerSession) {
+                showNotice('Log in to enter tournaments.');
+                return;
+            }
+            closeShop();
+            closeVaultPanel();
+            closeMarketplace();
+            document.getElementById('tournament-panel')?.classList.add('active');
+            loadTournaments();
+        }
+
+        function closeTournamentPanel() {
+            document.getElementById('tournament-panel')?.classList.remove('active');
+        }
+
+        async function joinCurrentTournament() {
+            const tournament = currentTournament();
+            const character = getSelectedCharacter();
+            if (!tournament || !character || !playerSession) return;
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/join', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        tournamentId: Number(tournament.id),
+                        characterId: String(character.id),
+                        displayName: playerSession.name || character.name || 'Fighter',
+                    }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not join tournament.');
+                    return;
+                }
+                globalTokens = Number(data.newTokens ?? globalTokens);
+                updateCurrencyUI();
+                showNotice('Tournament joined.');
+                await loadTournaments();
+            } catch (err) {
+                showNotice('Could not join tournament.');
+            }
+        }
+
         function listSelectedCharacter() {
             const character = getSelectedCharacter();
             if (!playerSession) { showNotice('Log in to list a fighter.'); return; }
@@ -42722,6 +42981,7 @@
         // Inventory button handler
         document.getElementById('menu-inventory-btn').addEventListener('click', () => {
             closePetFusionPanel();
+            closeTournamentPanel();
             populateInventoryPanel();
             updateInvEquipmentSlots();
             // Reset filter to weapons tab
@@ -42745,16 +43005,26 @@
 
         // Shop panel
         document.getElementById('menu-shop-btn').addEventListener('click', () => {
+            closeTournamentPanel();
             openShop();
         });
         document.getElementById('shop-close').addEventListener('click', () => {
             closeShop();
         });
         document.getElementById('menu-market-btn').addEventListener('click', () => {
+            closeTournamentPanel();
             openMarketplace();
         });
+        document.getElementById('menu-tournaments-btn')?.addEventListener('click', () => {
+            closeMarketplace();
+            openTournamentPanel();
+        });
+        document.getElementById('tournament-close')?.addEventListener('click', closeTournamentPanel);
+        document.getElementById('tournament-home-btn')?.addEventListener('click', closeTournamentPanel);
+        document.getElementById('tournament-refresh-btn')?.addEventListener('click', loadTournaments);
         document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
             closeMarketplace();
+            closeTournamentPanel();
             openPetFusionPanel();
         });
         document.getElementById('pet-fusion-close')?.addEventListener('click', closePetFusionPanel);
