@@ -18239,12 +18239,12 @@
                 <div class="pet-fusion-workbench">
                     <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="0">Main fighter</div>
                     <div class="pet-fusion-plus"><canvas id="character-fusion-plus-canvas" width="56" height="56"></canvas></div>
-                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="1">Sacrifice fighter</div>
+                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="1">Fusion Partner</div>
                 </div>
                 <div class="pet-fusion-side">
                     <div class="pet-fusion-result character-fusion-result" id="character-fusion-result">Result preview</div>
                     <div class="pet-fusion-rules" id="character-fusion-rules">
-                        Main fighter keeps identity. Sacrifice is consumed. Requires both fighters at level 20+.
+                        Main fighter keeps identity. Fusion Partner joins the fusion and is removed. Requires both fighters at level 20+.
                     </div>
                     <div class="pet-fusion-actions">
                         <button type="button" id="character-fusion-button" disabled>FUSE</button>
@@ -28178,11 +28178,11 @@
             return raw && typeof raw === 'object' ? Object.keys(raw).length : 0;
         }
 
-        function getCharacterFusionValidation(main, sacrifice) {
-            if (!main || !sacrifice) return { ok: false, reason: 'Choose a main fighter and a sacrifice fighter.' };
-            if (String(main.id) === String(sacrifice.id)) return { ok: false, reason: 'Choose two different fighters.' };
-            if ((main.level || 1) < 20 || (sacrifice.level || 1) < 20) return { ok: false, reason: 'Both fighters must be level 20 or higher.' };
-            if (main.hasPendingLevelUp || sacrifice.hasPendingLevelUp) return { ok: false, reason: 'Resolve pending level ups first.' };
+        function getCharacterFusionValidation(main, fusionPartner) {
+            if (!main || !fusionPartner) return { ok: false, reason: 'Choose a main fighter and a Fusion Partner.' };
+            if (String(main.id) === String(fusionPartner.id)) return { ok: false, reason: 'Choose two different fighters.' };
+            if ((main.level || 1) < 20 || (fusionPartner.level || 1) < 20) return { ok: false, reason: 'Both fighters must be level 20 or higher.' };
+            if (main.hasPendingLevelUp || fusionPartner.hasPendingLevelUp) return { ok: false, reason: 'Resolve pending level ups first.' };
             const cost = characterFusionCost(main);
             if (!cost) return { ok: false, reason: 'This fighter has reached the fusion limit.' };
             if (globalTokens < cost) return { ok: false, reason: `Need ${cost} coins.` };
@@ -28200,9 +28200,9 @@
             `;
         }
 
-        function characterFusionInventoryItemHtml(character, main, sacrifice) {
+        function characterFusionInventoryItemHtml(character, main, fusionPartner) {
             const isMain = main && String(main.id) === String(character.id);
-            const isSacrifice = sacrifice && String(sacrifice.id) === String(character.id);
+            const isFusionPartner = fusionPartner && String(fusionPartner.id) === String(character.id);
             const cost = characterFusionCost(character);
             return `
                 <div>
@@ -28211,7 +28211,7 @@
                     <div class="character-fusion-meta">Fusion ${characterFusionCount(character)}/5${cost ? ` · Next ${cost} coins` : ' · Maxed'}</div>
                     <div class="character-fusion-actions">
                         <button type="button" data-character-fusion-pick="0" data-character-id="${character.id}" ${isMain ? 'disabled' : ''}>MAIN</button>
-                        <button type="button" data-character-fusion-pick="1" data-character-id="${character.id}" ${isSacrifice ? 'disabled' : ''}>SACRIFICE</button>
+                        <button type="button" data-character-fusion-pick="1" data-character-id="${character.id}" ${isFusionPartner ? 'disabled' : ''}>PARTNER</button>
                     </div>
                 </div>
             `;
@@ -28240,7 +28240,7 @@
             const selected = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
             document.querySelectorAll('[data-character-fusion-slot]').forEach(slot => {
                 const index = Number(slot.dataset.characterFusionSlot);
-                slot.innerHTML = characterFusionMiniHtml(selected[index], index === 0 ? 'Main fighter' : 'Sacrifice fighter');
+                slot.innerHTML = characterFusionMiniHtml(selected[index], index === 0 ? 'Main fighter' : 'Fusion Partner');
             });
 
             const resultEl = document.getElementById('character-fusion-result');
@@ -28262,7 +28262,7 @@
             }
             if (rulesEl) {
                 rulesEl.textContent = validation.ok
-                    ? `${selected[1].name || 'Sacrifice'} is consumed. ${selected[0].name || 'Main'} keeps identity and inherits a capped part of the Battle Instinct.`
+                    ? `${selected[1].name || 'Fusion Partner'} joins the fusion and is removed. ${selected[0].name || 'Main'} keeps identity and inherits a capped part of the Battle Instinct.`
                     : validation.reason;
             }
             if (button) button.disabled = !validation.ok;
@@ -28301,8 +28301,8 @@
         }
 
         async function fuseSelectedCharacters() {
-            const [main, sacrifice] = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
-            const validation = getCharacterFusionValidation(main, sacrifice);
+            const [main, fusionPartner] = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
+            const validation = getCharacterFusionValidation(main, fusionPartner);
             if (!validation.ok) {
                 showNotice(validation.reason);
                 return;
@@ -28318,7 +28318,7 @@
                     body: JSON.stringify({
                         playerId: playerSession.playerId,
                         mainCharacterId: String(main.id),
-                        sacrificeCharacterId: String(sacrifice.id),
+                        fusionPartnerCharacterId: String(fusionPartner.id),
                     }),
                 });
                 if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
@@ -28333,8 +28333,8 @@
                     mainLocal.fusionData = data.fusionData || { count: data.fusionCount || characterFusionCount(mainLocal) + 1, history: [] };
                     mainLocal.fusionCount = data.fusionCount || mainLocal.fusionData.count || characterFusionCount(mainLocal);
                 }
-                characters = characters.filter(c => String(c.id) !== String(sacrifice.id));
-                if (String(selectedCharacterId) === String(sacrifice.id)) selectedCharacterId = main.id;
+                characters = characters.filter(c => String(c.id) !== String(fusionPartner.id));
+                if (String(selectedCharacterId) === String(fusionPartner.id)) selectedCharacterId = main.id;
                 characterFusionState.slots = [null, null];
                 saveCharacters();
                 updateCurrencyUI();
