@@ -28292,7 +28292,7 @@
         }
 
         function pickCharacterFusionSlot(characterId, slotIndex) {
-            const id = Number(characterId);
+            const id = String(characterId || '');
             if (!characters.some(c => String(c.id) === String(id))) return;
             const otherIndex = slotIndex === 0 ? 1 : 0;
             if (String(characterFusionState.slots[otherIndex]) === String(id)) characterFusionState.slots[otherIndex] = null;
