@@ -337,28 +337,6 @@
       opacity: 0.62;
     }
 
-    .champion-card {
-      height: 86px;
-      display: grid;
-      align-content: center;
-      gap: 6px;
-      text-align: center;
-      border-color: #6f4419;
-      background: linear-gradient(180deg, #ffe38a, #e99920);
-    }
-
-    .champion-card .seed {
-      height: auto;
-      display: block;
-      font-size: 16px;
-    }
-
-    .champion-card .seed-num {
-      display: block;
-      margin-bottom: 4px;
-      color: #593313;
-    }
-
     .final-column {
       position: relative;
       z-index: 1;
@@ -387,8 +365,120 @@
       height: 74px;
     }
 
-    .champion-card {
-      height: 86px;
+    .winner-banner {
+      height: 108px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 6px;
+      text-align: center;
+      border: 3px solid #6f4215;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,0.46), transparent),
+        radial-gradient(circle at 50% 8%, rgba(255,255,255,0.84), transparent 28%),
+        linear-gradient(180deg, #fff1a3 0%, #f7b429 44%, #be6b10 100%);
+      background-size: 180% 100%, 100% 100%, 100% 100%;
+      box-shadow:
+        0 4px 0 #3b1f0b,
+        0 0 22px rgba(255, 185, 35, 0.62),
+        inset 0 2px 0 rgba(255,255,255,0.78),
+        inset 0 -4px 0 rgba(108,58,15,0.34);
+      animation: winnerBannerGlow 2.8s ease-in-out infinite;
+    }
+
+    .winner-banner::before,
+    .winner-banner::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 22px;
+      height: 58px;
+      transform: translateY(-50%);
+      background: linear-gradient(180deg, #d98b1f, #7e4210);
+      border: 2px solid #5f3413;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.36);
+    }
+
+    .winner-banner::before {
+      left: -9px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .winner-banner::after {
+      right: -9px;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .winner-label {
+      position: relative;
+      z-index: 1;
+      color: #6f3c10;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.62);
+    }
+
+    .winner-name {
+      position: relative;
+      z-index: 1;
+      max-width: 182px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff0a8;
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      text-shadow:
+        0 2px 0 #6a3308,
+        0 0 7px rgba(255,255,255,0.86),
+        0 0 15px rgba(255,214,81,0.88);
+      animation: winnerTextShine 1.55s ease-in-out infinite;
+    }
+
+    .winner-prize {
+      position: relative;
+      z-index: 1;
+      min-width: 112px;
+      padding: 4px 8px;
+      border: 2px solid rgba(103,59,17,0.48);
+      border-radius: 999px;
+      background: rgba(255,246,207,0.42);
+      color: #5c3514;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.56);
+    }
+
+    @keyframes winnerBannerGlow {
+      0%, 100% {
+        background-position: -120% 0, 0 0, 0 0;
+        filter: saturate(1) brightness(1);
+      }
+      50% {
+        background-position: 120% 0, 0 0, 0 0;
+        filter: saturate(1.18) brightness(1.08);
+      }
+    }
+
+    @keyframes winnerTextShine {
+      0%, 100% {
+        transform: scale(1);
+        color: #ffef9a;
+        text-shadow: 0 2px 0 #6a3308, 0 0 7px rgba(255,255,255,0.72), 0 0 14px rgba(255,210,72,0.72);
+      }
+      50% {
+        transform: scale(1.035);
+        color: #fff8cd;
+        text-shadow: 0 2px 0 #6a3308, 0 0 10px rgba(255,255,255,0.95), 0 0 24px rgba(255,214,81,0.98);
+      }
     }
 
     @media (max-width: 900px) {
@@ -561,7 +651,8 @@
       `;
     }
 
-    function renderFinal(leftWinner, rightWinner) {
+    function renderFinal(leftWinner, rightWinner, size) {
+      const prize = REWARDS[size]?.first || 'Champion Prize';
       return `
         <div class="final-column">
           <div class="final-title">Final</div>
@@ -569,11 +660,10 @@
             ${renderSeed({ ...leftWinner, score: 2, winner: true })}
             ${renderSeed({ ...rightWinner, score: 1, winner: false })}
           </div>
-          <div class="match champion-card">
-            <div class="seed">
-              <span class="seed-num">Champion</span>
-              <span class="seed-name">${escapeHTML(leftWinner.name)}</span>
-            </div>
+          <div class="winner-banner">
+            <div class="winner-label">Tournament Champion</div>
+            <div class="winner-name">${escapeHTML(leftWinner.name)}</div>
+            <div class="winner-prize">${escapeHTML(prize)}</div>
           </div>
         </div>
       `;
@@ -657,7 +747,7 @@
       document.getElementById('bracket').innerHTML = `
         <svg class="connector-svg" id="connector-svg" aria-hidden="true"></svg>
         ${renderSide('left', left.rounds, size)}
-        ${renderFinal(left.winner, right.winner)}
+        ${renderFinal(left.winner, right.winner, size)}
         ${renderSide('right', right.rounds, size)}
       `;
       requestAnimationFrame(drawConnectors);
