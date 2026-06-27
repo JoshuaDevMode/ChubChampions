@@ -6940,6 +6940,30 @@
         .tournament-seed.winner .tournament-seed-state {
             color: #147a32;
         }
+        .tournament-seed.player-entry {
+            background: linear-gradient(90deg, rgba(255,211,77,0.42), rgba(255,246,194,0.22));
+            border-radius: 4px;
+            box-shadow:
+                inset 0 0 0 1px rgba(127,78,9,0.34),
+                0 0 10px rgba(255,200,58,0.24);
+        }
+        .tournament-seed.player-entry .tournament-seed-num,
+        .tournament-seed.player-entry .tournament-seed-name,
+        .tournament-seed.player-entry .tournament-seed-state {
+            color: #5d3508;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.52);
+        }
+        .tournament-seed.lost {
+            filter: grayscale(1);
+            opacity: 0.44;
+        }
+        .tournament-seed.lost .tournament-seed-name,
+        .tournament-seed.lost .tournament-seed-state,
+        .tournament-seed.lost .tournament-seed-num {
+            color: #6f6f6f;
+            text-decoration: line-through;
+            text-shadow: none;
+        }
         .tournament-seed.bye,
         .tournament-seed.pending {
             opacity: 0.58;
@@ -39647,14 +39671,24 @@
             return status;
         }
 
-        function tournamentSeedHTML(entry, match, slotLabel) {
+        function tournamentSeedHTML(entry, match, slotLabel, selectedCharacterIdForBracket) {
             const isBye = slotLabel === 'BYE';
             const isPending = !entry && !isBye;
             const isWinner = entry && match?.winner_entry_id && Number(entry.id) === Number(match.winner_entry_id);
+            const isCompleted = ['completed', 'bye'].includes(String(match?.status || '').toLowerCase());
+            const isLost = entry && isCompleted && match?.winner_entry_id && Number(entry.id) !== Number(match.winner_entry_id);
+            const isPlayerEntry = entry && selectedCharacterIdForBracket && String(entry.character_id) === String(selectedCharacterIdForBracket);
             const seed = entry?.seed || '-';
             const name = entry?.character_name || (isBye ? 'BYE' : 'TBD');
             const state = isWinner ? 'WIN' : isBye ? '' : isPending ? '' : `LV ${Number(entry.character_level || 1)}`;
-            const cls = ['tournament-seed', isWinner ? 'winner' : '', isBye ? 'bye' : '', isPending ? 'pending' : ''].filter(Boolean).join(' ');
+            const cls = [
+                'tournament-seed',
+                isWinner ? 'winner' : '',
+                isLost ? 'lost' : '',
+                isPlayerEntry ? 'player-entry' : '',
+                isBye ? 'bye' : '',
+                isPending ? 'pending' : ''
+            ].filter(Boolean).join(' ');
             return `
                 <div class="${cls}">
                     <span class="tournament-seed-num">#${escapeHTML(seed)}</span>
@@ -39664,7 +39698,7 @@
             `;
         }
 
-        function tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex, finalMatch = false) {
+        function tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex, finalMatch = false, selectedCharacterIdForBracket = null) {
             const a = match?.entry_a_id ? entriesById.get(Number(match.entry_a_id)) : null;
             const b = match?.entry_b_id ? entriesById.get(Number(match.entry_b_id)) : null;
             const slotBLabel = match && a && !b && match.status === 'bye' ? 'BYE' : '';
@@ -39676,40 +39710,40 @@
                     data-round="${roundIndex}"
                     data-match="${matchIndex}"
                     ${finalMatch ? 'data-tournament-final-match="true"' : ''}>
-                    ${tournamentSeedHTML(a, match, '')}
-                    ${tournamentSeedHTML(b, match, slotBLabel)}
+                    ${tournamentSeedHTML(a, match, '', selectedCharacterIdForBracket)}
+                    ${tournamentSeedHTML(b, match, slotBLabel, selectedCharacterIdForBracket)}
                     ${!a && !b && status !== 'TBD' ? `<span class="sr-only">${escapeHTML(status)}</span>` : ''}
                 </div>
             `;
         }
 
-        function tournamentRoundHTML(side, roundIndex, matches, entriesById, size, sideRoundCount) {
+        function tournamentRoundHTML(side, roundIndex, matches, entriesById, size, sideRoundCount, selectedCharacterIdForBracket) {
             return `
                 <div class="tournament-round" style="--match-count:${Math.max(1, matches.length)}">
                     <div class="tournament-round-title">${escapeHTML(tournamentRoundName(size, roundIndex, sideRoundCount))}</div>
                     <div class="tournament-round-matches">
-                        ${matches.map((match, matchIndex) => tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex)).join('')}
+                        ${matches.map((match, matchIndex) => tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex, false, selectedCharacterIdForBracket)).join('')}
                     </div>
                 </div>
             `;
         }
 
-        function tournamentSideHTML(side, rounds, entriesById, size) {
+        function tournamentSideHTML(side, rounds, entriesById, size, selectedCharacterIdForBracket) {
             return `
                 <div class="tournament-bracket-side ${side}" data-tournament-side="${side}">
-                    ${rounds.map((matches, roundIndex) => tournamentRoundHTML(side, roundIndex, matches, entriesById, size, rounds.length)).join('')}
+                    ${rounds.map((matches, roundIndex) => tournamentRoundHTML(side, roundIndex, matches, entriesById, size, rounds.length, selectedCharacterIdForBracket)).join('')}
                 </div>
             `;
         }
 
-        function tournamentFinalHTML(finalMatch, entriesById, tournament) {
+        function tournamentFinalHTML(finalMatch, entriesById, tournament, selectedCharacterIdForBracket) {
             const winner = finalMatch?.winner_entry_id ? entriesById.get(Number(finalMatch.winner_entry_id)) : null;
             const championName = winner?.character_name || 'Champion';
             const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
             return `
                 <div class="tournament-final-column">
                     <div class="tournament-final-title">Final</div>
-                    ${tournamentMatchHTML(finalMatch, entriesById, 'final', 0, 0, true)}
+                    ${tournamentMatchHTML(finalMatch, entriesById, 'final', 0, 0, true, selectedCharacterIdForBracket)}
                     <div class="tournament-winner-banner">
                         <div class="tournament-winner-label">Tournament Champion</div>
                         <div class="tournament-winner-name">${escapeHTML(championName)}</div>
@@ -39759,6 +39793,7 @@
             const size = tournamentBracketSize(tournament, entries, matches);
             const entriesById = new Map(entries.map(entry => [Number(entry.id), entry]));
             const { leftRounds, rightRounds, finalMatch } = buildTournamentRounds(size, matches);
+            const selectedCharacterIdForBracket = getSelectedCharacter()?.id || selectedCharacterId || null;
             return `
                 <div class="tournament-bracket-head">
                     <span>${size} player bracket</span>
@@ -39767,9 +39802,9 @@
                 <div class="tournament-bracket-scroll">
                     <div class="tournament-bracket-stage" id="tournament-bracket-stage">
                         <svg class="tournament-connector-svg" id="tournament-connector-svg" aria-hidden="true"></svg>
-                        ${tournamentSideHTML('left', leftRounds, entriesById, size)}
-                        ${tournamentFinalHTML(finalMatch, entriesById, tournament)}
-                        ${tournamentSideHTML('right', rightRounds, entriesById, size)}
+                        ${tournamentSideHTML('left', leftRounds, entriesById, size, selectedCharacterIdForBracket)}
+                        ${tournamentFinalHTML(finalMatch, entriesById, tournament, selectedCharacterIdForBracket)}
+                        ${tournamentSideHTML('right', rightRounds, entriesById, size, selectedCharacterIdForBracket)}
                     </div>
                 </div>
             `;
