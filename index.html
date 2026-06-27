@@ -40296,6 +40296,14 @@
             `;
         }
 
+        function tournamentPlayerTag(tournament, entry) {
+            if (!entry) return '';
+            if (tournament?.status !== 'completed') return 'ACTIVE';
+            const status = String(entry.status || '').toLowerCase();
+            if (status === 'winner') return 'YOU WON';
+            return 'YOU LOST';
+        }
+
         function tournamentListItemHTML(tournament) {
             const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
             const selected = Number(currentTournament()?.id || 0) === Number(tournament.id || 0);
@@ -40306,7 +40314,7 @@
                     ? `ended ${formatTournamentAge(tournament.completed_at)}`
                     : `next ${formatTournamentTime(tournament.starts_at)}`;
             const playerEntry = tournamentPlayerEntry(tournament);
-            const tag = playerEntry ? `YOUR ${String(playerEntry.status || 'ENTRY').toUpperCase()}` : '';
+            const tag = tournamentPlayerTag(tournament, playerEntry);
             return `
                 <button class="tournament-list-item ${selected ? 'active' : ''}" type="button" data-tournament-select="${Number(tournament.id)}">
                     <span class="tournament-list-main">
