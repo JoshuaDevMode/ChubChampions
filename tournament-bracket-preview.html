@@ -195,18 +195,52 @@
       min-height: 0;
       overflow: auto;
       padding: 18px;
+      position: relative;
     }
 
     .bracket {
       --match-h: 58px;
-      --round-gap: 28px;
+      --round-gap: 42px;
       --match-gap: 14px;
+      position: relative;
+      display: grid;
+      grid-template-columns: max-content 230px max-content;
+      align-items: stretch;
+      gap: 46px;
+      width: max-content;
+      min-height: 100%;
+      padding: 8px 12px 14px;
+    }
+
+    .connector-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 0;
+    }
+
+    .connector-line {
+      fill: none;
+      stroke: rgba(117, 82, 43, 0.72);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.55));
+    }
+
+    .bracket-side {
+      position: relative;
+      z-index: 1;
       display: flex;
       align-items: stretch;
       gap: var(--round-gap);
-      width: max-content;
-      min-height: 100%;
-      padding-bottom: 8px;
+    }
+
+    .bracket-side.right {
+      flex-direction: row-reverse;
     }
 
     .round {
@@ -216,6 +250,14 @@
       justify-content: space-around;
       gap: var(--match-gap);
       position: relative;
+    }
+
+    .bracket-side.right .round {
+      direction: rtl;
+    }
+
+    .bracket-side.right .round * {
+      direction: ltr;
     }
 
     .round-title {
@@ -253,19 +295,6 @@
       box-shadow: 0 3px 0 rgba(72, 39, 16, 0.65), inset 0 1px 0 rgba(255,255,255,0.65);
       overflow: hidden;
     }
-
-    .match::after {
-      content: "";
-      position: absolute;
-      right: -18px;
-      top: 50%;
-      width: 18px;
-      height: 2px;
-      background: var(--line);
-      display: var(--connector, block);
-    }
-
-    .round:last-child .match::after { display: none; }
 
     .seed {
       height: 50%;
@@ -328,6 +357,38 @@
       display: block;
       margin-bottom: 4px;
       color: #593313;
+    }
+
+    .final-column {
+      position: relative;
+      z-index: 1;
+      width: 230px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding-top: 28px;
+    }
+
+    .final-title {
+      height: 28px;
+      padding: 7px 10px;
+      border: 2px solid #62401f;
+      border-radius: 8px;
+      color: #fff7df;
+      background: linear-gradient(180deg, #73502e, #3d2412);
+      box-shadow: 0 2px 0 #241207;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .final-match {
+      height: 74px;
+    }
+
+    .champion-card {
+      height: 86px;
     }
 
     @media (max-width: 900px) {
@@ -397,14 +458,12 @@
       }[ch]));
     }
 
-    function roundName(size, roundIndex, totalRounds) {
-      if (roundIndex === totalRounds - 1) return 'Champion';
-      if (roundIndex === totalRounds - 2) return 'Final';
-      if (roundIndex === totalRounds - 3) return 'Semifinal';
-      if (size === 64 && roundIndex === 0) return 'Round of 64';
-      if (size >= 32 && roundIndex === 0) return 'Round of 32';
-      if (size >= 16 && roundIndex === 0) return 'Round of 16';
-      return 'Quarterfinal';
+    function roundName(size, roundIndex, sideRounds) {
+      if (roundIndex === sideRounds - 1) return 'Semifinal';
+      if (roundIndex === sideRounds - 2) return 'Quarterfinal';
+      const sideEntrants = size / 2;
+      const roundEntrants = sideEntrants / Math.pow(2, roundIndex);
+      return `Round of ${roundEntrants}`;
     }
 
     function makeEntrants(size) {
@@ -415,8 +474,7 @@
       }));
     }
 
-    function makeRounds(size) {
-      let competitors = makeEntrants(size);
+    function makeSideRounds(competitors, side) {
       const rounds = [];
       let roundIndex = 0;
       while (competitors.length > 1) {
@@ -425,7 +483,8 @@
         for (let i = 0; i < competitors.length; i += 2) {
           const a = competitors[i];
           const b = competitors[i + 1] || { seed: '-', name: 'BYE', score: '', bye: true };
-          const winner = roundIndex % 2 === 0 ? a : b.bye ? a : b;
+          const preferA = side === 'left' ? roundIndex % 2 === 0 : roundIndex % 2 !== 0;
+          const winner = preferA || b.bye ? a : b;
           matches.push({
             a: { ...a, score: winner === a ? 2 : 1, winner: winner === a },
             b: { ...b, score: b.bye ? '' : winner === b ? 2 : 0, winner: winner === b }
@@ -436,8 +495,7 @@
         competitors = winners;
         roundIndex++;
       }
-      rounds.push([{ champion: competitors[0] }]);
-      return rounds;
+      return { rounds, winner: competitors[0] };
     }
 
     function renderTabs() {
@@ -482,34 +540,127 @@
       `;
     }
 
-    function renderBracket(size) {
-      const rounds = makeRounds(size);
-      const totalRounds = rounds.length;
-      document.getElementById('bracket-title').textContent = `${size} player bracket`;
-      document.getElementById('bracket').innerHTML = rounds.map((matches, roundIndex) => {
-        const isChampion = roundIndex === rounds.length - 1;
-        const matchCount = matches.length;
-        return `
-          <div class="round" style="--match-count:${Math.max(1, matchCount)}">
-            <div class="round-title">${roundName(size, roundIndex, totalRounds)}</div>
-            <div class="matches">
-              ${matches.map(match => {
-                if (isChampion) {
-                  return `
-                    <div class="match champion-card">
-                      <div class="seed">
-                        <span class="seed-num">Champion</span>
-                        <span class="seed-name">${escapeHTML(match.champion.name)}</span>
-                      </div>
-                    </div>
-                  `;
-                }
-                return `<div class="match">${renderSeed(match.a)}${renderSeed(match.b)}</div>`;
-              }).join('')}
+    function renderSide(side, rounds, size) {
+      const sideRounds = rounds.length;
+      return `
+        <div class="bracket-side ${side}" data-side="${side}">
+          ${rounds.map((matches, roundIndex) => `
+            <div class="round" style="--match-count:${Math.max(1, matches.length)}">
+              <div class="round-title">${roundName(size, roundIndex, sideRounds)}</div>
+              <div class="matches">
+                ${matches.map((match, matchIndex) => `
+                  <div class="match" data-side="${side}" data-round="${roundIndex}" data-match="${matchIndex}">
+                    ${renderSeed(match.a)}
+                    ${renderSeed(match.b)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderFinal(leftWinner, rightWinner) {
+      return `
+        <div class="final-column">
+          <div class="final-title">Final</div>
+          <div class="match final-match" data-final-match>
+            ${renderSeed({ ...leftWinner, score: 2, winner: true })}
+            ${renderSeed({ ...rightWinner, score: 1, winner: false })}
+          </div>
+          <div class="match champion-card">
+            <div class="seed">
+              <span class="seed-num">Champion</span>
+              <span class="seed-name">${escapeHTML(leftWinner.name)}</span>
             </div>
           </div>
-        `;
-      }).join('');
+        </div>
+      `;
+    }
+
+    function localPoint(bracketRect, rect, side, targetSide) {
+      const isLeftEdge = side === 'left-edge';
+      const x = (isLeftEdge ? rect.left : rect.right) - bracketRect.left;
+      const y = rect.top + rect.height / 2 - bracketRect.top;
+      return { x, y, targetSide };
+    }
+
+    function connectorPath(from, to) {
+      const dir = from.targetSide === 'right' ? 1 : -1;
+      const gap = Math.max(18, Math.abs(to.x - from.x) * 0.5);
+      const midX = from.x + dir * gap;
+      return `M ${from.x} ${from.y} H ${midX} V ${to.y} H ${to.x}`;
+    }
+
+    function drawConnectors() {
+      const bracket = document.getElementById('bracket');
+      const svg = document.getElementById('connector-svg');
+      if (!bracket || !svg) return;
+      const bracketRect = bracket.getBoundingClientRect();
+      svg.setAttribute('viewBox', `0 0 ${bracket.scrollWidth} ${bracket.scrollHeight}`);
+      svg.setAttribute('width', bracket.scrollWidth);
+      svg.setAttribute('height', bracket.scrollHeight);
+
+      const paths = [];
+      ['left', 'right'].forEach(side => {
+        const rounds = Array.from(bracket.querySelectorAll(`.match[data-side="${side}"]`))
+          .reduce((map, el) => {
+            const round = Number(el.dataset.round);
+            if (!map.has(round)) map.set(round, []);
+            map.get(round)[Number(el.dataset.match)] = el;
+            return map;
+          }, new Map());
+        const roundIndexes = Array.from(rounds.keys()).sort((a, b) => a - b);
+        roundIndexes.forEach(round => {
+          const current = rounds.get(round) || [];
+          const next = rounds.get(round + 1) || [];
+          current.forEach((matchEl, matchIndex) => {
+            const target = next[Math.floor(matchIndex / 2)];
+            if (!target) return;
+            const fromRect = matchEl.getBoundingClientRect();
+            const toRect = target.getBoundingClientRect();
+            const from = side === 'left'
+              ? localPoint(bracketRect, fromRect, 'right-edge', 'right')
+              : localPoint(bracketRect, fromRect, 'left-edge', 'left');
+            const to = side === 'left'
+              ? localPoint(bracketRect, toRect, 'left-edge', 'right')
+              : localPoint(bracketRect, toRect, 'right-edge', 'left');
+            paths.push(connectorPath(from, to));
+          });
+        });
+
+        const lastRound = roundIndexes[roundIndexes.length - 1];
+        const sideWinner = rounds.get(lastRound)?.[0];
+        const finalMatch = bracket.querySelector('[data-final-match]');
+        if (sideWinner && finalMatch) {
+          const fromRect = sideWinner.getBoundingClientRect();
+          const toRect = finalMatch.getBoundingClientRect();
+          const from = side === 'left'
+            ? localPoint(bracketRect, fromRect, 'right-edge', 'right')
+            : localPoint(bracketRect, fromRect, 'left-edge', 'left');
+          const to = side === 'left'
+            ? localPoint(bracketRect, toRect, 'left-edge', 'right')
+            : localPoint(bracketRect, toRect, 'right-edge', 'left');
+          paths.push(connectorPath(from, to));
+        }
+      });
+
+      svg.innerHTML = paths.map(path => `<path class="connector-line" d="${path}"></path>`).join('');
+    }
+
+    function renderBracket(size) {
+      document.getElementById('bracket-title').textContent = `${size} player bracket`;
+      const entrants = makeEntrants(size);
+      const left = makeSideRounds(entrants.slice(0, size / 2), 'left');
+      const right = makeSideRounds(entrants.slice(size / 2), 'right');
+      document.getElementById('bracket').innerHTML = `
+        <svg class="connector-svg" id="connector-svg" aria-hidden="true"></svg>
+        ${renderSide('left', left.rounds, size)}
+        ${renderFinal(left.winner, right.winner)}
+        ${renderSide('right', right.rounds, size)}
+      `;
+      requestAnimationFrame(drawConnectors);
     }
 
     function render() {
@@ -519,6 +670,7 @@
     }
 
     render();
+    window.addEventListener('resize', () => requestAnimationFrame(drawConnectors));
   </script>
 </body>
 </html>
