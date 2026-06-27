@@ -39321,6 +39321,25 @@
             return hours + 'h ' + (minutes % 60) + 'm';
         }
 
+        function formatTournamentRewardValue(reward) {
+            if (!reward || typeof reward !== 'object') return 'TBD';
+            const parts = [];
+            if (reward.coins) parts.push(`${Number(reward.coins)} coins`);
+            if (reward.petSnacks) parts.push(`${Number(reward.petSnacks)} snacks`);
+            if (reward.crystals) parts.push(`${Number(reward.crystals)} crystal${Number(reward.crystals) === 1 ? '' : 's'}`);
+            if (reward.exclusiveSkin) parts.push('exclusive skin');
+            return parts.length ? parts.join(' + ') : 'TBD';
+        }
+
+        function formatTournamentRewards(tournament) {
+            const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
+            return [
+                `Champion: ${formatTournamentRewardValue(rewardData.champion)}`,
+                `Finalist: ${formatTournamentRewardValue(rewardData.finalist)}`,
+                `Semifinalist: ${formatTournamentRewardValue(rewardData.semifinalist)}`
+            ].join(' · ');
+        }
+
         function currentTournament() {
             return tournamentState.tournaments[0] || null;
         }
@@ -39356,7 +39375,7 @@
                     <div class="tournament-meta">STARTS<br>${formatTournamentTime(tournament.starts_at)}</div>
                 </div>
                 <div class="tournament-section-title">Rewards</div>
-                <div class="tournament-meta">Champion: 300 coins + Pet Chest · Finalist: 120 coins · Semifinalist: 40 coins</div>
+                <div class="tournament-meta">${escapeHTML(formatTournamentRewards(tournament))}</div>
                 <div class="tournament-actions">
                     <button id="tournament-join-btn" type="button" ${canJoin ? '' : 'disabled'}>${alreadyJoined ? 'JOINED' : full ? 'FULL' : 'JOIN'}</button>
                 </div>
