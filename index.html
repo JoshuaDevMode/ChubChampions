@@ -6683,7 +6683,7 @@
         }
         .tournament-layout {
             display: grid;
-            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
             gap: 12px;
             min-height: 0;
             flex: 1;
@@ -6764,6 +6764,278 @@
             font-size: 0.72em;
             font-weight: 800;
             padding: 20px 8px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .tournament-bracket {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .tournament-bracket-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 2px solid rgba(78,45,16,0.35);
+            background: rgba(255,248,225,0.48);
+            color: #3a220d;
+            font-size: 0.62em;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .tournament-bracket-scroll {
+            position: relative;
+            min-height: 0;
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+        }
+        .tournament-bracket-stage {
+            --tournament-match-h: 62px;
+            --tournament-round-gap: 36px;
+            --tournament-match-gap: 14px;
+            position: relative;
+            z-index: 0;
+            display: grid;
+            grid-template-columns: max-content 220px max-content;
+            align-items: stretch;
+            gap: 42px;
+            width: max-content;
+            min-width: 100%;
+            min-height: 100%;
+            padding: 6px 10px 14px;
+        }
+        .tournament-connector-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+            z-index: 0;
+        }
+        .tournament-connector-line {
+            fill: none;
+            stroke: rgba(82,49,20,0.62);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 1px 0 rgba(255,255,255,0.55));
+        }
+        .tournament-bracket-side {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: stretch;
+            gap: var(--tournament-round-gap);
+        }
+        .tournament-bracket-side.right {
+            flex-direction: row-reverse;
+        }
+        .tournament-round {
+            width: 198px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: var(--tournament-match-gap);
+        }
+        .tournament-bracket-side.right .tournament-round {
+            direction: rtl;
+        }
+        .tournament-bracket-side.right .tournament-round * {
+            direction: ltr;
+        }
+        .tournament-round-title,
+        .tournament-final-title {
+            height: 26px;
+            box-sizing: border-box;
+            padding: 6px 9px;
+            border: 2px solid #5c3817;
+            border-radius: 7px;
+            color: #fff4d2;
+            background: linear-gradient(180deg, #7b552e, #3a210f);
+            box-shadow: 0 2px 0 #241207;
+            font-size: 0.52em;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .tournament-round-matches {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: var(--tournament-match-gap);
+            min-height: calc(var(--tournament-match-h) * var(--match-count) + var(--tournament-match-gap) * (var(--match-count) - 1));
+        }
+        .tournament-match-card {
+            position: relative;
+            height: var(--tournament-match-h);
+            box-sizing: border-box;
+            border: 14px solid transparent;
+            border-image-source: url('/ChubChampions/assets/stone-frame-ixllCCgw.png');
+            border-image-slice: 28% fill;
+            border-image-width: 14px;
+            border-image-repeat: stretch;
+            color: #2a190b;
+            filter: drop-shadow(0 3px 0 rgba(47,25,10,0.45));
+            overflow: hidden;
+        }
+        .tournament-match-card::after {
+            content: "";
+            position: absolute;
+            inset: 3px 5px;
+            pointer-events: none;
+            border-radius: 4px;
+            background:
+                linear-gradient(135deg, transparent 0 16%, rgba(84,49,20,0.12) 17% 19%, transparent 20% 100%),
+                linear-gradient(20deg, transparent 0 68%, rgba(255,255,255,0.16) 69% 71%, transparent 72% 100%);
+            mix-blend-mode: multiply;
+        }
+        .tournament-seed {
+            position: relative;
+            z-index: 1;
+            height: 50%;
+            display: grid;
+            grid-template-columns: 30px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 5px;
+            padding: 0 5px;
+            box-sizing: border-box;
+            font-size: 0.50em;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .tournament-seed + .tournament-seed {
+            border-top: 1px solid rgba(83,49,19,0.28);
+        }
+        .tournament-seed-num {
+            color: #6d4723;
+            font-size: 0.88em;
+        }
+        .tournament-seed-name {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #2a190b;
+        }
+        .tournament-seed-state {
+            color: #0f5f7a;
+            font-size: 0.88em;
+        }
+        .tournament-seed.winner .tournament-seed-name,
+        .tournament-seed.winner .tournament-seed-state {
+            color: #147a32;
+        }
+        .tournament-seed.bye,
+        .tournament-seed.pending {
+            opacity: 0.58;
+        }
+        .tournament-final-column {
+            position: relative;
+            z-index: 1;
+            width: 220px;
+            display: grid;
+            align-content: center;
+            gap: 13px;
+            padding-top: 26px;
+        }
+        .tournament-final-match {
+            height: 76px;
+        }
+        .tournament-winner-banner {
+            position: relative;
+            min-height: 104px;
+            overflow: hidden;
+            display: grid;
+            align-content: center;
+            justify-items: center;
+            gap: 6px;
+            text-align: center;
+            border: 3px solid #6f4215;
+            border-radius: 8px;
+            background:
+                linear-gradient(90deg, transparent, rgba(255,255,255,0.46), transparent),
+                radial-gradient(circle at 50% 8%, rgba(255,255,255,0.84), transparent 28%),
+                linear-gradient(180deg, #fff1a3 0%, #f7b429 44%, #be6b10 100%);
+            background-size: 180% 100%, 100% 100%, 100% 100%;
+            box-shadow:
+                0 4px 0 #3b1f0b,
+                0 0 20px rgba(255,185,35,0.58),
+                inset 0 2px 0 rgba(255,255,255,0.78),
+                inset 0 -4px 0 rgba(108,58,15,0.34);
+            animation: tournamentWinnerGlow 2.8s ease-in-out infinite;
+        }
+        .tournament-winner-label {
+            position: relative;
+            z-index: 1;
+            color: #6f3c10;
+            font-size: 0.48em;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.62);
+        }
+        .tournament-winner-name {
+            position: relative;
+            z-index: 1;
+            max-width: 176px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #ffd45a;
+            font-size: 1.05em;
+            line-height: 1;
+            font-weight: 900;
+            text-transform: uppercase;
+            -webkit-text-stroke: 1.1px #5a2a08;
+            paint-order: stroke fill;
+            text-shadow:
+                0 2px 0 #3a1905,
+                0 3px 4px rgba(58,25,5,0.55),
+                0 0 7px rgba(255,247,190,0.76),
+                0 0 15px rgba(255,180,38,0.86);
+            animation: tournamentWinnerText 1.55s ease-in-out infinite;
+        }
+        .tournament-winner-prize {
+            position: relative;
+            z-index: 1;
+            max-width: 180px;
+            padding: 4px 8px;
+            border: 2px solid rgba(103,59,17,0.48);
+            border-radius: 999px;
+            background: rgba(255,246,207,0.42);
+            color: #5c3514;
+            font-size: 0.48em;
+            font-weight: 900;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @keyframes tournamentWinnerGlow {
+            0%, 100% { background-position: -120% 0, 0 0, 0 0; filter: saturate(1) brightness(1); }
+            50% { background-position: 120% 0, 0 0, 0 0; filter: saturate(1.16) brightness(1.07); }
+        }
+        @keyframes tournamentWinnerText {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-1px) scale(1.03); }
+        }
+        @media (max-width: 900px) {
+            .tournament-layout { grid-template-columns: 1fr; }
+            .tournament-card { min-height: 220px; }
+            .tournament-bracket-stage { min-width: max-content; }
         }
         .market-preview {
             display: none;
@@ -39344,6 +39616,232 @@
             return tournamentState.tournaments[0] || null;
         }
 
+        function tournamentNextPowerOfTwo(value) {
+            let size = 1;
+            while (size < value) size *= 2;
+            return size;
+        }
+
+        function tournamentBracketSize(tournament, entries, matches) {
+            const maxEntries = Number(tournament?.max_entries || 8);
+            const roundOneCount = matches.filter(m => Number(m.round || 1) === 1).length * 2;
+            const seededCount = entries.reduce((max, entry) => Math.max(max, Number(entry.seed || 0)), 0);
+            const needed = Math.max(2, entries.length, seededCount, roundOneCount);
+            return Math.min(maxEntries || 64, tournamentNextPowerOfTwo(needed));
+        }
+
+        function tournamentRoundName(size, roundIndex, sideRoundCount) {
+            const totalRounds = Math.max(1, Math.log2(size));
+            const roundNumber = roundIndex + 1;
+            if (roundNumber === totalRounds - 1) return 'Semifinal';
+            if (roundNumber === totalRounds - 2) return 'Quarterfinal';
+            if (sideRoundCount === 1) return 'Semifinal';
+            return `Round ${roundNumber}`;
+        }
+
+        function tournamentMatchStatusText(match) {
+            const status = String(match?.status || 'scheduled').toUpperCase();
+            if (status === 'BYE') return 'BYE';
+            if (status === 'COMPLETED') return 'WIN';
+            if (status === 'ACTIVE') return 'LIVE';
+            return status;
+        }
+
+        function tournamentSeedHTML(entry, match, slotLabel) {
+            const isBye = slotLabel === 'BYE';
+            const isPending = !entry && !isBye;
+            const isWinner = entry && match?.winner_entry_id && Number(entry.id) === Number(match.winner_entry_id);
+            const seed = entry?.seed || '-';
+            const name = entry?.character_name || (isBye ? 'BYE' : 'TBD');
+            const state = isWinner ? 'WIN' : isBye ? '' : isPending ? '' : `LV ${Number(entry.character_level || 1)}`;
+            const cls = ['tournament-seed', isWinner ? 'winner' : '', isBye ? 'bye' : '', isPending ? 'pending' : ''].filter(Boolean).join(' ');
+            return `
+                <div class="${cls}">
+                    <span class="tournament-seed-num">#${escapeHTML(seed)}</span>
+                    <span class="tournament-seed-name">${escapeHTML(name)}</span>
+                    <span class="tournament-seed-state">${escapeHTML(state)}</span>
+                </div>
+            `;
+        }
+
+        function tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex, finalMatch = false) {
+            const a = match?.entry_a_id ? entriesById.get(Number(match.entry_a_id)) : null;
+            const b = match?.entry_b_id ? entriesById.get(Number(match.entry_b_id)) : null;
+            const slotBLabel = match && a && !b && match.status === 'bye' ? 'BYE' : '';
+            const status = match ? tournamentMatchStatusText(match) : 'TBD';
+            return `
+                <div class="tournament-match-card ${finalMatch ? 'tournament-final-match' : ''}"
+                    data-tournament-match
+                    data-side="${escapeHTML(side)}"
+                    data-round="${roundIndex}"
+                    data-match="${matchIndex}"
+                    ${finalMatch ? 'data-tournament-final-match="true"' : ''}>
+                    ${tournamentSeedHTML(a, match, '')}
+                    ${tournamentSeedHTML(b, match, slotBLabel)}
+                    ${!a && !b && status !== 'TBD' ? `<span class="sr-only">${escapeHTML(status)}</span>` : ''}
+                </div>
+            `;
+        }
+
+        function tournamentRoundHTML(side, roundIndex, matches, entriesById, size, sideRoundCount) {
+            return `
+                <div class="tournament-round" style="--match-count:${Math.max(1, matches.length)}">
+                    <div class="tournament-round-title">${escapeHTML(tournamentRoundName(size, roundIndex, sideRoundCount))}</div>
+                    <div class="tournament-round-matches">
+                        ${matches.map((match, matchIndex) => tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function tournamentSideHTML(side, rounds, entriesById, size) {
+            return `
+                <div class="tournament-bracket-side ${side}" data-tournament-side="${side}">
+                    ${rounds.map((matches, roundIndex) => tournamentRoundHTML(side, roundIndex, matches, entriesById, size, rounds.length)).join('')}
+                </div>
+            `;
+        }
+
+        function tournamentFinalHTML(finalMatch, entriesById, tournament) {
+            const winner = finalMatch?.winner_entry_id ? entriesById.get(Number(finalMatch.winner_entry_id)) : null;
+            const championName = winner?.character_name || 'Champion';
+            const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
+            return `
+                <div class="tournament-final-column">
+                    <div class="tournament-final-title">Final</div>
+                    ${tournamentMatchHTML(finalMatch, entriesById, 'final', 0, 0, true)}
+                    <div class="tournament-winner-banner">
+                        <div class="tournament-winner-label">Tournament Champion</div>
+                        <div class="tournament-winner-name">${escapeHTML(championName)}</div>
+                        <div class="tournament-winner-prize">${escapeHTML(formatTournamentRewardValue(rewardData.champion))}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildTournamentRounds(size, matches) {
+            const totalRounds = Math.max(1, Math.log2(size));
+            const sideRoundCount = Math.max(0, totalRounds - 1);
+            const matchesByRound = new Map();
+            matches.forEach(match => {
+                const round = Number(match.round || 1);
+                if (!matchesByRound.has(round)) matchesByRound.set(round, []);
+                matchesByRound.get(round)[Number(match.match_index || 0)] = match;
+            });
+
+            const leftRounds = [];
+            const rightRounds = [];
+            for (let round = 1; round <= sideRoundCount; round++) {
+                const totalMatches = Math.max(2, size / Math.pow(2, round));
+                const sideMatches = Math.max(1, totalMatches / 2);
+                const roundMatches = matchesByRound.get(round) || [];
+                const left = [];
+                const right = [];
+                for (let i = 0; i < sideMatches; i += 1) {
+                    left.push(roundMatches[i] || null);
+                    right.push(roundMatches[i + sideMatches] || null);
+                }
+                leftRounds.push(left);
+                rightRounds.push(right);
+            }
+
+            return {
+                leftRounds,
+                rightRounds,
+                finalMatch: (matchesByRound.get(totalRounds) || [])[0] || null,
+            };
+        }
+
+        function renderTournamentBracket(tournament, entries, matches) {
+            if (!matches.length) {
+                return '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+            }
+            const size = tournamentBracketSize(tournament, entries, matches);
+            const entriesById = new Map(entries.map(entry => [Number(entry.id), entry]));
+            const { leftRounds, rightRounds, finalMatch } = buildTournamentRounds(size, matches);
+            return `
+                <div class="tournament-bracket-head">
+                    <span>${size} player bracket</span>
+                    <span>${matches.length} match${matches.length === 1 ? '' : 'es'} scheduled</span>
+                </div>
+                <div class="tournament-bracket-scroll">
+                    <div class="tournament-bracket-stage" id="tournament-bracket-stage">
+                        <svg class="tournament-connector-svg" id="tournament-connector-svg" aria-hidden="true"></svg>
+                        ${tournamentSideHTML('left', leftRounds, entriesById, size)}
+                        ${tournamentFinalHTML(finalMatch, entriesById, tournament)}
+                        ${tournamentSideHTML('right', rightRounds, entriesById, size)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function tournamentLocalPoint(stageRect, rect, edge, targetSide) {
+            const x = (edge === 'left' ? rect.left : rect.right) - stageRect.left;
+            const y = rect.top + rect.height / 2 - stageRect.top;
+            return { x, y, targetSide };
+        }
+
+        function tournamentConnectorPath(from, to) {
+            const dir = from.targetSide === 'right' ? 1 : -1;
+            const gap = Math.max(18, Math.abs(to.x - from.x) * 0.5);
+            const midX = from.x + dir * gap;
+            return `M ${from.x} ${from.y} H ${midX} V ${to.y} H ${to.x}`;
+        }
+
+        function drawTournamentConnectors() {
+            const stage = document.getElementById('tournament-bracket-stage');
+            const svg = document.getElementById('tournament-connector-svg');
+            if (!stage || !svg) return;
+            const stageRect = stage.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${stage.scrollWidth} ${stage.scrollHeight}`);
+            svg.setAttribute('width', stage.scrollWidth);
+            svg.setAttribute('height', stage.scrollHeight);
+
+            const paths = [];
+            ['left', 'right'].forEach(side => {
+                const roundMap = Array.from(stage.querySelectorAll(`.tournament-match-card[data-side="${side}"]`)).reduce((map, el) => {
+                    const round = Number(el.dataset.round);
+                    if (!map.has(round)) map.set(round, []);
+                    map.get(round)[Number(el.dataset.match)] = el;
+                    return map;
+                }, new Map());
+                const rounds = Array.from(roundMap.keys()).sort((a, b) => a - b);
+                rounds.forEach(round => {
+                    const current = roundMap.get(round) || [];
+                    const next = roundMap.get(round + 1) || [];
+                    current.forEach((matchEl, matchIndex) => {
+                        const target = next[Math.floor(matchIndex / 2)];
+                        if (!target) return;
+                        const fromRect = matchEl.getBoundingClientRect();
+                        const toRect = target.getBoundingClientRect();
+                        const from = side === 'left'
+                            ? tournamentLocalPoint(stageRect, fromRect, 'right', 'right')
+                            : tournamentLocalPoint(stageRect, fromRect, 'left', 'left');
+                        const to = side === 'left'
+                            ? tournamentLocalPoint(stageRect, toRect, 'left', 'right')
+                            : tournamentLocalPoint(stageRect, toRect, 'right', 'left');
+                        paths.push(tournamentConnectorPath(from, to));
+                    });
+                });
+
+                const lastRound = rounds[rounds.length - 1];
+                const sideWinner = roundMap.get(lastRound)?.[0];
+                const finalMatch = stage.querySelector('[data-tournament-final-match="true"]');
+                if (sideWinner && finalMatch) {
+                    const fromRect = sideWinner.getBoundingClientRect();
+                    const toRect = finalMatch.getBoundingClientRect();
+                    const from = side === 'left'
+                        ? tournamentLocalPoint(stageRect, fromRect, 'right', 'right')
+                        : tournamentLocalPoint(stageRect, fromRect, 'left', 'left');
+                    const to = side === 'left'
+                        ? tournamentLocalPoint(stageRect, toRect, 'left', 'right')
+                        : tournamentLocalPoint(stageRect, toRect, 'right', 'left');
+                    paths.push(tournamentConnectorPath(from, to));
+                }
+            });
+            svg.innerHTML = paths.map(path => `<path class="tournament-connector-line" d="${path}"></path>`).join('');
+        }
+
         function renderTournamentPanel() {
             const card = document.getElementById('tournament-current-card');
             const bracket = document.getElementById('tournament-bracket');
@@ -39394,21 +39892,8 @@
                 bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
                 return;
             }
-            bracket.innerHTML = `
-                <div class="tournament-section-title">Bracket</div>
-                ${matches.map(match => {
-                    const a = entries.find(e => Number(e.id) === Number(match.entry_a_id));
-                    const b = entries.find(e => Number(e.id) === Number(match.entry_b_id));
-                    const winner = entries.find(e => Number(e.id) === Number(match.winner_entry_id));
-                    return `
-                        <div class="tournament-match-row">
-                            <span>R${match.round}.${match.match_index + 1}</span>
-                            <span>${escapeHTML(a?.character_name || 'TBD')} vs ${escapeHTML(b?.character_name || 'BYE')}</span>
-                            <span>${winner ? escapeHTML(winner.character_name || 'Winner') : escapeHTML(String(match.status || 'scheduled'))}</span>
-                        </div>
-                    `;
-                }).join('')}
-            `;
+            bracket.innerHTML = renderTournamentBracket(tournament, entries, matches);
+            requestAnimationFrame(drawTournamentConnectors);
         }
 
         async function loadTournaments() {
@@ -43042,6 +43527,7 @@
         document.getElementById('tournament-close')?.addEventListener('click', closeTournamentPanel);
         document.getElementById('tournament-home-btn')?.addEventListener('click', closeTournamentPanel);
         document.getElementById('tournament-refresh-btn')?.addEventListener('click', loadTournaments);
+        window.addEventListener('resize', () => requestAnimationFrame(drawTournamentConnectors));
         document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
             closeMarketplace();
             closeTournamentPanel();
