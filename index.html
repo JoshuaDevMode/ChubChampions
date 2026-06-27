@@ -39791,7 +39791,46 @@
         }
 
         function currentTournament() {
-            return tournamentState.tournaments[0] || null;
+            const active = tournamentState.tournaments.find(t => t.status === 'registration' || t.status === 'active');
+            return active || tournamentState.tournaments[0] || null;
+        }
+
+        function tournamentLoserOf(match) {
+            if (!match || !match.winner_entry_id) return null;
+            if (match.entry_a_id && Number(match.entry_a_id) !== Number(match.winner_entry_id)) return Number(match.entry_a_id);
+            if (match.entry_b_id && Number(match.entry_b_id) !== Number(match.winner_entry_id)) return Number(match.entry_b_id);
+            return null;
+        }
+
+        function tournamentRewardForEntry(tournament, entry) {
+            if (!tournament || !entry || tournament.status !== 'completed') return null;
+            const matches = Array.isArray(tournament.tournament_matches) ? tournament.tournament_matches : [];
+            const completed = matches.filter(match => match.status === 'completed' || match.status === 'bye');
+            if (!completed.length) return null;
+            const maxRound = completed.reduce((max, match) => Math.max(max, Number(match.round || 1)), 1);
+            const final = completed.find(match => Number(match.round || 1) === maxRound && match.winner_entry_id);
+            const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
+            const entryId = Number(entry.id);
+            if (!final) return null;
+            if (Number(final.winner_entry_id) === entryId && rewardData.champion) return { tier: 'champion', reward: rewardData.champion };
+            if (tournamentLoserOf(final) === entryId && rewardData.finalist) return { tier: 'finalist', reward: rewardData.finalist };
+            const semiRound = maxRound - 1;
+            if (semiRound >= 1) {
+                const semiLosers = completed
+                    .filter(match => Number(match.round || 1) === semiRound)
+                    .map(tournamentLoserOf)
+                    .filter(id => id != null);
+                if (semiLosers.includes(entryId) && rewardData.semifinalist) return { tier: 'semifinalist', reward: rewardData.semifinalist };
+            }
+            return null;
+        }
+
+        function tournamentClaimState(tournament, entry) {
+            const reward = tournamentRewardForEntry(tournament, entry);
+            if (!reward || !entry) return null;
+            const claims = Array.isArray(tournament.tournament_reward_claims) ? tournament.tournament_reward_claims : [];
+            const claimed = claims.some(claim => Number(claim.entry_id) === Number(entry.id));
+            return { ...reward, claimed };
         }
 
         function characterHasPendingLevelup(character) {
@@ -40142,7 +40181,9 @@
             const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
             const matches = Array.isArray(tournament.tournament_matches) ? tournament.tournament_matches : [];
             const character = getSelectedCharacter();
-            const alreadyJoined = playerSession && entries.some(e => String(e.player_id) === String(playerSession.playerId));
+            const playerEntry = playerSession ? entries.find(e => String(e.player_id) === String(playerSession.playerId)) : null;
+            const claimState = tournamentClaimState(tournament, playerEntry);
+            const alreadyJoined = !!playerEntry;
             const full = entries.length >= Number(tournament.max_entries || 0);
             const registrationOpen = tournament.status === 'registration' && new Date(tournament.registration_ends_at).getTime() > Date.now();
             const canOpenJoin = !!playerSession && !!character && tournament.status === 'registration';
@@ -40159,6 +40200,7 @@
                 <div class="tournament-meta">${escapeHTML(formatTournamentRewards(tournament))}</div>
                 <div class="tournament-actions">
                     <button id="tournament-join-btn" type="button" ${canOpenJoin ? '' : 'disabled'}>${joinLabel}</button>
+                    ${claimState ? `<button id="tournament-claim-btn" type="button" ${claimState.claimed ? 'disabled' : ''}>${claimState.claimed ? 'CLAIMED' : `CLAIM ${escapeHTML(formatTournamentRewardValue(claimState.reward))}`}</button>` : ''}
                 </div>
                 <div class="tournament-section-title">Entries</div>
                 ${entries.length ? entries.map((entry, index) => `
@@ -40170,6 +40212,7 @@
                 `).join('') : '<div class="tournament-empty">No entries yet.</div>'}
             `;
             card.querySelector('#tournament-join-btn')?.addEventListener('click', openTournamentJoinModal);
+            card.querySelector('#tournament-claim-btn')?.addEventListener('click', claimCurrentTournamentReward);
 
             if (!matches.length) {
                 bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
@@ -40259,6 +40302,56 @@
                     const entriesNow = Array.isArray(tournamentNow?.tournament_entries) ? tournamentNow.tournament_entries : [];
                     confirmBtn.textContent = 'ENTER TOURNAMENT';
                     confirmBtn.disabled = !tournamentJoinEligibility(tournamentNow, getSelectedCharacter(), entriesNow).canEnter;
+                }
+            }
+        }
+
+        async function claimCurrentTournamentReward() {
+            const tournament = currentTournament();
+            const entries = Array.isArray(tournament?.tournament_entries) ? tournament.tournament_entries : [];
+            const entry = playerSession ? entries.find(e => String(e.player_id) === String(playerSession.playerId)) : null;
+            const claimState = tournamentClaimState(tournament, entry);
+            if (!tournament || !entry || !claimState || claimState.claimed || !playerSession) return;
+
+            const btn = document.getElementById('tournament-claim-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'CLAIMING...';
+            }
+
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/claim', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        tournamentId: Number(tournament.id),
+                        entryId: Number(entry.id),
+                    }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not claim tournament reward.');
+                    return;
+                }
+
+                if (Number.isFinite(Number(data.newTokens))) globalTokens = Number(data.newTokens);
+                if (Number.isFinite(Number(data.newCrystals))) globalCrystals = Number(data.newCrystals);
+                if (data.petData && typeof data.petData === 'object') {
+                    const character = getSelectedCharacter();
+                    if (character && data.petData.petSnacks !== undefined) {
+                        character.petSnacks = Math.max(0, Math.floor(Number(data.petData.petSnacks) || 0));
+                    }
+                }
+                updateCurrencyUI();
+                showNotice('Tournament reward claimed: ' + formatTournamentRewardValue(data.reward || claimState.reward));
+                await loadTournaments();
+            } catch (err) {
+                showNotice('Could not claim tournament reward.');
+            } finally {
+                if (btn) {
+                    btn.textContent = 'CLAIM';
+                    btn.disabled = false;
                 }
             }
         }
