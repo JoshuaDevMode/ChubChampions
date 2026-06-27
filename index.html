@@ -19353,7 +19353,6 @@
             <div class="market-title">⚖ MARKET</div>
             <div class="market-header-actions">
                 <button class="market-history-btn" id="market-history-btn">TRADING HISTORY</button>
-                <button class="market-home-btn" id="market-home-btn">LOBBY</button>
                 <span class="market-close" id="market-close">&times;</span>
             </div>
         </div>
@@ -44775,9 +44774,6 @@
             tab.addEventListener('click', () => setFusionTab(tab.dataset.fusionTab));
         });
         document.getElementById('market-close').addEventListener('click', () => {
-            closeMarketplace();
-        });
-        document.getElementById('market-home-btn').addEventListener('click', () => {
             closeMarketplace();
         });
         document.getElementById('market-sell-btn').addEventListener('click', () => {
