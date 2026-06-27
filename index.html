@@ -6940,6 +6940,36 @@
             font-weight: 900;
             text-transform: uppercase;
         }
+        .tournament-round-status {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-bottom: 1px solid rgba(78,45,16,0.22);
+            background: rgba(72,43,17,0.12);
+            color: #3a220d;
+            font-size: 0.58em;
+            font-weight: 900;
+        }
+        .tournament-round-status strong {
+            color: #0f5f7a;
+            text-transform: uppercase;
+        }
+        .tournament-round-status span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tournament-round-count {
+            padding: 4px 8px;
+            border: 1px solid rgba(74,44,18,0.24);
+            border-radius: 999px;
+            background: rgba(255,246,220,0.64);
+            color: #5a330f;
+            white-space: nowrap;
+        }
         .tournament-bracket-scroll {
             position: relative;
             min-height: 0;
@@ -7038,6 +7068,14 @@
             color: #2a190b;
             filter: drop-shadow(0 3px 0 rgba(47,25,10,0.45));
             overflow: hidden;
+            cursor: pointer;
+        }
+        .tournament-match-card.pending-match {
+            filter: grayscale(0.35) drop-shadow(0 3px 0 rgba(47,25,10,0.35));
+            opacity: 0.78;
+        }
+        .tournament-match-card.completed-match {
+            box-shadow: inset 0 0 0 2px rgba(22,119,54,0.18);
         }
         .tournament-match-card::after {
             content: "";
@@ -7132,6 +7170,124 @@
         .tournament-watch-btn:disabled {
             opacity: 0.65;
             cursor: wait;
+        }
+        .tournament-match-detail-modal {
+            position: absolute;
+            inset: 0;
+            z-index: 2210;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(20,12,5,0.62);
+            backdrop-filter: blur(2px);
+        }
+        .tournament-match-detail-modal.active {
+            display: flex;
+        }
+        .tournament-match-detail-box {
+            width: min(560px, 92%);
+            max-height: 86%;
+            overflow: auto;
+            box-sizing: border-box;
+            background: none;
+            border: 28px solid transparent;
+            border-image-source: url('Assets/UI/window-frame.png');
+            border-image-slice: 15% fill;
+            border-image-width: 28px;
+            border-image-repeat: stretch;
+            padding: 14px 18px 16px;
+            color: #2a190b;
+            font-family: 'Fredoka', sans-serif;
+            filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+        }
+        .tournament-match-detail-title {
+            color: #5a330f;
+            font-size: 0.95em;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .tournament-match-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .tournament-fighter-detail {
+            min-width: 0;
+            padding: 9px;
+            border: 2px solid rgba(88,52,18,0.24);
+            border-radius: 8px;
+            background: rgba(255,246,220,0.68);
+        }
+        .tournament-fighter-detail.winner {
+            border-color: rgba(20,122,50,0.52);
+            background: rgba(221,255,224,0.54);
+        }
+        .tournament-fighter-detail.lost {
+            filter: grayscale(1);
+            opacity: 0.62;
+        }
+        .tournament-fighter-name {
+            min-width: 0;
+            color: #2a190b;
+            font-size: 0.72em;
+            font-weight: 950;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tournament-fighter-meta {
+            margin-top: 5px;
+            color: #69411f;
+            font-size: 0.52em;
+            font-weight: 850;
+            line-height: 1.35;
+        }
+        .tournament-vs-chip {
+            align-self: center;
+            padding: 6px 8px;
+            border: 2px solid #5c3512;
+            border-radius: 999px;
+            background: linear-gradient(#ffc34a, #df8216);
+            color: #3a2009;
+            font-size: 0.55em;
+            font-weight: 950;
+            box-shadow: 0 2px 0 #6c340d;
+        }
+        .tournament-match-detail-meta {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+        }
+        .tournament-match-detail-actions {
+            display: flex;
+            justify-content: center;
+            gap: 9px;
+            margin-top: 12px;
+        }
+        .tournament-match-detail-actions button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.6em;
+            font-weight: 900;
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            padding: 8px 13px;
+            cursor: pointer;
+        }
+        .tournament-match-detail-watch {
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            color: #2b1a0e;
+        }
+        .tournament-match-detail-close {
+            background: rgba(58,33,14,0.16);
+            color: #3a220d;
+        }
+        .tournament-match-detail-actions button:disabled {
+            opacity: 0.48;
+            cursor: not-allowed;
         }
         .tournament-final-column {
             position: relative;
@@ -18853,6 +19009,12 @@
                     <button class="tournament-join-confirm" id="tournament-join-confirm" type="button">ENTER TOURNAMENT</button>
                     <button class="tournament-join-cancel" id="tournament-join-cancel" type="button">CANCEL</button>
                 </div>
+            </div>
+        </div>
+        <div class="tournament-match-detail-modal" id="tournament-match-detail-modal">
+            <div class="tournament-match-detail-box">
+                <div class="tournament-match-detail-title" id="tournament-match-detail-title">Match Detail</div>
+                <div id="tournament-match-detail-content"></div>
             </div>
         </div>
     </div>
@@ -39977,6 +40139,55 @@
             return status;
         }
 
+        function tournamentRoundStatus(tournament, matches) {
+            const status = String(tournament?.status || 'registration');
+            if (status === 'registration') {
+                return {
+                    label: 'Registration open',
+                    detail: `starts ${formatTournamentTime(tournament?.starts_at)}`,
+                    count: `${(tournament?.tournament_entries || []).length}/${Number(tournament?.max_entries || 0)} slots`,
+                };
+            }
+            if (status === 'completed') {
+                const completed = matches.filter(match => String(match.status || '').toLowerCase() === 'completed').length;
+                return { label: 'Tournament completed', detail: 'replays and claims are available', count: `${completed} results` };
+            }
+            if (!matches.length) {
+                return { label: 'Bracket pending', detail: 'waiting for registration close', count: '0 matches' };
+            }
+
+            const scheduled = matches
+                .filter(match => String(match.status || '').toLowerCase() === 'scheduled' && match.entry_a_id && match.entry_b_id)
+                .sort((a, b) => {
+                    const ta = new Date(a.scheduled_at || 0).getTime();
+                    const tb = new Date(b.scheduled_at || 0).getTime();
+                    return ta - tb || Number(a.round || 1) - Number(b.round || 1);
+                });
+            if (scheduled.length) {
+                const next = scheduled[0];
+                const sameRound = scheduled.filter(match => Number(match.round || 1) === Number(next.round || 1)).length;
+                return {
+                    label: `Round ${Number(next.round || 1)} pending`,
+                    detail: `starts ${formatTournamentTime(next.scheduled_at)}`,
+                    count: `${sameRound} match${sameRound === 1 ? '' : 'es'}`,
+                };
+            }
+
+            const completedByRound = matches
+                .filter(match => ['completed', 'bye'].includes(String(match.status || '').toLowerCase()))
+                .reduce((map, match) => {
+                    const round = Number(match.round || 1);
+                    map.set(round, (map.get(round) || 0) + 1);
+                    return map;
+                }, new Map());
+            const latestRound = Math.max(...Array.from(completedByRound.keys()), 1);
+            return {
+                label: `Round ${latestRound} results`,
+                detail: 'waiting for next round schedule',
+                count: `${completedByRound.get(latestRound) || 0} results`,
+            };
+        }
+
         function tournamentSeedHTML(entry, match, slotLabel, selectedCharacterIdForBracket) {
             const isBye = slotLabel === 'BYE';
             const isPending = !entry && !isBye;
@@ -40010,8 +40221,9 @@
             const slotBLabel = match && a && !b && match.status === 'bye' ? 'BYE' : '';
             const status = match ? tournamentMatchStatusText(match) : 'TBD';
             const canWatch = match && String(match.status || '').toLowerCase() === 'completed';
+            const cardStatus = match ? String(match.status || '').toLowerCase() : 'pending';
             return `
-                <div class="tournament-match-card ${finalMatch ? 'tournament-final-match' : ''}"
+                <div class="tournament-match-card ${finalMatch ? 'tournament-final-match' : ''} ${cardStatus === 'completed' ? 'completed-match' : 'pending-match'}"
                     data-tournament-match
                     data-tournament-match-id="${match?.id ? Number(match.id) : ''}"
                     data-side="${escapeHTML(side)}"
@@ -40103,10 +40315,15 @@
             const entriesById = new Map(entries.map(entry => [Number(entry.id), entry]));
             const { leftRounds, rightRounds, finalMatch } = buildTournamentRounds(size, matches);
             const selectedCharacterIdForBracket = getSelectedCharacter()?.id || selectedCharacterId || null;
+            const roundState = tournamentRoundStatus(tournament, matches);
             return `
                 <div class="tournament-bracket-head">
                     <span>${size} player bracket</span>
                     <span>${matches.length} match${matches.length === 1 ? '' : 'es'} scheduled</span>
+                </div>
+                <div class="tournament-round-status">
+                    <span><strong>${escapeHTML(roundState.label)}</strong> · ${escapeHTML(roundState.detail)}</span>
+                    <div class="tournament-round-count">${escapeHTML(roundState.count)}</div>
                 </div>
                 <div class="tournament-bracket-scroll">
                     <div class="tournament-bracket-stage" id="tournament-bracket-stage">
@@ -40186,6 +40403,76 @@
             svg.innerHTML = paths.map(path => `<path class="tournament-connector-line" d="${path}"></path>`).join('');
         }
 
+        function tournamentEntryDetailHTML(entry, match) {
+            const winnerId = Number(match?.winner_entry_id || 0);
+            const isWinner = entry && winnerId && Number(entry.id) === winnerId;
+            const isLost = entry && winnerId && Number(entry.id) !== winnerId;
+            const cls = ['tournament-fighter-detail', isWinner ? 'winner' : '', isLost ? 'lost' : ''].filter(Boolean).join(' ');
+            if (!entry) {
+                return `
+                    <div class="tournament-fighter-detail lost">
+                        <div class="tournament-fighter-name">TBD</div>
+                        <div class="tournament-fighter-meta">Waiting for opponent</div>
+                    </div>
+                `;
+            }
+            return `
+                <div class="${cls}">
+                    <div class="tournament-fighter-name">${escapeHTML(entry.character_name || 'Fighter')}</div>
+                    <div class="tournament-fighter-meta">
+                        Seed #${escapeHTML(entry.seed || '-')}<br>
+                        Level ${Number(entry.character_level || 1)}<br>
+                        ${isWinner ? 'Winner' : isLost ? 'Eliminated' : 'Ready'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeTournamentMatchDetail() {
+            document.getElementById('tournament-match-detail-modal')?.classList.remove('active');
+        }
+
+        function openTournamentMatchDetail(matchId) {
+            const tournament = currentTournament();
+            const modal = document.getElementById('tournament-match-detail-modal');
+            const title = document.getElementById('tournament-match-detail-title');
+            const content = document.getElementById('tournament-match-detail-content');
+            if (!tournament || !modal || !title || !content || !matchId) return;
+
+            const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
+            const matches = Array.isArray(tournament.tournament_matches) ? tournament.tournament_matches : [];
+            const match = matches.find(item => Number(item.id) === Number(matchId));
+            if (!match) return;
+            const entriesById = new Map(entries.map(entry => [Number(entry.id), entry]));
+            const a = match.entry_a_id ? entriesById.get(Number(match.entry_a_id)) : null;
+            const b = match.entry_b_id ? entriesById.get(Number(match.entry_b_id)) : null;
+            const status = String(match.status || 'scheduled').toUpperCase();
+            const canWatch = String(match.status || '').toLowerCase() === 'completed';
+
+            title.textContent = `Round ${Number(match.round || 1)} Match ${Number(match.match_index || 0) + 1}`;
+            content.innerHTML = `
+                <div class="tournament-match-detail-grid">
+                    ${tournamentEntryDetailHTML(a, match)}
+                    <div class="tournament-vs-chip">VS</div>
+                    ${tournamentEntryDetailHTML(b, match)}
+                </div>
+                <div class="tournament-match-detail-meta">
+                    <div class="tournament-meta">STATUS<br>${escapeHTML(status)}</div>
+                    <div class="tournament-meta">SCHEDULE<br>${escapeHTML(formatTournamentTime(match.scheduled_at))}</div>
+                    <div class="tournament-meta">REPLAY<br>${canWatch ? 'READY' : 'PENDING'}</div>
+                </div>
+                <div class="tournament-match-detail-actions">
+                    <button class="tournament-match-detail-watch" id="tournament-match-detail-watch" type="button" ${canWatch ? '' : 'disabled'}>WATCH REPLAY</button>
+                    <button class="tournament-match-detail-close" id="tournament-match-detail-close" type="button">CLOSE</button>
+                </div>
+            `;
+            content.querySelector('#tournament-match-detail-close')?.addEventListener('click', closeTournamentMatchDetail);
+            content.querySelector('#tournament-match-detail-watch')?.addEventListener('click', () => {
+                watchTournamentMatch(Number(match.id), content.querySelector('#tournament-match-detail-watch'));
+            });
+            modal.classList.add('active');
+        }
+
         function renderTournamentPanel() {
             const card = document.getElementById('tournament-current-card');
             const bracket = document.getElementById('tournament-bracket');
@@ -40242,6 +40529,11 @@
                 return;
             }
             bracket.innerHTML = renderTournamentBracket(tournament, entries, matches);
+            bracket.querySelectorAll('[data-tournament-match-id]').forEach(cardEl => {
+                cardEl.addEventListener('click', () => {
+                    openTournamentMatchDetail(Number(cardEl.dataset.tournamentMatchId || 0));
+                });
+            });
             bracket.querySelectorAll('[data-tournament-watch]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -40291,6 +40583,7 @@
         function closeTournamentPanel() {
             document.getElementById('tournament-panel')?.classList.remove('active');
             closeTournamentJoinModal();
+            closeTournamentMatchDetail();
         }
 
         async function joinCurrentTournament() {
@@ -44008,6 +44301,9 @@
         document.getElementById('tournament-join-cancel')?.addEventListener('click', closeTournamentJoinModal);
         document.getElementById('tournament-join-modal')?.addEventListener('click', (e) => {
             if (e.target.id === 'tournament-join-modal') closeTournamentJoinModal();
+        });
+        document.getElementById('tournament-match-detail-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'tournament-match-detail-modal') closeTournamentMatchDetail();
         });
         window.addEventListener('resize', () => requestAnimationFrame(drawTournamentConnectors));
         document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
