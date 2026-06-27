@@ -7596,6 +7596,11 @@
             border-radius: 6px;
             padding: 9px;
         }
+        .market-tournament-line {
+            border-color: rgba(251,191,36,0.22);
+            background: rgba(251,191,36,0.08);
+            color: #fde68a;
+        }
         .market-detail-actions {
             display: grid;
             grid-template-columns: 1fr;
@@ -10398,6 +10403,37 @@
             grid-template-columns: 1fr 1fr;
             gap: 6px 14px;
         }
+        .char-profile-tournament-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 6px;
+        }
+        .char-profile-tournament-stat {
+            min-width: 0;
+            padding: 6px 5px;
+            border: 1px solid rgba(252,211,77,0.24);
+            border-radius: 6px;
+            background: rgba(252,211,77,0.08);
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+        }
+        .char-profile-tournament-stat span {
+            display: block;
+            color: #9ca3af;
+            font-size: 0.62em;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .char-profile-tournament-stat strong {
+            display: block;
+            margin-top: 2px;
+            color: #fde68a;
+            font-size: 0.84em;
+            font-weight: 950;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         .char-profile-stat {
             display: flex;
             align-items: center;
@@ -10548,6 +10584,14 @@
             font-size: 0.62em;
             font-weight: 900;
             color: #3b2414;
+        }
+        .player-profile-tournament {
+            margin-top: 7px;
+            padding-top: 7px;
+            border-top: 1px solid rgba(43,26,14,0.16);
+            color: #7c4a10;
+            font-size: 0.62em;
+            font-weight: 950;
         }
 
         /* Clickable names in leaderboard */
@@ -19449,6 +19493,8 @@
                         <span class="char-profile-qtier" id="cp-qtier">Novice</span>
                     </div>
                     <div class="char-profile-stats-grid" id="cp-stats-grid"></div>
+                    <div class="char-profile-history-title">TOURNAMENTS</div>
+                    <div class="char-profile-tournament-grid" id="cp-tournaments"></div>
                 </div>
             </div>
             <!-- Battle history -->
@@ -24429,6 +24475,7 @@
             document.getElementById('cp-qtier').textContent     = '–';
             document.getElementById('cp-element').innerHTML     = '';
             document.getElementById('cp-stats-grid').innerHTML  = '';
+            document.getElementById('cp-tournaments').innerHTML = '';
             document.getElementById('cp-battles').innerHTML     = '<div class="char-profile-no-history">Loading...</div>';
             document.getElementById('cp-tier-badge').textContent = '–';
             document.getElementById('cp-tier-badge').className  = 'lb-tier-badge';
@@ -24500,6 +24547,9 @@
                 </div>`;
             }).join('');
 
+            const tournamentsEl = document.getElementById('cp-tournaments');
+            if (tournamentsEl) tournamentsEl.innerHTML = tournamentStatsGridHTML(d.tournamentStats || {});
+
             // Battle history
             const battlesEl = document.getElementById('cp-battles');
             if (!d.battleHistory || !d.battleHistory.length) {
@@ -24564,6 +24614,7 @@
                 const s = char.stats || {};
                 const elem = ELEMENT_DATA[char.element];
                 const pet = char.pet ? ` · ${escapeHTML(char.pet.name || char.pet.species)} pet` : '';
+                const tournamentBadge = tournamentShortBadge(char);
                 return `<div class="player-profile-card" data-char-id="${escapeHTML(char.id)}">
                     <div class="player-profile-card-head">
                         <span>${escapeHTML(char.name || 'Fighter')}</span>
@@ -24581,6 +24632,7 @@
                         <span>DEF ${Number(s.def || 0)}</span>
                         <span>${Number(char.rankingPoints || 0).toLocaleString()} PTS</span>
                     </div>
+                    <div class="player-profile-tournament">${escapeHTML(tournamentBadge || 'No tournament record')}</div>
                 </div>`;
             }).join('');
         }
@@ -26104,6 +26156,7 @@
                             local.qTable       = sc.qTable;
                             local.fusionData   = sc.fusionData || { count: sc.fusionCount || 0, history: [] };
                             local.fusionCount  = sc.fusionCount || local.fusionData.count || 0;
+                            local.tournamentStats = normalizeTournamentStatsClient(sc);
                             // Level, exp and stats are validated server-side
                             local.level  = sc.level;
                             local.exp    = sc.exp ?? local.exp ?? 0;
@@ -39714,6 +39767,52 @@
             return total > 0 ? Math.round((wins / total) * 100) : null;
         }
 
+        function normalizeTournamentStatsClient(characterOrStats) {
+            const raw = characterOrStats?.tournamentStats || characterOrStats?.tournament_stats || characterOrStats || {};
+            return {
+                matchesPlayed: Math.max(0, Math.floor(Number(raw.matchesPlayed ?? raw.matches_played ?? 0) || 0)),
+                matchesWon: Math.max(0, Math.floor(Number(raw.matchesWon ?? raw.matches_won ?? 0) || 0)),
+                matchesLost: Math.max(0, Math.floor(Number(raw.matchesLost ?? raw.matches_lost ?? 0) || 0)),
+                semifinals: Math.max(0, Math.floor(Number(raw.semifinals ?? 0) || 0)),
+                finals: Math.max(0, Math.floor(Number(raw.finals ?? 0) || 0)),
+                wins: Math.max(0, Math.floor(Number(raw.wins ?? 0) || 0)),
+                bestFinish: typeof raw.bestFinish === 'string' ? raw.bestFinish : (typeof raw.best_finish === 'string' ? raw.best_finish : null),
+                lastTournamentAt: typeof raw.lastTournamentAt === 'string' ? raw.lastTournamentAt : (typeof raw.last_tournament_at === 'string' ? raw.last_tournament_at : null),
+            };
+        }
+
+        function tournamentBestLabel(stats) {
+            const best = String(stats.bestFinish || '').toLowerCase();
+            if (best === 'champion') return 'Champion';
+            if (best === 'finalist') return 'Finalist';
+            if (best === 'semifinalist') return 'Semifinalist';
+            return 'Unplaced';
+        }
+
+        function tournamentRecordLabel(characterOrStats) {
+            const stats = normalizeTournamentStatsClient(characterOrStats);
+            return `${stats.matchesWon}-${stats.matchesLost}`;
+        }
+
+        function tournamentShortBadge(characterOrStats) {
+            const stats = normalizeTournamentStatsClient(characterOrStats);
+            if (stats.wins > 0) return `${stats.wins}x Champion`;
+            if (stats.finals > 0) return 'Best: Finalist';
+            if (stats.semifinals > 0) return 'Best: Semi';
+            if (stats.matchesPlayed > 0) return `Tourney ${stats.matchesWon}-${stats.matchesLost}`;
+            return '';
+        }
+
+        function tournamentStatsGridHTML(characterOrStats) {
+            const stats = normalizeTournamentStatsClient(characterOrStats);
+            return `
+                <div class="char-profile-tournament-stat"><span>Wins</span><strong>${stats.wins}</strong></div>
+                <div class="char-profile-tournament-stat"><span>Finals</span><strong>${stats.finals}</strong></div>
+                <div class="char-profile-tournament-stat"><span>Record</span><strong>${stats.matchesWon}-${stats.matchesLost}</strong></div>
+                <div class="char-profile-tournament-stat"><span>Best</span><strong>${escapeHTML(tournamentBestLabel(stats))}</strong></div>
+            `;
+        }
+
         function marketBuildTag(character) {
             const atk = marketStat(character, 'attack');
             const str = marketStat(character, 'strength');
@@ -39736,10 +39835,8 @@
             const badges = [];
             const seasonTags = Array.isArray(character?.seasonTags) ? character.seasonTags : [];
             const titles = Array.isArray(character?.titles) ? character.titles : [];
-            const tournamentWins = Number(character?.tournamentWins || 0);
-            const tournamentFinals = Number(character?.tournamentFinals || 0);
-            if (tournamentWins > 0) badges.push(`${tournamentWins}x Champion`);
-            else if (tournamentFinals > 0) badges.push('Finalist');
+            const tournamentBadge = tournamentShortBadge(character);
+            if (tournamentBadge) badges.push(tournamentBadge);
             badges.push(...seasonTags.slice(0, 2));
             badges.push(...titles.slice(0, 2));
             if (!badges.length && Number(character?.rankingPoints || 0) > 0) {
@@ -40794,6 +40891,7 @@
             const winRate = marketWinRate(c);
             const buildTag = marketBuildTag(c);
             const badges = marketBadges(c);
+            const tournamentStats = normalizeTournamentStatsClient(c);
             const state = marketplaceButtonState(listing);
             const title = document.getElementById('market-detail-title');
             const content = document.getElementById('market-detail-content');
@@ -40839,6 +40937,15 @@
                             <div class="market-detail-section-title">Badges</div>
                             <div class="market-detail-badges">
                                 ${(badges.length ? badges : ['No legacy badges yet']).map(b => `<span class="market-card-badge">${escapeHTML(b)}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="market-detail-section">
+                            <div class="market-detail-section-title">Tournaments</div>
+                            <div class="market-detail-stats">
+                                <div class="market-detail-line market-tournament-line">Champion Wins: ${tournamentStats.wins}</div>
+                                <div class="market-detail-line market-tournament-line">Finals: ${tournamentStats.finals}</div>
+                                <div class="market-detail-line market-tournament-line">Record: ${escapeHTML(tournamentRecordLabel(tournamentStats))}</div>
+                                <div class="market-detail-line market-tournament-line">Best Finish: ${escapeHTML(tournamentBestLabel(tournamentStats))}</div>
                             </div>
                         </div>
                         <div class="market-detail-section">
