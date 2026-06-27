@@ -429,16 +429,19 @@
       max-width: 182px;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: #fff0a8;
+      color: #ffd45a;
       font-size: 25px;
       line-height: 1;
       font-weight: 900;
       letter-spacing: 0;
       text-transform: uppercase;
+      -webkit-text-stroke: 1.2px #5a2a08;
+      paint-order: stroke fill;
       text-shadow:
-        0 2px 0 #6a3308,
-        0 0 7px rgba(255,255,255,0.86),
-        0 0 15px rgba(255,214,81,0.88);
+        0 2px 0 #3a1905,
+        0 3px 4px rgba(58,25,5,0.55),
+        0 0 7px rgba(255,247,190,0.76),
+        0 0 15px rgba(255,180,38,0.86);
       animation: winnerTextShine 1.55s ease-in-out infinite;
     }
 
@@ -471,13 +474,13 @@
     @keyframes winnerTextShine {
       0%, 100% {
         transform: scale(1);
-        color: #ffef9a;
-        text-shadow: 0 2px 0 #6a3308, 0 0 7px rgba(255,255,255,0.72), 0 0 14px rgba(255,210,72,0.72);
+        color: #ffd45a;
+        text-shadow: 0 2px 0 #3a1905, 0 3px 4px rgba(58,25,5,0.55), 0 0 7px rgba(255,247,190,0.76), 0 0 15px rgba(255,180,38,0.86);
       }
       50% {
         transform: scale(1.035);
-        color: #fff8cd;
-        text-shadow: 0 2px 0 #6a3308, 0 0 10px rgba(255,255,255,0.95), 0 0 24px rgba(255,214,81,0.98);
+        color: #ffe98a;
+        text-shadow: 0 2px 0 #3a1905, 0 4px 5px rgba(58,25,5,0.62), 0 0 10px rgba(255,250,205,0.9), 0 0 24px rgba(255,191,48,0.98);
       }
     }
 
