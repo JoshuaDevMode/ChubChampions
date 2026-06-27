@@ -7113,6 +7113,26 @@
         .tournament-seed.pending {
             opacity: 0.58;
         }
+        .tournament-watch-btn {
+            position: absolute;
+            z-index: 3;
+            right: 6px;
+            bottom: 4px;
+            height: 18px;
+            padding: 0 8px;
+            border: 2px solid #5c3512;
+            border-radius: 5px;
+            background: linear-gradient(#ffc34a, #df8216);
+            color: #3a2009;
+            font-size: 0.44em;
+            font-weight: 950;
+            box-shadow: 0 2px 0 #6c340d;
+            cursor: pointer;
+        }
+        .tournament-watch-btn:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
         .tournament-final-column {
             position: relative;
             z-index: 1;
@@ -39990,15 +40010,18 @@
             const b = match?.entry_b_id ? entriesById.get(Number(match.entry_b_id)) : null;
             const slotBLabel = match && a && !b && match.status === 'bye' ? 'BYE' : '';
             const status = match ? tournamentMatchStatusText(match) : 'TBD';
+            const canWatch = match && String(match.status || '').toLowerCase() === 'completed';
             return `
                 <div class="tournament-match-card ${finalMatch ? 'tournament-final-match' : ''}"
                     data-tournament-match
+                    data-tournament-match-id="${match?.id ? Number(match.id) : ''}"
                     data-side="${escapeHTML(side)}"
                     data-round="${roundIndex}"
                     data-match="${matchIndex}"
                     ${finalMatch ? 'data-tournament-final-match="true"' : ''}>
                     ${tournamentSeedHTML(a, match, '', selectedCharacterIdForBracket)}
                     ${tournamentSeedHTML(b, match, slotBLabel, selectedCharacterIdForBracket)}
+                    ${canWatch ? `<button type="button" class="tournament-watch-btn" data-tournament-watch="${Number(match.id)}">WATCH</button>` : ''}
                     ${!a && !b && status !== 'TBD' ? `<span class="sr-only">${escapeHTML(status)}</span>` : ''}
                 </div>
             `;
@@ -40220,6 +40243,12 @@
                 return;
             }
             bracket.innerHTML = renderTournamentBracket(tournament, entries, matches);
+            bracket.querySelectorAll('[data-tournament-watch]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    watchTournamentMatch(Number(btn.dataset.tournamentWatch || 0), btn);
+                });
+            });
             requestAnimationFrame(drawTournamentConnectors);
         }
 
@@ -40353,6 +40382,64 @@
                 if (btn) {
                     btn.textContent = 'CLAIM';
                     btn.disabled = false;
+                }
+            }
+        }
+
+        async function watchTournamentMatch(matchId, btn) {
+            if (!playerSession) {
+                showNotice('Log in to watch tournament replays.');
+                return;
+            }
+            if (!matchId) return;
+
+            const originalText = btn?.textContent || 'WATCH';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '...';
+            }
+
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/replay', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        matchId: Number(matchId),
+                    }),
+                }, 15000);
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not load tournament replay.');
+                    return;
+                }
+
+                const playerChar = data.p2Char || {};
+                const cpuChar = data.p1Char || {};
+                battleState.playerCharacter = playerChar;
+                battleState.cpuCharacter = cpuChar;
+                battleState.cpuName = data.p1Name || cpuChar.name || 'Opponent';
+
+                closeTournamentPanel();
+                document.getElementById('game-container').style.display = '';
+                document.getElementById('lobby-wrapper').style.display = 'none';
+
+                await watchReplay({
+                    events: data.events || [],
+                    finalPlayerHp: Number(data.finalPlayerHp || 0),
+                    finalCpuHp: Number(data.finalCpuHp || 0),
+                    matchDurationMs: Number(data.matchDurationMs || 0),
+                    cpuName: data.p1Name || cpuChar.name || 'Opponent',
+                    playerMaxHp: Number(playerChar.maxHp || playerChar.maxHealth || 1000),
+                    cpuMaxHp: Number(cpuChar.maxHp || cpuChar.maxHealth || 1000),
+                });
+            } catch (err) {
+                console.error('[tournament replay]', err);
+                showNotice('Could not load tournament replay.');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
                 }
             }
         }
