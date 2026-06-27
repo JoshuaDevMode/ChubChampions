@@ -6738,6 +6738,151 @@
             opacity: 0.48;
             cursor: not-allowed;
         }
+        .tournament-join-modal {
+            position: absolute;
+            inset: 0;
+            z-index: 2200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(20,12,5,0.72);
+            backdrop-filter: blur(2px);
+        }
+        .tournament-join-modal.active {
+            display: flex;
+        }
+        .tournament-join-box {
+            width: min(520px, 92%);
+            max-height: 86%;
+            overflow: auto;
+            box-sizing: border-box;
+            background: none;
+            border: 28px solid transparent;
+            border-image-source: url('Assets/UI/window-frame.png');
+            border-image-slice: 15% fill;
+            border-image-width: 28px;
+            border-image-repeat: stretch;
+            padding: 14px 18px 16px;
+            color: #2a190b;
+            font-family: 'Fredoka', sans-serif;
+            filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+        }
+        .tournament-join-title {
+            color: #5a330f;
+            font-size: 0.95em;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .tournament-join-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .tournament-join-chip {
+            min-width: 0;
+            padding: 7px 6px;
+            border: 1px solid rgba(88,52,18,0.26);
+            border-radius: 7px;
+            background: rgba(255,246,220,0.68);
+            font-size: 0.52em;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .tournament-join-chip strong {
+            display: block;
+            margin-top: 3px;
+            color: #0f5f7a;
+            font-size: 1.14em;
+        }
+        .tournament-requirements {
+            display: grid;
+            gap: 6px;
+            margin: 10px 0;
+        }
+        .tournament-requirement {
+            display: grid;
+            grid-template-columns: 24px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 8px;
+            border: 1px solid rgba(88,52,18,0.2);
+            border-radius: 7px;
+            background: rgba(255,250,234,0.62);
+            font-size: 0.55em;
+            font-weight: 900;
+        }
+        .tournament-requirement-state {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: #15803d;
+            font-size: 0.78em;
+            line-height: 1;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.45);
+        }
+        .tournament-requirement.fail .tournament-requirement-state {
+            background: #b91c1c;
+        }
+        .tournament-requirement.warn .tournament-requirement-state {
+            background: #b7791f;
+        }
+        .tournament-requirement-text {
+            min-width: 0;
+            color: #2a190b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tournament-requirement-detail {
+            color: #6d4723;
+            font-size: 0.9em;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .tournament-join-note {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 7px;
+            background: rgba(82,49,20,0.10);
+            color: #4b2b10;
+            font-size: 0.52em;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+        .tournament-join-actions {
+            display: flex;
+            justify-content: center;
+            gap: 9px;
+            margin-top: 12px;
+        }
+        .tournament-join-actions button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.6em;
+            font-weight: 900;
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            padding: 8px 13px;
+            cursor: pointer;
+        }
+        .tournament-join-confirm {
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            color: #2b1a0e;
+        }
+        .tournament-join-cancel {
+            background: rgba(58,33,14,0.16);
+            color: #3a220d;
+        }
+        .tournament-join-actions button:disabled {
+            opacity: 0.48;
+            cursor: not-allowed;
+        }
         .tournament-entry-row,
         .tournament-match-row {
             display: grid;
@@ -18678,6 +18823,16 @@
             </div>
             <div class="tournament-bracket" id="tournament-bracket">
                 <div class="tournament-empty">Bracket appears when registration closes.</div>
+            </div>
+        </div>
+        <div class="tournament-join-modal" id="tournament-join-modal">
+            <div class="tournament-join-box">
+                <div class="tournament-join-title" id="tournament-join-title">Tournament Entry</div>
+                <div id="tournament-join-content"></div>
+                <div class="tournament-join-actions">
+                    <button class="tournament-join-confirm" id="tournament-join-confirm" type="button">ENTER TOURNAMENT</button>
+                    <button class="tournament-join-cancel" id="tournament-join-cancel" type="button">CANCEL</button>
+                </div>
             </div>
         </div>
     </div>
@@ -39639,6 +39794,99 @@
             return tournamentState.tournaments[0] || null;
         }
 
+        function characterHasPendingLevelup(character) {
+            return !!(
+                character?.pending_levelup ||
+                character?.pendingLevelup ||
+                character?.pendingLevelUp ||
+                character?.pendingLevelChoice ||
+                character?.pending_level_choice
+            );
+        }
+
+        function tournamentRequirement(label, ok, detail = '', warn = false) {
+            return { label, ok: !!ok, detail, warn: !!warn };
+        }
+
+        function tournamentJoinEligibility(tournament, character, entries) {
+            const now = Date.now();
+            const level = Number(character?.level || 1);
+            const levelMin = Number(tournament?.level_min || 1);
+            const levelMax = Number(tournament?.level_max || 100);
+            const entryFee = Number(tournament?.entry_fee || 0);
+            const maxEntries = Number(tournament?.max_entries || 0);
+            const registeredCount = entries.length;
+            const alreadyJoined = !!playerSession && entries.some(e => String(e.player_id) === String(playerSession.playerId));
+            const registrationOpen = tournament?.status === 'registration' && new Date(tournament?.registration_ends_at).getTime() > now;
+            const full = maxEntries > 0 && registeredCount >= maxEntries;
+            const pendingLevelup = characterHasPendingLevelup(character);
+            const hasCoins = Number(globalTokens || 0) >= entryFee;
+            const levelOk = level >= levelMin && level <= levelMax;
+            const hasCharacter = !!character;
+            const loggedIn = !!playerSession;
+
+            const rows = [
+                tournamentRequirement('Wallet/session connected', loggedIn, loggedIn ? 'Ready' : 'Log in'),
+                tournamentRequirement('Registration window', registrationOpen, registrationOpen ? `closes in ${formatTournamentTime(tournament?.registration_ends_at)}` : 'Closed'),
+                tournamentRequirement('Selected fighter', hasCharacter, hasCharacter ? character.name || 'Fighter' : 'None'),
+                tournamentRequirement('Level range', hasCharacter && levelOk, hasCharacter ? `LV ${level} / ${levelMin}-${levelMax}` : `${levelMin}-${levelMax}`),
+                tournamentRequirement('No pending level up', hasCharacter && !pendingLevelup, pendingLevelup ? 'Resolve first' : 'Clear'),
+                tournamentRequirement('Entry fee', hasCoins, `${Number(globalTokens || 0)} / ${entryFee} coins`),
+                tournamentRequirement('Open slot', !full, `${registeredCount} / ${maxEntries || '?'}`),
+                tournamentRequirement('One entry per player', !alreadyJoined, alreadyJoined ? 'Already joined' : 'Clear'),
+                tournamentRequirement('Market/AON lock check', true, 'server verified', true),
+            ];
+            const canEnter = rows.every(row => row.ok || row.warn);
+            return { rows, canEnter, alreadyJoined };
+        }
+
+        function renderTournamentRequirement(row) {
+            const cls = ['tournament-requirement', row.ok ? '' : 'fail', row.warn ? 'warn' : ''].filter(Boolean).join(' ');
+            const symbol = row.warn ? '!' : row.ok ? '✓' : '×';
+            return `
+                <div class="${cls}">
+                    <span class="tournament-requirement-state">${escapeHTML(symbol)}</span>
+                    <span class="tournament-requirement-text">${escapeHTML(row.label)}</span>
+                    <span class="tournament-requirement-detail">${escapeHTML(row.detail)}</span>
+                </div>
+            `;
+        }
+
+        function openTournamentJoinModal() {
+            const modal = document.getElementById('tournament-join-modal');
+            const title = document.getElementById('tournament-join-title');
+            const content = document.getElementById('tournament-join-content');
+            const confirm = document.getElementById('tournament-join-confirm');
+            const tournament = currentTournament();
+            const entries = Array.isArray(tournament?.tournament_entries) ? tournament.tournament_entries : [];
+            const character = getSelectedCharacter();
+            if (!modal || !title || !content || !confirm || !tournament) return;
+
+            const eligibility = tournamentJoinEligibility(tournament, character, entries);
+            title.textContent = eligibility.alreadyJoined ? 'Tournament Entry' : 'Confirm Tournament Entry';
+            confirm.disabled = !eligibility.canEnter || eligibility.alreadyJoined;
+            confirm.textContent = eligibility.alreadyJoined ? 'ALREADY JOINED' : 'ENTER TOURNAMENT';
+
+            content.innerHTML = `
+                <div class="tournament-join-summary">
+                    <div class="tournament-join-chip">Entry<strong>${Number(tournament.entry_fee || 0)}</strong></div>
+                    <div class="tournament-join-chip">Slots<strong>${entries.length}/${Number(tournament.max_entries || 0)}</strong></div>
+                    <div class="tournament-join-chip">Level<strong>${Number(tournament.level_min || 1)}-${Number(tournament.level_max || 100)}</strong></div>
+                </div>
+                <div class="tournament-requirements">
+                    ${eligibility.rows.map(renderTournamentRequirement).join('')}
+                </div>
+                <div class="tournament-join-note">
+                    The fighter is locked while registered. Wellness, morale, stats, equipment and AI are snapshotted when registration closes, so later changes do not affect this bracket.
+                </div>
+            `;
+            modal.classList.add('active');
+        }
+
+        function closeTournamentJoinModal() {
+            document.getElementById('tournament-join-modal')?.classList.remove('active');
+        }
+
         function tournamentNextPowerOfTwo(value) {
             let size = 1;
             while (size < value) size *= 2;
@@ -39897,7 +40145,8 @@
             const alreadyJoined = playerSession && entries.some(e => String(e.player_id) === String(playerSession.playerId));
             const full = entries.length >= Number(tournament.max_entries || 0);
             const registrationOpen = tournament.status === 'registration' && new Date(tournament.registration_ends_at).getTime() > Date.now();
-            const canJoin = !!playerSession && !!character && registrationOpen && !alreadyJoined && !full && globalTokens >= Number(tournament.entry_fee || 0);
+            const canOpenJoin = !!playerSession && !!character && tournament.status === 'registration';
+            const joinLabel = alreadyJoined ? 'ENTRY' : full ? 'FULL' : registrationOpen ? 'JOIN' : 'CLOSED';
             card.innerHTML = `
                 <div class="tournament-name">${escapeHTML(tournament.name || 'Chub Cup')}</div>
                 <div class="tournament-meta-grid">
@@ -39909,7 +40158,7 @@
                 <div class="tournament-section-title">Rewards</div>
                 <div class="tournament-meta">${escapeHTML(formatTournamentRewards(tournament))}</div>
                 <div class="tournament-actions">
-                    <button id="tournament-join-btn" type="button" ${canJoin ? '' : 'disabled'}>${alreadyJoined ? 'JOINED' : full ? 'FULL' : 'JOIN'}</button>
+                    <button id="tournament-join-btn" type="button" ${canOpenJoin ? '' : 'disabled'}>${joinLabel}</button>
                 </div>
                 <div class="tournament-section-title">Entries</div>
                 ${entries.length ? entries.map((entry, index) => `
@@ -39920,7 +40169,7 @@
                     </div>
                 `).join('') : '<div class="tournament-empty">No entries yet.</div>'}
             `;
-            card.querySelector('#tournament-join-btn')?.addEventListener('click', joinCurrentTournament);
+            card.querySelector('#tournament-join-btn')?.addEventListener('click', openTournamentJoinModal);
 
             if (!matches.length) {
                 bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
@@ -39969,12 +40218,18 @@
 
         function closeTournamentPanel() {
             document.getElementById('tournament-panel')?.classList.remove('active');
+            closeTournamentJoinModal();
         }
 
         async function joinCurrentTournament() {
             const tournament = currentTournament();
             const character = getSelectedCharacter();
             if (!tournament || !character || !playerSession) return;
+            const confirmBtn = document.getElementById('tournament-join-confirm');
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'ENTERING...';
+            }
             try {
                 const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/join', {
                     method: 'POST',
@@ -39994,9 +40249,17 @@
                 globalTokens = Number(data.newTokens ?? globalTokens);
                 updateCurrencyUI();
                 showNotice('Tournament joined.');
+                closeTournamentJoinModal();
                 await loadTournaments();
             } catch (err) {
                 showNotice('Could not join tournament.');
+            } finally {
+                if (confirmBtn) {
+                    const tournamentNow = currentTournament();
+                    const entriesNow = Array.isArray(tournamentNow?.tournament_entries) ? tournamentNow.tournament_entries : [];
+                    confirmBtn.textContent = 'ENTER TOURNAMENT';
+                    confirmBtn.disabled = !tournamentJoinEligibility(tournamentNow, getSelectedCharacter(), entriesNow).canEnter;
+                }
             }
         }
 
@@ -43561,6 +43824,11 @@
         document.getElementById('tournament-close')?.addEventListener('click', closeTournamentPanel);
         document.getElementById('tournament-home-btn')?.addEventListener('click', closeTournamentPanel);
         document.getElementById('tournament-refresh-btn')?.addEventListener('click', loadTournaments);
+        document.getElementById('tournament-join-confirm')?.addEventListener('click', joinCurrentTournament);
+        document.getElementById('tournament-join-cancel')?.addEventListener('click', closeTournamentJoinModal);
+        document.getElementById('tournament-join-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'tournament-join-modal') closeTournamentJoinModal();
+        });
         window.addEventListener('resize', () => requestAnimationFrame(drawTournamentConnectors));
         document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
             closeMarketplace();
