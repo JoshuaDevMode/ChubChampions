@@ -6681,6 +6681,362 @@
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: 8px;
         }
+        .tournament-layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
+            gap: 12px;
+            min-height: 0;
+            flex: 1;
+        }
+        .tournament-card,
+        .tournament-bracket {
+            background: rgba(255,248,225,0.62);
+            border: 2px solid rgba(120,80,30,0.32);
+            border-radius: 8px;
+            padding: 12px;
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            overflow: auto;
+        }
+        .tournament-name {
+            font-size: 1em;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .tournament-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .tournament-meta {
+            background: rgba(255,246,220,0.72);
+            border: 1px solid rgba(74,44,18,0.24);
+            border-radius: 7px;
+            padding: 7px;
+            font-size: 0.62em;
+            font-weight: 800;
+        }
+        .tournament-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .tournament-actions button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.62em;
+            font-weight: 900;
+            border: 2px solid #4a2c12;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            color: #2b1a0e;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .tournament-actions button:disabled {
+            opacity: 0.48;
+            cursor: not-allowed;
+        }
+        .tournament-entry-row,
+        .tournament-match-row {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr) auto;
+            gap: 7px;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(74,44,18,0.18);
+            font-size: 0.62em;
+            font-weight: 800;
+        }
+        .tournament-match-row {
+            grid-template-columns: 44px minmax(0, 1fr) auto;
+        }
+        .tournament-section-title {
+            font-size: 0.75em;
+            font-weight: 900;
+            color: #4f3014;
+            margin: 10px 0 6px;
+        }
+        .tournament-empty {
+            text-align: center;
+            color: #6b4820;
+            font-size: 0.72em;
+            font-weight: 800;
+            padding: 20px 8px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .tournament-bracket {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .tournament-bracket-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 2px solid rgba(78,45,16,0.35);
+            background: rgba(255,248,225,0.48);
+            color: #3a220d;
+            font-size: 0.62em;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .tournament-bracket-scroll {
+            position: relative;
+            min-height: 0;
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+        }
+        .tournament-bracket-stage {
+            --tournament-match-h: 62px;
+            --tournament-round-gap: 36px;
+            --tournament-match-gap: 14px;
+            position: relative;
+            z-index: 0;
+            display: grid;
+            grid-template-columns: max-content 220px max-content;
+            align-items: stretch;
+            gap: 42px;
+            width: max-content;
+            min-width: 100%;
+            min-height: 100%;
+            padding: 6px 10px 14px;
+        }
+        .tournament-connector-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+            z-index: 0;
+        }
+        .tournament-connector-line {
+            fill: none;
+            stroke: rgba(82,49,20,0.62);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 1px 0 rgba(255,255,255,0.55));
+        }
+        .tournament-bracket-side {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: stretch;
+            gap: var(--tournament-round-gap);
+        }
+        .tournament-bracket-side.right {
+            flex-direction: row-reverse;
+        }
+        .tournament-round {
+            width: 198px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: var(--tournament-match-gap);
+        }
+        .tournament-bracket-side.right .tournament-round {
+            direction: rtl;
+        }
+        .tournament-bracket-side.right .tournament-round * {
+            direction: ltr;
+        }
+        .tournament-round-title,
+        .tournament-final-title {
+            height: 26px;
+            box-sizing: border-box;
+            padding: 6px 9px;
+            border: 2px solid #5c3817;
+            border-radius: 7px;
+            color: #fff4d2;
+            background: linear-gradient(180deg, #7b552e, #3a210f);
+            box-shadow: 0 2px 0 #241207;
+            font-size: 0.52em;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .tournament-round-matches {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: var(--tournament-match-gap);
+            min-height: calc(var(--tournament-match-h) * var(--match-count) + var(--tournament-match-gap) * (var(--match-count) - 1));
+        }
+        .tournament-match-card {
+            position: relative;
+            height: var(--tournament-match-h);
+            box-sizing: border-box;
+            border: 14px solid transparent;
+            border-image-source: url('/ChubChampions/assets/stone-frame-ixllCCgw.png');
+            border-image-slice: 28% fill;
+            border-image-width: 14px;
+            border-image-repeat: stretch;
+            color: #2a190b;
+            filter: drop-shadow(0 3px 0 rgba(47,25,10,0.45));
+            overflow: hidden;
+        }
+        .tournament-match-card::after {
+            content: "";
+            position: absolute;
+            inset: 3px 5px;
+            pointer-events: none;
+            border-radius: 4px;
+            background:
+                linear-gradient(135deg, transparent 0 16%, rgba(84,49,20,0.12) 17% 19%, transparent 20% 100%),
+                linear-gradient(20deg, transparent 0 68%, rgba(255,255,255,0.16) 69% 71%, transparent 72% 100%);
+            mix-blend-mode: multiply;
+        }
+        .tournament-seed {
+            position: relative;
+            z-index: 1;
+            height: 50%;
+            display: grid;
+            grid-template-columns: 30px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 5px;
+            padding: 0 5px;
+            box-sizing: border-box;
+            font-size: 0.50em;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .tournament-seed + .tournament-seed {
+            border-top: 1px solid rgba(83,49,19,0.28);
+        }
+        .tournament-seed-num {
+            color: #6d4723;
+            font-size: 0.88em;
+        }
+        .tournament-seed-name {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #2a190b;
+        }
+        .tournament-seed-state {
+            color: #0f5f7a;
+            font-size: 0.88em;
+        }
+        .tournament-seed.winner .tournament-seed-name,
+        .tournament-seed.winner .tournament-seed-state {
+            color: #147a32;
+        }
+        .tournament-seed.bye,
+        .tournament-seed.pending {
+            opacity: 0.58;
+        }
+        .tournament-final-column {
+            position: relative;
+            z-index: 1;
+            width: 220px;
+            display: grid;
+            align-content: center;
+            gap: 13px;
+            padding-top: 26px;
+        }
+        .tournament-final-match {
+            height: 76px;
+        }
+        .tournament-winner-banner {
+            position: relative;
+            min-height: 104px;
+            overflow: hidden;
+            display: grid;
+            align-content: center;
+            justify-items: center;
+            gap: 6px;
+            text-align: center;
+            border: 3px solid #6f4215;
+            border-radius: 8px;
+            background:
+                linear-gradient(90deg, transparent, rgba(255,255,255,0.46), transparent),
+                radial-gradient(circle at 50% 8%, rgba(255,255,255,0.84), transparent 28%),
+                linear-gradient(180deg, #fff1a3 0%, #f7b429 44%, #be6b10 100%);
+            background-size: 180% 100%, 100% 100%, 100% 100%;
+            box-shadow:
+                0 4px 0 #3b1f0b,
+                0 0 20px rgba(255,185,35,0.58),
+                inset 0 2px 0 rgba(255,255,255,0.78),
+                inset 0 -4px 0 rgba(108,58,15,0.34);
+            animation: tournamentWinnerGlow 2.8s ease-in-out infinite;
+        }
+        .tournament-winner-label {
+            position: relative;
+            z-index: 1;
+            color: #6f3c10;
+            font-size: 0.48em;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.62);
+        }
+        .tournament-winner-name {
+            position: relative;
+            z-index: 1;
+            max-width: 176px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #ffd45a;
+            font-size: 1.05em;
+            line-height: 1;
+            font-weight: 900;
+            text-transform: uppercase;
+            -webkit-text-stroke: 1.1px #5a2a08;
+            paint-order: stroke fill;
+            text-shadow:
+                0 2px 0 #3a1905,
+                0 3px 4px rgba(58,25,5,0.55),
+                0 0 7px rgba(255,247,190,0.76),
+                0 0 15px rgba(255,180,38,0.86);
+            animation: tournamentWinnerText 1.55s ease-in-out infinite;
+        }
+        .tournament-winner-prize {
+            position: relative;
+            z-index: 1;
+            max-width: 180px;
+            padding: 4px 8px;
+            border: 2px solid rgba(103,59,17,0.48);
+            border-radius: 999px;
+            background: rgba(255,246,207,0.42);
+            color: #5c3514;
+            font-size: 0.48em;
+            font-weight: 900;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @keyframes tournamentWinnerGlow {
+            0%, 100% { background-position: -120% 0, 0 0, 0 0; filter: saturate(1) brightness(1); }
+            50% { background-position: 120% 0, 0 0, 0 0; filter: saturate(1.16) brightness(1.07); }
+        }
+        @keyframes tournamentWinnerText {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-1px) scale(1.03); }
+        }
+        @media (max-width: 900px) {
+            .tournament-layout { grid-template-columns: 1fr; }
+            .tournament-card { min-height: 220px; }
+            .tournament-bracket-stage { min-width: max-content; }
+        }
         .market-preview {
             display: none;
             flex-direction: column;
@@ -8702,6 +9058,28 @@
             font-weight: 900;
             letter-spacing: 0;
         }
+        .fusion-tabs {
+            display: flex;
+            gap: 6px;
+            margin-top: 7px;
+        }
+        .fusion-tab {
+            min-width: 98px;
+            height: 28px;
+            border: 2px solid rgba(74,44,18,0.42);
+            border-radius: 8px;
+            background: rgba(255,246,220,0.56);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .fusion-tab.active {
+            background: linear-gradient(180deg, #f4c15d, #b86b21);
+            border-color: #4a2c12;
+            box-shadow: 0 2px 0 #3b220f;
+        }
         .pet-fusion-close {
             width: 30px;
             height: 30px;
@@ -8720,6 +9098,8 @@
             gap: 14px;
             min-height: 0;
         }
+        .fusion-tab-panel { display: none; }
+        .fusion-tab-panel.active { display: grid; }
         .pet-fusion-workbench {
             display: grid;
             grid-template-columns: minmax(120px, 1fr) 64px minmax(120px, 1fr);
@@ -8847,6 +9227,40 @@
             filter: drop-shadow(0 4px 4px rgba(43,26,14,0.28));
         }
         .pet-fusion-inventory-item[draggable="true"] { cursor: grab; }
+        .character-fusion-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .character-fusion-slot,
+        .character-fusion-result {
+            min-width: 138px;
+        }
+        .character-fusion-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .character-fusion-actions button {
+            height: 24px;
+            border: 2px solid rgba(74,44,18,0.42);
+            border-radius: 7px;
+            background: rgba(255,246,220,0.72);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .character-fusion-actions button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .character-fusion-meta {
+            font-size: 0.72em;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #4f3014;
+        }
         .inventory-pet-card {
             background: rgba(255,248,225,0.46);
             border: 2px solid rgba(120,80,30,0.26);
@@ -13719,6 +14133,7 @@
         .main-menu #menu-market-btn::before     { content: "⚖"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-inventory-btn::before  { content: "🎒"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-pets-btn::before       { content: "🐾"; background: none; font-size: 18px; line-height: 1; }
+        .main-menu #menu-tournaments-btn::before{ content: "🏟"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-leaderboard-btn::before{ content: "🏆"; background: none; font-size: 18px; line-height: 1; }
         .main-menu #menu-wardrobe-btn::before   { content: "👘"; background: none; font-size: 18px; line-height: 1; }
         .main-menu .top-nav-btn:hover {
@@ -17238,6 +17653,7 @@
         .market-tab,
         .vault-tab,
         .skill-branch-tab,
+        .fusion-tab,
         .pet-fusion-actions button,
         .wardrobe-connect-btn,
         .wardrobe-chain-btn,
@@ -17252,6 +17668,7 @@
         .market-tab.active,
         .vault-tab.active,
         .skill-branch-tab.active,
+        .fusion-tab.active,
         .wardrobe-chain-btn.active,
         .pet-fusion-actions button:not(:disabled),
         .chat-send {
@@ -17861,6 +18278,7 @@
                 <button class="top-nav-btn" id="menu-market-btn">MARKET</button>
                 <button class="top-nav-btn" id="menu-inventory-btn">INVENTORY</button>
                 <button class="top-nav-btn" id="menu-pets-btn">FUSION</button>
+                <button class="top-nav-btn" id="menu-tournaments-btn">TOURNAMENTS</button>
                 <button class="top-nav-btn" id="menu-wardrobe-btn" style="display:none">WARDROBE</button>
                 <button class="top-nav-btn" id="menu-leaderboard-btn">RANKING</button>
                 <button class="top-nav-btn" onclick="openAnimDebug()" title="Animation Debug" style="padding:9px 10px">🎬</button>
@@ -18163,13 +18581,41 @@
         </div>
     </div>
 
-    <!-- Pet Fusion Panel -->
+    <!-- Fusion Panel -->
     <div class="pet-fusion-panel" id="pet-fusion-panel">
         <div class="pet-fusion-header">
-            <div class="pet-fusion-title">PET FUSION</div>
+            <div>
+                <div class="pet-fusion-title">FUSION</div>
+                <div class="fusion-tabs">
+                    <button type="button" class="fusion-tab active" data-fusion-tab="characters">CHARACTERS</button>
+                    <button type="button" class="fusion-tab" data-fusion-tab="pets">PETS</button>
+                </div>
+            </div>
             <button class="pet-fusion-close" id="pet-fusion-close" type="button">&times;</button>
         </div>
-        <div class="pet-fusion-body">
+        <div class="pet-fusion-body fusion-tab-panel active" id="fusion-tab-characters" data-fusion-tab-panel="characters">
+            <div>
+                <div class="pet-fusion-workbench">
+                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="0">Main fighter</div>
+                    <div class="pet-fusion-plus"><canvas id="character-fusion-plus-canvas" width="56" height="56"></canvas></div>
+                    <div class="pet-fusion-slot character-fusion-slot" data-character-fusion-slot="1">Fusion Partner</div>
+                </div>
+                <div class="pet-fusion-side">
+                    <div class="pet-fusion-result character-fusion-result" id="character-fusion-result">Result preview</div>
+                    <div class="pet-fusion-rules" id="character-fusion-rules">
+                        Main fighter keeps identity. Fusion Partner joins the fusion and is removed. Requires both fighters at level 20+.
+                    </div>
+                    <div class="pet-fusion-actions">
+                        <button type="button" id="character-fusion-button" disabled>FUSE</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pet-fusion-inventory">
+                <div class="pet-fusion-inventory-title">Owned Fighters</div>
+                <div class="pet-fusion-inventory-grid character-fusion-grid" id="character-fusion-inventory-grid"></div>
+            </div>
+        </div>
+        <div class="pet-fusion-body fusion-tab-panel" id="fusion-tab-pets" data-fusion-tab-panel="pets">
             <div>
                 <div class="pet-fusion-workbench">
                     <div class="pet-fusion-slot" data-fusion-slot="0">Drop pet here</div>
@@ -18189,6 +18635,26 @@
             <div class="pet-fusion-inventory">
                 <div class="pet-fusion-inventory-title">Owned Pets</div>
                 <div class="pet-fusion-inventory-grid" id="pet-fusion-inventory-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Panel -->
+    <div class="market-panel" id="tournament-panel">
+        <div class="market-header">
+            <div class="market-title">TOURNAMENTS</div>
+            <div class="market-header-actions">
+                <button class="market-home-btn" id="tournament-refresh-btn" type="button">REFRESH</button>
+                <button class="market-home-btn" id="tournament-home-btn" type="button">HOME</button>
+                <span class="market-close" id="tournament-close">&times;</span>
+            </div>
+        </div>
+        <div class="tournament-layout">
+            <div class="tournament-card" id="tournament-current-card">
+                <div class="tournament-empty">Loading tournament...</div>
+            </div>
+            <div class="tournament-bracket" id="tournament-bracket">
+                <div class="tournament-empty">Bracket appears when registration closes.</div>
             </div>
         </div>
     </div>
@@ -24141,11 +24607,11 @@
 
         // ── Coin Packs (server-side game balance) ──────────────────────────
         const TOKEN_PACKS = [
-            { id: 'starter', coins: 25,   usd: 0.99,  label: 'STARTER',  badge: '' },
-            { id: 'popular', coins: 80,   usd: 2.99,  label: 'POPULAR',  badge: '⭐' },
-            { id: 'value',   coins: 175,  usd: 4.99,  label: 'VALUE',    badge: '🔥' },
-            { id: 'pro',     coins: 400,  usd: 9.99,  label: 'PRO',      badge: '💎' },
-            { id: 'whale',   coins: 1000, usd: 19.99, label: 'WHALE',    badge: '🐋' },
+            { id: 'starter', coins: 20,  usd: 0.99,  label: 'STARTER',  badge: '' },
+            { id: 'popular', coins: 65,  usd: 2.99,  label: 'POPULAR',  badge: '⭐' },
+            { id: 'value',   coins: 125, usd: 4.99,  label: 'VALUE',    badge: '🔥' },
+            { id: 'pro',     coins: 275, usd: 9.99,  label: 'PRO',      badge: '💎' },
+            { id: 'whale',   coins: 650, usd: 19.99, label: 'WHALE',    badge: '🐋' },
         ];
 
         // Live crypto prices (USD) — fetched on vault open
@@ -25275,6 +25741,8 @@
                             local.element      = sc.element;
                             local.adaptability = sc.adaptability;
                             local.qTable       = sc.qTable;
+                            local.fusionData   = sc.fusionData || { count: sc.fusionCount || 0, history: [] };
+                            local.fusionCount  = sc.fusionCount || local.fusionData.count || 0;
                             // Level, exp and stats are validated server-side
                             local.level  = sc.level;
                             local.exp    = sc.exp ?? local.exp ?? 0;
@@ -28071,7 +28539,193 @@
             renderInventoryPets();
         }
 
+        const fusionPanelState = { tab: 'characters' };
+        const characterFusionState = { slots: [null, null] };
+        const CHARACTER_FUSION_COSTS = [500, 750, 1000, 1500, 2000];
         const petFusionState = { slots: [null, null] };
+
+        function characterFusionCount(character) {
+            return Math.max(0, Math.floor(Number(character?.fusionCount ?? character?.fusionData?.count ?? 0) || 0));
+        }
+
+        function characterFusionCost(character) {
+            const count = characterFusionCount(character);
+            return CHARACTER_FUSION_COSTS[count] ?? null;
+        }
+
+        function qTableStateCount(raw) {
+            return raw && typeof raw === 'object' ? Object.keys(raw).length : 0;
+        }
+
+        function getCharacterFusionValidation(main, fusionPartner) {
+            if (!main || !fusionPartner) return { ok: false, reason: 'Choose a main fighter and a Fusion Partner.' };
+            if (String(main.id) === String(fusionPartner.id)) return { ok: false, reason: 'Choose two different fighters.' };
+            if ((main.level || 1) < 20 || (fusionPartner.level || 1) < 20) return { ok: false, reason: 'Both fighters must be level 20 or higher.' };
+            if (main.hasPendingLevelUp || fusionPartner.hasPendingLevelUp) return { ok: false, reason: 'Resolve pending level ups first.' };
+            const cost = characterFusionCost(main);
+            if (!cost) return { ok: false, reason: 'This fighter has reached the fusion limit.' };
+            if (globalTokens < cost) return { ok: false, reason: `Need ${cost} coins.` };
+            return { ok: true, cost };
+        }
+
+        function characterFusionMiniHtml(character, fallback) {
+            if (!character) return fallback;
+            const count = characterFusionCount(character);
+            return `
+                <div class="inventory-pet-name">${escapeHTML(character.name || 'Fighter')}</div>
+                <div class="character-fusion-meta">LV ${character.level || 1}</div>
+                <div class="character-fusion-meta">Instinct ${qTableStateCount(character.qTable)} states</div>
+                <div class="character-fusion-meta">Fusion ${count}/5</div>
+            `;
+        }
+
+        function characterFusionInventoryItemHtml(character, main, fusionPartner) {
+            const isMain = main && String(main.id) === String(character.id);
+            const isFusionPartner = fusionPartner && String(fusionPartner.id) === String(character.id);
+            const cost = characterFusionCost(character);
+            return `
+                <div>
+                    <div class="inventory-pet-name">${escapeHTML(character.name || 'Fighter')}</div>
+                    <div class="character-fusion-meta">LV ${character.level || 1} · Instinct ${qTableStateCount(character.qTable)} states</div>
+                    <div class="character-fusion-meta">Fusion ${characterFusionCount(character)}/5${cost ? ` · Next ${cost} coins` : ' · Maxed'}</div>
+                    <div class="character-fusion-actions">
+                        <button type="button" data-character-fusion-pick="0" data-character-id="${character.id}" ${isMain ? 'disabled' : ''}>MAIN</button>
+                        <button type="button" data-character-fusion-pick="1" data-character-id="${character.id}" ${isFusionPartner ? 'disabled' : ''}>PARTNER</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFusionTabs() {
+            document.querySelectorAll('[data-fusion-tab]').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.fusionTab === fusionPanelState.tab);
+            });
+            document.querySelectorAll('[data-fusion-tab-panel]').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.fusionTabPanel === fusionPanelState.tab);
+            });
+        }
+
+        function setFusionTab(tab) {
+            fusionPanelState.tab = tab === 'pets' ? 'pets' : 'characters';
+            renderFusionPanel();
+        }
+
+        function drawCharacterFusionPlus() {
+            drawPlusCanvas(document.getElementById('character-fusion-plus-canvas'));
+        }
+
+        function renderCharacterFusionPanel() {
+            characterFusionState.slots = characterFusionState.slots.map(id => characters.some(c => String(c.id) === String(id)) ? id : null);
+            const selected = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
+            document.querySelectorAll('[data-character-fusion-slot]').forEach(slot => {
+                const index = Number(slot.dataset.characterFusionSlot);
+                slot.innerHTML = characterFusionMiniHtml(selected[index], index === 0 ? 'Main fighter' : 'Fusion Partner');
+            });
+
+            const resultEl = document.getElementById('character-fusion-result');
+            const rulesEl = document.getElementById('character-fusion-rules');
+            const button = document.getElementById('character-fusion-button');
+            const validation = getCharacterFusionValidation(selected[0], selected[1]);
+            if (resultEl) {
+                if (selected[0] && selected[1]) {
+                    const cost = characterFusionCost(selected[0]);
+                    resultEl.innerHTML = `
+                        <div class="inventory-pet-name">${escapeHTML(selected[0].name || 'Fighter')}</div>
+                        <div class="character-fusion-meta">Fusion ${characterFusionCount(selected[0]) + 1}/5</div>
+                        <div class="character-fusion-meta">${cost || 0} coins</div>
+                        <div class="character-fusion-meta">Battle Instinct DNA mixed</div>
+                    `;
+                } else {
+                    resultEl.textContent = 'Result preview';
+                }
+            }
+            if (rulesEl) {
+                rulesEl.textContent = validation.ok
+                    ? `${selected[1].name || 'Fusion Partner'} joins the fusion and is removed. ${selected[0].name || 'Main'} keeps identity and inherits a capped part of the Battle Instinct.`
+                    : validation.reason;
+            }
+            if (button) button.disabled = !validation.ok;
+
+            const grid = document.getElementById('character-fusion-inventory-grid');
+            if (grid) {
+                grid.innerHTML = '';
+                characters.forEach(character => {
+                    const item = document.createElement('div');
+                    const active = selected.some(c => c && String(c.id) === String(character.id));
+                    item.className = 'pet-fusion-inventory-item' + (active ? ' active' : '');
+                    item.dataset.characterId = character.id;
+                    item.innerHTML = characterFusionInventoryItemHtml(character, selected[0], selected[1]);
+                    grid.appendChild(item);
+                });
+                if (!characters.length) {
+                    grid.innerHTML = '<div class="inventory-pet-role" style="grid-column:1/-1;text-align:center;">No fighters owned.</div>';
+                }
+            }
+            drawCharacterFusionPlus();
+        }
+
+        function renderFusionPanel() {
+            renderFusionTabs();
+            if (fusionPanelState.tab === 'pets') renderPetFusionPanel();
+            else renderCharacterFusionPanel();
+        }
+
+        function pickCharacterFusionSlot(characterId, slotIndex) {
+            const id = String(characterId || '');
+            if (!characters.some(c => String(c.id) === String(id))) return;
+            const otherIndex = slotIndex === 0 ? 1 : 0;
+            if (String(characterFusionState.slots[otherIndex]) === String(id)) characterFusionState.slots[otherIndex] = null;
+            characterFusionState.slots[slotIndex] = id;
+            renderCharacterFusionPanel();
+        }
+
+        async function fuseSelectedCharacters() {
+            const [main, fusionPartner] = characterFusionState.slots.map(id => characters.find(c => String(c.id) === String(id)) || null);
+            const validation = getCharacterFusionValidation(main, fusionPartner);
+            if (!validation.ok) {
+                showNotice(validation.reason);
+                return;
+            }
+            if (!playerSession || !BACKEND_URL) {
+                showNotice('Character fusion requires server sync.');
+                return;
+            }
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/character/fusion', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        mainCharacterId: String(main.id),
+                        fusionPartnerCharacterId: String(fusionPartner.id),
+                    }),
+                });
+                if (resp.status === 401 || resp.status === 403) { handleUnauthorized(); return; }
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not fuse fighters.');
+                    return;
+                }
+                globalTokens = Number(data.newTokens ?? globalTokens);
+                const mainLocal = characters.find(c => String(c.id) === String(main.id));
+                if (mainLocal) {
+                    mainLocal.fusionData = data.fusionData || { count: data.fusionCount || characterFusionCount(mainLocal) + 1, history: [] };
+                    mainLocal.fusionCount = data.fusionCount || mainLocal.fusionData.count || characterFusionCount(mainLocal);
+                }
+                characters = characters.filter(c => String(c.id) !== String(fusionPartner.id));
+                if (String(selectedCharacterId) === String(fusionPartner.id)) selectedCharacterId = main.id;
+                characterFusionState.slots = [null, null];
+                saveCharacters();
+                updateCurrencyUI();
+                updateLobbyCharacterDisplay();
+                populateInventoryPanel();
+                renderCharacterFusionPanel();
+                showNotice((main.name || 'Fighter') + ' fusion complete.');
+            } catch (err) {
+                console.error('[character fusion]', err);
+                showNotice('Could not fuse fighters.');
+            }
+        }
 
         function petRarityChip(rarity) {
             const meta = PET_RARITIES[rarity] || PET_RARITIES.common;
@@ -28198,13 +28852,15 @@
         }
 
         function openPetFusionPanel() {
-            renderPetFusionPanel();
+            fusionPanelState.tab = 'characters';
+            renderFusionPanel();
             document.getElementById('pet-fusion-panel')?.classList.add('active');
         }
 
         function closePetFusionPanel() {
+            characterFusionState.slots = [null, null];
             petFusionState.slots = [null, null];
-            renderPetFusionPanel();
+            renderFusionPanel();
             document.getElementById('pet-fusion-panel')?.classList.remove('active');
         }
 
@@ -38925,6 +39581,391 @@
             closeMarketplaceDetail();
         }
 
+        let tournamentState = { loading: false, tournaments: [] };
+
+        function formatTournamentTime(value) {
+            const ms = new Date(value).getTime() - Date.now();
+            if (!Number.isFinite(ms)) return '--';
+            if (ms <= 0) return 'now';
+            const minutes = Math.ceil(ms / 60000);
+            if (minutes < 60) return minutes + 'm';
+            const hours = Math.floor(minutes / 60);
+            return hours + 'h ' + (minutes % 60) + 'm';
+        }
+
+        function formatTournamentRewardValue(reward) {
+            if (!reward || typeof reward !== 'object') return 'TBD';
+            const parts = [];
+            if (reward.coins) parts.push(`${Number(reward.coins)} coins`);
+            if (reward.petSnacks) parts.push(`${Number(reward.petSnacks)} snacks`);
+            if (reward.crystals) parts.push(`${Number(reward.crystals)} crystal${Number(reward.crystals) === 1 ? '' : 's'}`);
+            if (reward.exclusiveSkin) parts.push('exclusive skin');
+            return parts.length ? parts.join(' + ') : 'TBD';
+        }
+
+        function formatTournamentRewards(tournament) {
+            const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
+            return [
+                `Champion: ${formatTournamentRewardValue(rewardData.champion)}`,
+                `Finalist: ${formatTournamentRewardValue(rewardData.finalist)}`,
+                `Semifinalist: ${formatTournamentRewardValue(rewardData.semifinalist)}`
+            ].join(' · ');
+        }
+
+        function currentTournament() {
+            return tournamentState.tournaments[0] || null;
+        }
+
+        function tournamentNextPowerOfTwo(value) {
+            let size = 1;
+            while (size < value) size *= 2;
+            return size;
+        }
+
+        function tournamentBracketSize(tournament, entries, matches) {
+            const maxEntries = Number(tournament?.max_entries || 8);
+            const roundOneCount = matches.filter(m => Number(m.round || 1) === 1).length * 2;
+            const seededCount = entries.reduce((max, entry) => Math.max(max, Number(entry.seed || 0)), 0);
+            const needed = Math.max(2, entries.length, seededCount, roundOneCount);
+            return Math.min(maxEntries || 64, tournamentNextPowerOfTwo(needed));
+        }
+
+        function tournamentRoundName(size, roundIndex, sideRoundCount) {
+            const totalRounds = Math.max(1, Math.log2(size));
+            const roundNumber = roundIndex + 1;
+            if (roundNumber === totalRounds - 1) return 'Semifinal';
+            if (roundNumber === totalRounds - 2) return 'Quarterfinal';
+            if (sideRoundCount === 1) return 'Semifinal';
+            return `Round ${roundNumber}`;
+        }
+
+        function tournamentMatchStatusText(match) {
+            const status = String(match?.status || 'scheduled').toUpperCase();
+            if (status === 'BYE') return 'BYE';
+            if (status === 'COMPLETED') return 'WIN';
+            if (status === 'ACTIVE') return 'LIVE';
+            return status;
+        }
+
+        function tournamentSeedHTML(entry, match, slotLabel) {
+            const isBye = slotLabel === 'BYE';
+            const isPending = !entry && !isBye;
+            const isWinner = entry && match?.winner_entry_id && Number(entry.id) === Number(match.winner_entry_id);
+            const seed = entry?.seed || '-';
+            const name = entry?.character_name || (isBye ? 'BYE' : 'TBD');
+            const state = isWinner ? 'WIN' : isBye ? '' : isPending ? '' : `LV ${Number(entry.character_level || 1)}`;
+            const cls = ['tournament-seed', isWinner ? 'winner' : '', isBye ? 'bye' : '', isPending ? 'pending' : ''].filter(Boolean).join(' ');
+            return `
+                <div class="${cls}">
+                    <span class="tournament-seed-num">#${escapeHTML(seed)}</span>
+                    <span class="tournament-seed-name">${escapeHTML(name)}</span>
+                    <span class="tournament-seed-state">${escapeHTML(state)}</span>
+                </div>
+            `;
+        }
+
+        function tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex, finalMatch = false) {
+            const a = match?.entry_a_id ? entriesById.get(Number(match.entry_a_id)) : null;
+            const b = match?.entry_b_id ? entriesById.get(Number(match.entry_b_id)) : null;
+            const slotBLabel = match && a && !b && match.status === 'bye' ? 'BYE' : '';
+            const status = match ? tournamentMatchStatusText(match) : 'TBD';
+            return `
+                <div class="tournament-match-card ${finalMatch ? 'tournament-final-match' : ''}"
+                    data-tournament-match
+                    data-side="${escapeHTML(side)}"
+                    data-round="${roundIndex}"
+                    data-match="${matchIndex}"
+                    ${finalMatch ? 'data-tournament-final-match="true"' : ''}>
+                    ${tournamentSeedHTML(a, match, '')}
+                    ${tournamentSeedHTML(b, match, slotBLabel)}
+                    ${!a && !b && status !== 'TBD' ? `<span class="sr-only">${escapeHTML(status)}</span>` : ''}
+                </div>
+            `;
+        }
+
+        function tournamentRoundHTML(side, roundIndex, matches, entriesById, size, sideRoundCount) {
+            return `
+                <div class="tournament-round" style="--match-count:${Math.max(1, matches.length)}">
+                    <div class="tournament-round-title">${escapeHTML(tournamentRoundName(size, roundIndex, sideRoundCount))}</div>
+                    <div class="tournament-round-matches">
+                        ${matches.map((match, matchIndex) => tournamentMatchHTML(match, entriesById, side, roundIndex, matchIndex)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function tournamentSideHTML(side, rounds, entriesById, size) {
+            return `
+                <div class="tournament-bracket-side ${side}" data-tournament-side="${side}">
+                    ${rounds.map((matches, roundIndex) => tournamentRoundHTML(side, roundIndex, matches, entriesById, size, rounds.length)).join('')}
+                </div>
+            `;
+        }
+
+        function tournamentFinalHTML(finalMatch, entriesById, tournament) {
+            const winner = finalMatch?.winner_entry_id ? entriesById.get(Number(finalMatch.winner_entry_id)) : null;
+            const championName = winner?.character_name || 'Champion';
+            const rewardData = tournament && typeof tournament.reward_data === 'object' ? tournament.reward_data : {};
+            return `
+                <div class="tournament-final-column">
+                    <div class="tournament-final-title">Final</div>
+                    ${tournamentMatchHTML(finalMatch, entriesById, 'final', 0, 0, true)}
+                    <div class="tournament-winner-banner">
+                        <div class="tournament-winner-label">Tournament Champion</div>
+                        <div class="tournament-winner-name">${escapeHTML(championName)}</div>
+                        <div class="tournament-winner-prize">${escapeHTML(formatTournamentRewardValue(rewardData.champion))}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildTournamentRounds(size, matches) {
+            const totalRounds = Math.max(1, Math.log2(size));
+            const sideRoundCount = Math.max(0, totalRounds - 1);
+            const matchesByRound = new Map();
+            matches.forEach(match => {
+                const round = Number(match.round || 1);
+                if (!matchesByRound.has(round)) matchesByRound.set(round, []);
+                matchesByRound.get(round)[Number(match.match_index || 0)] = match;
+            });
+
+            const leftRounds = [];
+            const rightRounds = [];
+            for (let round = 1; round <= sideRoundCount; round++) {
+                const totalMatches = Math.max(2, size / Math.pow(2, round));
+                const sideMatches = Math.max(1, totalMatches / 2);
+                const roundMatches = matchesByRound.get(round) || [];
+                const left = [];
+                const right = [];
+                for (let i = 0; i < sideMatches; i += 1) {
+                    left.push(roundMatches[i] || null);
+                    right.push(roundMatches[i + sideMatches] || null);
+                }
+                leftRounds.push(left);
+                rightRounds.push(right);
+            }
+
+            return {
+                leftRounds,
+                rightRounds,
+                finalMatch: (matchesByRound.get(totalRounds) || [])[0] || null,
+            };
+        }
+
+        function renderTournamentBracket(tournament, entries, matches) {
+            if (!matches.length) {
+                return '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+            }
+            const size = tournamentBracketSize(tournament, entries, matches);
+            const entriesById = new Map(entries.map(entry => [Number(entry.id), entry]));
+            const { leftRounds, rightRounds, finalMatch } = buildTournamentRounds(size, matches);
+            return `
+                <div class="tournament-bracket-head">
+                    <span>${size} player bracket</span>
+                    <span>${matches.length} match${matches.length === 1 ? '' : 'es'} scheduled</span>
+                </div>
+                <div class="tournament-bracket-scroll">
+                    <div class="tournament-bracket-stage" id="tournament-bracket-stage">
+                        <svg class="tournament-connector-svg" id="tournament-connector-svg" aria-hidden="true"></svg>
+                        ${tournamentSideHTML('left', leftRounds, entriesById, size)}
+                        ${tournamentFinalHTML(finalMatch, entriesById, tournament)}
+                        ${tournamentSideHTML('right', rightRounds, entriesById, size)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function tournamentLocalPoint(stageRect, rect, edge, targetSide) {
+            const x = (edge === 'left' ? rect.left : rect.right) - stageRect.left;
+            const y = rect.top + rect.height / 2 - stageRect.top;
+            return { x, y, targetSide };
+        }
+
+        function tournamentConnectorPath(from, to) {
+            const dir = from.targetSide === 'right' ? 1 : -1;
+            const gap = Math.max(18, Math.abs(to.x - from.x) * 0.5);
+            const midX = from.x + dir * gap;
+            return `M ${from.x} ${from.y} H ${midX} V ${to.y} H ${to.x}`;
+        }
+
+        function drawTournamentConnectors() {
+            const stage = document.getElementById('tournament-bracket-stage');
+            const svg = document.getElementById('tournament-connector-svg');
+            if (!stage || !svg) return;
+            const stageRect = stage.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${stage.scrollWidth} ${stage.scrollHeight}`);
+            svg.setAttribute('width', stage.scrollWidth);
+            svg.setAttribute('height', stage.scrollHeight);
+
+            const paths = [];
+            ['left', 'right'].forEach(side => {
+                const roundMap = Array.from(stage.querySelectorAll(`.tournament-match-card[data-side="${side}"]`)).reduce((map, el) => {
+                    const round = Number(el.dataset.round);
+                    if (!map.has(round)) map.set(round, []);
+                    map.get(round)[Number(el.dataset.match)] = el;
+                    return map;
+                }, new Map());
+                const rounds = Array.from(roundMap.keys()).sort((a, b) => a - b);
+                rounds.forEach(round => {
+                    const current = roundMap.get(round) || [];
+                    const next = roundMap.get(round + 1) || [];
+                    current.forEach((matchEl, matchIndex) => {
+                        const target = next[Math.floor(matchIndex / 2)];
+                        if (!target) return;
+                        const fromRect = matchEl.getBoundingClientRect();
+                        const toRect = target.getBoundingClientRect();
+                        const from = side === 'left'
+                            ? tournamentLocalPoint(stageRect, fromRect, 'right', 'right')
+                            : tournamentLocalPoint(stageRect, fromRect, 'left', 'left');
+                        const to = side === 'left'
+                            ? tournamentLocalPoint(stageRect, toRect, 'left', 'right')
+                            : tournamentLocalPoint(stageRect, toRect, 'right', 'left');
+                        paths.push(tournamentConnectorPath(from, to));
+                    });
+                });
+
+                const lastRound = rounds[rounds.length - 1];
+                const sideWinner = roundMap.get(lastRound)?.[0];
+                const finalMatch = stage.querySelector('[data-tournament-final-match="true"]');
+                if (sideWinner && finalMatch) {
+                    const fromRect = sideWinner.getBoundingClientRect();
+                    const toRect = finalMatch.getBoundingClientRect();
+                    const from = side === 'left'
+                        ? tournamentLocalPoint(stageRect, fromRect, 'right', 'right')
+                        : tournamentLocalPoint(stageRect, fromRect, 'left', 'left');
+                    const to = side === 'left'
+                        ? tournamentLocalPoint(stageRect, toRect, 'left', 'right')
+                        : tournamentLocalPoint(stageRect, toRect, 'right', 'left');
+                    paths.push(tournamentConnectorPath(from, to));
+                }
+            });
+            svg.innerHTML = paths.map(path => `<path class="tournament-connector-line" d="${path}"></path>`).join('');
+        }
+
+        function renderTournamentPanel() {
+            const card = document.getElementById('tournament-current-card');
+            const bracket = document.getElementById('tournament-bracket');
+            if (!card || !bracket) return;
+            if (tournamentState.loading) {
+                card.innerHTML = '<div class="tournament-empty">Loading tournament...</div>';
+                bracket.innerHTML = '<div class="tournament-empty">Loading bracket...</div>';
+                return;
+            }
+            const tournament = currentTournament();
+            if (!tournament) {
+                card.innerHTML = '<div class="tournament-empty">No tournament available.</div>';
+                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+                return;
+            }
+            const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
+            const matches = Array.isArray(tournament.tournament_matches) ? tournament.tournament_matches : [];
+            const character = getSelectedCharacter();
+            const alreadyJoined = playerSession && entries.some(e => String(e.player_id) === String(playerSession.playerId));
+            const full = entries.length >= Number(tournament.max_entries || 0);
+            const registrationOpen = tournament.status === 'registration' && new Date(tournament.registration_ends_at).getTime() > Date.now();
+            const canJoin = !!playerSession && !!character && registrationOpen && !alreadyJoined && !full && globalTokens >= Number(tournament.entry_fee || 0);
+            card.innerHTML = `
+                <div class="tournament-name">${escapeHTML(tournament.name || 'Chub Cup')}</div>
+                <div class="tournament-meta-grid">
+                    <div class="tournament-meta">STATUS<br>${escapeHTML(String(tournament.status || '').toUpperCase())}</div>
+                    <div class="tournament-meta">ENTRY<br>${Number(tournament.entry_fee || 0)} coins</div>
+                    <div class="tournament-meta">SLOTS<br>${entries.length} / ${Number(tournament.max_entries || 0)}</div>
+                    <div class="tournament-meta">STARTS<br>${formatTournamentTime(tournament.starts_at)}</div>
+                </div>
+                <div class="tournament-section-title">Rewards</div>
+                <div class="tournament-meta">${escapeHTML(formatTournamentRewards(tournament))}</div>
+                <div class="tournament-actions">
+                    <button id="tournament-join-btn" type="button" ${canJoin ? '' : 'disabled'}>${alreadyJoined ? 'JOINED' : full ? 'FULL' : 'JOIN'}</button>
+                </div>
+                <div class="tournament-section-title">Entries</div>
+                ${entries.length ? entries.map((entry, index) => `
+                    <div class="tournament-entry-row">
+                        <span>#${entry.seed || index + 1}</span>
+                        <span>${escapeHTML(entry.character_name || 'Fighter')}</span>
+                        <span>LV ${Number(entry.character_level || 1)}</span>
+                    </div>
+                `).join('') : '<div class="tournament-empty">No entries yet.</div>'}
+            `;
+            card.querySelector('#tournament-join-btn')?.addEventListener('click', joinCurrentTournament);
+
+            if (!matches.length) {
+                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
+                return;
+            }
+            bracket.innerHTML = renderTournamentBracket(tournament, entries, matches);
+            requestAnimationFrame(drawTournamentConnectors);
+        }
+
+        async function loadTournaments() {
+            tournamentState.loading = true;
+            renderTournamentPanel();
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/list', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({ playerId: playerSession?.playerId || '' }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not load tournaments.');
+                    tournamentState.tournaments = [];
+                } else {
+                    tournamentState.tournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
+                }
+            } catch (err) {
+                tournamentState.tournaments = [];
+                showNotice('Could not connect to tournaments.');
+            } finally {
+                tournamentState.loading = false;
+                renderTournamentPanel();
+            }
+        }
+
+        function openTournamentPanel() {
+            if (!playerSession) {
+                showNotice('Log in to enter tournaments.');
+                return;
+            }
+            closeShop();
+            closeVaultPanel();
+            closeMarketplace();
+            document.getElementById('tournament-panel')?.classList.add('active');
+            loadTournaments();
+        }
+
+        function closeTournamentPanel() {
+            document.getElementById('tournament-panel')?.classList.remove('active');
+        }
+
+        async function joinCurrentTournament() {
+            const tournament = currentTournament();
+            const character = getSelectedCharacter();
+            if (!tournament || !character || !playerSession) return;
+            try {
+                const resp = await fetchWithTimeout(BACKEND_URL + '/api/tournaments/join', {
+                    method: 'POST',
+                    headers: await getAuthHeaders(),
+                    body: JSON.stringify({
+                        playerId: playerSession.playerId,
+                        tournamentId: Number(tournament.id),
+                        characterId: String(character.id),
+                        displayName: playerSession.name || character.name || 'Fighter',
+                    }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    showNotice(data.error || 'Could not join tournament.');
+                    return;
+                }
+                globalTokens = Number(data.newTokens ?? globalTokens);
+                updateCurrencyUI();
+                showNotice('Tournament joined.');
+                await loadTournaments();
+            } catch (err) {
+                showNotice('Could not join tournament.');
+            }
+        }
+
         function listSelectedCharacter() {
             const character = getSelectedCharacter();
             if (!playerSession) { showNotice('Log in to list a fighter.'); return; }
@@ -42445,6 +43486,7 @@
         // Inventory button handler
         document.getElementById('menu-inventory-btn').addEventListener('click', () => {
             closePetFusionPanel();
+            closeTournamentPanel();
             populateInventoryPanel();
             updateInvEquipmentSlots();
             // Reset filter to weapons tab
@@ -42468,19 +43510,33 @@
 
         // Shop panel
         document.getElementById('menu-shop-btn').addEventListener('click', () => {
+            closeTournamentPanel();
             openShop();
         });
         document.getElementById('shop-close').addEventListener('click', () => {
             closeShop();
         });
         document.getElementById('menu-market-btn').addEventListener('click', () => {
+            closeTournamentPanel();
             openMarketplace();
         });
+        document.getElementById('menu-tournaments-btn')?.addEventListener('click', () => {
+            closeMarketplace();
+            openTournamentPanel();
+        });
+        document.getElementById('tournament-close')?.addEventListener('click', closeTournamentPanel);
+        document.getElementById('tournament-home-btn')?.addEventListener('click', closeTournamentPanel);
+        document.getElementById('tournament-refresh-btn')?.addEventListener('click', loadTournaments);
+        window.addEventListener('resize', () => requestAnimationFrame(drawTournamentConnectors));
         document.getElementById('menu-pets-btn')?.addEventListener('click', () => {
             closeMarketplace();
+            closeTournamentPanel();
             openPetFusionPanel();
         });
         document.getElementById('pet-fusion-close')?.addEventListener('click', closePetFusionPanel);
+        document.querySelectorAll('[data-fusion-tab]').forEach(tab => {
+            tab.addEventListener('click', () => setFusionTab(tab.dataset.fusionTab));
+        });
         document.getElementById('market-close').addEventListener('click', () => {
             closeMarketplace();
         });
@@ -42698,6 +43754,20 @@
             e.target.closest('.pet-fusion-inventory-item')?.classList.remove('pet-dragging');
         });
 
+        document.getElementById('character-fusion-inventory-grid')?.addEventListener('click', e => {
+            const btn = e.target.closest('button[data-character-fusion-pick]');
+            if (!btn) return;
+            pickCharacterFusionSlot(btn.dataset.characterId, Number(btn.dataset.characterFusionPick));
+        });
+
+        document.querySelectorAll('[data-character-fusion-slot]').forEach(slot => {
+            slot.addEventListener('click', () => {
+                const index = Number(slot.dataset.characterFusionSlot);
+                characterFusionState.slots[index] = null;
+                renderCharacterFusionPanel();
+            });
+        });
+
         document.querySelectorAll('[data-fusion-slot]').forEach(slot => {
             slot.addEventListener('dragover', e => {
                 e.preventDefault();
@@ -42723,6 +43793,7 @@
         });
 
         document.getElementById('pet-fusion-button')?.addEventListener('click', fuseSelectedPets);
+        document.getElementById('character-fusion-button')?.addEventListener('click', fuseSelectedCharacters);
 
         // PvP button handler (coming soon)
         document.getElementById('menu-pvp-btn').addEventListener('click', () => {
