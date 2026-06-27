@@ -6682,9 +6682,8 @@
             border-radius: 8px;
         }
         .tournament-layout {
-            display: grid;
-            grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
             min-height: 0;
             flex: 1;
         }
@@ -6698,19 +6697,61 @@
             font-family: 'Fredoka', sans-serif;
             overflow: auto;
         }
+        .tournament-card {
+            min-height: 0;
+            flex: 1;
+        }
         .tournament-name {
-            font-size: 1em;
+            font-size: 1.14em;
             font-weight: 900;
             margin-bottom: 8px;
         }
+        .tournament-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .tournament-tab {
+            min-height: 54px;
+            border: 2px solid rgba(92,56,23,0.34);
+            border-radius: 8px;
+            background: rgba(255,246,220,0.72);
+            color: #3a220d;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.82em;
+            font-weight: 950;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 3px 0 rgba(68,35,10,0.18);
+        }
+        .tournament-tab.active {
+            border-color: #6f4215;
+            background: linear-gradient(180deg, rgba(255,220,97,0.94), rgba(231,153,38,0.86));
+            color: #291608;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 4px 0 rgba(68,35,10,0.32);
+        }
+        .tournament-tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            margin-left: 7px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: rgba(58,34,13,0.14);
+            color: #0f5f7a;
+            font-size: 0.78em;
+        }
         .tournament-list {
             display: grid;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 10px;
         }
         .tournament-list-title {
             color: #4f3014;
-            font-size: 0.68em;
+            font-size: 0.86em;
             font-weight: 950;
             text-transform: uppercase;
             margin-top: 4px;
@@ -6722,12 +6763,12 @@
         .tournament-list-item {
             width: 100%;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 1fr) auto auto;
             align-items: center;
-            gap: 8px;
-            min-height: 56px;
+            gap: 10px;
+            min-height: 68px;
             box-sizing: border-box;
-            padding: 8px 9px;
+            padding: 11px 12px;
             border: 2px solid rgba(92,56,23,0.35);
             border-radius: 8px;
             background: rgba(255,246,220,0.68);
@@ -6749,36 +6790,78 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-size: 0.62em;
+            font-size: 0.84em;
             font-weight: 950;
         }
         .tournament-list-sub {
             display: block;
-            margin-top: 3px;
+            margin-top: 4px;
             color: #6d4723;
-            font-size: 0.50em;
+            font-size: 0.64em;
             font-weight: 850;
             text-transform: uppercase;
         }
         .tournament-list-slots {
-            padding: 5px 7px;
+            padding: 7px 9px;
             border: 1px solid rgba(74,44,18,0.24);
             border-radius: 999px;
             background: rgba(255,250,234,0.66);
             color: #0f5f7a;
-            font-size: 0.50em;
+            font-size: 0.68em;
             font-weight: 950;
             white-space: nowrap;
+        }
+        .tournament-list-open {
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: #4d2a0f;
+            color: #fff1c7;
+            font-size: 0.66em;
+            font-weight: 950;
+            white-space: nowrap;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
         }
         .tournament-list-tag {
             display: inline-block;
             margin-top: 4px;
-            padding: 2px 5px;
+            padding: 3px 6px;
             border-radius: 999px;
             background: rgba(20,95,122,0.12);
             color: #0f5f7a;
-            font-size: 0.78em;
+            font-size: 0.72em;
             font-weight: 950;
+        }
+        .tournament-detail-head {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .tournament-back-btn {
+            min-height: 40px;
+            padding: 0 14px;
+            border: 2px solid #5c3817;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #f9d166, #d98a20);
+            color: #2b1a0e;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.72em;
+            font-weight: 950;
+            cursor: pointer;
+            box-shadow: 0 3px 0 rgba(65,35,12,0.35);
+        }
+        .tournament-detail-title {
+            min-width: 0;
+        }
+        .tournament-detail-title .tournament-name {
+            margin-bottom: 2px;
+        }
+        .tournament-detail-subtitle {
+            color: #6d4723;
+            font-size: 0.70em;
+            font-weight: 900;
+            text-transform: uppercase;
         }
         .tournament-meta-grid {
             display: grid;
@@ -6791,7 +6874,7 @@
             border: 1px solid rgba(74,44,18,0.24);
             border-radius: 7px;
             padding: 7px;
-            font-size: 0.62em;
+            font-size: 0.74em;
             font-weight: 800;
         }
         .tournament-actions {
@@ -6802,7 +6885,7 @@
         }
         .tournament-actions button {
             font-family: 'Fredoka', sans-serif;
-            font-size: 0.62em;
+            font-size: 0.74em;
             font-weight: 900;
             border: 2px solid #4a2c12;
             border-radius: 8px;
@@ -6968,14 +7051,14 @@
             align-items: center;
             padding: 7px 0;
             border-bottom: 1px solid rgba(74,44,18,0.18);
-            font-size: 0.62em;
+            font-size: 0.76em;
             font-weight: 800;
         }
         .tournament-match-row {
             grid-template-columns: 44px minmax(0, 1fr) auto;
         }
         .tournament-section-title {
-            font-size: 0.75em;
+            font-size: 0.88em;
             font-weight: 900;
             color: #4f3014;
             margin: 10px 0 6px;
@@ -6983,7 +7066,7 @@
         .tournament-empty {
             text-align: center;
             color: #6b4820;
-            font-size: 0.72em;
+            font-size: 0.84em;
             font-weight: 800;
             padding: 20px 8px;
         }
@@ -7004,6 +7087,16 @@
             display: flex;
             flex-direction: column;
         }
+        #tournament-bracket {
+            display: none;
+        }
+        .tournament-bracket-inline {
+            display: flex;
+            min-height: 420px;
+            margin-top: 12px;
+            border-color: rgba(92,56,23,0.34);
+            background: rgba(255,248,225,0.54);
+        }
         .tournament-bracket-head {
             display: flex;
             align-items: center;
@@ -7013,7 +7106,7 @@
             border-bottom: 2px solid rgba(78,45,16,0.35);
             background: rgba(255,248,225,0.48);
             color: #3a220d;
-            font-size: 0.62em;
+            font-size: 0.74em;
             font-weight: 900;
             text-transform: uppercase;
         }
@@ -7026,7 +7119,7 @@
             border-bottom: 1px solid rgba(78,45,16,0.22);
             background: rgba(72,43,17,0.12);
             color: #3a220d;
-            font-size: 0.58em;
+            font-size: 0.70em;
             font-weight: 900;
         }
         .tournament-round-status strong {
@@ -7455,8 +7548,10 @@
             50% { transform: translateY(-1px) scale(1.03); }
         }
         @media (max-width: 900px) {
-            .tournament-layout { grid-template-columns: 1fr; }
+            .tournament-tabs { grid-template-columns: 1fr; }
             .tournament-card { min-height: 220px; }
+            .tournament-list-item { grid-template-columns: minmax(0, 1fr) auto; }
+            .tournament-list-open { display: none; }
             .tournament-bracket-stage { min-width: max-content; }
         }
         .market-preview {
@@ -40116,7 +40211,13 @@
             closeMarketplaceDetail();
         }
 
-        let tournamentState = { loading: false, tournaments: [], selectedTournamentId: null };
+        let tournamentState = {
+            loading: false,
+            tournaments: [],
+            selectedTournamentId: null,
+            activeTab: 'current',
+            detailOpen: false,
+        };
 
         function formatTournamentTime(value) {
             const ms = new Date(value).getTime() - Date.now();
@@ -40288,11 +40389,53 @@
             return { current, myHistory, recent };
         }
 
-        function tournamentSectionHTML(title, tournaments, emptyText) {
+        function tournamentTabGroups(tournaments) {
+            const sections = tournamentSections(tournaments);
+            return [
+                {
+                    id: 'current',
+                    label: 'Current Tournament',
+                    items: sections.current,
+                    empty: 'No active tournaments.',
+                },
+                {
+                    id: 'history',
+                    label: 'My Tournaments History',
+                    items: sections.myHistory,
+                    empty: 'No completed tournaments with this fighter yet.',
+                },
+                {
+                    id: 'recent',
+                    label: 'Past 24H',
+                    items: sections.recent,
+                    empty: 'No other tournaments finished in the last 24h.',
+                },
+            ];
+        }
+
+        function tournamentTabsHTML(groups) {
+            return `
+                <div class="tournament-tabs">
+                    ${groups.map(group => `
+                        <button class="tournament-tab ${tournamentState.activeTab === group.id ? 'active' : ''}" type="button" data-tournament-tab="${escapeHTML(group.id)}">
+                            ${escapeHTML(group.label)}
+                            <span class="tournament-tab-count">${group.items.length}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function tournamentActiveTabGroup(groups) {
+            return groups.find(group => group.id === tournamentState.activeTab) || groups[0];
+        }
+
+        function tournamentActiveListHTML(groups) {
+            const group = tournamentActiveTabGroup(groups);
             return `
                 <div class="tournament-list">
-                    <div class="tournament-list-title">${escapeHTML(title)}</div>
-                    ${tournaments.length ? tournaments.map(tournamentListItemHTML).join('') : `<div class="tournament-empty">${escapeHTML(emptyText)}</div>`}
+                    <div class="tournament-list-title">${escapeHTML(group.label)}</div>
+                    ${group.items.length ? group.items.map(tournamentListItemHTML).join('') : `<div class="tournament-empty">${escapeHTML(group.empty)}</div>`}
                 </div>
             `;
         }
@@ -40324,6 +40467,7 @@
                         ${tag ? `<span class="tournament-list-tag">${escapeHTML(tag)}</span>` : ''}
                     </span>
                     <span class="tournament-list-slots">${entries.length}/${Number(tournament.max_entries || 0)}</span>
+                    <span class="tournament-list-open">OPEN</span>
                 </button>
             `;
         }
@@ -40732,22 +40876,37 @@
             const card = document.getElementById('tournament-current-card');
             const bracket = document.getElementById('tournament-bracket');
             if (!card || !bracket) return;
+            bracket.innerHTML = '';
             if (tournamentState.loading) {
                 card.innerHTML = '<div class="tournament-empty">Loading tournaments...</div>';
-                bracket.innerHTML = '<div class="tournament-empty">Loading bracket...</div>';
                 return;
             }
             const tournaments = Array.isArray(tournamentState.tournaments) ? tournamentState.tournaments : [];
-            const sections = tournamentSections(tournaments);
-            const listHTML = `
-                ${tournamentSectionHTML('Current Tournaments', sections.current, 'No active tournaments.')}
-                ${tournamentSectionHTML('My Tournament History', sections.myHistory, 'No completed tournaments with this fighter yet.')}
-                ${tournamentSectionHTML('Past 24h', sections.recent, 'No other tournaments finished in the last 24h.')}
-            `;
+            const groups = tournamentTabGroups(tournaments);
+            const listHTML = tournamentTabsHTML(groups) + tournamentActiveListHTML(groups);
+            if (!tournamentState.detailOpen) {
+                card.innerHTML = listHTML;
+                card.querySelectorAll('[data-tournament-tab]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        tournamentState.activeTab = btn.dataset.tournamentTab || 'current';
+                        tournamentState.detailOpen = false;
+                        renderTournamentPanel();
+                    });
+                });
+                card.querySelectorAll('[data-tournament-select]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        tournamentState.selectedTournamentId = Number(btn.dataset.tournamentSelect || 0) || null;
+                        tournamentState.detailOpen = true;
+                        closeTournamentJoinModal();
+                        closeTournamentMatchDetail();
+                        renderTournamentPanel();
+                    });
+                });
+                return;
+            }
             const tournament = currentTournament();
             if (!tournament) {
                 card.innerHTML = listHTML + '<div class="tournament-empty">No tournament selected.</div>';
-                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
                 return;
             }
             const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
@@ -40760,11 +40919,20 @@
             const registrationOpen = tournament.status === 'registration' && new Date(tournament.registration_ends_at).getTime() > Date.now();
             const canOpenJoin = !!playerSession && !!character && tournament.status === 'registration';
             const joinLabel = alreadyJoined ? 'ENTRY' : full ? 'FULL' : registrationOpen ? 'JOIN' : 'CLOSED';
+            const status = String(tournament.status || '').toUpperCase();
+            const bracketHTML = matches.length
+                ? `<div class="tournament-bracket tournament-bracket-inline">${renderTournamentBracket(tournament, entries, matches)}</div>`
+                : '<div class="tournament-bracket tournament-bracket-inline"><div class="tournament-empty">Bracket appears when registration closes.</div></div>';
             card.innerHTML = `
-                ${listHTML}
-                <div class="tournament-name">${escapeHTML(tournament.name || 'Chub Cup')}</div>
+                <div class="tournament-detail-head">
+                    <button class="tournament-back-btn" type="button" data-tournament-back>BACK</button>
+                    <div class="tournament-detail-title">
+                        <div class="tournament-name">${escapeHTML(tournament.name || 'Chub Cup')}</div>
+                        <div class="tournament-detail-subtitle">${escapeHTML(status)} · ${entries.length}/${Number(tournament.max_entries || 0)} slots</div>
+                    </div>
+                </div>
                 <div class="tournament-meta-grid">
-                    <div class="tournament-meta">STATUS<br>${escapeHTML(String(tournament.status || '').toUpperCase())}</div>
+                    <div class="tournament-meta">STATUS<br>${escapeHTML(status)}</div>
                     <div class="tournament-meta">ENTRY<br>${Number(tournament.entry_fee || 0)} coins</div>
                     <div class="tournament-meta">SLOTS<br>${entries.length} / ${Number(tournament.max_entries || 0)}</div>
                     <div class="tournament-meta">STARTS<br>${formatTournamentTime(tournament.starts_at)}</div>
@@ -40783,12 +40951,18 @@
                         <span>LV ${Number(entry.character_level || 1)}</span>
                     </div>
                 `).join('') : '<div class="tournament-empty">No entries yet.</div>'}
+                ${bracketHTML}
             `;
-            card.querySelectorAll('[data-tournament-select]').forEach(btn => {
+            card.querySelector('[data-tournament-back]')?.addEventListener('click', () => {
+                tournamentState.detailOpen = false;
+                closeTournamentJoinModal();
+                closeTournamentMatchDetail();
+                renderTournamentPanel();
+            });
+            card.querySelectorAll('[data-tournament-tab]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    tournamentState.selectedTournamentId = Number(btn.dataset.tournamentSelect || 0) || null;
-                    closeTournamentJoinModal();
-                    closeTournamentMatchDetail();
+                    tournamentState.activeTab = btn.dataset.tournamentTab || 'current';
+                    tournamentState.detailOpen = false;
                     renderTournamentPanel();
                 });
             });
@@ -40796,16 +40970,14 @@
             card.querySelector('#tournament-claim-btn')?.addEventListener('click', claimCurrentTournamentReward);
 
             if (!matches.length) {
-                bracket.innerHTML = '<div class="tournament-empty">Bracket appears when registration closes.</div>';
                 return;
             }
-            bracket.innerHTML = renderTournamentBracket(tournament, entries, matches);
-            bracket.querySelectorAll('[data-tournament-match-id]').forEach(cardEl => {
+            card.querySelectorAll('[data-tournament-match-id]').forEach(cardEl => {
                 cardEl.addEventListener('click', () => {
                     openTournamentMatchDetail(Number(cardEl.dataset.tournamentMatchId || 0));
                 });
             });
-            bracket.querySelectorAll('[data-tournament-watch]').forEach(btn => {
+            card.querySelectorAll('[data-tournament-watch]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     watchTournamentMatch(Number(btn.dataset.tournamentWatch || 0), btn);
@@ -40849,6 +41021,7 @@
                 showNotice('Log in to enter tournaments.');
                 return;
             }
+            tournamentState.detailOpen = false;
             closeShop();
             closeVaultPanel();
             closeMarketplace();
@@ -40858,6 +41031,7 @@
 
         function closeTournamentPanel() {
             document.getElementById('tournament-panel')?.classList.remove('active');
+            tournamentState.detailOpen = false;
             closeTournamentJoinModal();
             closeTournamentMatchDetail();
         }
