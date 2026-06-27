@@ -6706,15 +6706,18 @@
         .tournament-list {
             display: grid;
             gap: 8px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(74,44,18,0.18);
+            margin-bottom: 10px;
         }
         .tournament-list-title {
             color: #4f3014;
             font-size: 0.68em;
             font-weight: 950;
             text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .tournament-list + .tournament-list {
+            padding-top: 9px;
+            border-top: 2px solid rgba(74,44,18,0.18);
         }
         .tournament-list-item {
             width: 100%;
@@ -6766,6 +6769,16 @@
             font-size: 0.50em;
             font-weight: 950;
             white-space: nowrap;
+        }
+        .tournament-list-tag {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 2px 5px;
+            border-radius: 999px;
+            background: rgba(20,95,122,0.12);
+            color: #0f5f7a;
+            font-size: 0.78em;
+            font-weight: 950;
         }
         .tournament-meta-grid {
             display: grid;
@@ -40114,6 +40127,16 @@
             return hours + 'h ' + (minutes % 60) + 'm';
         }
 
+        function formatTournamentAge(value) {
+            const ms = Date.now() - new Date(value).getTime();
+            if (!Number.isFinite(ms) || ms < 0) return 'now';
+            const minutes = Math.max(1, Math.floor(ms / 60000));
+            if (minutes < 60) return minutes + 'm ago';
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return hours + 'h ago';
+            return Math.floor(hours / 24) + 'd ago';
+        }
+
         function formatTournamentRewardValue(reward) {
             if (!reward || typeof reward !== 'object') return 'TBD';
             const parts = [];
@@ -40135,7 +40158,8 @@
 
         function defaultTournamentFromList() {
             const active = tournamentState.tournaments.find(t => t.status === 'registration' || t.status === 'active');
-            return active || tournamentState.tournaments[0] || null;
+            const myHistory = tournamentState.tournaments.find(t => tournamentPlayerEntry(t));
+            return active || myHistory || tournamentState.tournaments[0] || null;
         }
 
         function currentTournament() {
@@ -40241,6 +40265,37 @@
             `;
         }
 
+        function tournamentPlayerEntry(tournament) {
+            const entries = Array.isArray(tournament?.tournament_entries) ? tournament.tournament_entries : [];
+            const selected = getSelectedCharacter();
+            return entries.find(entry =>
+                (playerSession && String(entry.player_id) === String(playerSession.playerId)) ||
+                (selected && String(entry.character_id) === String(selected.id))
+            ) || null;
+        }
+
+        function isRecentCompletedTournament(tournament) {
+            if (tournament?.status !== 'completed') return false;
+            const completedMs = new Date(tournament.completed_at || 0).getTime();
+            return Number.isFinite(completedMs) && Date.now() - completedMs <= 24 * 60 * 60 * 1000;
+        }
+
+        function tournamentSections(tournaments) {
+            const current = tournaments.filter(t => t.status === 'registration' || t.status === 'active');
+            const myHistory = tournaments.filter(t => t.status === 'completed' && tournamentPlayerEntry(t));
+            const recent = tournaments.filter(t => t.status === 'completed' && isRecentCompletedTournament(t) && !tournamentPlayerEntry(t));
+            return { current, myHistory, recent };
+        }
+
+        function tournamentSectionHTML(title, tournaments, emptyText) {
+            return `
+                <div class="tournament-list">
+                    <div class="tournament-list-title">${escapeHTML(title)}</div>
+                    ${tournaments.length ? tournaments.map(tournamentListItemHTML).join('') : `<div class="tournament-empty">${escapeHTML(emptyText)}</div>`}
+                </div>
+            `;
+        }
+
         function tournamentListItemHTML(tournament) {
             const entries = Array.isArray(tournament.tournament_entries) ? tournament.tournament_entries : [];
             const selected = Number(currentTournament()?.id || 0) === Number(tournament.id || 0);
@@ -40248,13 +40303,16 @@
             const timeLabel = tournament.status === 'registration'
                 ? `starts ${formatTournamentTime(tournament.starts_at)}`
                 : tournament.status === 'completed'
-                    ? 'completed'
+                    ? `ended ${formatTournamentAge(tournament.completed_at)}`
                     : `next ${formatTournamentTime(tournament.starts_at)}`;
+            const playerEntry = tournamentPlayerEntry(tournament);
+            const tag = playerEntry ? `YOUR ${String(playerEntry.status || 'ENTRY').toUpperCase()}` : '';
             return `
                 <button class="tournament-list-item ${selected ? 'active' : ''}" type="button" data-tournament-select="${Number(tournament.id)}">
                     <span class="tournament-list-main">
                         <span class="tournament-list-name">${escapeHTML(tournament.name || 'Chub Cup')}</span>
                         <span class="tournament-list-sub">${escapeHTML(status)} · ${escapeHTML(timeLabel)}</span>
+                        ${tag ? `<span class="tournament-list-tag">${escapeHTML(tag)}</span>` : ''}
                     </span>
                     <span class="tournament-list-slots">${entries.length}/${Number(tournament.max_entries || 0)}</span>
                 </button>
@@ -40671,11 +40729,11 @@
                 return;
             }
             const tournaments = Array.isArray(tournamentState.tournaments) ? tournamentState.tournaments : [];
+            const sections = tournamentSections(tournaments);
             const listHTML = `
-                <div class="tournament-list">
-                    <div class="tournament-list-title">Active / Recent Tournaments</div>
-                    ${tournaments.length ? tournaments.map(tournamentListItemHTML).join('') : '<div class="tournament-empty">No active tournaments.</div>'}
-                </div>
+                ${tournamentSectionHTML('Current Tournaments', sections.current, 'No active tournaments.')}
+                ${tournamentSectionHTML('My Tournament History', sections.myHistory, 'No completed tournaments with this fighter yet.')}
+                ${tournamentSectionHTML('Past 24h', sections.recent, 'No other tournaments finished in the last 24h.')}
             `;
             const tournament = currentTournament();
             if (!tournament) {
