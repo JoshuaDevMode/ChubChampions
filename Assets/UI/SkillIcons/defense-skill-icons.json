@@ -1,0 +1,30 @@
+{
+  "image": "defense-skill-icons-square.png",
+  "columns": 5,
+  "rows": 4,
+  "cellSize": 324,
+  "icons": [
+    { "id": "iron_hide", "name": "Iron Hide", "index": 0, "x": 0, "y": 0 },
+    { "id": "fortify", "name": "Fortify", "index": 1, "x": 324, "y": 0 },
+    { "id": "shield_mastery", "name": "Shield Mastery", "index": 2, "x": 648, "y": 0 },
+    { "id": "vitality", "name": "Vitality", "index": 3, "x": 972, "y": 0 },
+    { "id": "bulwark", "name": "Bulwark", "index": 4, "x": 1296, "y": 0 },
+    { "id": "counter", "name": "Counter", "index": 5, "x": 0, "y": 324 },
+    { "id": "regeneration", "name": "Regeneration", "index": 6, "x": 324, "y": 324 },
+    { "id": "lifesteal", "name": "Lifesteal", "index": 7, "x": 648, "y": 324 },
+    { "id": "unbreakable", "name": "Unbreakable", "index": 8, "x": 972, "y": 324 },
+    { "id": "thorns", "name": "Thorns", "index": 9, "x": 1296, "y": 324 },
+    { "id": "riposte", "name": "Riposte", "index": 10, "x": 0, "y": 648 },
+    { "id": "counter_strike", "name": "Counter Strike", "index": 11, "x": 324, "y": 648 },
+    { "id": "aegis", "name": "Aegis", "index": 12, "x": 648, "y": 648 },
+    { "id": "retaliation", "name": "Retaliation", "index": 13, "x": 972, "y": 648 },
+    { "id": "phalanx", "name": "Phalanx", "index": 14, "x": 1296, "y": 648 },
+    { "id": "guardian_stance", "name": "Guardian Stance", "index": 15, "x": 0, "y": 972 },
+    { "id": "sanguine_ward", "name": "Sanguine Ward", "index": 16, "x": 324, "y": 972 },
+    { "id": "bastion", "name": "Bastion", "index": 17, "x": 648, "y": 972 }
+  ],
+  "reserved": [
+    { "index": 18, "x": 972, "y": 972 },
+    { "index": 19, "x": 1296, "y": 972 }
+  ]
+}
