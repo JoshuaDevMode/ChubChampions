@@ -1,0 +1,23 @@
+{
+  "image": "attack-skill-icons-square.png",
+  "columns": 5,
+  "rows": 3,
+  "cellSize": 324,
+  "icons": [
+    { "id": "power_strike", "name": "Power Strike", "index": 0, "x": 0, "y": 0 },
+    { "id": "heavy_blow", "name": "Heavy Blow", "index": 1, "x": 324, "y": 0 },
+    { "id": "gaze", "name": "Gaze", "index": 2, "x": 648, "y": 0 },
+    { "id": "crusher", "name": "Crusher", "index": 3, "x": 972, "y": 0 },
+    { "id": "berserker", "name": "Berserker", "index": 4, "x": 1296, "y": 0 },
+    { "id": "bleed", "name": "Bleed", "index": 5, "x": 0, "y": 324 },
+    { "id": "expose", "name": "Expose", "index": 6, "x": 324, "y": 324 },
+    { "id": "shatter", "name": "Shatter", "index": 7, "x": 648, "y": 324 },
+    { "id": "execute", "name": "Execute", "index": 8, "x": 972, "y": 324 },
+    { "id": "bloodrage", "name": "Bloodrage", "index": 9, "x": 1296, "y": 324 },
+    { "id": "death_wish", "name": "Death Wish", "index": 10, "x": 0, "y": 648 },
+    { "id": "hemorrhage", "name": "Deep Wound", "index": 11, "x": 324, "y": 648 },
+    { "id": "rend", "name": "Rend", "index": 12, "x": 648, "y": 648 },
+    { "id": "rupture", "name": "Rupture", "index": 13, "x": 972, "y": 648 },
+    { "id": "predator", "name": "Predator", "index": 14, "x": 1296, "y": 648 }
+  ]
+}
