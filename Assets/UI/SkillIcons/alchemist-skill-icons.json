@@ -1,0 +1,23 @@
+{
+  "image": "alchemist-skill-icons-square.png",
+  "columns": 5,
+  "rows": 3,
+  "cellSize": 324,
+  "icons": [
+    { "id": "brew_master", "name": "Brew Master", "index": 0, "x": 0, "y": 0 },
+    { "id": "potency", "name": "Potency", "index": 1, "x": 324, "y": 0 },
+    { "id": "duration", "name": "Duration", "index": 2, "x": 648, "y": 0 },
+    { "id": "amplify", "name": "Amplify", "index": 3, "x": 972, "y": 0 },
+    { "id": "quick_dose", "name": "Quick Dose", "index": 4, "x": 1296, "y": 0 },
+    { "id": "extended", "name": "Extended", "index": 5, "x": 0, "y": 324 },
+    { "id": "compound", "name": "Compound", "index": 6, "x": 324, "y": 324 },
+    { "id": "mixology", "name": "Mixology", "index": 7, "x": 648, "y": 324 },
+    { "id": "reservoir", "name": "Reservoir", "index": 8, "x": 972, "y": 324 },
+    { "id": "rapid_reflex", "name": "Rapid Reflex", "index": 9, "x": 1296, "y": 324 },
+    { "id": "stim_pack", "name": "Stim Pack", "index": 10, "x": 0, "y": 648 },
+    { "id": "eternity", "name": "Eternity", "index": 11, "x": 324, "y": 648 },
+    { "id": "catalyst", "name": "Catalyst", "index": 12, "x": 648, "y": 648 },
+    { "id": "stack_master", "name": "Stack Master", "index": 13, "x": 972, "y": 648 },
+    { "id": "synthesis", "name": "Synthesis", "index": 14, "x": 1296, "y": 648 }
+  ]
+}
